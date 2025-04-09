@@ -2,9 +2,9 @@
 ### 🌐 `web/README.md`
 
 
-# Teachme Web
+# TeachlINK Web
 
-This is the web frontend for the Teachme platform. Built to deliver a responsive, interactive experience for users accessing Teachme via desktop or browser.
+This is the web frontend for the Teachlink platform. Built to deliver a responsive, interactive experience for users accessing Teachlink via desktop or browser.
 
 ## 🛠 Tech Stack
 - React.js (Vite or Next.js)
@@ -16,8 +16,8 @@ This is the web frontend for the Teachme platform. Built to deliver a responsive
 ## 🔧 Getting Started
 
 ```bash
-git clone https://github.com/your-org/teachme-web.git
-cd teachme-web
+git clone https://github.com/your-org/teachlink-web.git
+cd teachlink-web
 cp .env.example .env
 npm install
 npm run dev
@@ -57,30 +57,8 @@ Creator dashboard UI
 
 Upload interface
 
-Mobile App (React Native + Expo)
-
-Auth, knowledge feed, view content
-
-Lightweight creator upload flow
-
-Smart Contracts (Solidity)
-
-Deploy TeachmeToken (ERC20/ERC1155)
-
-Basic access control logic (token-gated content)
-
 🔹 PHASE 2: Advanced Features & Web3 Integration
 🎯 Goal: Add interaction, monetization, and decentralized logic.
-
-Backend
-
-Messaging (WebSocket) & Notifications (Bull + Redis)
-
-Analytics (engagement, views, purchases)
-
-Consulting module (booking, calendar sync)
-
-Web3 wallet auth & transaction logging
 
 Frontend & Mobile
 
