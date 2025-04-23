@@ -2,7 +2,7 @@
 ### 🌐 `web/README.md`
 
 
-# TeachlINK Web
+# TeachLink Web
 
 This is the web frontend for the Teachlink platform. Built to deliver a responsive, interactive experience for users accessing Teachlink via desktop or browser.
 
