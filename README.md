@@ -4,7 +4,7 @@
 
 # TeachLink Web
 
-This is the web frontend for the Teachme platform. Built to deliver a responsive, interactive experience for users accessing Teachme via desktop or browser.
+This is the web frontend for the Teachlink platform. Built to deliver a responsive, interactive experience for users accessing Teachlink via desktop or browser.
 
 ## 🛠 Tech Stack
 - React.js (Vite or Next.js)
@@ -17,7 +17,7 @@ This is the web frontend for the Teachme platform. Built to deliver a responsive
 
 ```bash
 git clone https://github.com/your-org/teachlink-web.git
-cd teachme-web
+cd teachlink-web
 cp .env.example .env
 npm install
 npm run dev
@@ -42,4 +42,50 @@ src/
 ├── services/
 ├── hooks/
 └── utils/
-Let make our code clean, maintanable and scalable
+
+ROADMAP
+PHASE 1: Core MVC Development
+🎯 Goal: Build the foundational structure and core user flows.
+
+Web Frontend (React)
+
+Auth + registration flow
+
+Knowledge feed & detail view
+
+Creator dashboard UI
+
+Upload interface
+
+🔹 PHASE 2: Advanced Features & Web3 Integration
+🎯 Goal: Add interaction, monetization, and decentralized logic.
+
+Frontend & Mobile
+
+Messaging UI, notifications center
+
+Booking interface & consultation flow
+
+Wallet connect + Web3 transaction feedback
+
+Creator analytics dashboard
+
+🔹 PHASE 3: Launch, Scaling & Optimization
+🎯 Goal: Polish UX, secure platform, and deploy to production.
+
+CI/CD pipelines for all apps
+
+End-to-end testing and security audits
+
+API docs (Swagger), frontend docs
+
+Deploy contracts to mainnet
+
+App store deployment (iOS/Android)
+
+Community launch & onboarding flow
+
+Web3 rewards & referral program (optional)
+
+✅ Outcome: A scalable, token-driven learning platform where creators monetize knowledge, learners access premium content, and all users interact securely — powered by Web2 + Web3.
+
