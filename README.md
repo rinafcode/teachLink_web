@@ -2,7 +2,7 @@
 ### 🌐 `web/README.md`
 
 
-# Teachme Web
+# TeachLink Web
 
 This is the web frontend for the Teachme platform. Built to deliver a responsive, interactive experience for users accessing Teachme via desktop or browser.
 
@@ -16,7 +16,7 @@ This is the web frontend for the Teachme platform. Built to deliver a responsive
 ## 🔧 Getting Started
 
 ```bash
-git clone https://github.com/your-org/teachme-web.git
+git clone https://github.com/your-org/teachlink-web.git
 cd teachme-web
 cp .env.example .env
 npm install
@@ -42,3 +42,4 @@ src/
 ├── services/
 ├── hooks/
 └── utils/
+Let make our code clean, maintanable and scalable
