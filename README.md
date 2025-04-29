@@ -47,7 +47,7 @@ ROADMAP
 PHASE 1: Core MVC Development
 🎯 Goal: Build the foundational structure and core user flows.
 
-Web Frontend (React)
+Web Frontend ( Next)
 
 Auth + registration flow
 
@@ -88,4 +88,6 @@ Community launch & onboarding flow
 Web3 rewards & referral program (optional)
 
 ✅ Outcome: A scalable, token-driven learning platform where creators monetize knowledge, learners access premium content, and all users interact securely — powered by Web2 + Web3.
+
+let make our code clean, maintainable and scallable. Keep to Standard
 
