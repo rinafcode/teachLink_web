@@ -128,6 +128,8 @@ Feature must align with roadmap/issue description
 
 Must include working UI with no console errors
 
+Must use lucide icons for consistent usage throughout the app
+
 Must use Starknet best practices for wallet/contract interactions
 
 Use Tailwind CSS with responsive design
