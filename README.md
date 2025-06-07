@@ -84,6 +84,7 @@ Copy
 Edit
 NEXT_PUBLIC_STARKNET_NETWORK=testnet
 NEXT_PUBLIC_INDEXER_API_URL=https://indexer.teachlink.xyz
+NEXT_PUBLIC_API_URL=your-api-url
 Run the development server
 
 bash
@@ -142,4 +143,76 @@ let make our code clean, maintainable and scallable. Keep to Standard
 
 📜 License
 MIT © 2025 TeachLink DAO
+
+# Frontend Authentication System
+
+This folder contains an enhanced authentication system built with React, Vite, and framer-motion animations.
+
+## Features
+
+- **Animated Login & Signup Pages** with smooth transitions
+- **Enhanced Form Validation** using react-hook-form + zod
+- **Responsive Design** with Tailwind CSS
+- **Reusable Components** with built-in animations
+- **TypeScript Support** with strict type checking
+
+## Components
+
+### Pages
+- `LoginPage` - Animated login page with form validation
+- `SignupPage` - Animated signup page with password confirmation
+
+### Components
+- `AuthLayout` - Animated layout wrapper with background effects
+- `AuthCard` - Card component with hover animations
+- `FormInput` - Enhanced input with focus animations and error handling
+- `AnimatedButton` - Button with loading states and hover effects
+- `LoginForm` - Login form with validation
+- `SignupForm` - Signup form with enhanced validation
+
+### Validation
+- `validationSchemas.ts` - Zod schemas for form validation
+- Email format validation
+- Password strength requirements
+- Password confirmation matching
+
+## Usage
+
+```tsx
+import { LoginPage, SignupPage } from '@/frontendauth';
+
+// Use in your routing
+<Route path="/frontend-auth/login" element={<LoginPage />} />
+<Route path="/frontend-auth/signup" element={<SignupPage />} />
+```
+
+## Animations
+
+- **Page transitions** - Fade and slide animations on mount
+- **Form elements** - Staggered entrance animations
+- **Input focus** - Scale and border color transitions
+- **Button interactions** - Hover and loading state animations
+- **Error messages** - Smooth slide-in error displays
+- **Background effects** - Subtle rotating gradient orbs
+
+## Validation Rules
+
+### Login
+- Email: Required, valid email format
+- Password: Required, minimum 6 characters
+
+### Signup
+- Name: Required, 2-50 characters
+- Email: Required, valid email format
+- Password: Required, minimum 8 characters, must contain uppercase, lowercase, and number
+- Confirm Password: Must match password
+
+## Mock API Integration
+
+Forms are set up to work with mock API endpoints:
+- Login: `/api/auth/login`
+- Signup: `/api/auth/signup`
+
+Success and error states are handled with toast notifications.
+
 
