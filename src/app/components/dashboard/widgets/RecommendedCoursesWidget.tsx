@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Star, Clock, Users } from 'lucide-react';
+import { BookOpen, Star, Clock, Users, Settings } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -23,6 +23,9 @@ interface RecommendedCoursesWidgetProps {
   onToggleCollapse: () => void;
   onUpdateSettings: (settings: Record<string, any>) => void;
   onRemove: () => void;
+  size: 'small' | 'medium' | 'large';
+  onChangeSize: (size: 'small' | 'medium' | 'large') => void;
+  onUpdateTitle: (title: string) => void;
 }
 
 export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> = ({
@@ -32,8 +35,35 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
   settings,
   onToggleCollapse,
   onUpdateSettings,
-  onRemove
+  onRemove,
+  size,
+  onChangeSize,
+  onUpdateTitle
 }) => {
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [tempTitle, setTempTitle] = useState(title);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { setTempTitle(title); }, [title]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await new Promise((r) => setTimeout(r, 150));
+        if (cancelled) return;
+      } catch (e) {
+        if (!cancelled) setError('Failed to load recommendations');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
   // Mock recommended courses
   const recommendedCourses: Course[] = [
     {
@@ -119,6 +149,13 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
           </div>
           <div className="flex items-center space-x-2">
             <button
+              onClick={() => setIsConfigOpen((v) => !v)}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Widget settings"
+            >
+              <Settings size={16} />
+            </button>
+            <button
               onClick={onToggleCollapse}
               className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
             >
@@ -132,10 +169,49 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
             </button>
           </div>
         </div>
+        {isConfigOpen && (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Title</label>
+              <input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={() => {
+                  const t = tempTitle.trim();
+                  if (t) onUpdateTitle(t); else setTempTitle(title);
+                }}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Size</label>
+              <select
+                value={size}
+                onChange={(e) => onChangeSize(e.target.value as any)}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Category</label>
+              <input
+                value={settings.category ?? ''}
+                onChange={(e) => onUpdateSettings({ category: e.target.value })}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+                placeholder="e.g. Web Development"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-4">
+        {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
+        {error && <div className="text-sm text-red-600">{error}</div>}
         {recommendedCourses.map((course, index) => (
           <motion.div
             key={course.id}

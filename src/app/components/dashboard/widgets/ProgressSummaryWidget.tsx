@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, BookOpen, Award, Clock } from 'lucide-react';
+import { TrendingUp, BookOpen, Award, Clock, Settings } from 'lucide-react';
 
 interface ProgressSummaryWidgetProps {
   id: string;
@@ -11,6 +11,9 @@ interface ProgressSummaryWidgetProps {
   onToggleCollapse: () => void;
   onUpdateSettings: (settings: Record<string, any>) => void;
   onRemove: () => void;
+  size: 'small' | 'medium' | 'large';
+  onChangeSize: (size: 'small' | 'medium' | 'large') => void;
+  onUpdateTitle: (title: string) => void;
 }
 
 export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
@@ -20,8 +23,39 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
   settings,
   onToggleCollapse,
   onUpdateSettings,
-  onRemove
+  onRemove,
+  size,
+  onChangeSize,
+  onUpdateTitle
 }) => {
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [tempTitle, setTempTitle] = useState(title);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTempTitle(title);
+  }, [title]);
+
+  // Simulated data fetching with error handling
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Placeholder for real API call; using mock data fallback
+        await new Promise((res) => setTimeout(res, 150));
+        if (cancelled) return;
+      } catch (e: any) {
+        if (!cancelled) setError('Failed to load progress data');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
   // Mock data - in real app, this would come from API
   const weeklyProgress = [
     { day: 'Mon', completed: 4, planned: 6 },
@@ -79,23 +113,78 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <button
+              onClick={() => setIsConfigOpen((v) => !v)}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Widget settings"
+            >
+              <Settings size={16} />
+            </button>
+            <button
               onClick={onToggleCollapse}
               className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Collapse widget"
             >
               <TrendingUp size={16} />
             </button>
             <button
               onClick={onRemove}
               className="p-1 text-red-400 hover:text-red-600 transition-colors"
+              aria-label="Remove widget"
             >
               ×
             </button>
           </div>
         </div>
+        {isConfigOpen && (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Title</label>
+              <input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={() => {
+                  const trimmed = tempTitle.trim();
+                  if (trimmed) onUpdateTitle(trimmed);
+                  else setTempTitle(title);
+                }}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+                placeholder="Widget title"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Size</label>
+              <select
+                value={size}
+                onChange={(e) => onChangeSize(e.target.value as any)}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Refresh</label>
+              <select
+                value={settings.refreshInterval ?? 'manual'}
+                onChange={(e) => onUpdateSettings({ refreshInterval: e.target.value })}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              >
+                <option value="30s">30 seconds</option>
+                <option value="1m">1 minute</option>
+                <option value="5m">5 minutes</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-6">
+        {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
+        {error && <div className="text-sm text-red-600">{error}</div>}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
           {stats.map((stat, index) => (

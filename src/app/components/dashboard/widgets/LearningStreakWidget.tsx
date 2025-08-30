@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Calendar, Trophy, Target } from 'lucide-react';
+import { Flame, Calendar, Trophy, Target, Settings } from 'lucide-react';
 
 interface LearningStreakWidgetProps {
   id: string;
@@ -10,6 +10,9 @@ interface LearningStreakWidgetProps {
   onToggleCollapse: () => void;
   onUpdateSettings: (settings: Record<string, any>) => void;
   onRemove: () => void;
+  size: 'small' | 'medium' | 'large';
+  onChangeSize: (size: 'small' | 'medium' | 'large') => void;
+  onUpdateTitle: (title: string) => void;
 }
 
 export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
@@ -19,7 +22,10 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
   settings,
   onToggleCollapse,
   onUpdateSettings,
-  onRemove
+  onRemove,
+  size,
+  onChangeSize,
+  onUpdateTitle
 }) => {
   // Mock streak data
   const currentStreak = 7;
@@ -27,6 +33,30 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
   const weeklyGoal = 5;
   const weeklyProgress = 4;
   const monthlyHours = 45;
+
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [tempTitle, setTempTitle] = useState(title);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { setTempTitle(title); }, [title]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await new Promise((r) => setTimeout(r, 150));
+        if (cancelled) return;
+      } catch (e) {
+        if (!cancelled) setError('Failed to load streak data');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const streakDays = Array.from({ length: 30 }, (_, i) => {
     const date = new Date();
@@ -69,6 +99,13 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <button
+              onClick={() => setIsConfigOpen((v) => !v)}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Widget settings"
+            >
+              <Settings size={16} />
+            </button>
+            <button
               onClick={onToggleCollapse}
               className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
             >
@@ -82,10 +119,56 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
             </button>
           </div>
         </div>
+        {isConfigOpen && (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Title</label>
+              <input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={() => {
+                  const t = tempTitle.trim();
+                  if (t) onUpdateTitle(t); else setTempTitle(title);
+                }}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Size</label>
+              <select
+                value={size}
+                onChange={(e) => onChangeSize(e.target.value as any)}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Weekly Goal</label>
+              <input
+                type="number"
+                value={settings.weeklyGoal ?? 5}
+                min={1}
+                max={7}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (Number.isFinite(val) && val >= 1 && val <= 7) {
+                    onUpdateSettings({ weeklyGoal: val });
+                  }
+                }}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-4">
+        {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
+        {error && <div className="text-sm text-red-600">{error}</div>}
         {/* Current Streak */}
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-2">

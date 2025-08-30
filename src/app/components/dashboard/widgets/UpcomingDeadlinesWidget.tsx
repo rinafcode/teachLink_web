@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, AlertTriangle, CheckCircle, Calendar } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle, Calendar, Settings } from 'lucide-react';
 import { format, addDays, isAfter, isBefore, isToday } from 'date-fns';
 
 interface Deadline {
@@ -21,6 +21,9 @@ interface UpcomingDeadlinesWidgetProps {
   onToggleCollapse: () => void;
   onUpdateSettings: (settings: Record<string, any>) => void;
   onRemove: () => void;
+  size: 'small' | 'medium' | 'large';
+  onChangeSize: (size: 'small' | 'medium' | 'large') => void;
+  onUpdateTitle: (title: string) => void;
 }
 
 export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = ({
@@ -30,8 +33,35 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
   settings,
   onToggleCollapse,
   onUpdateSettings,
-  onRemove
+  onRemove,
+  size,
+  onChangeSize,
+  onUpdateTitle
 }) => {
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [tempTitle, setTempTitle] = useState(title);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { setTempTitle(title); }, [title]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await new Promise((r) => setTimeout(r, 150));
+        if (cancelled) return;
+      } catch (e) {
+        if (!cancelled) setError('Failed to load deadlines');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
   // Mock deadlines data
   const deadlines: Deadline[] = [
     {
@@ -163,6 +193,13 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
             <h3 className="font-semibold text-gray-900">{title}</h3>
           </div>
           <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsConfigOpen((v) => !v)}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Widget settings"
+            >
+              <Settings size={16} />
+            </button>
             <span className="text-sm text-gray-500">
               {sortedDeadlines.length} pending
             </span>
@@ -180,10 +217,51 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
             </button>
           </div>
         </div>
+        {isConfigOpen && (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Title</label>
+              <input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={() => {
+                  const trimmed = tempTitle.trim();
+                  if (trimmed) onUpdateTitle(trimmed); else setTempTitle(title);
+                }}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Size</label>
+              <select
+                value={size}
+                onChange={(e) => onChangeSize(e.target.value as any)}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Show Completed</label>
+              <select
+                value={settings.showCompleted ? 'yes' : 'no'}
+                onChange={(e) => onUpdateSettings({ showCompleted: e.target.value === 'yes' })}
+                className="w-full px-2 py-1 border border-gray-300 rounded"
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-4">
+        {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
+        {error && <div className="text-sm text-red-600">{error}</div>}
         {/* Upcoming Deadlines */}
         <div>
           <h4 className="text-sm font-medium text-gray-900 mb-3">Upcoming Deadlines</h4>
