@@ -14,7 +14,9 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   rectSortingStrategy,
+  useSortable,
 } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Settings, Plus, Grid3X3 } from 'lucide-react';
 import { ProgressSummaryWidget } from './widgets/ProgressSummaryWidget';
 import { UpcomingDeadlinesWidget } from './widgets/UpcomingDeadlinesWidget';
@@ -38,6 +40,22 @@ interface DashboardGridProps {
   onWidgetChange?: (widgets: Widget[]) => void;
 }
 
+// Sortable wrapper for grid items
+const SortableItem: React.FC<{ id: string; children: React.ReactNode; }> = ({ id, children }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    cursor: 'grab'
+  };
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </div>
+  );
+};
+
 export const DashboardGrid: React.FC<DashboardGridProps> = ({
   widgets: initialWidgets = [],
   onWidgetChange
@@ -57,29 +75,40 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
 
   // Load saved layout on mount
   useEffect(() => {
-    const savedLayout = loadWidgetLayout();
-    if (savedLayout.length > 0) {
-      setWidgets(savedLayout);
-    } else if (initialWidgets.length > 0) {
-      setWidgets(initialWidgets);
+    try {
+      const savedLayout = loadWidgetLayout();
+      if (Array.isArray(savedLayout) && savedLayout.length > 0) {
+        setWidgets(savedLayout);
+      } else if (initialWidgets.length > 0) {
+        setWidgets(initialWidgets);
+      }
+    } catch (error) {
+      console.error('Error loading widget layout', error);
+      if (initialWidgets.length > 0) setWidgets(initialWidgets);
     }
   }, [initialWidgets, loadWidgetLayout]);
 
   // Save layout when widgets change
   useEffect(() => {
-    saveWidgetLayout(widgets);
-    onWidgetChange?.(widgets);
+    try {
+      saveWidgetLayout(widgets);
+      onWidgetChange?.(widgets);
+    } catch (error) {
+      console.error('Error saving widget layout', error);
+    }
   }, [widgets, saveWidgetLayout, onWidgetChange]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    if (!active?.id || !over?.id) return; // validate
 
-    if (active.id !== over?.id) {
+    if (active.id !== over.id) {
       setWidgets((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over?.id);
-
-        return arrayMove(items, oldIndex, newIndex);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        if (oldIndex === -1 || newIndex === -1) return items;
+        const reordered = arrayMove(items, oldIndex, newIndex).map((w, idx) => ({ ...w, position: idx }));
+        return reordered;
       });
     }
   };
@@ -100,15 +129,38 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
     ));
   };
 
+  const updateWidgetTitle = (widgetId: string, title: string) => {
+    const trimmed = (title ?? '').trim();
+    if (!trimmed) return; // simple validation
+    setWidgets(prev => prev.map(widget =>
+      widget.id === widgetId
+        ? { ...widget, title: trimmed }
+        : widget
+    ));
+  };
+
+  const changeWidgetSize = (widgetId: string, size: 'small' | 'medium' | 'large') => {
+    if (!['small', 'medium', 'large'].includes(size)) return; // validate
+    setWidgets(prev => prev.map(widget =>
+      widget.id === widgetId
+        ? { ...widget, size }
+        : widget
+    ));
+  };
+
   const removeWidget = (widgetId: string) => {
-    setWidgets(prev => prev.filter(widget => widget.id !== widgetId));
+    setWidgets(prev => prev.filter(widget => widget.id !== widgetId).map((w, idx) => ({ ...w, position: idx })));
   };
 
   const addWidget = (type: string, title: string) => {
+    const trimmedTitle = (title ?? '').trim();
+    if (!trimmedTitle) return;
+    const validTypes = ['progress-summary', 'upcoming-deadlines', 'recommended-courses', 'learning-streak', 'recent-activity'];
+    if (!validTypes.includes(type)) return;
     const newWidget: Widget = {
       id: `${type}-${Date.now()}`,
       type,
-      title,
+      title: trimmedTitle,
       size: 'medium',
       position: widgets.length,
       isCollapsed: false,
@@ -127,8 +179,11 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       settings: widget.settings,
       onToggleCollapse: () => toggleWidgetCollapse(widget.id),
       onUpdateSettings: (settings: Record<string, any>) => updateWidgetSettings(widget.id, settings),
-      onRemove: () => removeWidget(widget.id)
-    };
+      onRemove: () => removeWidget(widget.id),
+      size: widget.size as 'small' | 'medium' | 'large',
+      onChangeSize: (size: 'small' | 'medium' | 'large') => changeWidgetSize(widget.id, size),
+      onUpdateTitle: (newTitle: string) => updateWidgetTitle(widget.id, newTitle)
+    } as any;
 
     switch (widget.type) {
       case 'progress-summary':
@@ -280,16 +335,17 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
           <SortableContext items={widgets.map(w => w.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {widgets.map((widget) => (
-                <motion.div
-                  key={widget.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className={`${getGridCols(widget.size)}`}
-                >
-                  {getWidgetComponent(widget)}
-                </motion.div>
+                <SortableItem key={widget.id} id={widget.id}>
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className={`${getGridCols(widget.size)}`}
+                  >
+                    {getWidgetComponent(widget)}
+                  </motion.div>
+                </SortableItem>
               ))}
             </div>
           </SortableContext>
