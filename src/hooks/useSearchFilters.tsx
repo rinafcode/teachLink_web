@@ -18,21 +18,19 @@ export const useSearchFilters = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Initialize state from URL params
   const [filters, setFiltersState] = useState<FilterState>({
     difficulty: searchParams.get('difficulty')?.split(',').filter(Boolean) || [],
     topics: searchParams.get('topics')?.split(',').filter(Boolean) || [],
     duration: searchParams.get('duration') ? Number(searchParams.get('duration')) : 100,
-    priceRange: searchParams.get('price') ? Number(searchParams.get('price')) : 500,
+    priceRange: searchParams.get('price') ? Number(searchParams.get('price')) : 200,
     sort: searchParams.get('sort') || 'relevance',
     instructor: searchParams.get('instructor') || '',
     searchTerm: searchParams.get('q') || ''
   });
 
-  // Sync URL with state changes
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     if (filters.difficulty && filters.difficulty.length > 0) {
       params.set('difficulty', filters.difficulty.join(','));
     }
@@ -42,7 +40,7 @@ export const useSearchFilters = () => {
     if (filters.duration !== 100) {
       params.set('duration', filters.duration.toString());
     }
-    if (filters.priceRange !== 500) {
+    if (filters.priceRange !== 200) {
       params.set('price', filters.priceRange.toString());
     }
     if (filters.sort && filters.sort !== 'relevance') {
@@ -59,7 +57,6 @@ export const useSearchFilters = () => {
     router.replace(newUrl, { scroll: false });
   }, [filters, pathname, router]);
 
-  // Update filters function
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
     setFiltersState(prev => ({
       ...prev,
@@ -67,13 +64,12 @@ export const useSearchFilters = () => {
     }));
   }, []);
 
-  // Reset filters function
   const resetFilters = useCallback(() => {
     setFiltersState({
       difficulty: [],
       topics: [],
       duration: 100,
-      priceRange: 500,
+      priceRange: 200,
       sort: 'relevance',
       instructor: '',
       searchTerm: ''
