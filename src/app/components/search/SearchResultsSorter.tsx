@@ -1,35 +1,33 @@
 'use client';
 
-import { useSearchStore } from '@/store/searchStore';
+import React from 'react';
+import { ChevronDown } from 'lucide-react';
 
-const sortOptions = [
-  { value: 'relevance', label: 'Most Relevant' },
-  { value: 'newest', label: 'Newest First' },
-  { value: 'price-low', label: 'Price: Low to High' },
-  { value: 'price-high', label: 'Price: High to Low' },
-  { value: 'rating', label: 'Highest Rated' },
-];
+interface SearchResultsSorterProps {
+  value: string;
+  onChange: (value: string) => void;
+}
 
-export default function SearchResultsSorter() {
-  const { sortBy, setSortBy } = useSearchStore();
-
+export const SearchResultsSorter: React.FC<SearchResultsSorterProps> = ({ value, onChange }) => {
   return (
-    <div className="flex items-center space-x-2">
-      <label htmlFor="sort" className="text-sm font-medium text-gray-700">
-        Sort by:
-      </label>
-      <select
-        id="sort"
-        value={sortBy}
-        onChange={(e) => setSortBy(e.target.value)}
-        className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-      >
-        {sortOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+    <div className="flex items-center gap-3">
+      <span className="text-xs font-mono text-slate-500 uppercase">Sort_Sequence:</span>
+      <div className="relative">
+        <select 
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="bg-[#0a1120] border border-primary/30 text-primary text-sm pl-4 pr-10 py-2 focus:ring-1 focus:ring-primary focus:border-primary clip-corner appearance-none font-mono cursor-pointer hover:bg-primary/5 transition-colors"
+        >
+          <option value="popularity">POPULARITY</option>
+          <option value="newest">NEWEST_FIRST</option>
+          <option value="price_asc">PRICE_ASC</option>
+          <option value="price_desc">PRICE_DESC</option>
+          <option value="rating">RATING_HIGH</option>
+        </select>
+        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
+      </div>
     </div>
   );
-} 
+};
+
+export default SearchResultsSorter;
