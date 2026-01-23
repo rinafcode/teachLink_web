@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import StudyGroupsPage from '@/app/pages/StudyGroups';
+import StudyGroupsPage from '../pages/StudyGroups';
 
 export const metadata: Metadata = {
   title: 'Study Groups | TeachLink',

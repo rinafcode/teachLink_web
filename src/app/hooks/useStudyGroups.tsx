@@ -172,35 +172,49 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   }, [me.id, me.name]);
 
   const joinGroup = useCallback<UseStudyGroupsApi["joinGroup"]>((groupId) => {
+    let groupName: string | undefined;
     setGroups((prev) => {
-      const next = prev.map((g) =>
-        g.id === groupId && !g.members.some((m) => m.id === me.id)
-          ? { ...g, members: [...g.members, { id: me.id, name: me.name }] }
-          : g
-      );
+      const next = prev.map((g) => {
+        if (g.id === groupId && !g.members.some((m) => m.id === me.id)) {
+          groupName = g.name;
+          return { ...g, members: [...g.members, { id: me.id, name: me.name }] };
+        }
+        return g;
+      });
       save(STORAGE_KEYS.groups, next);
       return next;
     });
     try {
       const { addNotification } = useNotificationStore.getState();
-      addNotification({ type: 'info', message: 'Joined a group', meta: { groupId } });
+      addNotification({ 
+        type: 'info', 
+        message: `You joined "${groupName || 'group'}"`, 
+        meta: { groupId } 
+      });
     } catch {}
     toast.success("Joined group");
   }, [me.id, me.name]);
 
   const leaveGroup = useCallback<UseStudyGroupsApi["leaveGroup"]>((groupId) => {
+    let groupName: string | undefined;
     setGroups((prev) => {
-      const next = prev.map((g) =>
-        g.id === groupId
-          ? { ...g, members: g.members.filter((m) => m.id !== me.id) }
-          : g
-      );
+      const next = prev.map((g) => {
+        if (g.id === groupId) {
+          groupName = g.name;
+          return { ...g, members: g.members.filter((m) => m.id !== me.id) };
+        }
+        return g;
+      });
       save(STORAGE_KEYS.groups, next);
       return next;
     });
     try {
       const { addNotification } = useNotificationStore.getState();
-      addNotification({ type: 'warning', message: 'Left a group', meta: { groupId } });
+      addNotification({ 
+        type: 'warning', 
+        message: `You left "${groupName || 'group'}"`, 
+        meta: { groupId } 
+      });
     } catch {}
     toast("Left group", { icon: "👋" });
   }, [me.id]);
@@ -222,11 +236,16 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     });
     try {
       const { addNotification } = useNotificationStore.getState();
-      addNotification({ type: 'info', message: 'New group message posted', meta: { groupId } });
+      const group = groups.find(g => g.id === groupId);
+      addNotification({ 
+        type: 'info', 
+        message: `New message in "${group?.name || 'group'}"`, 
+        meta: { groupId, messageId: msg.id } 
+      });
     } catch {}
     toast.success("Message posted");
     return msg;
-  }, [me.id, me.name]);
+  }, [me.id, me.name, groups]);
 
   const addResource = useCallback<UseStudyGroupsApi["addResource"]>((groupId, resource) => {
     const res: GroupResource = {
@@ -246,11 +265,16 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     });
     try {
       const { addNotification } = useNotificationStore.getState();
-      addNotification({ type: 'success', message: 'New resource added', meta: { groupId } });
+      const group = groups.find(g => g.id === groupId);
+      addNotification({ 
+        type: 'success', 
+        message: `New resource "${resource.title}" added to "${group?.name || 'group'}"`, 
+        meta: { groupId, resourceId: res.id } 
+      });
     } catch {}
     toast.success("Resource added");
     return res;
-  }, [me.id, me.name]);
+  }, [me.id, me.name, groups]);
 
   const createChallenge = useCallback<UseStudyGroupsApi["createChallenge"]>((groupId, challenge) => {
     const ch: GroupChallenge = {
@@ -271,17 +295,26 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     });
     try {
       const { addNotification } = useNotificationStore.getState();
-      addNotification({ type: 'success', message: 'New challenge created', meta: { groupId } });
+      const group = groups.find(g => g.id === groupId);
+      addNotification({ 
+        type: 'success', 
+        message: `New challenge "${challenge.title}" created in "${group?.name || 'group'}"`, 
+        meta: { groupId, challengeId: ch.id } 
+      });
     } catch {}
     toast.success("Challenge created");
     return ch;
-  }, []);
+  }, [groups]);
 
   const updateChallengeProgress = useCallback<UseStudyGroupsApi["updateChallengeProgress"]>((challengeId, progress) => {
     let updated: GroupChallenge | undefined;
+    let challengeTitle: string | undefined;
+    let groupId: string | undefined;
     setChallenges((prev) => {
       const next = prev.map((c) => {
         if (c.id !== challengeId) return c;
+        challengeTitle = c.title;
+        groupId = c.groupId;
         const existing = c.progress.find((p) => p.userId === me.id);
         const now = new Date().toISOString();
         const updatedProgress: ChallengeProgress = {
@@ -302,12 +335,17 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     if (updated) {
       try {
         const { addNotification } = useNotificationStore.getState();
-        addNotification({ type: 'info', message: 'Challenge progress updated', meta: { challengeId } });
+        const group = groups.find(g => g.id === groupId);
+        addNotification({ 
+          type: 'info', 
+          message: `Progress updated for "${challengeTitle || 'challenge'}" in "${group?.name || 'group'}"`, 
+          meta: { challengeId, groupId } 
+        });
       } catch {}
       toast.success("Progress updated");
     }
     return updated;
-  }, [me.id, me.name]);
+  }, [me.id, me.name, groups]);
 
   const groupMessages = useCallback<UseStudyGroupsApi["groupMessages"]>((groupId) => {
     return messages
