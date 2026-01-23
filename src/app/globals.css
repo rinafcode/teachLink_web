@@ -13,9 +13,11 @@
   --font-display: "Space Grotesk", sans-serif;
 
   /* Custom Theme Colors - Updated per Design */
-  --color-primary: #0066FF; /* Electric Blue */
+  --color-primary: #0066FF;
+  /* Electric Blue */
   --color-primary-hover: #0052CC;
-  --color-secondary: #00C2FF; /* Cyan/Tech Blue */
+  --color-secondary: #00C2FF;
+  /* Cyan/Tech Blue */
   --color-surface: #ffffff;
   --color-surface-subtle: #F8FAFC;
   --color-border-color: #E2E8F0;
@@ -26,7 +28,7 @@
   --shadow-glass: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
   --shadow-glow: 0 0 15px rgba(0, 102, 255, 0.15);
   --shadow-glow-strong: 0 0 20px rgba(0, 102, 255, 0.3);
-  
+
   --background-image-grid-pattern: linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
 }
 
@@ -34,7 +36,7 @@
   :root {
     /* Keeping light mode defaults as per provided design for now, 
        but setup for dark mode override if needed later */
-    --background: #ffffff; 
+    --background: #ffffff;
     --foreground: #0F172A;
   }
 }
@@ -46,62 +48,67 @@ body {
 }
 
 @layer utilities {
-    .grid-bg {
-        background-size: 40px 40px;
-        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-        -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-    }
+  .grid-bg {
+    background-size: 40px 40px;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+  }
 
-    .glass-panel {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(226, 232, 240, 0.8);
-    }
-    
-    /* Updated Range Input Styling specific to design */
-    input[type=range] {
-        -webkit-appearance: none;
-        appearance: none; 
-        height: 2px;
-        background-color: #e2e8f0;
-        width: 100%;
-        outline: none;
-    }
-    input[type=range]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        height: 16px;
-        width: 16px;
-        border-radius: 50%;
-        background: #ffffff;
-        border: 2px solid var(--color-primary);
-        cursor: pointer;
-        box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
-        margin-top: -7px; /* Align thumb to track */
-    }
-    /* Firefox */
-    input[type=range]::-moz-range-thumb {
-        height: 16px;
-        width: 16px;
-        border-radius: 50%;
-        background: #ffffff;
-        border: 2px solid var(--color-primary);
-        cursor: pointer;
-        box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
-    }
-    input[type=range]::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 4px;
-        cursor: pointer;
-        background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
-        border-radius: 0;
-    }
-    input[type=range]::-moz-range-track {
-        width: 100%;
-        height: 4px;
-        cursor: pointer;
-        background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
-        border-radius: 0;
-    }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
+  /* Updated Range Input Styling specific to design */
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 2px;
+    background-color: #e2e8f0;
+    width: 100%;
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--color-primary);
+    cursor: pointer;
+    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
+    margin-top: -7px;
+    /* Align thumb to track */
+  }
+
+  /* Firefox */
+  input[type=range]::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--color-primary);
+    cursor: pointer;
+    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+    border-radius: 0;
+  }
+
+  input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
+    border-radius: 0;
+  }
 }
