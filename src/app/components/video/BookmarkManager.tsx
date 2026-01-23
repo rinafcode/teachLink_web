@@ -17,7 +17,7 @@ interface BookmarkManagerProps {
   onBookmark?: (bookmark: { time: number; title: string; note?: string }) => void;
 }
 
-export const BookmarkManager: React.FC<BookmarkManagerProps> = ({
+export const BookmarkManager: React.FC<BookmarkManagerProps> = React.memo(({
   currentTime,
   duration,
   onSeek,
@@ -271,4 +271,4 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({
       </div>
     </div>
   );
-}; 
+}); 
