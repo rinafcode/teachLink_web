@@ -91,17 +91,21 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       console.error('Error loading widget layout', error);
       if (initialWidgets.length > 0) setWidgets(initialWidgets);
     }
-  }, [initialWidgets, loadWidgetLayout]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
-  // Save layout when widgets change
+  // Save layout when widgets change (but not on initial load)
   useEffect(() => {
+    if (widgets.length === 0) return; // Don't save empty state
+    
     try {
       saveWidgetLayout(widgets);
       onWidgetChange?.(widgets);
     } catch (error) {
       console.error('Error saving widget layout', error);
     }
-  }, [widgets, saveWidgetLayout, onWidgetChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [widgets]); // Only depend on widgets, not the functions
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -177,7 +181,6 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
 
   const getWidgetComponent = (widget: Widget) => {
     const commonProps = {
-      key: widget.id,
       id: widget.id,
       title: widget.title,
       isCollapsed: widget.isCollapsed,
@@ -188,23 +191,23 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       size: widget.size as 'small' | 'medium' | 'large',
       onChangeSize: (size: 'small' | 'medium' | 'large') => changeWidgetSize(widget.id, size),
       onUpdateTitle: (newTitle: string) => updateWidgetTitle(widget.id, newTitle)
-    } as any;
+    };
 
     switch (widget.type) {
       case 'progress-summary':
-        return <ProgressSummaryWidget {...commonProps} />;
+        return <ProgressSummaryWidget key={widget.id} {...commonProps} />;
       case 'upcoming-deadlines':
-        return <UpcomingDeadlinesWidget {...commonProps} />;
+        return <UpcomingDeadlinesWidget key={widget.id} {...commonProps} />;
       case 'recommended-courses':
-        return <RecommendedCoursesWidget {...commonProps} />;
+        return <RecommendedCoursesWidget key={widget.id} {...commonProps} />;
       case 'learning-streak':
-        return <LearningStreakWidget {...commonProps} />;
+        return <LearningStreakWidget key={widget.id} {...commonProps} />;
       case 'recent-activity':
-        return <RecentActivityWidget {...commonProps} />;
+        return <RecentActivityWidget key={widget.id} {...commonProps} />;
       case 'recent-sales':
-        return <RecentSalesWidget {...commonProps} />;
+        return <RecentSalesWidget key={widget.id} {...commonProps} />;
       default:
-        return <div>Unknown widget type: {widget.type}</div>;
+        return <div key={widget.id}>Unknown widget type: {widget.type}</div>;
     }
   };
 
