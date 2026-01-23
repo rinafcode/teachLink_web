@@ -12,7 +12,7 @@ interface CourseHeroProps {
 export default function CourseHero({
   title = "Advanced Web Development",
   description = "Master modern web development with this comprehensive course covering frontend and backend technologies.",
-  imageUrl = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3",
+  imageUrl = "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop",
   instructor = "John Doe",
   rating = 4.8,
   enrolledStudents = 1234
