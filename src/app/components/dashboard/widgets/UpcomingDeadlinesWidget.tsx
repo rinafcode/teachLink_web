@@ -1,16 +1,17 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, AlertTriangle, CheckCircle, Calendar, Settings } from 'lucide-react';
-import { format, addDays, isAfter, isBefore, isToday } from 'date-fns';
+import { Clock, Users, FileText, Settings, Calendar } from 'lucide-react';
+import { format, isToday, isTomorrow, addDays } from 'date-fns';
 
-interface Deadline {
+interface ScheduleEvent {
   id: string;
   title: string;
-  dueDate: Date;
-  course: string;
-  type: 'assignment' | 'quiz' | 'project' | 'exam';
-  priority: 'low' | 'medium' | 'high';
-  completed: boolean;
+  subtitle: string;
+  date: Date;
+  type: 'qa' | 'mentoring' | 'workshop';
+  icon: any;
 }
 
 interface UpcomingDeadlinesWidgetProps {
@@ -43,7 +44,9 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { setTempTitle(title); }, [title]);
+  useEffect(() => {
+    setTempTitle(title);
+  }, [title]);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +57,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
         await new Promise((r) => setTimeout(r, 150));
         if (cancelled) return;
       } catch (e) {
-        if (!cancelled) setError('Failed to load deadlines');
+        if (!cancelled) setError('Failed to load schedule data');
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -62,115 +65,57 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
     return () => { cancelled = true; };
   }, [id]);
 
-  // Mock deadlines data
-  const deadlines: Deadline[] = [
+  // Mock schedule data matching Figma design
+  const events: ScheduleEvent[] = [
     {
       id: '1',
-      title: 'React Fundamentals Quiz',
-      dueDate: addDays(new Date(), 1),
-      course: 'React Development',
-      type: 'quiz',
-      priority: 'high',
-      completed: false
+      title: 'Live Q&A Session',
+      subtitle: 'Intro to Starknet Course',
+      date: new Date(new Date().setHours(14, 0, 0, 0)), // Today, 2:00 PM
+      type: 'qa',
+      icon: Clock
     },
     {
       id: '2',
-      title: 'Final Project Submission',
-      dueDate: addDays(new Date(), 3),
-      course: 'Advanced JavaScript',
-      type: 'project',
-      priority: 'high',
-      completed: false
+      title: '1:1 Mentoring',
+      subtitle: 'With John Smith',
+      date: new Date(addDays(new Date(), 1).setHours(10, 0, 0, 0)), // Tomorrow, 10:00 AM
+      type: 'mentoring',
+      icon: Users
     },
     {
       id: '3',
-      title: 'Database Design Assignment',
-      dueDate: addDays(new Date(), 5),
-      course: 'Database Management',
-      type: 'assignment',
-      priority: 'medium',
-      completed: false
-    },
-    {
-      id: '4',
-      title: 'Midterm Exam',
-      dueDate: addDays(new Date(), 7),
-      course: 'Computer Science',
-      type: 'exam',
-      priority: 'high',
-      completed: false
-    },
-    {
-      id: '5',
-      title: 'Weekly Reflection',
-      dueDate: new Date(),
-      course: 'Learning Strategies',
-      type: 'assignment',
-      priority: 'low',
-      completed: true
+      title: 'Workshop',
+      subtitle: 'Smart Contract Security',
+      date: new Date(addDays(new Date(), 3).setHours(15, 30, 0, 0)), // Fri, 15, 3:30 PM
+      type: 'workshop',
+      icon: FileText
     }
   ];
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-600 bg-red-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+  const formatScheduleDate = (date: Date) => {
+    if (isToday(date)) {
+      return `Today, ${format(date, 'h:mm a')}`;
     }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'quiz': return '📝';
-      case 'project': return '💼';
-      case 'assignment': return '📋';
-      case 'exam': return '📚';
-      default: return '📄';
+    if (isTomorrow(date)) {
+      return `Tomorrow, ${format(date, 'h:mm a')}`;
     }
+    return format(date, 'EEE, d, h:mm a');
   };
-
-  const getDaysUntil = (dueDate: Date) => {
-    const today = new Date();
-    const diffTime = dueDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'Overdue';
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    return `${diffDays} days`;
-  };
-
-  const getUrgencyStatus = (dueDate: Date) => {
-    const today = new Date();
-    const diffTime = dueDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'overdue';
-    if (diffDays <= 1) return 'urgent';
-    if (diffDays <= 3) return 'soon';
-    return 'normal';
-  };
-
-  const sortedDeadlines = deadlines
-    .filter(d => !d.completed)
-    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-
-  const completedDeadlines = deadlines.filter(d => d.completed);
 
   if (isCollapsed) {
     return (
       <motion.div
         layout
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4"
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">{title}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500">{sortedDeadlines.length} pending</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{events.length} events</span>
             <button
               onClick={onToggleCollapse}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               <Clock size={20} />
             </button>
@@ -183,35 +128,34 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
   return (
     <motion.div
       layout
-      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Clock size={20} className="text-orange-600" />
-            <h3 className="font-semibold text-gray-900">{title}</h3>
+            <Clock size={20} className="text-purple-600 dark:text-purple-400" />
+            <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsConfigOpen((v) => !v)}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               aria-label="Widget settings"
             >
               <Settings size={16} />
             </button>
-            <span className="text-sm text-gray-500">
-              {sortedDeadlines.length} pending
-            </span>
             <button
               onClick={onToggleCollapse}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              aria-label="Collapse widget"
             >
               <Clock size={16} />
             </button>
             <button
               onClick={onRemove}
               className="p-1 text-red-400 hover:text-red-600 transition-colors"
+              aria-label="Remove widget"
             >
               ×
             </button>
@@ -220,23 +164,25 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
         {isConfigOpen && (
           <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Title</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Title</label>
               <input
                 value={tempTitle}
                 onChange={(e) => setTempTitle(e.target.value)}
                 onBlur={() => {
                   const trimmed = tempTitle.trim();
-                  if (trimmed) onUpdateTitle(trimmed); else setTempTitle(title);
+                  if (trimmed) onUpdateTitle(trimmed);
+                  else setTempTitle(title);
                 }}
-                className="w-full px-2 py-1 border border-gray-300 rounded"
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                placeholder="Widget title"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Size</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Size</label>
               <select
                 value={size}
                 onChange={(e) => onChangeSize(e.target.value as any)}
-                className="w-full px-2 py-1 border border-gray-300 rounded"
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
               >
                 <option value="small">Small</option>
                 <option value="medium">Medium</option>
@@ -244,11 +190,11 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Show Completed</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Show Completed</label>
               <select
                 value={settings.showCompleted ? 'yes' : 'no'}
                 onChange={(e) => onUpdateSettings({ showCompleted: e.target.value === 'yes' })}
-                className="w-full px-2 py-1 border border-gray-300 rounded"
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
               >
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
@@ -260,110 +206,49 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
 
       {/* Content */}
       <div className="p-4 space-y-4">
-        {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
-        {error && <div className="text-sm text-red-600">{error}</div>}
-        {/* Upcoming Deadlines */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Upcoming Deadlines</h4>
-          <div className="space-y-3">
-            {sortedDeadlines.slice(0, 4).map((deadline, index) => {
-              const urgencyStatus = getUrgencyStatus(deadline.dueDate);
-              const isUrgent = urgencyStatus === 'urgent' || urgencyStatus === 'overdue';
-              
-              return (
-                <motion.div
-                  key={deadline.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`p-3 rounded-lg border ${
-                    isUrgent 
-                      ? 'border-red-200 bg-red-50' 
-                      : 'border-gray-200 bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3 flex-1">
-                      <span className="text-lg">{getTypeIcon(deadline.type)}</span>
-                      <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-gray-900 truncate">
-                          {deadline.title}
-                        </h5>
-                        <p className="text-sm text-gray-600">{deadline.course}</p>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Calendar size={12} className="text-gray-400" />
-                          <span className="text-xs text-gray-500">
-                            {format(deadline.dueDate, 'MMM dd, yyyy')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(deadline.priority)}`}>
-                        {deadline.priority}
-                      </span>
-                      <div className={`text-xs font-medium ${
-                        urgencyStatus === 'overdue' ? 'text-red-600' :
-                        urgencyStatus === 'urgent' ? 'text-orange-600' :
-                        urgencyStatus === 'soon' ? 'text-yellow-600' :
-                        'text-green-600'
-                      }`}>
-                        {getDaysUntil(deadline.dueDate)}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
+        {isLoading && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+        {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
-        {/* Completed Deadlines */}
-        {completedDeadlines.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Recently Completed</h4>
-            <div className="space-y-2">
-              {completedDeadlines.slice(0, 2).map((deadline) => (
-                <div
-                  key={deadline.id}
-                  className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg"
-                >
-                  <CheckCircle size={16} className="text-green-600" />
+        {/* Subtitle */}
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Your upcoming classes and events.
+        </p>
+
+        {/* Events List */}
+        <div className="space-y-4">
+          {events.map((event, index) => {
+            const Icon = event.icon;
+            return (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center space-x-4 flex-1">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <Icon size={20} className="text-purple-600 dark:text-purple-400" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {deadline.title}
+                    <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-1">
+                      {event.title}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {event.subtitle}
                     </p>
-                    <p className="text-xs text-gray-600">{deadline.course}</p>
                   </div>
-                  <span className="text-xs text-green-600">Completed</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">
-              {sortedDeadlines.filter(d => getUrgencyStatus(d.dueDate) === 'urgent').length}
-            </div>
-            <div className="text-xs text-gray-600">Urgent</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">
-              {sortedDeadlines.filter(d => getUrgencyStatus(d.dueDate) === 'soon').length}
-            </div>
-            <div className="text-xs text-gray-600">Soon</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {completedDeadlines.length}
-            </div>
-            <div className="text-xs text-gray-600">Completed</div>
-          </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                    {formatScheduleDate(event.date)}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </motion.div>
   );
-}; 
+};
