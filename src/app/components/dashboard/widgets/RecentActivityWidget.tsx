@@ -1,15 +1,18 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, BookOpen, Award, Clock, CheckCircle } from 'lucide-react';
+import { Activity, Settings, Clock } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 
 interface ActivityItem {
   id: string;
-  type: 'course_completed' | 'lesson_started' | 'quiz_passed' | 'certificate_earned' | 'streak_milestone';
+  type: 'enrollment' | 'message' | 'featured' | 'reputation' | 'review';
   title: string;
   description: string;
   timestamp: Date;
-  icon: any;
   color: string;
+  dotColor: string;
 }
 
 interface RecentActivityWidgetProps {
@@ -20,6 +23,9 @@ interface RecentActivityWidgetProps {
   onToggleCollapse: () => void;
   onUpdateSettings: (settings: Record<string, any>) => void;
   onRemove: () => void;
+  size: 'small' | 'medium' | 'large';
+  onChangeSize: (size: 'small' | 'medium' | 'large') => void;
+  onUpdateTitle: (title: string) => void;
 }
 
 export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
@@ -29,54 +35,83 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   settings,
   onToggleCollapse,
   onUpdateSettings,
-  onRemove
+  onRemove,
+  size,
+  onChangeSize,
+  onUpdateTitle
 }) => {
-  // Mock activity data
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [tempTitle, setTempTitle] = useState(title);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTempTitle(title);
+  }, [title]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await new Promise((r) => setTimeout(r, 150));
+        if (cancelled) return;
+      } catch (e) {
+        if (!cancelled) setError('Failed to load activity data');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  // Mock activity data matching Figma design
   const activities: ActivityItem[] = [
     {
       id: '1',
-      type: 'course_completed',
-      title: 'Completed React Fundamentals',
-      description: 'You finished the React Fundamentals course with 95% score',
+      type: 'enrollment',
+      title: "New student enrolled in 'Intro to Starknet'",
+      description: '',
       timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      icon: CheckCircle,
-      color: 'text-green-600'
+      color: 'text-green-600 dark:text-green-400',
+      dotColor: 'bg-green-500'
     },
     {
       id: '2',
-      type: 'lesson_started',
-      title: 'Started Advanced JavaScript',
-      description: 'You began lesson 3: Closures and Scope',
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-      icon: BookOpen,
-      color: 'text-blue-600'
+      type: 'message',
+      title: 'You received a new message',
+      description: '',
+      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+      color: 'text-blue-600 dark:text-blue-400',
+      dotColor: 'bg-blue-500'
     },
     {
       id: '3',
-      type: 'quiz_passed',
-      title: 'Passed Database Quiz',
-      description: 'You scored 88% on the SQL Fundamentals quiz',
-      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      icon: Award,
-      color: 'text-purple-600'
+      type: 'featured',
+      title: "Your course 'Web3 Basics' was featured",
+      description: '',
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+      color: 'text-yellow-600 dark:text-yellow-400',
+      dotColor: 'bg-yellow-500'
     },
     {
       id: '4',
-      type: 'streak_milestone',
-      title: '7-Day Learning Streak',
-      description: 'Congratulations! You\'ve maintained a 7-day learning streak',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      icon: Activity,
-      color: 'text-orange-600'
+      type: 'reputation',
+      title: 'You earned 25 reputation points',
+      description: '',
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+      color: 'text-purple-600 dark:text-purple-400',
+      dotColor: 'bg-purple-500'
     },
     {
       id: '5',
-      type: 'certificate_earned',
-      title: 'Earned Python Certificate',
-      description: 'You earned a certificate for completing Python for Beginners',
+      type: 'review',
+      title: "New review on 'Advanced Cairo'",
+      description: '',
       timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      icon: Award,
-      color: 'text-yellow-600'
+      color: 'text-red-600 dark:text-red-400',
+      dotColor: 'bg-red-500'
     }
   ];
 
@@ -85,28 +120,28 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     
     if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
     
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays}d ago`;
+    if (diffInDays === 1) return 'Yesterday';
+    if (diffInDays < 7) return `${diffInDays} days ago`;
     
-    const diffInWeeks = Math.floor(diffInDays / 7);
-    return `${diffInWeeks}w ago`;
+    return format(date, 'MMM d, yyyy');
   };
 
   if (isCollapsed) {
     return (
       <motion.div
         layout
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4"
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">{title}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500">{activities.length} activities</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{activities.length} activities</span>
             <button
               onClick={onToggleCollapse}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               <Activity size={20} />
             </button>
@@ -119,70 +154,123 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   return (
     <motion.div
       layout
-      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Activity size={20} className="text-green-600" />
-            <h3 className="font-semibold text-gray-900">{title}</h3>
+            <Activity size={20} className="text-purple-600 dark:text-purple-400" />
+            <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           </div>
           <div className="flex items-center space-x-2">
             <button
+              onClick={() => setIsConfigOpen((v) => !v)}
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              aria-label="Widget settings"
+            >
+              <Settings size={16} />
+            </button>
+            <button
               onClick={onToggleCollapse}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              aria-label="Collapse widget"
             >
               <Activity size={16} />
             </button>
             <button
               onClick={onRemove}
               className="p-1 text-red-400 hover:text-red-600 transition-colors"
+              aria-label="Remove widget"
             >
               ×
             </button>
           </div>
         </div>
+        {isConfigOpen && (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Title</label>
+              <input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={() => {
+                  const trimmed = tempTitle.trim();
+                  if (trimmed) onUpdateTitle(trimmed);
+                  else setTempTitle(title);
+                }}
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+                placeholder="Widget title"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Size</label>
+              <select
+                value={size}
+                onChange={(e) => onChangeSize(e.target.value as any)}
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Refresh</label>
+              <select
+                value={settings.refreshInterval ?? 'manual'}
+                onChange={(e) => onUpdateSettings({ refreshInterval: e.target.value })}
+                className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+              >
+                <option value="30s">30 seconds</option>
+                <option value="1m">1 minute</option>
+                <option value="5m">5 minutes</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-4">
-        {activities.map((activity, index) => (
-          <motion.div
-            key={activity.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="flex items-start space-x-3"
-          >
-            {/* Icon */}
-            <div className={`flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center ${activity.color}`}>
-              <activity.icon size={16} />
-            </div>
+        {isLoading && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+        {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-gray-900 mb-1">
-                {activity.title}
-              </h4>
-              <p className="text-xs text-gray-600 mb-2">
-                {activity.description}
-              </p>
-              <div className="flex items-center space-x-2 text-xs text-gray-500">
-                <Clock size={12} />
-                <span>{formatTimeAgo(activity.timestamp)}</span>
+        {/* Subtitle */}
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Your recent platform activity.
+        </p>
+
+        {/* Activities List */}
+        <div className="space-y-4">
+          {activities.map((activity, index) => (
+            <motion.div
+              key={activity.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-start space-x-3"
+            >
+              {/* Colored Dot */}
+              <div className={`flex-shrink-0 w-3 h-3 rounded-full mt-1.5 ${activity.dotColor}`} />
+
+              {/* Activity Content */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-900 dark:text-gray-50">
+                  {activity.title}
+                </p>
+                <div className="flex items-center space-x-1 mt-1">
+                  <Clock size={12} className="text-gray-400" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatTimeAgo(activity.timestamp)}
+                  </span>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
-
-        {/* View All Button */}
-        <div className="pt-4 border-t border-gray-200">
-          <button className="w-full py-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-            View All Activity
-          </button>
+            </motion.div>
+          ))}
         </div>
       </div>
     </motion.div>
   );
-}; 
+};
