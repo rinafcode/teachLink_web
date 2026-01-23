@@ -42,41 +42,72 @@ export const useDashboardWidgets = () => {
     if (savedWidgets.length > 0) {
       setWidgets(savedWidgets);
     } else {
-      // Default widgets
+      // Default widgets matching Figma design
       const defaultWidgets: Widget[] = [
+        // 4 Summary Stat Cards (small size)
         {
-          id: 'progress-summary',
+          id: 'stat-revenue',
           type: 'progress-summary',
-          title: 'My Progress',
-          size: 'medium',
+          title: 'Total Revenue',
+          size: 'small',
           position: 0,
           isCollapsed: false,
-          settings: {}
+          settings: { statType: 'revenue' }
         },
         {
-          id: 'upcoming-deadlines',
-          type: 'upcoming-deadlines',
-          title: 'Upcoming Deadlines',
-          size: 'medium',
+          id: 'stat-students',
+          type: 'progress-summary',
+          title: 'Students',
+          size: 'small',
           position: 1,
           isCollapsed: false,
-          settings: {}
+          settings: { statType: 'students' }
         },
         {
-          id: 'recommended-courses',
-          type: 'recommended-courses',
-          title: 'Recommended Courses',
-          size: 'large',
+          id: 'stat-views',
+          type: 'progress-summary',
+          title: 'Course Views',
+          size: 'small',
           position: 2,
+          isCollapsed: false,
+          settings: { statType: 'views' }
+        },
+        {
+          id: 'stat-courses',
+          type: 'progress-summary',
+          title: 'Active Courses',
+          size: 'small',
+          position: 3,
+          isCollapsed: false,
+          settings: { statType: 'courses' }
+        },
+        // Recent Sales (medium, left column)
+        {
+          id: 'recent-sales',
+          type: 'recent-sales',
+          title: 'Recent Sales',
+          size: 'medium',
+          position: 4,
           isCollapsed: false,
           settings: {}
         },
+        // Recent Activity (medium, right column)
         {
-          id: 'learning-streak',
-          type: 'learning-streak',
-          title: 'Learning Streak',
-          size: 'small',
-          position: 3,
+          id: 'recent-activity',
+          type: 'recent-activity',
+          title: 'Recent Activity',
+          size: 'medium',
+          position: 5,
+          isCollapsed: false,
+          settings: {}
+        },
+        // Upcoming Schedule (large, full width)
+        {
+          id: 'upcoming-schedule',
+          type: 'upcoming-deadlines',
+          title: 'Upcoming Schedule',
+          size: 'large',
+          position: 6,
           isCollapsed: false,
           settings: {}
         }
@@ -159,39 +190,70 @@ export const useDashboardWidgets = () => {
   // Reset to default layout
   const resetToDefault = useCallback(() => {
     const defaultWidgets: Widget[] = [
+      // 4 Summary Stat Cards (small size)
       {
-        id: 'progress-summary',
+        id: 'stat-revenue',
         type: 'progress-summary',
-        title: 'My Progress',
-        size: 'medium',
+        title: 'Total Revenue',
+        size: 'small',
         position: 0,
         isCollapsed: false,
-        settings: {}
+        settings: { statType: 'revenue' }
       },
       {
-        id: 'upcoming-deadlines',
-        type: 'upcoming-deadlines',
-        title: 'Upcoming Deadlines',
-        size: 'medium',
+        id: 'stat-students',
+        type: 'progress-summary',
+        title: 'Students',
+        size: 'small',
         position: 1,
         isCollapsed: false,
-        settings: {}
+        settings: { statType: 'students' }
       },
       {
-        id: 'recommended-courses',
-        type: 'recommended-courses',
-        title: 'Recommended Courses',
-        size: 'large',
+        id: 'stat-views',
+        type: 'progress-summary',
+        title: 'Course Views',
+        size: 'small',
         position: 2,
+        isCollapsed: false,
+        settings: { statType: 'views' }
+      },
+      {
+        id: 'stat-courses',
+        type: 'progress-summary',
+        title: 'Active Courses',
+        size: 'small',
+        position: 3,
+        isCollapsed: false,
+        settings: { statType: 'courses' }
+      },
+      // Recent Sales (medium, left column)
+      {
+        id: 'recent-sales',
+        type: 'recent-sales',
+        title: 'Recent Sales',
+        size: 'medium',
+        position: 4,
         isCollapsed: false,
         settings: {}
       },
+      // Recent Activity (medium, right column)
       {
-        id: 'learning-streak',
-        type: 'learning-streak',
-        title: 'Learning Streak',
-        size: 'small',
-        position: 3,
+        id: 'recent-activity',
+        type: 'recent-activity',
+        title: 'Recent Activity',
+        size: 'medium',
+        position: 5,
+        isCollapsed: false,
+        settings: {}
+      },
+      // Upcoming Schedule (large, full width)
+      {
+        id: 'upcoming-schedule',
+        type: 'upcoming-deadlines',
+        title: 'Upcoming Schedule',
+        size: 'large',
+        position: 6,
         isCollapsed: false,
         settings: {}
       }
