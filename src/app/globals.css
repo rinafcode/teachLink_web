@@ -1,35 +1,10 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
   --foreground: #0F172A;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-display: "Space Grotesk", sans-serif;
-
-  /* Custom Theme Colors - Updated per Design */
-  --color-primary: #0066FF;
-  /* Electric Blue */
-  --color-primary-hover: #0052CC;
-  --color-secondary: #00C2FF;
-  /* Cyan/Tech Blue */
-  --color-surface: #ffffff;
-  --color-surface-subtle: #F8FAFC;
-  --color-border-color: #E2E8F0;
-  --color-tech-text: #64748B;
-  --color-tech-dark: #0F172A;
-
-  /* Custom Shadows */
-  --shadow-glass: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-  --shadow-glow: 0 0 15px rgba(0, 102, 255, 0.15);
-  --shadow-glow-strong: 0 0 20px rgba(0, 102, 255, 0.3);
-
-  --background-image-grid-pattern: linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
 }
 
 @media (prefers-color-scheme: dark) {

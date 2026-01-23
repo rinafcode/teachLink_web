@@ -2,19 +2,18 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Users, FileText, Settings, Calendar } from 'lucide-react';
-import { format, isToday, isTomorrow, addDays } from 'date-fns';
+import { DollarSign, Settings, User } from 'lucide-react';
+import { format } from 'date-fns';
 
-interface ScheduleEvent {
+interface Sale {
   id: string;
-  title: string;
-  subtitle: string;
+  userEmail: string;
+  userName: string;
   date: Date;
-  type: 'qa' | 'mentoring' | 'workshop';
-  icon: any;
+  amount: number;
 }
 
-interface UpcomingDeadlinesWidgetProps {
+interface RecentSalesWidgetProps {
   id: string;
   title: string;
   isCollapsed: boolean;
@@ -27,7 +26,7 @@ interface UpcomingDeadlinesWidgetProps {
   onUpdateTitle: (title: string) => void;
 }
 
-export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = ({
+export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
   id,
   title,
   isCollapsed,
@@ -57,7 +56,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
         await new Promise((r) => setTimeout(r, 150));
         if (cancelled) return;
       } catch (e) {
-        if (!cancelled) setError('Failed to load schedule data');
+        if (!cancelled) setError('Failed to load sales data');
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -65,42 +64,55 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
     return () => { cancelled = true; };
   }, [id]);
 
-  // Mock schedule data matching Figma design
-  const events: ScheduleEvent[] = [
+  // Mock sales data
+  const sales: Sale[] = [
     {
       id: '1',
-      title: 'Live Q&A Session',
-      subtitle: 'Intro to Starknet Course',
-      date: new Date(new Date().setHours(14, 0, 0, 0)), // Today, 2:00 PM
-      type: 'qa',
-      icon: Clock
+      userEmail: 'user1@example.com',
+      userName: 'User 1',
+      date: new Date(2025, 4, 28),
+      amount: 49.99
     },
     {
       id: '2',
-      title: '1:1 Mentoring',
-      subtitle: 'With John Smith',
-      date: new Date(addDays(new Date(), 1).setHours(10, 0, 0, 0)), // Tomorrow, 10:00 AM
-      type: 'mentoring',
-      icon: Users
+      userEmail: 'user2@example.com',
+      userName: 'User 2',
+      date: new Date(2025, 4, 27),
+      amount: 79.99
     },
     {
       id: '3',
-      title: 'Workshop',
-      subtitle: 'Smart Contract Security',
-      date: new Date(addDays(new Date(), 3).setHours(15, 30, 0, 0)), // Fri, 15, 3:30 PM
-      type: 'workshop',
-      icon: FileText
+      userEmail: 'user3@example.com',
+      userName: 'User 3',
+      date: new Date(2025, 4, 26),
+      amount: 29.99
+    },
+    {
+      id: '4',
+      userEmail: 'user4@example.com',
+      userName: 'User 4',
+      date: new Date(2025, 4, 25),
+      amount: 99.99
+    },
+    {
+      id: '5',
+      userEmail: 'user5@example.com',
+      userName: 'User 5',
+      date: new Date(2025, 4, 24),
+      amount: 59.99
     }
   ];
 
-  const formatScheduleDate = (date: Date) => {
-    if (isToday(date)) {
-      return `Today, ${format(date, 'h:mm a')}`;
-    }
-    if (isTomorrow(date)) {
-      return `Tomorrow, ${format(date, 'h:mm a')}`;
-    }
-    return format(date, 'EEE, d, h:mm a');
+  const totalSales = sales.length;
+  const totalAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   if (isCollapsed) {
@@ -112,12 +124,12 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">{events.length} events</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{totalSales} sales</span>
             <button
               onClick={onToggleCollapse}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
-              <Clock size={20} />
+              <DollarSign size={20} />
             </button>
           </div>
         </div>
@@ -134,7 +146,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Clock size={20} className="text-purple-600 dark:text-purple-400" />
+            <DollarSign size={20} className="text-purple-600 dark:text-purple-400" />
             <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           </div>
           <div className="flex items-center space-x-2">
@@ -150,7 +162,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               aria-label="Collapse widget"
             >
-              <Clock size={16} />
+              <DollarSign size={16} />
             </button>
             <button
               onClick={onRemove}
@@ -190,14 +202,16 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Show Completed</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Refresh</label>
               <select
-                value={settings.showCompleted ? 'yes' : 'no'}
-                onChange={(e) => onUpdateSettings({ showCompleted: e.target.value === 'yes' })}
+                value={settings.refreshInterval ?? 'manual'}
+                onChange={(e) => onUpdateSettings({ refreshInterval: e.target.value })}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
               >
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
+                <option value="30s">30 seconds</option>
+                <option value="1m">1 minute</option>
+                <option value="5m">5 minutes</option>
+                <option value="manual">Manual</option>
               </select>
             </div>
           </div>
@@ -211,42 +225,44 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
 
         {/* Subtitle */}
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Your upcoming classes and events.
+          You made {totalSales} sales this month.
         </p>
 
-        {/* Events List */}
-        <div className="space-y-4">
-          {events.map((event, index) => {
-            const Icon = event.icon;
-            return (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center space-x-4 flex-1">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Icon size={20} className="text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-1">
-                      {event.title}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {event.subtitle}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex-shrink-0 text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
-                    {formatScheduleDate(event.date)}
-                  </p>
-                </div>
-              </motion.div>
-            );
-          })}
+        {/* Sales List */}
+        <div className="space-y-3">
+          {sales.map((sale, index) => (
+            <motion.div
+              key={sale.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              {/* Avatar */}
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                  {getInitials(sale.userName)}
+                </span>
+              </div>
+
+              {/* Sale Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-50 truncate">
+                  {sale.userEmail}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {format(sale.date, 'M/d/yyyy')}
+                </p>
+              </div>
+
+              {/* Amount */}
+              <div className="flex-shrink-0">
+                <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                  +${sale.amount.toFixed(2)}
+                </span>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </motion.div>
