@@ -1,100 +1,88 @@
-import { useCallback, useEffect } from 'react';
-import { useSearchStore, Difficulty, SortOption } from '@/store/searchStore';
-import { useSearchParams } from 'next/navigation';
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+
+export interface FilterState {
+  difficulty: string[];
+  topics: string[];
+  duration: number;
+  priceRange: number;
+  sort: string;
+  instructor: string;
+  searchTerm: string;
+}
 
 export const useSearchFilters = () => {
   const searchParams = useSearchParams();
-  const {
-    difficulty,
-    duration,
-    topics,
-    instructors,
-    sortBy,
-    price,
-    setDifficulty,
-    setDuration,
-    setTopics,
-    setInstructors,
-    setSortBy,
-    setPrice,
-    clearFilters,
-    syncWithUrl,
-    updateFromUrl,
-  } = useSearchStore();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // Sync with URL on mount
+  // Initialize state from URL params
+  const [filters, setFiltersState] = useState<FilterState>({
+    difficulty: searchParams.get('difficulty')?.split(',').filter(Boolean) || [],
+    topics: searchParams.get('topics')?.split(',').filter(Boolean) || [],
+    duration: searchParams.get('duration') ? Number(searchParams.get('duration')) : 100,
+    priceRange: searchParams.get('price') ? Number(searchParams.get('price')) : 500,
+    sort: searchParams.get('sort') || 'relevance',
+    instructor: searchParams.get('instructor') || '',
+    searchTerm: searchParams.get('q') || ''
+  });
+
+  // Sync URL with state changes
   useEffect(() => {
-    updateFromUrl(searchParams);
-  }, [searchParams, updateFromUrl]);
+    const params = new URLSearchParams();
+    
+    if (filters.difficulty && filters.difficulty.length > 0) {
+      params.set('difficulty', filters.difficulty.join(','));
+    }
+    if (filters.topics && filters.topics.length > 0) {
+      params.set('topics', filters.topics.join(','));
+    }
+    if (filters.duration !== 100) {
+      params.set('duration', filters.duration.toString());
+    }
+    if (filters.priceRange !== 500) {
+      params.set('price', filters.priceRange.toString());
+    }
+    if (filters.sort && filters.sort !== 'relevance') {
+      params.set('sort', filters.sort);
+    }
+    if (filters.instructor) {
+      params.set('instructor', filters.instructor);
+    }
+    if (filters.searchTerm) {
+      params.set('q', filters.searchTerm);
+    }
 
-  // Sync URL when filters change
-  useEffect(() => {
-    syncWithUrl();
-  }, [difficulty, duration, topics, instructors, sortBy, price, syncWithUrl]);
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [filters, pathname, router]);
 
-  const handleDifficultyChange = useCallback(
-    (newDifficulty: Difficulty[]) => {
-      setDifficulty(newDifficulty);
-    },
-    [setDifficulty]
-  );
+  // Update filters function
+  const setFilters = useCallback((newFilters: Partial<FilterState>) => {
+    setFiltersState(prev => ({
+      ...prev,
+      ...newFilters
+    }));
+  }, []);
 
-  const handleDurationChange = useCallback(
-    (newDuration: [number, number]) => {
-      setDuration(newDuration);
-    },
-    [setDuration]
-  );
-
-  const handleTopicsChange = useCallback(
-    (newTopics: string[]) => {
-      setTopics(newTopics);
-    },
-    [setTopics]
-  );
-
-  const handleInstructorsChange = useCallback(
-    (newInstructors: string[]) => {
-      setInstructors(newInstructors);
-    },
-    [setInstructors]
-  );
-
-  const handleSortChange = useCallback(
-    (newSort: SortOption) => {
-      setSortBy(newSort);
-    },
-    [setSortBy]
-  );
-
-  const handlePriceChange = useCallback(
-    (newPrice: [number, number]) => {
-      setPrice(newPrice);
-    },
-    [setPrice]
-  );
-
-  const handleClearFilters = useCallback(() => {
-    clearFilters();
-  }, [clearFilters]);
+  // Reset filters function
+  const resetFilters = useCallback(() => {
+    setFiltersState({
+      difficulty: [],
+      topics: [],
+      duration: 100,
+      priceRange: 500,
+      sort: 'relevance',
+      instructor: '',
+      searchTerm: ''
+    });
+  }, []);
 
   return {
-    filters: {
-      difficulty,
-      duration,
-      topics,
-      instructors,
-      sortBy,
-      price,
-    },
-    handlers: {
-      handleDifficultyChange,
-      handleDurationChange,
-      handleTopicsChange,
-      handleInstructorsChange,
-      handleSortChange,
-      handlePriceChange,
-      handleClearFilters,
-    },
+    filters,
+    setFilters,
+    resetFilters
   };
-}; 
+};
