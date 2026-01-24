@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { FaBold, FaItalic, FaList, FaListOl } from 'react-icons/fa';
+import { Bold, Italic, List, ListOrdered } from 'lucide-react';
 
 interface RichTextEditorProps {
   content: string;
@@ -23,7 +23,8 @@ export default function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm focus:outline-none max-w-none',
+        class: 'prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[100px]',
+        placeholder: placeholder,
       },
     },
   });
@@ -33,44 +34,56 @@ export default function RichTextEditor({
   }
 
   return (
-    <div className="border rounded-lg bg-white">
-      <div className="border-b p-2 flex gap-2">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+      <div className="border-b border-gray-200 dark:border-gray-700 p-2 flex gap-2 bg-gray-50 dark:bg-gray-800">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1 rounded ${
-            editor.isActive('bold') ? 'bg-gray-200' : 'hover:bg-gray-100'
+          className={`p-2 rounded transition-colors ${
+            editor.isActive('bold') 
+              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
           }`}
+          aria-label="Bold"
         >
-          <FaBold className="w-4 h-4" />
+          <Bold size={16} />
         </button>
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1 rounded ${
-            editor.isActive('italic') ? 'bg-gray-200' : 'hover:bg-gray-100'
+          className={`p-2 rounded transition-colors ${
+            editor.isActive('italic') 
+              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
           }`}
+          aria-label="Italic"
         >
-          <FaItalic className="w-4 h-4" />
+          <Italic size={16} />
         </button>
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1 rounded ${
-            editor.isActive('bulletList') ? 'bg-gray-200' : 'hover:bg-gray-100'
+          className={`p-2 rounded transition-colors ${
+            editor.isActive('bulletList') 
+              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
           }`}
+          aria-label="Bullet List"
         >
-          <FaList className="w-4 h-4" />
+          <List size={16} />
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-1 rounded ${
-            editor.isActive('orderedList') ? 'bg-gray-200' : 'hover:bg-gray-100'
+          className={`p-2 rounded transition-colors ${
+            editor.isActive('orderedList') 
+              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
           }`}
+          aria-label="Ordered List"
         >
-          <FaListOl className="w-4 h-4" />
+          <ListOrdered size={16} />
         </button>
       </div>
       <EditorContent
         editor={editor}
-        className="p-3 min-h-[100px] max-h-[300px] overflow-y-auto"
+        className="p-3 min-h-[100px] max-h-[300px] overflow-y-auto prose prose-sm dark:prose-invert max-w-none focus:outline-none text-gray-900 dark:text-gray-50"
       />
     </div>
   );

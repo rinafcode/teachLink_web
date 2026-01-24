@@ -17,7 +17,7 @@ export default function InstructorBio({
   name = "John Doe",
   title = "Senior Web Developer & Instructor",
   bio = "With over 10 years of experience in web development, John has helped thousands of students master modern web technologies. He specializes in React, Node.js, and full-stack development.",
-  imageUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3",
+  imageUrl = "https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg",
   expertise = ["React", "Node.js", "TypeScript", "AWS"],
   socialLinks = {
     linkedin: "https://linkedin.com/in/johndoe",
