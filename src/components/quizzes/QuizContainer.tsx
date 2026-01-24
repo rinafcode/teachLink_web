@@ -95,23 +95,25 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
           Previous
         </button>
 
-        {currentQuestionIndex === totalQuestions - 1 ? (
+        <div className="flex items-center gap-3">
+          {quizState.canGoNext ? (
+            <button
+              onClick={() => actions.goNext()}
+              disabled={!quizState.canGoNext || isCompleted}
+              className="px-4 py-2 text-[#475569] dark:text-[#CBD5E1] hover:text-[#0066FF] dark:hover:text-[#00C2FF] disabled:opacity-50 transition-colors"
+            >
+              Next
+            </button>
+          ) : null}
+
           <button
             onClick={() => actions.complete()}
             disabled={isCompleted}
             className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all disabled:opacity-50"
           >
-            Complete Quiz
+            {currentQuestionIndex === totalQuestions - 1 ? 'Complete Quiz' : 'Finish Quiz'}
           </button>
-        ) : (
-          <button
-            onClick={() => actions.goNext()}
-            disabled={!quizState.canGoNext}
-            className="px-4 py-2 text-[#475569] dark:text-[#CBD5E1] hover:text-[#0066FF] dark:hover:text-[#00C2FF] disabled:opacity-50 transition-colors"
-          >
-            Next
-          </button>
-        )}
+        </div>
       </div>
     </div>
   );
