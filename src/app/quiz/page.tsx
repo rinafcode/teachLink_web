@@ -5,7 +5,7 @@ import type { Quiz } from '@/hooks/useQuiz';
 
 const demoQuiz: Quiz = {
   id: 'demo-quiz',
-  title: 'Quiz Demo',
+  title: 'Quiz',
   description: 'Preview of multiple question types with feedback, scoring, review mode, and timer.',
   timeLimit: 120,
   questions: [

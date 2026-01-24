@@ -23,13 +23,13 @@ export default function TrueFalseQuestion({ question, quizState }: TrueFalseQues
 
           const colorClasses = shouldReveal
             ? isCorrect
-              ? 'border-green-500 bg-green-50'
+              ? 'border-[#0066FF] dark:border-[#00C2FF] bg-[#F0F9FF] dark:bg-[#1E3A8A]/20'
               : isSelected
               ? 'border-red-500 bg-red-50'
-              : 'border-gray-200'
+              : 'border-[#E2E8F0] dark:border-[#334155]'
             : isSelected
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-200 hover:border-blue-300';
+            ? 'border-[#0066FF] dark:border-[#00C2FF] bg-[#F0F9FF] dark:bg-[#1E3A8A]/20'
+            : 'border-[#E2E8F0] dark:border-[#334155] hover:border-[#CBD5E1] dark:hover:border-[#475569]';
 
           return (
             <button
@@ -39,10 +39,10 @@ export default function TrueFalseQuestion({ question, quizState }: TrueFalseQues
               className={`flex-1 p-4 text-center rounded-lg border transition-colors ${colorClasses} disabled:opacity-75`}
             >
               <div className="flex items-center justify-center gap-2">
-                <span className="capitalize">{option}</span>
+                <span className="capitalize text-[#0F172A] dark:text-white">{option}</span>
                 {shouldReveal ? (
                   isCorrect ? (
-                    <span className="text-green-700 text-sm font-medium">Correct</span>
+                    <span className="text-[#0066FF] dark:text-[#00C2FF] text-sm font-medium">Correct</span>
                   ) : isSelected ? (
                     <span className="text-red-700 text-sm font-medium">Your answer</span>
                   ) : null

@@ -67,20 +67,20 @@ export default function CodeChallengeQuestion({
 
   return (
     <div className="space-y-4">
-      <div className="text-lg font-medium">{question.text}</div>
+      <div className="text-lg font-medium text-[#0F172A] dark:text-white">{question.text}</div>
 
       <textarea
         value={code}
         onChange={(e) => onChangeCode(e.target.value)}
         readOnly={isReviewMode || isCompleted}
-        className="w-full min-h-[240px] font-mono text-sm p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
+        className="w-full min-h-[240px] font-mono text-sm p-3 border border-[#E2E8F0] dark:border-[#334155] rounded-lg bg-white dark:bg-[#0F172A] text-[#0F172A] dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
       />
 
       {!isReviewMode && !isCompleted ? (
         <button
           onClick={runTests}
           disabled={isRunning || !hasTestCases}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+          className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all disabled:opacity-50"
         >
           {isRunning ? 'Running Tests...' : hasTestCases ? 'Run Tests' : 'No tests available'}
         </button>
@@ -90,7 +90,7 @@ export default function CodeChallengeQuestion({
         <div className="space-y-2">
           <div
             className={`text-sm font-medium ${
-              overallPassed ? 'text-green-700' : 'text-red-700'
+              overallPassed ? 'text-[#0066FF] dark:text-[#00C2FF]' : 'text-red-700'
             }`}
           >
             {overallPassed ? 'All tests passed' : 'Some tests failed'}
@@ -101,21 +101,23 @@ export default function CodeChallengeQuestion({
               key={index}
               className={`p-3 rounded-lg border ${
                 testResults[index]
-                  ? 'bg-green-50 border-green-200'
+                  ? 'bg-[#F0F9FF] dark:bg-[#1E3A8A]/20 border-[#0066FF]/20 dark:border-[#00C2FF]/20'
                   : 'bg-red-50 border-red-200'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="font-medium">Test Case {index + 1}</div>
-                  <div className="text-sm text-gray-600">Input: {testCase.input}</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="font-medium text-[#0F172A] dark:text-white">Test Case {index + 1}</div>
+                  <div className="text-sm text-[#64748B] dark:text-[#94A3B8]">Input: {testCase.input}</div>
+                  <div className="text-sm text-[#64748B] dark:text-[#94A3B8]">
                     Expected: {testCase.expectedOutput}
                   </div>
                 </div>
                 <div
                   className={`text-sm font-medium ${
-                    testResults[index] ? 'text-green-700' : 'text-red-700'
+                    testResults[index]
+                      ? 'text-[#0066FF] dark:text-[#00C2FF]'
+                      : 'text-red-700'
                   }`}
                 >
                   {testResults[index] ? 'Pass' : 'Fail'}
@@ -127,7 +129,7 @@ export default function CodeChallengeQuestion({
       ) : null}
 
       {hasTestCases && (isReviewMode || isCompleted) && !existing ? (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-[#64748B] dark:text-[#94A3B8]">
           No submission was recorded for this question.
         </div>
       ) : null}
