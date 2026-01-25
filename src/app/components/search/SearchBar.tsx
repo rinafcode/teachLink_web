@@ -118,11 +118,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <div
         className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 ${
           localExpanded
-            ? "border-blue-500 bg-white shadow-lg w-full"
-            : "border-gray-200 bg-gray-50 hover:border-gray-300 md:w-full"
+            ? "border-blue-500 bg-white dark:bg-gray-900 shadow-lg w-full"
+            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 md:w-full"
         }`}
       >
-        <Search size={18} className="text-gray-400 shrink-0" />
+        <Search
+          size={18}
+          className="text-gray-400 dark:text-gray-500 shrink-0"
+        />
 
         <input
           ref={inputRef}
@@ -136,15 +139,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             setIsOpen(true);
           }}
           className={clsx(
-            "flex-1 bg-transparent outline-none text-sm",
-            localExpanded ? "text-gray-800" : "text-gray-500",
+            "flex-1 bg-transparent outline-none text-sm dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500",
+            localExpanded
+              ? "text-gray-800 dark:text-gray-100"
+              : "text-gray-500",
           )}
         />
 
         {query && (
           <button
             onClick={handleClear}
-            className="text-gray-400 hover:text-gray-600 shrink-0"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 shrink-0 transition-colors"
             aria-label="Clear search"
           >
             <X size={18} />
@@ -154,27 +159,27 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg border border-gray-200 shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg z-50 max-h-96 overflow-y-auto">
           {isLoading && (
-            <div className="px-4 py-3 text-center text-gray-500">
+            <div className="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
               <div className="inline-block h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
           {/* Results */}
           {hasResults && !isLoading && (
-            <div className="divide-y">
+            <div className="divide-y dark:divide-gray-700">
               {/* Courses */}
               {results.courses.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800">
                     Courses
                   </div>
                   {results.courses.map((course) => (
                     <button
                       key={course.id}
                       onClick={() => handleSearch(course.title)}
-                      className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                      className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                     >
                       {course.image && (
                         <picture>
@@ -196,7 +201,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-xs text-yellow-500">★</span>
-                        <span className="text-xs text-gray-600">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">
                           {course.rating}
                         </span>
                       </div>
@@ -208,14 +213,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               {/* Instructors */}
               {results.instructors.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800">
                     Instructors
                   </div>
                   {results.instructors.map((instructor) => (
                     <button
                       key={instructor.id}
                       onClick={() => handleSearch(instructor.title)}
-                      className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                      className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                     >
                       {instructor.image && (
                         <picture>
@@ -243,19 +248,19 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               {/* Topics */}
               {results.topics.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800">
                     Topics
                   </div>
                   {results.topics.map((topic) => (
                     <button
                       key={topic.id}
                       onClick={() => handleSearch(topic.title)}
-                      className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
+                      className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                     >
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
                         {topic.title}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {topic.description}
                       </p>
                     </button>
@@ -268,11 +273,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           {/* Search History */}
           {showSuggestions && !isLoading && (
             <div>
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50 flex items-center justify-between">
+              <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
                 <span>Recent Searches</span>
                 <button
                   onClick={clearHistory}
-                  className="text-gray-400 hover:text-red-500 p-1"
+                  className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 p-1 transition-colors"
                   title="Clear history"
                 >
                   <Trash2 size={14} />
@@ -282,10 +287,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 <button
                   key={idx}
                   onClick={() => handleSearch(item)}
-                  className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                  className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                 >
-                  <Clock size={14} className="text-gray-400" />
-                  <span className="text-sm text-gray-700">{item}</span>
+                  <Clock
+                    size={14}
+                    className="text-gray-400 dark:text-gray-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {item}
+                  </span>
                 </button>
               ))}
             </div>
@@ -294,7 +304,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           {/* No Results */}
           {!isLoading && query && !hasResults && (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 No results found for &quot;{query}&quot;
               </p>
             </div>
@@ -303,7 +313,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           {/* Empty State */}
           {!isLoading && !query && searchHistory.length === 0 && (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm text-gray-500">Start typing to search</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Start typing to search
+              </p>
             </div>
           )}
         </div>

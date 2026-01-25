@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { Bold, Italic, List, ListOrdered } from 'lucide-react';
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Bold, Italic, List, ListOrdered } from "lucide-react";
 
 interface RichTextEditorProps {
   content: string;
@@ -13,7 +13,7 @@ interface RichTextEditorProps {
 export default function RichTextEditor({
   content,
   onChange,
-  placeholder = 'Type your message...',
+  placeholder = "Type your message...",
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit],
@@ -23,7 +23,8 @@ export default function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[100px]',
+        class:
+          "prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[100px]",
         placeholder: placeholder,
       },
     },
@@ -39,9 +40,9 @@ export default function RichTextEditor({
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`p-2 rounded transition-colors ${
-            editor.isActive('bold') 
-              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+            editor.isActive("bold")
+              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
           }`}
           aria-label="Bold"
         >
@@ -50,9 +51,9 @@ export default function RichTextEditor({
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`p-2 rounded transition-colors ${
-            editor.isActive('italic') 
-              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+            editor.isActive("italic")
+              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
           }`}
           aria-label="Italic"
         >
@@ -61,9 +62,9 @@ export default function RichTextEditor({
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`p-2 rounded transition-colors ${
-            editor.isActive('bulletList') 
-              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+            editor.isActive("bulletList")
+              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
           }`}
           aria-label="Bullet List"
         >
@@ -72,9 +73,9 @@ export default function RichTextEditor({
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={`p-2 rounded transition-colors ${
-            editor.isActive('orderedList') 
-              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+            editor.isActive("orderedList")
+              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
           }`}
           aria-label="Ordered List"
         >
@@ -83,8 +84,8 @@ export default function RichTextEditor({
       </div>
       <EditorContent
         editor={editor}
-        className="p-3 min-h-[100px] max-h-[300px] overflow-y-auto prose prose-sm dark:prose-invert max-w-none focus:outline-none text-gray-900 dark:text-gray-50"
+        className="p-3 min-h-25 max-h-75 overflow-y-auto prose prose-sm dark:prose-invert max-w-none focus:outline-none text-gray-900 dark:text-gray-50"
       />
     </div>
   );
-} 
+}
