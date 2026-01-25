@@ -15,7 +15,7 @@ interface NotesTakerProps {
   onNote?: (note: { time: number; text: string }) => void;
 }
 
-export const NotesTaker: React.FC<NotesTakerProps> = ({
+export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
   currentTime,
   onNote
 }) => {
@@ -243,4 +243,4 @@ export const NotesTaker: React.FC<NotesTakerProps> = ({
       </div>
     </div>
   );
-}; 
+}); 
