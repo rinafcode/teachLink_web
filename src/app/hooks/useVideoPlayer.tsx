@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import type { RefObject } from 'react';
 
-export const useVideoPlayer = (videoRef: React.RefObject<HTMLVideoElement>) => {
+interface VideoError {
+  message: string;
+  code: number;
+  type: 'network' | 'decode' | 'source' | 'unknown';
+  retryCount: number;
+}
+
+export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -8,16 +16,47 @@ export const useVideoPlayer = (videoRef: React.RefObject<HTMLVideoElement>) => {
   const [playbackRate, setPlaybackRateState] = useState(1);
   const [buffered, setBuffered] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<VideoError | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
 
   const play = useCallback(() => {
     if (videoRef.current) {
-      videoRef.current.play().catch((err) => {
-        setError(err.message);
+      videoRef.current.play().catch((err: any) => {
+        setError({
+          message: err.message || 'Failed to play video',
+          code: err.code || 0,
+          type: categorizeError(err),
+          retryCount: 0
+        });
       });
     }
   }, [videoRef]);
+
+  const categorizeError = (err: any): VideoError['type'] => {
+    if (err.name === 'NotAllowedError') return 'source';
+    if (err.name === 'NotSupportedError') return 'decode';
+    if (err.name === 'NetworkError') return 'network';
+    return 'unknown';
+  };
+
+  const retry = useCallback(() => {
+    if (retryCount < maxRetries && videoRef.current?.src) {
+      setRetryCount(prev => prev + 1);
+      setError(null);
+      setIsLoading(true);
+      
+      // Reload the video source
+      const currentSrc = videoRef.current.src;
+      videoRef.current.src = '';
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.src = currentSrc;
+        }
+      }, 100);
+    }
+  }, [retryCount, videoRef, maxRetries]);
 
   const pause = useCallback(() => {
     if (videoRef.current) {
@@ -51,6 +90,11 @@ export const useVideoPlayer = (videoRef: React.RefObject<HTMLVideoElement>) => {
       setIsMuted(videoRef.current.muted);
     }
   }, [videoRef]);
+
+  const resetError = useCallback(() => {
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -87,8 +131,36 @@ export const useVideoPlayer = (videoRef: React.RefObject<HTMLVideoElement>) => {
       }
     };
 
-    const handleError = () => {
-      setError('Failed to load video');
+    const handleError = (e: any) => {
+      const video = e.target;
+      let errorMessage = 'Failed to load video';
+      let errorType: VideoError['type'] = 'unknown';
+      
+      if (video.error) {
+        switch (video.error.code) {
+          case video.error.MEDIA_ERR_NETWORK:
+            errorMessage = 'Network error - please check your connection';
+            errorType = 'network';
+            break;
+          case video.error.MEDIA_ERR_DECODE:
+            errorMessage = 'Video decode error - file may be corrupted';
+            errorType = 'decode';
+            break;
+          case video.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = 'Video format not supported';
+            errorType = 'source';
+            break;
+          default:
+            errorMessage = 'Unknown video error occurred';
+        }
+      }
+      
+      setError({
+        message: errorMessage,
+        code: video.error?.code || 0,
+        type: errorType,
+        retryCount
+      });
       setIsLoading(false);
     };
 
@@ -137,11 +209,15 @@ export const useVideoPlayer = (videoRef: React.RefObject<HTMLVideoElement>) => {
     isLoading,
     error,
     isMuted,
+    retryCount,
+    maxRetries,
     play,
     pause,
     seekTo,
     setVolume,
     setPlaybackRate,
     toggleMute,
+    retry,
+    resetError,
   };
 }; 
