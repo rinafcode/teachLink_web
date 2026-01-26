@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/lib/theme-provider";
 import { OfflineModeProvider } from "./context/OfflineModeContext";
 import { OfflineStatusIndicator } from "./components/offline/OfflineStatusIndicator";
 import { DownloadManager } from "./components/offline/DownloadManager";
@@ -27,21 +28,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50 transition-colors duration-200`}
       >
-        <OfflineModeProvider>
-          {children}
-          
-          {/* Offline Mode Components */}
-          <div className="fixed top-4 right-4 z-50">
-            <OfflineStatusIndicator />
-          </div>
-          
-          <DownloadManager />
-          <StorageManager />
-        </OfflineModeProvider>
+        <ThemeProvider>
+          <OfflineModeProvider>
+            {children}
+
+            {/* Offline Mode Components */}
+            <div className="fixed top-4 right-4 z-50">
+              <OfflineStatusIndicator />
+            </div>
+
+            <DownloadManager />
+            <StorageManager />
+          </OfflineModeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
