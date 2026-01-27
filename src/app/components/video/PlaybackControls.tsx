@@ -2,12 +2,22 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, ChevronDown } from 'lucide-react';
 
+interface QualityOption {
+  label: string;
+  value: string;
+  width?: number;
+  height?: number;
+  bitrate?: number;
+}
+
 interface PlaybackControlsProps {
   playbackRate: number;
   onPlaybackRateChange: (rate: number) => void;
   quality?: string;
   onQualityChange?: (quality: string) => void;
-  qualities?: string[];
+  qualities?: QualityOption[];
+  autoQuality?: boolean;
+  onAutoQualityChange?: (auto: boolean) => void;
 }
 
 export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
@@ -15,7 +25,15 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onPlaybackRateChange,
   quality,
   onQualityChange,
-  qualities = ['1080p', '720p', '480p', '360p']
+  qualities = [
+    { label: 'Auto', value: 'auto', width: 0, height: 0 },
+    { label: '1080p', value: '1080p', width: 1920, height: 1080, bitrate: 5000 },
+    { label: '720p', value: '720p', width: 1280, height: 720, bitrate: 2500 },
+    { label: '480p', value: '480p', width: 854, height: 480, bitrate: 1000 },
+    { label: '360p', value: '360p', width: 640, height: 360, bitrate: 500 }
+  ],
+  autoQuality = true,
+  onAutoQualityChange
 }) => {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
@@ -64,14 +82,30 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       {/* Quality Control */}
       {onQualityChange && (
         <div className="relative">
-          <button
-            onClick={() => setShowQualityMenu(!showQualityMenu)}
-            className="flex items-center space-x-1 px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors text-white text-sm"
-          >
-            <Settings size={12} />
-            <span>{quality || 'Auto'}</span>
-            <ChevronDown size={12} />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setShowQualityMenu(!showQualityMenu)}
+              className="flex items-center space-x-1 px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors text-white text-sm"
+            >
+              <Settings size={12} />
+              <span>{quality ? qualities.find(q => q.value === quality)?.label || quality : 'Auto'}</span>
+              <ChevronDown size={12} />
+            </button>
+            
+            {onAutoQualityChange && (
+              <button
+                onClick={() => onAutoQualityChange(!autoQuality)}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  autoQuality 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+                title="Auto Quality"
+              >
+                AUTO
+              </button>
+            )}
+          </div>
 
           <AnimatePresence>
             {showQualityMenu && (
@@ -83,16 +117,24 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               >
                 {qualities.map((q) => (
                   <button
-                    key={q}
+                    key={q.value}
                     onClick={() => {
-                      onQualityChange(q);
+                      onQualityChange(q.value);
                       setShowQualityMenu(false);
                     }}
-                    className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors ${
-                      quality === q ? 'bg-blue-600 text-white' : 'text-gray-200'
+                    className={`block w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                      quality === q.value ? 'bg-blue-600 text-white' : 'text-gray-200'
                     }`}
                   >
-                    {q}
+                    <div className="flex items-center justify-between">
+                      <span>{q.label}</span>
+                      {q.width && q.height && (
+                        <span className="text-xs opacity-75">
+                          {q.width}×{q.height}
+                          {q.bitrate && ` (${Math.round(q.bitrate / 1000)}Mbps)`}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ))}
               </motion.div>

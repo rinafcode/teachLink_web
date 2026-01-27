@@ -114,6 +114,10 @@ function App() {
               <span className="font-medium">Mute</span>
             </div>
             <div className="flex justify-between">
+              <span className="text-gray-600">P</span>
+              <span className="font-medium">PiP Mode</span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-gray-600">Ctrl+Enter</span>
               <span className="font-medium">Save Note</span>
             </div>
