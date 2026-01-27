@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
 import { DashboardGrid } from '../components/dashboard/DashboardGrid';
+import { OfflineStatusIndicator } from '../../components/offline/OfflineStatusIndicator';
+import { DownloadManager } from '../../components/offline/DownloadManager';
+import { StorageManager } from '../../components/offline/StorageManager';
+import { SyncManager } from '../../components/offline/SyncManager';
 
 export const metadata: Metadata = {
   title: 'Dashboard | TeachLink',
@@ -7,5 +11,17 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardPage() {
-  return <DashboardGrid />;
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-end">
+        <OfflineStatusIndicator />
+      </div>
+      <DashboardGrid />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DownloadManager />
+        <StorageManager />
+      </div>
+      <SyncManager />
+    </div>
+  );
 }
