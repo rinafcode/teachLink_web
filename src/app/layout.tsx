@@ -3,9 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { OfflineModeProvider } from "./context/OfflineModeContext";
-import { OfflineStatusIndicator } from "./components/offline/OfflineStatusIndicator";
-import { DownloadManager } from "./components/offline/DownloadManager";
-import { StorageManager } from "./components/offline/StorageManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,14 +32,6 @@ export default function RootLayout({
         <ThemeProvider>
           <OfflineModeProvider>
             {children}
-
-            {/* Offline Mode Components */}
-            <div className="fixed top-4 right-4 z-50">
-              <OfflineStatusIndicator />
-            </div>
-
-            <DownloadManager />
-            <StorageManager />
           </OfflineModeProvider>
         </ThemeProvider>
       </body>
