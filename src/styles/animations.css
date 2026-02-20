@@ -1,0 +1,35 @@
+/* Performance focused animation helpers */
+.anim-will-change {
+  will-change: transform, opacity;
+}
+
+.anim-smooth {
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Presets */
+.preset-fade-in {
+  opacity: 0;
+  transform: translate3d(0,6px,0);
+}
+
+.preset-fade-in.anim-enter {
+  opacity: 1;
+  transform: translate3d(0,0,0);
+}
+
+@keyframes subtle-pop {
+  0% {
+    transform: scale(0.985);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pop-in {
+  animation: subtle-pop 220ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
