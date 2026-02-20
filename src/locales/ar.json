@@ -1,0 +1,88 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجاح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "submit": "إرسال",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "courses": "الدورات",
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "messages": "الرسائل",
+    "notifications": "الإشعارات",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب"
+  },
+  "course": {
+    "title": "دورة",
+    "enroll": "التسجيل",
+    "enrolled": "مسجل",
+    "progress": "التقدم",
+    "lessons": "الدروس",
+    "duration": "المدة",
+    "instructor": "المدرب",
+    "reviews": "المراجعات",
+    "rating": "التقييم",
+    "description": "الوصف",
+    "syllabus": "المنهج",
+    "resources": "الموارد"
+  },
+  "dashboard": {
+    "welcome": "مرحباً",
+    "myCourses": "دوراتي",
+    "recentActivity": "النشاط الأخير",
+    "upcomingDeadlines": "المواعيد النهائية القادمة",
+    "recommendedCourses": "الدورات الموصى بها",
+    "learningStreak": "سلسلة التعلم",
+    "progressSummary": "ملخص التقدم"
+  },
+  "profile": {
+    "editProfile": "تعديل الملف الشخصي",
+    "preferences": "التفضيلات",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "notifications": "الإشعارات",
+    "privacy": "الخصوصية",
+    "account": "الحساب"
+  },
+  "i18n": {
+    "selectLanguage": "اختر اللغة",
+    "currentLanguage": "اللغة الحالية",
+    "languageChanged": "تم تغيير اللغة بنجاح",
+    "rtlMode": "وضع من اليمين إلى اليسار",
+    "ltrMode": "وضع من اليسار إلى اليمين"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+    "minLength": "الحد الأدنى للطول هو {{min}} أحرف",
+    "maxLength": "الحد الأقصى للطول هو {{max}} أحرف",
+    "passwordMismatch": "كلمات المرور غير متطابقة"
+  },
+  "errors": {
+    "generic": "حدث خطأ",
+    "network": "خطأ في الشبكة. يرجى التحقق من اتصالك",
+    "notFound": "غير موجود",
+    "unauthorized": "غير مصرح",
+    "forbidden": "محظور",
+    "serverError": "خطأ في الخادم"
+  }
+}
