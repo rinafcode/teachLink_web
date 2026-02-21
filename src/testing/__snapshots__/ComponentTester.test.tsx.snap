@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ComponentTester – Snapshot > matches stored snapshot for Counter at initial=0 1`] = `
+<div>
+  <span
+    data-testid="count"
+  >
+    0
+  </span>
+  <button
+    data-testid="increment"
+  >
+    +
+  </button>
+</div>
+`;
+
+exports[`ComponentTester – Snapshot > matches stored snapshot for default Button 1`] = `
+<button
+  aria-label="Snapshot"
+  class="btn btn--primary"
+  data-testid="test-button"
+>
+  Snapshot
+</button>
+`;
