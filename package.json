@@ -54,6 +54,7 @@
     "@vitejs/plugin-react-swc": "^3.10.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
+    "fast-check": "^3.22.0",
     "jsdom": "^26.1.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.0.0",
