@@ -8,8 +8,10 @@ import { InternationalizationEngine } from "@/components/i18n/Internationalizati
 import { CulturalAdaptationManager } from "@/components/i18n/CulturalAdaptationManager";
 import PerformanceMonitor from "@/components/performance/PerformanceMonitor";
 import PrefetchingEngine from "@/components/performance/PrefetchingEngine";
+import StateManagerIntegration from "@/components/state/StateManagerIntegration";
 
 const geistSans = Geist({
+// ...
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -39,6 +41,7 @@ export default function RootLayout({
             <CulturalAdaptationManager>
               <ThemeProvider>
                 <OfflineModeProvider>
+                  <StateManagerIntegration />
                   <PerformanceMonitor />
                   <PrefetchingEngine />
                   {children}
