@@ -13,7 +13,7 @@ const PerformanceMonitor: React.FC = () => {
 
   useEffect(() => {
     measureWebVitals((metric) => {
-      setMetrics((prev) => ({
+      setMetrics((prev: Record<string, PerformanceMetric>) => ({
         ...prev,
         [metric.name]: metric,
       }));
