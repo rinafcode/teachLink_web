@@ -25,8 +25,12 @@ export const measureWebVitals = (onReport: (metric: PerformanceMetric) => void) 
 
   // FID (First Input Delay)
   const fidObserver = new PerformanceObserver((entryList) => {
-    entryList.getEntries().forEach((entry: any) => {
-      onReport({ name: 'FID', value: entry.processingStart - entry.startTime, label: 'ms' });
+    entryList.getEntries().forEach((entry) => {
+      // Use type assertion for properties not in base PerformanceEntry
+      const firstInputEntry = entry as PerformanceEntry & { processingStart?: number };
+      if (firstInputEntry.processingStart) {
+        onReport({ name: 'FID', value: firstInputEntry.processingStart - entry.startTime, label: 'ms' });
+      }
     });
   });
   fidObserver.observe({ type: 'first-input', buffered: true });
@@ -35,8 +39,9 @@ export const measureWebVitals = (onReport: (metric: PerformanceMetric) => void) 
   let clsValue = 0;
   const clsObserver = new PerformanceObserver((entryList) => {
     for (const entry of entryList.getEntries()) {
-      if (!(entry as any).hadRecentInput) {
-        clsValue += (entry as any).value;
+      const layoutShiftEntry = entry as { hadRecentInput?: boolean; value?: number };
+      if (!layoutShiftEntry.hadRecentInput) {
+        clsValue += layoutShiftEntry.value || 0;
         onReport({ name: 'CLS', value: clsValue });
       }
     }
@@ -52,12 +57,24 @@ export const measureWebVitals = (onReport: (metric: PerformanceMetric) => void) 
   });
 };
 
+interface NetworkInformation extends EventTarget {
+  readonly effectiveType: 'slow-2g' | '2g' | '3g' | '4g';
+  readonly saveData: boolean;
+}
+
 /**
  * Checks if the user's connection is "slow" to determine if prefetching should be disabled.
  */
 export const isSlowConnection = (): boolean => {
   if (typeof navigator === 'undefined') return false;
-  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+  
+  const nav = navigator as Navigator & { 
+    connection?: NetworkInformation;
+    mozConnection?: NetworkInformation;
+    webkitConnection?: NetworkInformation;
+  };
+  
+  const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
   
   if (connection) {
     if (connection.saveData) return true;

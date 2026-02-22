@@ -2,9 +2,9 @@
  * i18n Utilities - Helper functions for formatting dates, numbers, currencies, etc.
  */
 
-import type { LanguageCode, CulturalPreferences, LocaleConfig } from '@/locales/types';
+import type { LanguageCode, CulturalPreferences } from '@/locales/types';
 import { getLocaleConfig } from '@/locales/config';
-import { format, formatDistanceToNow, formatRelative, type Locale } from 'date-fns';
+import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import { enUS, es, fr, de, ar, he, ja, zhCN, ptBR, ru, it, ko } from 'date-fns/locale';
 
 // Date-fns locale mapping
@@ -181,7 +181,7 @@ export function parseNumber(
   const prefs = getCulturalPreferences(language);
   
   // Replace localized separators with standard ones
-  let normalized = value
+  const normalized = value
     .replace(new RegExp(`\\${prefs.thousandsSeparator}`, 'g'), '')
     .replace(new RegExp(`\\${prefs.decimalSeparator}`, 'g'), '.');
   
@@ -235,7 +235,7 @@ export function formatDuration(
   seconds: number,
   language: LanguageCode
 ): string {
-  const config = getLocaleConfig(language);
+  getLocaleConfig(language);
   
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
