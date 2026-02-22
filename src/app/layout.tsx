@@ -6,6 +6,8 @@ import { OfflineModeProvider } from "./context/OfflineModeContext";
 import { I18nProvider } from "@/hooks/useInternationalization";
 import { InternationalizationEngine } from "@/components/i18n/InternationalizationEngine";
 import { CulturalAdaptationManager } from "@/components/i18n/CulturalAdaptationManager";
+import PerformanceMonitor from "@/components/performance/PerformanceMonitor";
+import PrefetchingEngine from "@/components/performance/PrefetchingEngine";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +39,8 @@ export default function RootLayout({
             <CulturalAdaptationManager>
               <ThemeProvider>
                 <OfflineModeProvider>
+                  <PerformanceMonitor />
+                  <PrefetchingEngine />
                   {children}
                 </OfflineModeProvider>
               </ThemeProvider>
