@@ -34,14 +34,32 @@ class BundleOptimizer {
   }
 
   /**
-   * Performs basic bundle size reporting (simulated).
+   * Identifies large chunks that might need further code splitting.
+   */
+  analyzeChunkSizes(threshold: number = 200) { // threshold in KB
+    const heavyChunks = Array.from(this.chunks.values()).filter(
+      (chunk) => chunk.size && chunk.size > threshold
+    );
+
+    if (heavyChunks.length > 0) {
+      console.warn(`[Bundle Analysis] Found ${heavyChunks.length} heavy chunks (> ${threshold}KB). Consider further code splitting.`);
+      heavyChunks.forEach((chunk) => {
+        console.warn(` - Chunk: ${chunk.name} (${chunk.size}KB)`);
+      });
+    }
+
+    return heavyChunks;
+  }
+
+  /**
+   * Performs basic bundle size reporting.
    */
   reportBundleHealth() {
     const totalChunks = this.chunks.size;
-    console.log(`[Bundle Optimizer] Monitoring ${totalChunks} logical chunks.`);
+    const totalSize = Array.from(this.chunks.values()).reduce((acc, c) => acc + (c.size || 0), 0);
     
-    // In a real implementation, this would iterate over actual JS chunks
-    // and provide feedback on large files or duplication.
+    console.log(`[Bundle Optimizer] Monitoring ${totalChunks} logical chunks. Total estimated size: ${totalSize}KB.`);
+    this.analyzeChunkSizes();
   }
 }
 
