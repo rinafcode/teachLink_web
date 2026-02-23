@@ -8,9 +8,9 @@ interface ProgressSummaryWidgetProps {
   id: string;
   title: string;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
   onToggleCollapse: () => void;
-  onUpdateSettings: (settings: Record<string, any>) => void;
+  onUpdateSettings: (settings: Record<string, unknown>) => void;
   onRemove: () => void;
   size: 'small' | 'medium' | 'large';
   onChangeSize: (size: 'small' | 'medium' | 'large') => void;
@@ -118,7 +118,7 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
       try {
         await new Promise((res) => setTimeout(res, 150));
         if (cancelled) return;
-      } catch (e: any) {
+      } catch {
         if (!cancelled) setError('Failed to load progress data');
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -283,7 +283,7 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Size</label>
               <select
                 value={size}
-                onChange={(e) => onChangeSize(e.target.value as any)}
+                onChange={(e) => onChangeSize(e.target.value as 'small' | 'medium' | 'large')}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
               >
                 <option value="small">Small</option>

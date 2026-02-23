@@ -16,6 +16,7 @@ export const AuthLayout = ({
   heroSubtitle,
   heroImage = '/hero-image.jpg',
 }: AuthLayoutProps) => {
+  void heroImage; // Reserved for future hero image display
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side - Form */}

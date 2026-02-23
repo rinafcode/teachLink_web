@@ -307,8 +307,8 @@ class OfflineSyncService {
     const tx = this.db.transaction('conflicts', 'readonly');
     const store = tx.objectStore('conflicts');
     const index = store.index('resolved');
-    
-    return await index.getAll(false);
+    const all = await index.getAll();
+    return all.filter((c) => !c.resolved);
   }
 
   async resolveConflictManually(conflictId: string, resolution: 'local' | 'remote' | 'merge'): Promise<void> {

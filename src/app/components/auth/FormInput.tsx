@@ -11,7 +11,12 @@ interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-  ({ label, error, icon, type, ...props }, ref) => {
+  ({ label, error, icon, type, onDrag, onDragStart, onDragEnd, onAnimationStart, onAnimationEnd, ...props }, ref) => {
+    void onDrag;
+    void onDragStart;
+    void onDragEnd;
+    void onAnimationStart;
+    void onAnimationEnd;
     const [showPassword, setShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
 

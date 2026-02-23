@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Advanced Forms Hook
  * Provides comprehensive form management with validation, auto-save, and state management

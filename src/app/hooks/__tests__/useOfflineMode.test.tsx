@@ -351,7 +351,7 @@ describe('useOfflineMode', () => {
       };
 
       await act(async () => {
-        await result.current.addToSyncQueue(syncData);
+        await result.current.addToSyncQueue(syncData.type, syncData.data);
       });
 
       // In a real implementation, we would verify the item was added to the queue
@@ -453,7 +453,7 @@ describe('useOfflineMode', () => {
           result.current.downloadCourse('course-1', { id: 'course-1', title: 'Course 1', description: '', thumbnail: '', duration: 0, modules: [], size: 0 }),
           result.current.saveProgress('course-1', 'module-1', 50, false),
           result.current.saveProgress('course-1', 'module-2', 75, false),
-          result.current.addToSyncQueue({ type: 'progress', data: { courseId: 'course-1', progress: 50 } }),
+          result.current.addToSyncQueue('progress', { courseId: 'course-1', progress: 50 }),
         ];
 
         await Promise.all(operations);

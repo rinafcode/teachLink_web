@@ -15,8 +15,18 @@ export const AnimatedButton = ({
   children,
   variant = 'primary',
   disabled,
+  onDrag,
+  onDragStart,
+  onDragEnd,
+  onAnimationStart,
+  onAnimationEnd,
   ...props
 }: AnimatedButtonProps) => {
+  void onDrag;
+  void onDragStart;
+  void onDragEnd;
+  void onAnimationStart;
+  void onAnimationEnd;
   const variantStyles = {
     primary:
       'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700',

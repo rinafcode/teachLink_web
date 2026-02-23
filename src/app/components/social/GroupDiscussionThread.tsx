@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Paperclip, Send, User } from 'lucide-react';
+import { Paperclip, Send } from 'lucide-react';
 import RichTextEditor from '@/app/components/ui/RichTextEditor';
 import type { GroupMessage, Attachment } from '@/app/hooks/useStudyGroups';
 import { formatDistanceToNow } from 'date-fns';
@@ -49,13 +49,6 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
     setFiles([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handlePost();
     }
   };
 

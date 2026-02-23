@@ -19,13 +19,13 @@ export const useSearchFilters = () => {
   const pathname = usePathname();
 
   const [filters, setFiltersState] = useState<FilterState>({
-    difficulty: searchParams.get('difficulty')?.split(',').filter(Boolean) || [],
-    topics: searchParams.get('topics')?.split(',').filter(Boolean) || [],
-    duration: searchParams.get('duration') ? Number(searchParams.get('duration')) : 100,
-    priceRange: searchParams.get('price') ? Number(searchParams.get('price')) : 200,
-    sort: searchParams.get('sort') || 'relevance',
-    instructor: searchParams.get('instructor') || '',
-    searchTerm: searchParams.get('q') || ''
+    difficulty: searchParams?.get('difficulty')?.split(',').filter(Boolean) || [],
+    topics: searchParams?.get('topics')?.split(',').filter(Boolean) || [],
+    duration: searchParams?.get('duration') ? Number(searchParams.get('duration')) : 100,
+    priceRange: searchParams?.get('price') ? Number(searchParams.get('price')) : 200,
+    sort: searchParams?.get('sort') || 'relevance',
+    instructor: searchParams?.get('instructor') || '',
+    searchTerm: searchParams?.get('q') || ''
   });
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export const useSearchFilters = () => {
       params.set('q', filters.searchTerm);
     }
 
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '';
     router.replace(newUrl, { scroll: false });
   }, [filters, pathname, router]);
 

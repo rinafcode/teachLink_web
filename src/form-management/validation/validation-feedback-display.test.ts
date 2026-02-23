@@ -38,7 +38,7 @@ Object.defineProperty(global, 'document', {
 });
 
 Object.defineProperty(global, 'requestAnimationFrame', {
-  value: vi.fn((callback: Function) => setTimeout(callback, 0)),
+  value: vi.fn((callback: () => void) => setTimeout(callback, 0)),
   writable: true
 });
 

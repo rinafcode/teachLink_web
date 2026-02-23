@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Settings, User } from 'lucide-react';
+import { DollarSign, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Sale {
@@ -17,9 +17,9 @@ interface RecentSalesWidgetProps {
   id: string;
   title: string;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
   onToggleCollapse: () => void;
-  onUpdateSettings: (settings: Record<string, any>) => void;
+  onUpdateSettings: (settings: Record<string, unknown>) => void;
   onRemove: () => void;
   size: 'small' | 'medium' | 'large';
   onChangeSize: (size: 'small' | 'medium' | 'large') => void;
@@ -55,7 +55,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
       try {
         await new Promise((r) => setTimeout(r, 150));
         if (cancelled) return;
-      } catch (e) {
+      } catch {
         if (!cancelled) setError('Failed to load sales data');
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -104,7 +104,6 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
   ];
 
   const totalSales = sales.length;
-  const totalAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
 
   const getInitials = (name: string) => {
     return name
@@ -193,7 +192,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Size</label>
               <select
                 value={size}
-                onChange={(e) => onChangeSize(e.target.value as any)}
+                onChange={(e) => onChangeSize(e.target.value as 'small' | 'medium' | 'large')}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
               >
                 <option value="small">Small</option>
@@ -204,6 +203,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
             <div>
               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Refresh</label>
               <select
+                // @ts-expect-error - settings is of type unknown
                 value={settings.refreshInterval ?? 'manual'}
                 onChange={(e) => onUpdateSettings({ refreshInterval: e.target.value })}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"

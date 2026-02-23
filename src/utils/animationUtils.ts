@@ -51,4 +51,4 @@ export function scheduleFrame(cb: () => void) {
 
 export type SpringState = { position: number; velocity: number; target: number }
 
-export { SpringConfig }
+export type { SpringConfig }

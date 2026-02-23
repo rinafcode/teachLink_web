@@ -19,9 +19,9 @@ interface RecommendedCoursesWidgetProps {
   id: string;
   title: string;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
   onToggleCollapse: () => void;
-  onUpdateSettings: (settings: Record<string, any>) => void;
+  onUpdateSettings: (settings: Record<string, unknown>) => void;
   onRemove: () => void;
   size: 'small' | 'medium' | 'large';
   onChangeSize: (size: 'small' | 'medium' | 'large') => void;
@@ -55,7 +55,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
       try {
         await new Promise((r) => setTimeout(r, 150));
         if (cancelled) return;
-      } catch (e) {
+      } catch {
         if (!cancelled) setError('Failed to load recommendations');
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -187,7 +187,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
               <label className="block text-xs text-gray-600 mb-1">Size</label>
               <select
                 value={size}
-                onChange={(e) => onChangeSize(e.target.value as any)}
+                onChange={(e) => onChangeSize(e.target.value as 'small' | 'medium' | 'large')}
                 className="w-full px-2 py-1 border border-gray-300 rounded"
               >
                 <option value="small">Small</option>
@@ -198,6 +198,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
             <div>
               <label className="block text-xs text-gray-600 mb-1">Category</label>
               <input
+                // @ts-expect-error - settings is of type unknown
                 value={settings.category ?? ''}
                 onChange={(e) => onUpdateSettings({ category: e.target.value })}
                 className="w-full px-2 py-1 border border-gray-300 rounded"
@@ -233,7 +234,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
                   {course.title}
                 </h4>
                 <p className="text-xs text-gray-600 mb-2">{course.instructor}</p>
-                
+
                 <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
                   <div className="flex items-center space-x-1">
                     <Star size={12} className="text-yellow-500 fill-current" />

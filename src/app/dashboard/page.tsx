@@ -1,12 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { DownloadManager } from '../components/offline/DownloadManager';
 import { OfflineStatusIndicator } from '../components/offline/OfflineStatusIndicator';
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('overview');
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

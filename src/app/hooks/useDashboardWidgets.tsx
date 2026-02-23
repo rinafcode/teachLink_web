@@ -7,7 +7,7 @@ interface Widget {
   size: 'small' | 'medium' | 'large';
   position: number;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
 }
 
 export const useDashboardWidgets = () => {
@@ -139,7 +139,7 @@ export const useDashboardWidgets = () => {
   }, [widgets, saveWidgetLayout]);
 
   // Update widget settings
-  const updateWidgetSettings = useCallback((widgetId: string, settings: Record<string, any>) => {
+  const updateWidgetSettings = useCallback((widgetId: string, settings: Record<string, unknown>) => {
     const updatedWidgets = widgets.map(widget =>
       widget.id === widgetId
         ? { ...widget, settings: { ...widget.settings, ...settings } }
@@ -279,7 +279,7 @@ export const useDashboardWidgets = () => {
   }, [widgets]);
 
   // Import widget configuration
-  const importWidgetConfig = useCallback((config: any) => {
+  const importWidgetConfig = useCallback((config: { widgets?: Widget[] }) => {
     try {
       if (config.widgets && Array.isArray(config.widgets)) {
         setWidgets(config.widgets);

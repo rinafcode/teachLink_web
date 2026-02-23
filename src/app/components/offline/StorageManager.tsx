@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   HardDrive, 
@@ -9,11 +9,7 @@ import {
   FileText, 
   Video, 
   BookOpen,
-  Settings,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Calendar
+  AlertTriangle
 } from 'lucide-react';
 import { useOfflineModeContext } from '../../context/OfflineModeContext';
 
@@ -40,7 +36,6 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
 
   const { 
     storageUsage, 
-    getOfflineCourses, 
     clearOfflineData 
   } = useOfflineModeContext();
 
@@ -150,7 +145,6 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       }
     });
 
-  const totalSize = storageItems.reduce((acc, item) => acc + item.size, 0);
   const selectedSize = storageItems
     .filter(item => selectedItems.includes(item.id))
     .reduce((acc, item) => acc + item.size, 0);
@@ -266,7 +260,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                 <div className="flex space-x-2">
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
+                    onChange={(e) => setSortBy((e.target.value as 'name' | 'size' | 'date' | 'accessed'))}
                     className="text-xs border border-gray-300 rounded px-2 py-1"
                   >
                     <option value="date">Date</option>
@@ -276,7 +270,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                   </select>
                   <select
                     value={filterBy}
-                    onChange={(e) => setFilterBy(e.target.value as any)}
+                    onChange={(e) => setFilterBy((e.target.value as 'all' | 'course' | 'video' | 'document' | 'quiz'))}
                     className="text-xs border border-gray-300 rounded px-2 py-1"
                   >
                     <option value="all">All</option>

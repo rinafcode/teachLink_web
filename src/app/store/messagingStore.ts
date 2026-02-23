@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { io, Socket } from 'socket.io-client';
+import io from 'socket.io-client';
 
 export interface Attachment {
   id: string;
@@ -46,7 +46,7 @@ interface MessagingState {
   conversations: Conversation[];
   currentConversation: Conversation | null;
   messages: Message[];
-  socket: Socket | null;
+  socket: ReturnType<typeof io> | null;
   isConnected: boolean;
   isTyping: boolean;
   typingUsers: Set<string>;
@@ -614,7 +614,6 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       const socket = io(
         process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001',
         {
-          withCredentials: true,
           autoConnect: false, // Don't auto-connect for demo
         }
       );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardGrid } from './components/dashboard/DashboardGrid';
+import { DashboardGrid } from './dashboard/DashboardGrid';
 
 function App() {
   return (

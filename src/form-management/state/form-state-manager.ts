@@ -5,7 +5,6 @@
 
 import {
   FormState,
-  FormStateManager as IFormStateManager,
   StateChangeCallback,
   StateChangeEvent,
   Subscription,
@@ -14,6 +13,7 @@ import {
   FieldDescriptor,
   ConditionalRule
 } from '../types/core';
+import type { FormStateManager as IFormStateManager } from '../types/interfaces';
 import { DependencyManager, CascadeUpdateResult } from './dependency-manager';
 
 export class FormStateManager implements IFormStateManager {

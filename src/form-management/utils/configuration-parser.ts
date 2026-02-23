@@ -35,13 +35,13 @@ const FieldTypeSchema = z.enum([
   'time', 'datetime-local'
 ]);
 
-// Zod schema for ValidationRule
-const ValidationRuleSchema: z.ZodSchema<ValidationRule> = z.object({
+// Zod schema for ValidationRule - use type assertion for function schemas
+const ValidationRuleSchema = z.object({
   type: z.enum(['required', 'email', 'minLength', 'maxLength', 'pattern', 'custom', 'async']),
   params: z.record(z.any()).optional(),
   message: z.string(),
   condition: z.function().optional()
-});
+}) as z.ZodSchema<ValidationRule>;
 
 // Zod schema for FieldStyling
 const FieldStylingSchema: z.ZodSchema<FieldStyling> = z.object({
@@ -70,12 +70,12 @@ const ConditionalActionSchema: z.ZodSchema<ConditionalAction> = z.object({
   value: z.any().optional()
 });
 
-// Zod schema for ConditionalRule
-const ConditionalRuleSchema: z.ZodSchema<ConditionalRule> = z.object({
+// Zod schema for ConditionalRule - use type assertion for function schemas
+const ConditionalRuleSchema = z.object({
   id: z.string(),
   condition: z.function(),
   actions: z.array(ConditionalActionSchema)
-});
+}) as z.ZodSchema<ConditionalRule>;
 
 // Zod schema for ResponsiveConfiguration
 const ResponsiveConfigurationSchema: z.ZodSchema<ResponsiveConfiguration> = z.object({
@@ -99,14 +99,14 @@ const LayoutConfigurationSchema: z.ZodSchema<LayoutConfiguration> = z.object({
   responsive: ResponsiveConfigurationSchema
 });
 
-// Zod schema for ValidationConfiguration
-const ValidationConfigurationSchema: z.ZodSchema<ValidationConfiguration> = z.object({
+// Zod schema for ValidationConfiguration - use type assertion for function schemas
+const ValidationConfigurationSchema = z.object({
   validateOnChange: z.boolean(),
   validateOnBlur: z.boolean(),
   showErrorsOnSubmit: z.boolean(),
   debounceMs: z.number().min(0),
   customRules: z.record(z.function())
-});
+}) as z.ZodSchema<ValidationConfiguration>;
 
 // Zod schema for AutoSaveConfiguration
 const AutoSaveConfigurationSchema: z.ZodSchema<AutoSaveConfiguration> = z.object({
@@ -134,8 +134,8 @@ const AccessibilityConfigurationSchema: z.ZodSchema<AccessibilityConfiguration> 
   customFocusIndicators: z.boolean()
 });
 
-// Zod schema for WizardStep
-const WizardStepSchema: z.ZodSchema<WizardStep> = z.object({
+// Zod schema for WizardStep - use type assertion for function schemas
+const WizardStepSchema = z.object({
   index: z.number().min(0),
   id: z.string(),
   title: z.string(),
@@ -143,7 +143,7 @@ const WizardStepSchema: z.ZodSchema<WizardStep> = z.object({
   isComplete: z.boolean(),
   isValid: z.boolean(),
   conditionalNext: z.function().optional()
-});
+}) as z.ZodSchema<WizardStep>;
 
 // Main FormConfiguration schema
 const FormConfigurationSchema: z.ZodSchema<FormConfiguration> = z.object({
