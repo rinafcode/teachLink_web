@@ -58,7 +58,7 @@ export const LessonBuilder: React.FC<LessonBuilderProps> = ({
 
       {lessons.length === 0 ? (
         <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No lessons yet. Click "Add Lesson" to get started.</p>
+          <p className="text-gray-500 dark:text-gray-400">No lessons yet. Click &quot;Add Lesson&quot; to get started.</p>
         </div>
       ) : (
         <DragDropContext onDragEnd={handleDragEnd}>

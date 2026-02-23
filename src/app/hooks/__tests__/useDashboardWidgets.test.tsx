@@ -27,7 +27,7 @@ describe('useDashboardWidgets', () => {
   let root: ReturnType<typeof createRoot>;
 
   beforeEach(() => {
-    // @ts-ignore
+    // @ts-expect-error - LocalStorageMock for testing
     global.localStorage = new LocalStorageMock();
     container = document.createElement('div');
     document.body.appendChild(container);
