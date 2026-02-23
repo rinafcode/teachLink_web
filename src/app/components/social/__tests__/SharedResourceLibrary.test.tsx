@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import SharedResourceLibrary from '@/app/components/social/SharedResourceLibrary';
-import type { GroupResource } from '@/app/hooks/useStudyGroups';
 
 describe('SharedResourceLibrary', () => {
   it('calls onAdd for link resource', () => {

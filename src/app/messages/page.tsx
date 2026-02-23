@@ -1,6 +1,6 @@
 'use client';
 
-
+import { useState } from 'react';
 import ConversationList from '@/app/components/messaging/ConversationList';
 import MessageThread from '@/app/components/messaging/MessageThread';
 import MessageComposer from '@/app/components/messaging/MessageComposer';
@@ -14,7 +14,6 @@ export default function MessagesPage() {
     currentConversation,
     messages,
     isConnected,
-    typingUsers,
     isLoadingMessages,
     isLoadingConversations,
     hasMoreMessages,
@@ -31,11 +30,10 @@ export default function MessagesPage() {
     setSearchQuery,
     removeSelectedFile,
     markMessageAsRead,
-    getOtherParticipant,
     getTypingUserNames,
   } = useMessaging();
 
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar] = useState(true);
 
   const otherParticipant = currentConversation
     ? currentConversation.participants.find((p) => p.id !== 'current-user')

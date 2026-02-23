@@ -5,10 +5,10 @@ import { Home, BookOpen, Download, BarChart3, User, Play, Loader2 } from "lucide
 import TouchOptimizedControls from "./TouchOptimizedControls";
 import OfflineContentManager from "./OfflineContentManager";
 import MobileProgressTracker from "./MobileProgressTracker";
-import { useMobileOptimization } from "../../hooks/useMobileOptimization";
-import { apiService } from "@/services/api";
-import { offlineStorage } from "../../services/offlineStorage";
-import { Course, Lesson } from "../../types/mobile";
+import { useMobileOptimization } from "../hooks/useMobileOptimization";
+import { apiService } from "../services/api";
+import { offlineStorage } from "../services/offlineStorage";
+import { Course, Lesson } from "../types/mobile";
 
 type Tab = "home" | "courses" | "downloads" | "progress" | "profile";
 
@@ -17,10 +17,10 @@ export default function MobileLearningInterface() {
   const [showVideo, setShowVideo] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
-  const [recentLessons, setRecentLessons] = useState<Lesson[]>([]);
+  const [recentLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isMobile, isOnline, deviceType } = useMobileOptimization();
+  const { isOnline, deviceType } = useMobileOptimization();
 
   useEffect(() => {
        if (typeof window !== 'undefined') {

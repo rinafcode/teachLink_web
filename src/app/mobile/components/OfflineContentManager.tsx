@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Download, Check, X, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
-import { apiService } from '../../services/api';
-import { offlineStorage } from '../../services/offlineStorage';
-import { Course, OfflineContent } from '../../types/mobile';
+import { Download, Check, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
+import { apiService } from '../services/api';
+import { offlineStorage } from '../services/offlineStorage';
+import { Course, OfflineContent } from '../types/mobile';
 
 interface DownloadProgress {
   courseId: string;
@@ -39,7 +39,7 @@ export default function OfflineContentManager() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);;
+  }, []);
 
   const loadData = async () => {
     try {

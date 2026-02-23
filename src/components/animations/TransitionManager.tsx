@@ -19,7 +19,7 @@ export async function orchestrateTransitions(items: TransitionItem[], options: O
   for (const item of items) {
     await item.run()
     // small frame gap to allow layout/paint
-    await new Promise((r) => scheduleFrame(r))
+    await new Promise<void>((r) => scheduleFrame(() => r()))
   }
 }
 

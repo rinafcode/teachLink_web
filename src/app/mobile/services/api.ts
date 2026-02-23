@@ -1,4 +1,4 @@
-import { Course, Lesson, UserProgress, OfflineContent, LearningSession } from '../types/mobile';
+import { Course, Lesson, UserProgress, LearningSession } from '../types/mobile';
 
 const API_BASE_URL = '/api';
 

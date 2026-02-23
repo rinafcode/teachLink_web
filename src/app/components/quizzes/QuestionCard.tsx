@@ -1,10 +1,9 @@
 'use client';
 
-import { Question } from '@/store/quizStore';
+import { Question, useQuizStore } from '@/app/store/quizStore';
 import MultipleChoiceQuestion from './question-types/MultipleChoiceQuestion';
 import TrueFalseQuestion from './question-types/TrueFalseQuestion';
 import CodeChallengeQuestion from './question-types/CodeChallengeQuestion';
-import { useQuizStore } from '@/store/quizStore';
 
 interface QuestionCardProps {
   question: Question;

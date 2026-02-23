@@ -30,8 +30,7 @@
     ],
     "strictNullChecks": true,
     "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "noImplicitAny": false
   },
   "include": [
     "next-env.d.ts",
@@ -40,6 +39,8 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

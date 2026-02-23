@@ -129,7 +129,7 @@ export class IntegratedValidationSystem {
       description: 'Validate minimum age requirement',
       isAsync: false,
       validationFunction: (value, formState, context) => {
-        const age = parseInt(value);
+        const age = parseInt(String(value));
         const minAge = 18;
         
         return {
@@ -149,7 +149,7 @@ export class IntegratedValidationSystem {
       isAsync: false,
       validationFunction: (value) => {
         const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
-        const isValid = phoneRegex.test(value);
+        const isValid = phoneRegex.test(String(value));
         
         return {
           isValid,

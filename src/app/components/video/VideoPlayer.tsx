@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, PictureInPicture, PictureInPicture2, Settings, Bookmark, FileText, MessageSquare } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, PictureInPicture, PictureInPicture2, Bookmark, FileText, MessageSquare } from 'lucide-react';
 import { PlaybackControls } from './PlaybackControls';
 import { BookmarkManager } from './BookmarkManager';
 import { TranscriptView } from './TranscriptView';
@@ -89,7 +89,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const currentTime = Date.now();
     if (currentTime - lastTapTime < 300) {
       e.preventDefault();
-      isPlaying ? pause() : play();
+      if (isPlaying) pause(); else play();
       setLastTapTime(0);
     } else {
       setLastTapTime(currentTime);
@@ -206,7 +206,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       switch (e.key) {
         case ' ':
           e.preventDefault();
-          isPlaying ? pause() : play();
+          if (isPlaying) pause(); else play();
           break;
         case 'ArrowLeft':
           e.preventDefault();
@@ -316,7 +316,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ref={containerRef}
       className={`relative bg-black rounded-lg overflow-hidden group ${className}`}
       onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
+      onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   // Mock single course data
   const course = {
-    id: params.id,
+    id,
     title: 'Web3 UX Design Principles',
     description: 'Create intuitive interfaces for decentralized applications',
     instructor: 'Sarah Johnson',

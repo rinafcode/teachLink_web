@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronRight, Trophy, Target, Flame, CheckCircle2, Calendar, TrendingUp } from 'lucide-react';
-import { apiService } from '../../services/api';
-import { offlineStorage } from '../../services/offlineStorage';
-import { Course, Lesson, UserProgress } from '../../types/mobile';
+import { apiService } from '../services/api';
+import { offlineStorage } from '../services/offlineStorage';
+import { Course, Lesson, UserProgress } from '../types/mobile';
 
 interface ProgressCourse extends Course {
   lessons: Lesson[];
@@ -163,8 +163,6 @@ export default function MobileProgressTracker() {
       }
     }
   };
-
-  const activeCourse = courses[activeIndex];
 
   if (loading) {
     return (

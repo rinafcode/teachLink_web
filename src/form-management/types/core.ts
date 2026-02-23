@@ -111,7 +111,18 @@ export interface ValidationConfiguration {
   customRules: Record<string, ValidationFunction>;
 }
 
-export type ValidationFunction = (value: any, formState: FormState) => ValidationResult | Promise<ValidationResult>;
+export interface ValidationExecutionContext {
+  getFieldValue(fieldId: string): unknown;
+  getFieldDescriptor(fieldId: string): FieldDescriptor | undefined;
+  getAllFieldValues(): Record<string, unknown>;
+  getFormMetadata(): FormState['metadata'];
+  hasField(fieldId: string): boolean;
+  isFieldTouched(fieldId: string): boolean;
+  isFieldDirty(fieldId: string): boolean;
+  getCustomData(key: string): unknown;
+  setCustomData(key: string, value: unknown): void;
+}
+export type ValidationFunction = (value: unknown, formState: FormState, context?: ValidationExecutionContext) => ValidationResult | Promise<ValidationResult>;
 
 // Form Configuration Schema
 export interface FormConfiguration {
@@ -123,6 +134,7 @@ export interface FormConfiguration {
   fields: FieldDescriptor[];
   layout: LayoutConfiguration;
   validation: ValidationConfiguration;
+  conditionalLogic?: ConditionalRule[];
   autoSave?: AutoSaveConfiguration;
   analytics?: AnalyticsConfiguration;
   accessibility?: AccessibilityConfiguration;
