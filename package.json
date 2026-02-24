@@ -11,7 +11,10 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "validate:ui": "node scripts/validate-ui.js",
+    "validate:web3": "node scripts/validate-web3.js",
+    "validate": "npm run validate:ui && npm run validate:web3"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
