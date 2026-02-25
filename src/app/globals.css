@@ -32,6 +32,33 @@ body {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Not screen reader only - visible when focused */
+.sr-only.focus\:not-sr-only:focus,
+.focus-within\:not-sr-only:focus-within {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Focus visible styles for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip to content link styles */
+a[data-skip-link]:focus {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9999;
+}
 @layer utilities {
   .grid-bg {
     background-size: 40px 40px;
