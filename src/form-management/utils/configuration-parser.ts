@@ -176,6 +176,12 @@ export class FormConfigurationParser implements ConfigurationParser {
       if (error instanceof SyntaxError) {
         throw new Error(`Invalid JSON: ${error.message}`);
       }
+
+      // Normalize schema validation errors to a stable message for callers/tests
+      if (error instanceof z.ZodError) {
+        throw new Error(`Configuration validation failed: ${error.errors.map(e => e.message).join(', ')}`);
+      }
+
       throw error;
     }
   }
