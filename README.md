@@ -109,13 +109,16 @@ npm run dev
 
 For detailed tasks, see GitHub Issues
 
-🤝 Contributing
+## 🤝 Contributing
 We welcome community contributions!
 
-Guidelines:
-Fork the repo and make your changes in a feature branch
+- Read **`CONTRIBUTING.md`** before opening a PR.
+- All PRs must include an issue reference in the description (e.g. `Closes #68`).
+- Merges to protected branches require passing CI + approvals.
 
-Before submitting a PR, read the CONTRIBUTING.md file
+Guidelines:
+- Fork the repo and make your changes in a feature branch
+- Before submitting a PR, read the **`CONTRIBUTING.md`** file
 
 ## 📬 Join the Community
 
@@ -144,5 +147,3 @@ let make our code clean, maintainable and scallable. Keep to Standard
 
 📜 License
 MIT © 2025 TeachLink DAO
-
-```
