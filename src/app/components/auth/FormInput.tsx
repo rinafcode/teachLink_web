@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState, InputHTMLAttributes, forwardRef } from 'react';
+import { FieldError } from '../../../components/forms/FormError';
 
 interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -69,15 +70,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             </button>
           )}
         </div>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-1 text-sm text-red-500"
-          >
-            {error}
-          </motion.p>
-        )}
+        <FieldError error={error} />
       </motion.div>
     );
   }
