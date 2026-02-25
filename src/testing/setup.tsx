@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import type React from 'react'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi, beforeAll } from 'vitest'
 
