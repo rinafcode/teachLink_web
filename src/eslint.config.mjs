@@ -19,7 +19,8 @@ const eslintConfig = [
       "**/form-management/**/*.test.ts",
     ],
   },
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  // include Prettier at the end to avoid rule conflicts
+  ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
   {
     rules: {
       "@typescript-eslint/no-unused-vars": "off",
