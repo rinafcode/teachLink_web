@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize, X } from "lucide-react";
-import { offlineStorage } from "../../services/offlineStorage";
+import { offlineStorage } from "../services/offlineStorage";
 
 interface TouchOptimizedControlsProps {
   videoTitle: string;

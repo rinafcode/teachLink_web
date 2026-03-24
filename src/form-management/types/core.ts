@@ -111,7 +111,7 @@ export interface ValidationConfiguration {
   customRules: Record<string, ValidationFunction>;
 }
 
-export type ValidationFunction = (value: any, formState: FormState) => ValidationResult | Promise<ValidationResult>;
+export type ValidationFunction = (value: unknown, formState: FormState, context?: unknown) => ValidationResult | Promise<ValidationResult>;
 
 // Form Configuration Schema
 export interface FormConfiguration {
@@ -126,6 +126,7 @@ export interface FormConfiguration {
   autoSave?: AutoSaveConfiguration;
   analytics?: AnalyticsConfiguration;
   accessibility?: AccessibilityConfiguration;
+  conditionalLogic?: ConditionalRule[];
 }
 
 // Auto-Save Configuration

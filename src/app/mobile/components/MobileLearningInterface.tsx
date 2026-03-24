@@ -5,10 +5,10 @@ import { Home, BookOpen, Download, BarChart3, User, Play, Loader2 } from "lucide
 import TouchOptimizedControls from "./TouchOptimizedControls";
 import OfflineContentManager from "./OfflineContentManager";
 import MobileProgressTracker from "./MobileProgressTracker";
-import { useMobileOptimization } from "../../hooks/useMobileOptimization";
-import { apiService } from "@/services/api";
-import { offlineStorage } from "../../services/offlineStorage";
-import { Course, Lesson } from "../../types/mobile";
+import { useMobileOptimization } from "../hooks/useMobileOptimization";
+import { apiService } from "../services/api";
+import { offlineStorage } from "../services/offlineStorage";
+import { Course, Lesson } from "../types/mobile";
 
 type Tab = "home" | "courses" | "downloads" | "progress" | "profile";
 

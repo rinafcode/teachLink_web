@@ -411,7 +411,8 @@ export class ValidationRuleBuilders {
       isAsync: false,
       dependencies: [targetFieldId],
       validationFunction: (value, formState, context) => {
-        const targetValue = context?.getFieldValue(targetFieldId);
+        const ctx = context as ValidationExecutionContext | undefined;
+        const targetValue = ctx?.getFieldValue(targetFieldId);
         let isValid = false;
 
         switch (comparison) {
@@ -460,7 +461,8 @@ export class ValidationRuleBuilders {
       description: `Conditional validation: ${name}`,
       isAsync: false,
       validationFunction: (value, formState, context) => {
-        if (!context || !condition(context)) {
+        const ctx = context as ValidationExecutionContext | undefined;
+        if (!ctx || !condition(ctx)) {
           return { isValid: true, errors: [] };
         }
 

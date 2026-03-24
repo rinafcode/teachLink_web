@@ -41,7 +41,7 @@ const ValidationRuleSchema: z.ZodSchema<ValidationRule> = z.object({
   params: z.record(z.any()).optional(),
   message: z.string(),
   condition: z.function().optional()
-});
+}) as z.ZodSchema<ValidationRule>;
 
 // Zod schema for FieldStyling
 const FieldStylingSchema: z.ZodSchema<FieldStyling> = z.object({
@@ -75,7 +75,7 @@ const ConditionalRuleSchema: z.ZodSchema<ConditionalRule> = z.object({
   id: z.string(),
   condition: z.function(),
   actions: z.array(ConditionalActionSchema)
-});
+}) as z.ZodSchema<ConditionalRule>;
 
 // Zod schema for ResponsiveConfiguration
 const ResponsiveConfigurationSchema: z.ZodSchema<ResponsiveConfiguration> = z.object({
@@ -106,7 +106,7 @@ const ValidationConfigurationSchema: z.ZodSchema<ValidationConfiguration> = z.ob
   showErrorsOnSubmit: z.boolean(),
   debounceMs: z.number().min(0),
   customRules: z.record(z.function())
-});
+}) as z.ZodSchema<ValidationConfiguration>;
 
 // Zod schema for AutoSaveConfiguration
 const AutoSaveConfigurationSchema: z.ZodSchema<AutoSaveConfiguration> = z.object({
@@ -143,7 +143,7 @@ const WizardStepSchema: z.ZodSchema<WizardStep> = z.object({
   isComplete: z.boolean(),
   isValid: z.boolean(),
   conditionalNext: z.function().optional()
-});
+}) as z.ZodSchema<WizardStep>;
 
 // Main FormConfiguration schema
 const FormConfigurationSchema: z.ZodSchema<FormConfiguration> = z.object({

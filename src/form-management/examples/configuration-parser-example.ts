@@ -317,7 +317,7 @@ export function demonstrateConfigurationParser() {
     fields: [] // Invalid: no fields
   };
   
-  const invalidValidation = parser.validate(invalidConfig as FormConfiguration);
+  const invalidValidation = parser.validate(invalidConfig as unknown as FormConfiguration);
   console.log(`Invalid config validation: ${invalidValidation.isValid ? 'VALID' : 'INVALID'}`);
   console.log(`Number of validation errors: ${invalidValidation.errors.length}`);
   

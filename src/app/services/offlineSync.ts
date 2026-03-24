@@ -308,7 +308,7 @@ class OfflineSyncService {
     const store = tx.objectStore('conflicts');
     const index = store.index('resolved');
     
-    return await index.getAll(false);
+    return await index.getAll(false as unknown as IDBValidKey);
   }
 
   async resolveConflictManually(conflictId: string, resolution: 'local' | 'remote' | 'merge'): Promise<void> {

@@ -1,6 +1,6 @@
 'use client';
 
-
+import { useState } from 'react';
 import ConversationList from '@/app/components/messaging/ConversationList';
 import MessageThread from '@/app/components/messaging/MessageThread';
 import MessageComposer from '@/app/components/messaging/MessageComposer';

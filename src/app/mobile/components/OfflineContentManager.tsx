@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Download, Check, X, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
-import { apiService } from '../../services/api';
-import { offlineStorage } from '../../services/offlineStorage';
-import { Course, OfflineContent } from '../../types/mobile';
+import { apiService } from '../services/api';
+import { offlineStorage } from '../services/offlineStorage';
+import { Course, OfflineContent } from '../types/mobile';
 
 interface DownloadProgress {
   courseId: string;

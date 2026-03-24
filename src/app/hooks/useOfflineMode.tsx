@@ -120,7 +120,7 @@ class OfflineDatabase {
     const tx = this.db.transaction('progress', 'readonly');
     const store = tx.objectStore('progress');
     const index = store.index('synced');
-    return await index.getAll(false);
+    return await index.getAll(false as unknown as IDBValidKey);
   }
 
   async markProgressSynced(courseId: string, moduleId: string): Promise<void> {

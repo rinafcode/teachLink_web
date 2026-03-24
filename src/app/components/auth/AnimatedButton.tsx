@@ -32,7 +32,7 @@ export const AnimatedButton = ({
       transition={{ duration: 0.2 }}
       disabled={disabled || isLoading}
       className={`w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed ${variantStyles[variant]}`}
-      {...props}
+      {...(props as object)}
     >
       {isLoading ? (
         <motion.div

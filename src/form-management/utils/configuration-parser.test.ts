@@ -505,7 +505,7 @@ describe('FormConfigurationParser', () => {
       expect(parsedBack.autoSave?.intervalMs).toBe(10000);
     });
   });
-});
+
   describe('Round-Trip Property Tests', () => {
     // Property test for round-trip validation (parse -> format -> parse)
     it('Property: Configuration round-trip should produce equivalent object', () => {

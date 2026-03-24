@@ -217,7 +217,7 @@ export class OfflineStorage {
   async getUnsyncedProgress(): Promise<OfflineProgressRecord[]> {
     const db = this.getDb();
     const index = db.transaction('progress').objectStore('progress').index('synced');
-    return await index.getAll(false);
+    return await index.getAll(false as unknown as IDBValidKey);
   }
 
   async markProgressSynced(courseId: string, moduleId: string, syncedAt: string): Promise<void> {
