@@ -26,7 +26,7 @@ export default function NotificationCenter() {
       </div>
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {notifications.length === 0 && (
-          <div className="text-sm text-gray-500">You're all caught up!</div>
+          <div className="text-sm text-gray-500">You&apos;re all caught up!</div>
         )}
         {notifications.map((n) => (
           <div key={n.id} className={`flex items-start gap-2 p-2 rounded border ${n.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-100'}`}>

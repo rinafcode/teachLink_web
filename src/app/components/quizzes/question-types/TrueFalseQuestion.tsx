@@ -1,7 +1,6 @@
 'use client';
 
-import { Question } from '@/store/quizStore';
-import { useQuizStore } from '@/store/quizStore';
+import { Question, useQuizStore } from '@/app/store/quizStore';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
 interface TrueFalseQuestionProps {

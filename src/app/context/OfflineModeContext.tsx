@@ -18,7 +18,7 @@ interface OfflineModeContextType {
   disableOfflineMode: () => Promise<void>;
   syncOfflineData: () => Promise<void>;
   clearOfflineData: () => Promise<void>;
-  getOfflineCourses: () => Promise<any[]>;
+  getOfflineCourses: () => Promise<unknown[]>;
   isCourseAvailableOffline: (courseId: string) => Promise<boolean>;
 }
 

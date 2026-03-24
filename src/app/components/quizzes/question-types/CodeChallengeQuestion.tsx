@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Question } from '@/store/quizStore';
-import { useQuizStore } from '@/store/quizStore';
+import { Question, useQuizStore } from '@/app/store/quizStore';
 import Editor from '@monaco-editor/react';
 import { FaCheck, FaTimes, FaPlay } from 'react-icons/fa';
 
@@ -33,7 +32,7 @@ export default function CodeChallengeQuestion({
     if (!question.testCases) return;
 
     setIsRunning(true);
-    const results = question.testCases.map((testCase) => {
+    const results = question.testCases.map((testCase: { input: string; expectedOutput: string }) => {
       try {
         // Create a function from the user's code
         const userFunction = new Function('input', code);
@@ -85,7 +84,7 @@ export default function CodeChallengeQuestion({
       {testResults.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium">Test Results:</h4>
-          {question.testCases?.map((testCase, index) => (
+          {question.testCases?.map((testCase: { input: string; expectedOutput: string }, index: number) => (
             <div
               key={index}
               className={`p-3 rounded-lg ${

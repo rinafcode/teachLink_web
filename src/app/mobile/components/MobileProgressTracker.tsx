@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronRight, Trophy, Target, Flame, CheckCircle2, Calendar, TrendingUp } from 'lucide-react';
 import { apiService } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
@@ -163,8 +163,6 @@ export default function MobileProgressTracker() {
       }
     }
   };
-
-  const activeCourse = courses[activeIndex];
 
   if (loading) {
     return (

@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Error utility functions for classification, formatting, and retry logic
- */
+* Error utility functions for classification, formatting, and retry logic
+*/
 
 export enum ErrorType {
   NETWORK = 'NETWORK',

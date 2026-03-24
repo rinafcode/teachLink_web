@@ -8,6 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signupSchema, SignupFormData } from '../../lib/validationSchemas';
+import { FormError, FieldError } from '../../../components/forms/FormError';
 
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -99,9 +100,7 @@ export default function SignupPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
                 {...register('name')}
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-              )}
+              <FieldError error={errors.name?.message} id="name-error" />
             </div>
 
             <div>
@@ -114,9 +113,7 @@ export default function SignupPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
                 {...register('email')}
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
+              <FieldError error={errors.email?.message} id="email-error" />
             </div>
 
             <div>
@@ -138,20 +135,10 @@ export default function SignupPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-              )}
+              <FieldError error={errors.password?.message} id="password-error" />
             </div>
 
-            {apiError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-3 bg-red-50 border border-red-200 rounded-lg"
-              >
-                <p className="text-sm text-red-600">{apiError}</p>
-              </motion.div>
-            )}
+            <FormError error={apiError} id="signup-api-error" />
 
             {successMessage && (
               <motion.div

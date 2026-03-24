@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { openDB, IDBPDatabase } from 'idb';
@@ -218,6 +219,8 @@ export class OfflineStorage {
     const db = this.getDb();
     const index = db.transaction('progress').objectStore('progress').index('synced');
     return await index.getAll(false as unknown as IDBValidKey);
+    const all = await index.getAll();
+    return all.filter((p) => !p.synced);
   }
 
   async markProgressSynced(courseId: string, moduleId: string, syncedAt: string): Promise<void> {
@@ -493,5 +496,5 @@ export class OfflineSyncService {
     return localUpdated > remoteUpdated ? 'local' : 'remote';
   }
 
-  
+
 }

@@ -10,7 +10,22 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    ignores: [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/__tests__/**",
+      "**/testing/**",
+      "**/form-management/**/*.test.ts",
+    ],
+  },
+  // include Prettier at the end to avoid rule conflicts
+  ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

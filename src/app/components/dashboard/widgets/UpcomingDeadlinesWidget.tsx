@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Users, FileText, Settings, Calendar } from 'lucide-react';
+import { Clock, Users, FileText, Settings } from 'lucide-react';
 import { format, isToday, isTomorrow, addDays } from 'date-fns';
 
 interface ScheduleEvent {
@@ -11,16 +11,16 @@ interface ScheduleEvent {
   subtitle: string;
   date: Date;
   type: 'qa' | 'mentoring' | 'workshop';
-  icon: any;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
 interface UpcomingDeadlinesWidgetProps {
   id: string;
   title: string;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
   onToggleCollapse: () => void;
-  onUpdateSettings: (settings: Record<string, any>) => void;
+  onUpdateSettings: (settings: Record<string, unknown>) => void;
   onRemove: () => void;
   size: 'small' | 'medium' | 'large';
   onChangeSize: (size: 'small' | 'medium' | 'large') => void;
@@ -56,7 +56,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       try {
         await new Promise((r) => setTimeout(r, 150));
         if (cancelled) return;
-      } catch (e) {
+      } catch {
         if (!cancelled) setError('Failed to load schedule data');
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -73,7 +73,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       subtitle: 'Intro to Starknet Course',
       date: new Date(new Date().setHours(14, 0, 0, 0)), // Today, 2:00 PM
       type: 'qa',
-      icon: Clock
+      icon: Clock as React.ComponentType<{ size?: number; className?: string }>
     },
     {
       id: '2',
@@ -81,7 +81,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       subtitle: 'With John Smith',
       date: new Date(addDays(new Date(), 1).setHours(10, 0, 0, 0)), // Tomorrow, 10:00 AM
       type: 'mentoring',
-      icon: Users
+      icon: Users as React.ComponentType<{ size?: number; className?: string }>
     },
     {
       id: '3',
@@ -89,7 +89,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       subtitle: 'Smart Contract Security',
       date: new Date(addDays(new Date(), 3).setHours(15, 30, 0, 0)), // Fri, 15, 3:30 PM
       type: 'workshop',
-      icon: FileText
+      icon: FileText as React.ComponentType<{ size?: number; className?: string }>
     }
   ];
 
@@ -181,7 +181,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Size</label>
               <select
                 value={size}
-                onChange={(e) => onChangeSize(e.target.value as any)}
+                onChange={(e) => onChangeSize(e.target.value as 'small' | 'medium' | 'large')}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
               >
                 <option value="small">Small</option>

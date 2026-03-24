@@ -6,6 +6,7 @@ import Countdown from 'react-countdown';
 import { FaArrowLeft, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { useQuizStore } from '@/store/quizStore';
 import type { Quiz } from '@/store/quizStore';
+import { Quiz, useQuizStore } from '@/app/store/quizStore';
 import QuestionCard from './QuestionCard';
 
 interface QuizContainerProps {
@@ -19,7 +20,6 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
     answers,
     isReviewMode,
     startTime,
-    endTime,
     setCurrentQuiz,
     nextQuestion,
     previousQuestion,
@@ -55,7 +55,7 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
         <Countdown
           date={startTime ? startTime.getTime() + quiz.timeLimit * 1000 : 0}
           onComplete={handleComplete}
-          renderer={({ minutes, seconds }) => (
+          renderer={({ minutes, seconds }: { minutes: number; seconds: number }) => (
             <span>
               {minutes}:{seconds.toString().padStart(2, '0')}
             </span>

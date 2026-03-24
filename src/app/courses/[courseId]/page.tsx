@@ -8,12 +8,11 @@ import VideoPreview from '@/components/courses/VideoPreview';
 import CourseReviews from '@/components/courses/CourseReviews';
 
 interface CoursePageProps {
-  params: {
-    courseId: string;
-  };
+  params: Promise<{ courseId: string }>;
 }
 
 export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
+  await params;
   // In a real app, you would fetch course data here
   return {
     title: 'Course Details | TeachLink',
@@ -21,7 +20,8 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   };
 }
 
-export default function CoursePage({ params }: CoursePageProps) {
+export default async function CoursePage({ params }: CoursePageProps) {
+  await params;
   const isEnrolled = true;
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { UserRole, ChartConfig, Metric, DashboardLayout, Widget, ExportOptions } from '@/types/analytics';
+import { UserRole, ChartConfig, Metric, DashboardLayout, Widget, ExportOptions } from '@/app/mobile/types/analytics';
 
 export const useAnalytics = (role: UserRole) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -154,7 +154,7 @@ export const useAnalytics = (role: UserRole) => {
   }, [role, generateRoleBasedData]);
 
   const updateWidgetLayout = useCallback((widgets: Widget[]) => {
-    setDashboardLayout(prev => prev ? {
+    setDashboardLayout((prev: DashboardLayout | null) => prev ? {
       ...prev,
       widgets,
       updatedAt: new Date()

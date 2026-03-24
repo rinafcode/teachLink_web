@@ -7,6 +7,7 @@ import {
   FormConfiguration,
   FormElement,
   FieldUpdates,
+  FieldDescriptor,
   ConditionalRule,
   ValidationResult,
   FormValidationResult,
@@ -40,12 +41,13 @@ export interface ValidationEngine {
 // Form State Manager Interface
 export interface FormStateManager {
   getState(): FormState;
-  updateField(fieldId: string, value: any): void;
+  updateField(fieldId: string, value: unknown): void;
   setValidationState(fieldId: string, result: ValidationResult): void;
   resetForm(): void;
   subscribeToChanges(callback: StateChangeCallback): Subscription;
-  getFieldValue(fieldId: string): any;
+  getFieldValue(fieldId: string): unknown;
   isFormValid(): boolean;
+  initializeDependencies?(fields: FieldDescriptor[], conditionalRules?: ConditionalRule[]): void;
 }
 
 // Auto Save Manager Interface

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FolderOpen, Link as LinkIcon, Upload, Search, X, Trash2, ExternalLink } from 'lucide-react';
+import { FolderOpen, Link as LinkIcon, Upload, Search, X, ExternalLink } from 'lucide-react';
 import type { GroupResource } from '@/app/hooks/useStudyGroups';
 
 interface SharedResourceLibraryProps {
@@ -17,12 +17,6 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
   const [file, setFile] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'link' | 'file'>('all');
-
-  const grouped = useMemo(() => {
-    const linkItems = resources.filter((r) => r.type === 'link');
-    const fileItems = resources.filter((r) => r.type === 'file');
-    return { linkItems, fileItems };
-  }, [resources]);
 
   const filteredResources = useMemo(() => {
     let filtered = resources;

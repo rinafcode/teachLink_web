@@ -2,7 +2,7 @@
  * Unit tests for Form State Manager
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FormStateManager } from './form-state-manager';
 import { ValidationResult, StateChangeEvent } from '../types/core';
 
@@ -214,7 +214,7 @@ describe('FormStateManager', () => {
 
   describe('state change subscriptions', () => {
     it('should notify subscribers of field changes', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       const subscription = stateManager.subscribeToChanges(callback);
 
       stateManager.updateField('email', 'test@example.com');
@@ -232,7 +232,7 @@ describe('FormStateManager', () => {
     });
 
     it('should notify subscribers of validation changes', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       stateManager.subscribeToChanges(callback);
 
       const validationResult: ValidationResult = {
@@ -252,10 +252,10 @@ describe('FormStateManager', () => {
     });
 
     it('should handle subscription errors gracefully', () => {
-      const errorCallback = jest.fn(() => {
-        throw new Error('Callback error');
+      const errorCallback = vi.fn(() => {
+        throw new Error('subscription error');
       });
-      const normalCallback = jest.fn();
+      const normalCallback = vi.fn();
 
       stateManager.subscribeToChanges(errorCallback);
       stateManager.subscribeToChanges(normalCallback);
@@ -269,7 +269,7 @@ describe('FormStateManager', () => {
     });
 
     it('should unsubscribe correctly', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       const subscription = stateManager.subscribeToChanges(callback);
 
       stateManager.updateField('email', 'test1@example.com');
@@ -333,7 +333,7 @@ describe('FormStateManager', () => {
   describe('programmatic state control methods', () => {
     describe('silent field updates', () => {
       it('should set field value without triggering change events', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.subscribeToChanges(callback);
 
         stateManager.setFieldValueSilently('email', 'test@example.com');
@@ -345,7 +345,7 @@ describe('FormStateManager', () => {
 
     describe('batch operations', () => {
       it('should set multiple validation states at once', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.subscribeToChanges(callback);
 
         const validationStates = {
@@ -364,7 +364,7 @@ describe('FormStateManager', () => {
       });
 
       it('should set multiple field values in batch', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.subscribeToChanges(callback);
 
         const values = {
@@ -471,7 +471,7 @@ describe('FormStateManager', () => {
 
     describe('submission control', () => {
       it('should start submission with callback', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.startSubmission(callback);
 
         expect(stateManager.getState().isSubmitting).toBe(true);
@@ -479,7 +479,7 @@ describe('FormStateManager', () => {
       });
 
       it('should complete submission successfully', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         
         // Set up dirty state
         stateManager.updateField('email', 'test@example.com');
@@ -493,7 +493,7 @@ describe('FormStateManager', () => {
       });
 
       it('should complete submission with failure', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         
         // Set up dirty state
         stateManager.updateField('email', 'test@example.com');
@@ -686,7 +686,7 @@ describe('FormStateManager', () => {
     });
 
     it('should trigger cascading updates manually', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       stateManager.subscribeToChanges(callback);
 
       stateManager.updateField('trigger', 'show');

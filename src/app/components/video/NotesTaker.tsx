@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { MessageSquare, Clock, Edit2, Trash2, Save } from 'lucide-react';
 
 interface Note {
@@ -29,8 +29,8 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
     const saved = localStorage.getItem('video-notes');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setNotes(parsed.map((n: any) => ({
+        const parsed = JSON.parse(saved) as Array<{ id: string; time: number; text: string; createdAt: string; updatedAt: string }>;
+        setNotes(parsed.map((n) => ({
           ...n,
           createdAt: new Date(n.createdAt),
           updatedAt: new Date(n.updatedAt)
@@ -243,4 +243,5 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
       </div>
     </div>
   );
-}); 
+});
+NotesTaker.displayName = 'NotesTaker'; 

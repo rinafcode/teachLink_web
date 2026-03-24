@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Download, 
@@ -66,7 +66,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
     }
   ];
 
-  const addToDownloadQueue = useCallback(async (course: any) => {
+  const addToDownloadQueue = useCallback(async (course: { id: string; title: string; size: number }) => {
     if (!isOfflineModeEnabled) {
       await enableOfflineMode();
     }
@@ -143,12 +143,6 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const getStatusIcon = (status: DownloadItem['status']) => {
     switch (status) {
       case 'pending':
@@ -184,8 +178,6 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
   };
 
   const activeDownloads = downloads.filter(d => d.status === 'downloading');
-  const completedDownloads = downloads.filter(d => d.status === 'completed');
-  const pendingDownloads = downloads.filter(d => d.status === 'pending');
 
   return (
     <div className={className}>

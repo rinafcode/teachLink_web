@@ -204,4 +204,5 @@ export const TranscriptView: React.FC<TranscriptViewProps> = React.memo(({
       </div>
     </div>
   );
-}); 
+});
+TranscriptView.displayName = 'TranscriptView'; 

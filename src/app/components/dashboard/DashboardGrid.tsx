@@ -35,7 +35,7 @@ interface Widget {
   size: 'small' | 'medium' | 'large';
   position: number;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
 }
 
 interface DashboardGridProps {
@@ -67,7 +67,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const [showAddWidget, setShowAddWidget] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [dateRange, setDateRange] = useState('Last 30 days');
+  const [dateRange] = useState('Last 30 days');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -130,7 +130,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
     ));
   };
 
-  const updateWidgetSettings = (widgetId: string, settings: Record<string, any>) => {
+  const updateWidgetSettings = (widgetId: string, settings: Record<string, unknown>) => {
     setWidgets(prev => prev.map(widget =>
       widget.id === widgetId
         ? { ...widget, settings: { ...widget.settings, ...settings } }
@@ -186,7 +186,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       isCollapsed: widget.isCollapsed,
       settings: widget.settings,
       onToggleCollapse: () => toggleWidgetCollapse(widget.id),
-      onUpdateSettings: (settings: Record<string, any>) => updateWidgetSettings(widget.id, settings),
+      onUpdateSettings: (settings: Record<string, unknown>) => updateWidgetSettings(widget.id, settings),
       onRemove: () => removeWidget(widget.id),
       size: widget.size as 'small' | 'medium' | 'large',
       onChangeSize: (size: 'small' | 'medium' | 'large') => changeWidgetSize(widget.id, size),

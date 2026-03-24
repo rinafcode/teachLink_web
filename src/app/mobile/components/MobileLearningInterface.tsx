@@ -17,10 +17,10 @@ export default function MobileLearningInterface() {
   const [showVideo, setShowVideo] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
-  const [recentLessons, setRecentLessons] = useState<Lesson[]>([]);
+  const [recentLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isMobile, isOnline, deviceType } = useMobileOptimization();
+  const { isOnline, deviceType } = useMobileOptimization();
 
   useEffect(() => {
        if (typeof window !== 'undefined') {

@@ -184,20 +184,6 @@ export default function TouchOptimizedControls({
     video.addEventListener('ended', handleEnded);
     video.addEventListener('error', handleError);
 
-    // Preload video for offline playback
-    const preloadVideo = async () => {
-      try {
-        const response = await fetch(videoUrl);
-        if (response.ok) {
-          const blob = await response.blob();
-          const objectUrl = URL.createObjectURL(blob);
-          video.src = objectUrl;
-        }
-      } catch (err) {
-        console.error('Failed to preload video:', err);
-      }
-    };
-
     if (video.src !== videoUrl) {
       video.src = videoUrl;
     }

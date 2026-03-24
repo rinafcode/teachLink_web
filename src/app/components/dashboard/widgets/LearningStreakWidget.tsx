@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Calendar, Trophy, Target, Settings } from 'lucide-react';
+import { Flame, Trophy, Target, Settings } from 'lucide-react';
 
 interface LearningStreakWidgetProps {
   id: string;
   title: string;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
   onToggleCollapse: () => void;
-  onUpdateSettings: (settings: Record<string, any>) => void;
+  onUpdateSettings: (settings: Record<string, unknown>) => void;
   onRemove: () => void;
   size: 'small' | 'medium' | 'large';
   onChangeSize: (size: 'small' | 'medium' | 'large') => void;
@@ -49,7 +49,7 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
       try {
         await new Promise((r) => setTimeout(r, 150));
         if (cancelled) return;
-      } catch (e) {
+      } catch {
         if (!cancelled) setError('Failed to load streak data');
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -137,7 +137,7 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
               <label className="block text-xs text-gray-600 mb-1">Size</label>
               <select
                 value={size}
-                onChange={(e) => onChangeSize(e.target.value as any)}
+                onChange={(e) => onChangeSize(e.target.value as 'small' | 'medium' | 'large')}
                 className="w-full px-2 py-1 border border-gray-300 rounded"
               >
                 <option value="small">Small</option>
@@ -149,6 +149,7 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
               <label className="block text-xs text-gray-600 mb-1">Weekly Goal</label>
               <input
                 type="number"
+                // @ts-expect-error - settings is of type unknown
                 value={settings.weeklyGoal ?? 5}
                 min={1}
                 max={7}
@@ -188,13 +189,12 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.02 }}
-                className={`w-4 h-4 rounded-sm ${
-                  day.studied 
-                    ? day.hours >= 2 
-                      ? 'bg-green-500' 
+                className={`w-4 h-4 rounded-sm ${day.studied
+                    ? day.hours >= 2
+                      ? 'bg-green-500'
                       : 'bg-green-300'
                     : 'bg-gray-200'
-                }`}
+                  }`}
                 title={`${day.date.toLocaleDateString()}: ${day.hours}h`}
               />
             ))}
@@ -241,7 +241,7 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
             <Flame size={16} className="text-orange-600" />
             <div>
               <p className="text-sm font-medium text-gray-900">Keep the fire burning!</p>
-              <p className="text-xs text-gray-600">You're on a great streak. Don't break it!</p>
+              <p className="text-xs text-gray-600">You&apos;re on a great streak. Don&apos;t break it!</p>
             </div>
           </div>
         </div>

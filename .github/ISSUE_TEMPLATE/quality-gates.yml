@@ -1,0 +1,39 @@
+name: "PR Quality Gates / Governance"
+description: "Work related to CI, branch protection, PR process, governance"
+title: "[Governance] <short description>"
+labels: ["frontend", "devops", "ci", "governance", "priority-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for branch protection, CI, and PR process improvements.
+
+  - type: input
+    id: background
+    attributes:
+      label: Background
+      description: Why is this needed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: List the conditions that must be true to close this issue.
+      value: |
+        - [ ] PR cannot merge without passing CI
+        - [ ] PR cannot merge without approval
+        - [ ] Direct push to main/develop is blocked
+        - [ ] All PRs must reference an issue
+        - [ ] All conversations must be resolved
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation notes
+      description: Optional implementation plan / links.
+    validations:
+      required: false

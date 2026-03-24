@@ -19,7 +19,6 @@ interface BookmarkManagerProps {
 
 export const BookmarkManager: React.FC<BookmarkManagerProps> = React.memo(({
   currentTime,
-  duration,
   onSeek,
   onBookmark
 }) => {
@@ -33,8 +32,8 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = React.memo(({
     const saved = localStorage.getItem('video-bookmarks');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setBookmarks(parsed.map((b: any) => ({
+        const parsed = JSON.parse(saved) as Array<{ id: string; time: number; title: string; note?: string; createdAt: string }>;
+        setBookmarks(parsed.map((b) => ({
           ...b,
           createdAt: new Date(b.createdAt)
         })));
@@ -271,4 +270,5 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = React.memo(({
       </div>
     </div>
   );
-}); 
+});
+BookmarkManager.displayName = 'BookmarkManager';

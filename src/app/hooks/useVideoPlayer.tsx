@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { RefObject } from 'react';
 
 interface VideoError {
@@ -23,10 +23,12 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
 
   const play = useCallback(() => {
     if (videoRef.current) {
-      videoRef.current.play().catch((err: any) => {
+      videoRef.current.play().catch((err: unknown) => {
+        const errorObj = err instanceof Error ? err : new Error('Failed to play video');
+        const code = typeof (err as { code?: number }).code === 'number' ? (err as { code: number }).code : 0;
         setError({
-          message: err.message || 'Failed to play video',
-          code: err.code || 0,
+          message: errorObj.message || 'Failed to play video',
+          code,
           type: categorizeError(err),
           retryCount: 0
         });
@@ -34,10 +36,11 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
     }
   }, [videoRef]);
 
-  const categorizeError = (err: any): VideoError['type'] => {
-    if (err.name === 'NotAllowedError') return 'source';
-    if (err.name === 'NotSupportedError') return 'decode';
-    if (err.name === 'NetworkError') return 'network';
+  const categorizeError = (err: unknown): VideoError['type'] => {
+    const name = (err as { name?: string }).name;
+    if (name === 'NotAllowedError') return 'source';
+    if (name === 'NotSupportedError') return 'decode';
+    if (name === 'NetworkError') return 'network';
     return 'unknown';
   };
 
@@ -131,8 +134,8 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
       }
     };
 
-    const handleError = (e: any) => {
-      const video = e.target;
+    const handleError = (e: Event) => {
+      const video = e.target as HTMLVideoElement;
       let errorMessage = 'Failed to load video';
       let errorType: VideoError['type'] = 'unknown';
       

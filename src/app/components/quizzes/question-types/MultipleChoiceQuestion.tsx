@@ -1,7 +1,6 @@
 'use client';
 
-import { Question, Option } from '@/store/quizStore';
-import { useQuizStore } from '@/store/quizStore';
+import { Question, useQuizStore } from '@/app/store/quizStore';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
 interface MultipleChoiceQuestionProps {
@@ -15,8 +14,6 @@ export default function MultipleChoiceQuestion({
 }: MultipleChoiceQuestionProps) {
   const { answers, setAnswer } = useQuizStore();
   const selectedAnswer = answers[question.id];
-  const correctOption = question.options?.find((opt) => opt.isCorrect);
-
   const handleOptionSelect = (optionId: string) => {
     if (!isReviewMode) {
       setAnswer(question.id, optionId);

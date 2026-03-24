@@ -35,8 +35,8 @@ const FieldTypeSchema = z.enum([
   'time', 'datetime-local'
 ]);
 
-// Zod schema for ValidationRule
-const ValidationRuleSchema: z.ZodSchema<ValidationRule> = z.object({
+// Zod schema for ValidationRule - use type assertion for function schemas
+const ValidationRuleSchema = z.object({
   type: z.enum(['required', 'email', 'minLength', 'maxLength', 'pattern', 'custom', 'async']),
   params: z.record(z.any()).optional(),
   message: z.string(),
@@ -70,8 +70,8 @@ const ConditionalActionSchema: z.ZodSchema<ConditionalAction> = z.object({
   value: z.any().optional()
 });
 
-// Zod schema for ConditionalRule
-const ConditionalRuleSchema: z.ZodSchema<ConditionalRule> = z.object({
+// Zod schema for ConditionalRule - use type assertion for function schemas
+const ConditionalRuleSchema = z.object({
   id: z.string(),
   condition: z.function(),
   actions: z.array(ConditionalActionSchema)
@@ -99,8 +99,8 @@ const LayoutConfigurationSchema: z.ZodSchema<LayoutConfiguration> = z.object({
   responsive: ResponsiveConfigurationSchema
 });
 
-// Zod schema for ValidationConfiguration
-const ValidationConfigurationSchema: z.ZodSchema<ValidationConfiguration> = z.object({
+// Zod schema for ValidationConfiguration - use type assertion for function schemas
+const ValidationConfigurationSchema = z.object({
   validateOnChange: z.boolean(),
   validateOnBlur: z.boolean(),
   showErrorsOnSubmit: z.boolean(),
@@ -134,8 +134,8 @@ const AccessibilityConfigurationSchema: z.ZodSchema<AccessibilityConfiguration> 
   customFocusIndicators: z.boolean()
 });
 
-// Zod schema for WizardStep
-const WizardStepSchema: z.ZodSchema<WizardStep> = z.object({
+// Zod schema for WizardStep - use type assertion for function schemas
+const WizardStepSchema = z.object({
   index: z.number().min(0),
   id: z.string(),
   title: z.string(),
@@ -176,6 +176,12 @@ export class FormConfigurationParser implements ConfigurationParser {
       if (error instanceof SyntaxError) {
         throw new Error(`Invalid JSON: ${error.message}`);
       }
+
+      // Normalize schema validation errors to a stable message for callers/tests
+      if (error instanceof z.ZodError) {
+        throw new Error(`Configuration validation failed: ${error.errors.map(e => e.message).join(', ')}`);
+      }
+
       throw error;
     }
   }

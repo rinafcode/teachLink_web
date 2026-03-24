@@ -62,6 +62,7 @@ export const UserFriendlyErrorDisplay: React.FC<ErrorDisplayProps> = ({
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [error, autoHideDuration, onDismiss]);
 
   if (!isVisible || !error) return null;
@@ -258,6 +259,7 @@ export const ErrorToast: React.FC<ErrorToastProps> = ({
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [error, autoHideDuration, onDismiss]);
 
   if (!isVisible || !error) return null;

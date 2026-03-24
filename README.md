@@ -1,7 +1,8 @@
-
 ### 🌐 `web/README.md`
 
 # 📚 TeachLink Frontend
+
+![Frontend CI](https://github.com/teachlink/frontend/actions/workflows/ci.yml/badge.svg)
 
 **TeachLink** is a decentralized platform built for technocrats to **share, analyze, and monetize knowledge** through collaborative content, blockchain-based tipping, and gamified reputation. This repository contains the frontend codebase built with **Next.js (App Router)**, **Tailwind CSS**, and integrated with **Starknet** for seamless Web3 interactions.
 
@@ -11,10 +12,10 @@
 
 TeachLink empowers users to:
 
-- 📢 Share knowledge, tutorials, or insights  
-- 🧠 Engage in discussions and collaborative learning  
-- 💸 Earn through on-chain tipping  
-- 🔗 Build reputation with verifiable Web3 credentials  
+- 📢 Share knowledge, tutorials, or insights
+- 🧠 Engage in discussions and collaborative learning
+- 💸 Earn through on-chain tipping
+- 🔗 Build reputation with verifiable Web3 credentials
 
 This frontend serves as the main user interface for interacting with TeachLink's decentralized knowledge ecosystem. It supports wallet-based login, markdown post creation, tipping, theming, user profiles, and topic feeds—all while maintaining a seamless Web2.5 user experience.
 
@@ -22,8 +23,8 @@ This frontend serves as the main user interface for interacting with TeachLink's
 
 ## 🧱 Tech Stack
 
-| Layer       | Technology               |
-|------------|--------------------------|
+| Layer      | Technology               |
+| ---------- | ------------------------ |
 | Framework  | Next.js (App Router)     |
 | Styling    | Tailwind CSS             |
 | Web3       | Starknet.js, StarknetKit |
@@ -37,13 +38,13 @@ This frontend serves as the main user interface for interacting with TeachLink's
 
 ## ⚙️ Features
 
-- 🔐 **Starknet Wallet Integration** – Login and interact using Starknet-compatible wallets  
-- 🧾 **Markdown-Based Post Editor** – Rich, previewable post creation using markdown  
-- 💡 **Tipping System** – Send and receive on-chain tips via smart contracts  
-- 🌙 **Dark/Light Theme Toggle** – Accessible theming using Tailwind CSS  
-- 🔎 **Dynamic Routing with App Router** – Clean, scalable navigation  
-- 📂 **Profile and Topic Pages** – View user-specific content and explore topic-specific posts  
-- 📱 **Responsive Layout** – Fully mobile-ready with modular components  
+- 🔐 **Starknet Wallet Integration** – Login and interact using Starknet-compatible wallets
+- 🧾 **Markdown-Based Post Editor** – Rich, previewable post creation using markdown
+- 💡 **Tipping System** – Send and receive on-chain tips via smart contracts
+- 🌙 **Dark/Light Theme Toggle** – Accessible theming using Tailwind CSS
+- 🔎 **Dynamic Routing with App Router** – Clean, scalable navigation
+- 📂 **Profile and Topic Pages** – View user-specific content and explore topic-specific posts
+- 📱 **Responsive Layout** – Fully mobile-ready with modular components
 
 ---
 
@@ -67,6 +68,7 @@ globals.css → Tailwind directives
 ## 🛠 Setup Instructions
 
 1. **Clone the repo**
+
 ```bash
 git clone https://github.com/teachlink/frontend.git
 cd frontend
@@ -107,13 +109,16 @@ npm run dev
 
 For detailed tasks, see GitHub Issues
 
-🤝 Contributing
+## 🤝 Contributing
 We welcome community contributions!
 
-Guidelines:
-Fork the repo and make your changes in a feature branch
+- Read **`CONTRIBUTING.md`** before opening a PR.
+- All PRs must include an issue reference in the description (e.g. `Closes #68`).
+- Merges to protected branches require passing CI + approvals.
 
-Before submitting a PR, read the CONTRIBUTING.md file
+Guidelines:
+- Fork the repo and make your changes in a feature branch
+- Before submitting a PR, read the **`CONTRIBUTING.md`** file
 
 ## 📬 Join the Community
 
@@ -142,4 +147,3 @@ let make our code clean, maintainable and scallable. Keep to Standard
 
 📜 License
 MIT © 2025 TeachLink DAO
-

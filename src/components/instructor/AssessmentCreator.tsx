@@ -100,7 +100,7 @@ export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
 
         {questions.length === 0 ? (
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No questions yet. Click "Add Question" to start.</p>
+            <p className="text-gray-500 dark:text-gray-400">No questions yet. Click &quot;Add Question&quot; to start.</p>
           </div>
         ) : (
           <div className="space-y-4">

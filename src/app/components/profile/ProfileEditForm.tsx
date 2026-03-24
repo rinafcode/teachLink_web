@@ -6,7 +6,8 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import ImageUploader from '@/components/shared/ImageUploader';
 import PreferencesSection from '@/components/profile/PreferencesSection';
-import { useProfileUpdate } from '@/hooks/useProfileUpdate';
+import { useProfileUpdate } from '@/app/hooks/useProfileUpdate';
+import { FieldError } from '@/components/forms/FormError';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -29,8 +30,6 @@ export default function ProfileEditForm() {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-    watch,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -50,7 +49,7 @@ export default function ProfileEditForm() {
     try {
       await updateProfile(data);
       toast.success('Profile updated successfully!');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update profile. Please try again.');
     }
   };
@@ -79,9 +78,7 @@ export default function ProfileEditForm() {
               {...register('firstName')}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.firstName && (
-              <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
-            )}
+            <FieldError error={errors.firstName?.message} id="firstName-error" />
           </div>
 
           <div>
@@ -93,9 +90,7 @@ export default function ProfileEditForm() {
               {...register('lastName')}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.lastName && (
-              <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
-            )}
+           <FieldError error={errors.lastName?.message} id="lastName-error" />
           </div>
         </div>
 
@@ -108,9 +103,7 @@ export default function ProfileEditForm() {
             {...register('email')}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
+          <FieldError error={errors.email?.message} id="profile-email-error" />
         </div>
 
         <div className="mt-6">
@@ -122,9 +115,7 @@ export default function ProfileEditForm() {
             rows={4}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {errors.bio && (
-            <p className="mt-1 text-sm text-red-600">{errors.bio.message}</p>
-          )}
+          <FieldError error={errors.bio?.message} id="profile-bio-error" />
         </div>
 
         <div className="mt-6">
@@ -152,9 +143,7 @@ export default function ProfileEditForm() {
               {...register('website')}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.website && (
-              <p className="mt-1 text-sm text-red-600">{errors.website.message}</p>
-            )}
+            <FieldError error={errors.website?.message} id="website-error" />
           </div>
 
           <div>

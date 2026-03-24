@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const body = await request.json();
   
   // Mock progress update
@@ -11,7 +12,7 @@ export async function PATCH(
     success: true,
     message: 'Lesson progress updated successfully',
     data: {
-      lessonId: params.id,
+      lessonId: id,
       completed: body.completed,
       updatedAt: new Date().toISOString()
     }

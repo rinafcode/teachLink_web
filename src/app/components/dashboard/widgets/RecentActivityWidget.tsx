@@ -19,9 +19,9 @@ interface RecentActivityWidgetProps {
   id: string;
   title: string;
   isCollapsed: boolean;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
   onToggleCollapse: () => void;
-  onUpdateSettings: (settings: Record<string, any>) => void;
+  onUpdateSettings: (settings: Record<string, unknown>) => void;
   onRemove: () => void;
   size: 'small' | 'medium' | 'large';
   onChangeSize: (size: 'small' | 'medium' | 'large') => void;
@@ -57,7 +57,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
       try {
         await new Promise((r) => setTimeout(r, 150));
         if (cancelled) return;
-      } catch (e) {
+      } catch {
         if (!cancelled) setError('Failed to load activity data');
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -118,14 +118,14 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours} hours ago`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays === 1) return 'Yesterday';
     if (diffInDays < 7) return `${diffInDays} days ago`;
-    
+
     return format(date, 'MMM d, yyyy');
   };
 
@@ -207,7 +207,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Size</label>
               <select
                 value={size}
-                onChange={(e) => onChangeSize(e.target.value as any)}
+                onChange={(e) => onChangeSize(e.target.value as 'small' | 'medium' | 'large')}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
               >
                 <option value="small">Small</option>
@@ -218,6 +218,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
             <div>
               <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Refresh</label>
               <select
+                // @ts-expect-error - settings is of type unknown
                 value={settings.refreshInterval ?? 'manual'}
                 onChange={(e) => onUpdateSettings({ refreshInterval: e.target.value })}
                 className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"

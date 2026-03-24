@@ -45,7 +45,6 @@ export default function MessageComposer({
     disabled,
 }: MessageComposerProps) {
     const [content, setContent] = useState('');
-    const [showEmojiHint, setShowEmojiHint] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleContentChange = useCallback(

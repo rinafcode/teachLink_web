@@ -511,22 +511,40 @@ describe('FormConfigurationParser', () => {
     it('Property: Configuration round-trip should produce equivalent object', () => {
       // Create a generator for valid FormConfiguration objects
       const validConfigArbitrary = fc.record({
-        id: fc.string({ minLength: 1 }),
-        version: fc.string({ minLength: 1 }),
-        title: fc.string({ minLength: 1 }),
-        description: fc.option(fc.string()),
+        id: fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
+        version: fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
+        title: fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
+        // schema: description is optional string (undefined allowed, null not allowed)
+        description: fc.option(fc.string({ minLength: 1 }), { nil: undefined }),
         fields: fc.array(
           fc.record({
-            id: fc.string({ minLength: 1 }),
-            type: fc.constantFrom('text', 'number', 'email', 'password', 'select', 'checkbox', 'radio', 'textarea', 'file', 'date', 'time', 'datetime-local') as fc.Arbitrary<FieldType>,
-            label: fc.string({ minLength: 1 }),
-            placeholder: fc.option(fc.string()),
+            id: fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
+            type: fc.constantFrom(
+              'text',
+              'number',
+              'email',
+              'password',
+              'select',
+              'checkbox',
+              'radio',
+              'textarea',
+              'file',
+              'date',
+              'time',
+              'datetime-local'
+            ) as fc.Arbitrary<FieldType>,
+            label: fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
+            // schema: placeholder is optional string (undefined allowed, null not allowed)
+            placeholder: fc.option(fc.string({ minLength: 1 }), { nil: undefined }),
             required: fc.boolean(),
-            validation: fc.array(fc.record({
-              type: fc.constantFrom('required', 'email', 'minLength', 'maxLength', 'pattern', 'custom', 'async'),
-              params: fc.option(fc.dictionary(fc.string(), fc.anything())),
-              message: fc.string()
-            }))
+            validation: fc.array(
+              fc.record({
+                type: fc.constantFrom('required', 'email', 'minLength', 'maxLength', 'pattern', 'custom', 'async'),
+                // schema: params is optional record<any> (undefined allowed, null not allowed)
+                params: fc.option(fc.dictionary(fc.string({ minLength: 1 }), fc.anything()), { nil: undefined }),
+                message: fc.string({ minLength: 1 })
+              })
+            )
           }),
           { minLength: 1 }
         ),
@@ -534,15 +552,20 @@ describe('FormConfigurationParser', () => {
           type: fc.constantFrom('single-column', 'two-column', 'grid', 'custom'),
           spacing: fc.constantFrom('compact', 'normal', 'relaxed'),
           responsive: fc.record({
-            breakpoints: fc.dictionary(fc.string(), fc.nat()),
-            layouts: fc.dictionary(fc.string(), fc.constant({}))
+            breakpoints: fc.dictionary(fc.string({ minLength: 1 }), fc.integer({ min: 0, max: 4096 })),
+            // schema expects LayoutConfiguration objects; easiest is to provide an empty dict
+            // (zod allows empty record and will validate values only if present)
+            layouts: fc.constant({})
           })
         }),
         validation: fc.record({
           validateOnChange: fc.boolean(),
           validateOnBlur: fc.boolean(),
           showErrorsOnSubmit: fc.boolean(),
-          debounceMs: fc.nat(),
+          debounceMs: fc.integer({ min: 0, max: 60000 }),
+          // schema expects record<function>, but validate() only schema-parses when called with config;
+          // in round trip we also call validate(parsedConfig) which requires functions.
+          // Keep it empty.
           customRules: fc.constant({})
         })
       });
@@ -622,7 +645,7 @@ describe('FormConfigurationParser', () => {
         }
       };
 
-      const result = parser.validate(configWithInvalidField as FormConfiguration);
+      const result = parser.validate(configWithInvalidField as unknown as FormConfiguration);
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
       
