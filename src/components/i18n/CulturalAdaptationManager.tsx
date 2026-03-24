@@ -12,17 +12,17 @@ interface CulturalAdaptationManagerProps {
    * Whether to apply cultural adaptations automatically
    */
   autoApply?: boolean;
-  
+
   /**
    * Custom date format override
    */
   dateFormat?: string;
-  
+
   /**
    * Custom currency override
    */
   currency?: string;
-  
+
   /**
    * Children to render
    */
@@ -49,7 +49,7 @@ export function CulturalAdaptationManager({
   useEffect(() => {
     if (autoApply && typeof document !== 'undefined') {
       const root = document.documentElement;
-      
+
       // Set CSS custom properties for cultural preferences
       root.style.setProperty('--i18n-direction', direction);
       root.style.setProperty('--i18n-decimal-separator', `"${preferences.decimalSeparator}"`);
@@ -60,11 +60,7 @@ export function CulturalAdaptationManager({
   }, [preferences, direction, autoApply]);
 
   return (
-    <div 
-      dir={direction}
-      lang={language}
-      className={isRTL ? 'rtl' : 'ltr'}
-    >
+    <div dir={direction} lang={language} className={isRTL ? 'rtl' : 'ltr'}>
       {children}
     </div>
   );
@@ -74,7 +70,7 @@ export function CulturalAdaptationManager({
  * Hook to access cultural preferences
  */
 export function useCulturalPreferences() {
-  const { preferences, formatDate, formatNumber, formatCurrency, direction, isRTL } = 
+  const { preferences, formatDate, formatNumber, formatCurrency, direction, isRTL } =
     useInternationalization();
 
   return {

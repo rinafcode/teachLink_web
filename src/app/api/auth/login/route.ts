@@ -7,10 +7,7 @@ export async function POST(request: NextRequest) {
 
     // Mock validation
     if (!email || !password) {
-      return NextResponse.json(
-        { message: 'Email and password are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
     }
 
     // Mock authentication - check for demo credentials
@@ -26,7 +23,7 @@ export async function POST(request: NextRequest) {
           },
           token: 'mock-jwt-token-' + Date.now(),
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -42,20 +39,14 @@ export async function POST(request: NextRequest) {
           },
           token: 'mock-jwt-token-' + Date.now(),
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
     // Invalid credentials
-    return NextResponse.json(
-      { message: 'Invalid email or password' },
-      { status: 401 }
-    );
+    return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

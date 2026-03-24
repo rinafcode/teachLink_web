@@ -3,11 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { 
-  CustomValidationRegistry, 
-  CustomValidationRule, 
+import {
+  CustomValidationRegistry,
+  CustomValidationRule,
   ValidationContext,
-  ValidationRuleBuilders
+  ValidationRuleBuilders,
 } from './custom-validation-registry.js';
 import { FormState, ValidationFunction } from '../types/core.js';
 
@@ -18,12 +18,12 @@ describe('CustomValidationRegistry', () => {
 
   beforeEach(() => {
     registry = new CustomValidationRegistry();
-    
+
     mockFormState = {
       values: {
         email: 'test@example.com',
         password: 'password123',
-        confirmPassword: 'password123'
+        confirmPassword: 'password123',
       },
       validation: {},
       touched: { email: true },
@@ -35,14 +35,14 @@ describe('CustomValidationRegistry', () => {
         sessionId: 'test-session',
         createdAt: new Date(),
         lastModified: new Date(),
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     };
 
     mockContext = {
       fieldId: 'email',
       fieldValue: 'test@example.com',
-      formState: mockFormState
+      formState: mockFormState,
     };
   });
 
@@ -54,12 +54,12 @@ describe('CustomValidationRegistry', () => {
         isAsync: false,
         validationFunction: (value) => ({
           isValid: value === 'valid',
-          errors: []
-        })
+          errors: [],
+        }),
       };
 
       registry.registerRule(rule);
-      
+
       expect(registry.hasRule('test-rule')).toBe(true);
       expect(registry.getRuleNames()).toContain('test-rule');
       expect(registry.getRule('test-rule')).toEqual(rule);
@@ -70,13 +70,13 @@ describe('CustomValidationRegistry', () => {
         name: 'duplicate-rule',
         description: 'Test rule',
         isAsync: false,
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule);
-      
+
       expect(() => registry.registerRule(rule)).toThrow(
-        "Validation rule 'duplicate-rule' is already registered"
+        "Validation rule 'duplicate-rule' is already registered",
       );
     });
 
@@ -85,12 +85,10 @@ describe('CustomValidationRegistry', () => {
         name: '',
         description: 'Test rule',
         isAsync: false,
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
-      expect(() => registry.registerRule(rule)).toThrow(
-        'Rule name must be a non-empty string'
-      );
+      expect(() => registry.registerRule(rule)).toThrow('Rule name must be a non-empty string');
     });
 
     it('should throw error for invalid validation function', () => {
@@ -98,12 +96,10 @@ describe('CustomValidationRegistry', () => {
         name: 'invalid-rule',
         description: 'Test rule',
         isAsync: false,
-        validationFunction: 'not a function'
+        validationFunction: 'not a function',
       } as any;
 
-      expect(() => registry.registerRule(rule)).toThrow(
-        'Validation function must be a function'
-      );
+      expect(() => registry.registerRule(rule)).toThrow('Validation function must be a function');
     });
 
     it('should register multiple rules at once', () => {
@@ -112,18 +108,18 @@ describe('CustomValidationRegistry', () => {
           name: 'rule1',
           description: 'Rule 1',
           isAsync: false,
-          validationFunction: () => ({ isValid: true, errors: [] })
+          validationFunction: () => ({ isValid: true, errors: [] }),
         },
         {
           name: 'rule2',
           description: 'Rule 2',
           isAsync: false,
-          validationFunction: () => ({ isValid: true, errors: [] })
-        }
+          validationFunction: () => ({ isValid: true, errors: [] }),
+        },
       ];
 
       registry.registerRules(rules);
-      
+
       expect(registry.hasRule('rule1')).toBe(true);
       expect(registry.hasRule('rule2')).toBe(true);
     });
@@ -135,12 +131,12 @@ describe('CustomValidationRegistry', () => {
         name: 'temp-rule',
         description: 'Temporary rule',
         isAsync: false,
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule);
       expect(registry.hasRule('temp-rule')).toBe(true);
-      
+
       const result = registry.unregisterRule('temp-rule');
       expect(result).toBe(true);
       expect(registry.hasRule('temp-rule')).toBe(false);
@@ -159,7 +155,7 @@ describe('CustomValidationRegistry', () => {
         description: 'Email validation',
         isAsync: false,
         category: 'format',
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       const rule2: CustomValidationRule = {
@@ -167,7 +163,7 @@ describe('CustomValidationRegistry', () => {
         description: 'Phone validation',
         isAsync: false,
         category: 'format',
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule1);
@@ -175,8 +171,8 @@ describe('CustomValidationRegistry', () => {
 
       expect(registry.getCategories()).toContain('format');
       expect(registry.getRulesByCategory('format')).toHaveLength(2);
-      expect(registry.getRulesByCategory('format').map(r => r.name)).toEqual(
-        expect.arrayContaining(['email-rule', 'phone-rule'])
+      expect(registry.getRulesByCategory('format').map((r) => r.name)).toEqual(
+        expect.arrayContaining(['email-rule', 'phone-rule']),
       );
     });
 
@@ -186,12 +182,12 @@ describe('CustomValidationRegistry', () => {
         description: 'Temporary rule',
         isAsync: false,
         category: 'temp-category',
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule);
       expect(registry.getCategories()).toContain('temp-category');
-      
+
       registry.unregisterRule('temp-rule');
       expect(registry.getCategories()).not.toContain('temp-category');
     });
@@ -204,11 +200,11 @@ describe('CustomValidationRegistry', () => {
         description: 'Password confirmation',
         isAsync: false,
         dependencies: ['password'],
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule);
-      
+
       const dependentRules = registry.getRulesDependingOnField('password');
       expect(dependentRules).toContain('password-match');
     });
@@ -219,14 +215,14 @@ describe('CustomValidationRegistry', () => {
         description: 'Rule with dependencies',
         isAsync: false,
         dependencies: ['field1', 'field2'],
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule);
-      
+
       const availableFields = new Set(['field1']);
       const validation = registry.validateDependencies('dependent-rule', availableFields);
-      
+
       expect(validation.isValid).toBe(false);
       expect(validation.missingFields).toContain('field2');
     });
@@ -236,25 +232,25 @@ describe('CustomValidationRegistry', () => {
     it('should execute a custom validation rule', async () => {
       const mockValidation: ValidationFunction = vi.fn().mockReturnValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
 
       const rule: CustomValidationRule = {
         name: 'test-execution',
         description: 'Test execution',
         isAsync: false,
-        validationFunction: mockValidation
+        validationFunction: mockValidation,
       };
 
       registry.registerRule(rule);
-      
+
       const result = await registry.executeRule('test-execution', mockContext);
-      
+
       expect(result.isValid).toBe(true);
       expect(mockValidation).toHaveBeenCalledWith(
         mockContext.fieldValue,
         mockContext.formState,
-        expect.any(Object) // execution context
+        expect.any(Object), // execution context
       );
     });
 
@@ -265,13 +261,13 @@ describe('CustomValidationRegistry', () => {
         isAsync: false,
         validationFunction: () => {
           throw new Error('Validation error');
-        }
+        },
       };
 
       registry.registerRule(errorRule);
-      
+
       const result = await registry.executeRule('error-rule', mockContext);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors[0].code).toBe('custom_rule_error');
       expect(result.errors[0].message).toContain('Validation error');
@@ -279,7 +275,7 @@ describe('CustomValidationRegistry', () => {
 
     it('should handle unknown rules', async () => {
       const result = await registry.executeRule('unknown-rule', mockContext);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors[0].code).toBe('unknown_rule');
     });
@@ -289,7 +285,7 @@ describe('CustomValidationRegistry', () => {
         name: 'rule1',
         description: 'Rule 1',
         isAsync: false,
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       const rule2: CustomValidationRule = {
@@ -298,15 +294,15 @@ describe('CustomValidationRegistry', () => {
         isAsync: false,
         validationFunction: () => ({
           isValid: false,
-          errors: [{ code: 'rule2_error', message: 'Rule 2 failed' }]
-        })
+          errors: [{ code: 'rule2_error', message: 'Rule 2 failed' }],
+        }),
       };
 
       registry.registerRule(rule1);
       registry.registerRule(rule2);
-      
+
       const result = await registry.executeRulesForField(['rule1', 'rule2'], mockContext);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].code).toBe('rule2_error');
@@ -324,17 +320,17 @@ describe('CustomValidationRegistry', () => {
         validationFunction: (value, formState, context) => {
           capturedContext = context;
           return { isValid: true, errors: [] };
-        }
+        },
       };
 
       registry.registerRule(rule);
       await registry.executeRule('context-test', mockContext);
-      
+
       expect(capturedContext).toBeDefined();
       expect(typeof capturedContext.getFieldValue).toBe('function');
       expect(typeof capturedContext.getAllFieldValues).toBe('function');
       expect(typeof capturedContext.isFieldTouched).toBe('function');
-      
+
       // Test context methods
       expect(capturedContext.getFieldValue('email')).toBe('test@example.com');
       expect(capturedContext.isFieldTouched('email')).toBe(true);
@@ -353,12 +349,12 @@ describe('CustomValidationRegistry', () => {
           capturedContext = context;
           context?.setCustomData('testKey', 'testValue');
           return { isValid: true, errors: [] };
-        }
+        },
       };
 
       registry.registerRule(rule);
       await registry.executeRule('custom-data-test', mockContext);
-      
+
       expect(capturedContext.getCustomData('testKey')).toBe('testValue');
     });
   });
@@ -369,7 +365,7 @@ describe('CustomValidationRegistry', () => {
         name: 'sync-rule',
         description: 'Sync rule',
         isAsync: false,
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       const asyncRule: CustomValidationRule = {
@@ -377,14 +373,14 @@ describe('CustomValidationRegistry', () => {
         description: 'Async rule',
         isAsync: true,
         dependencies: ['field1'],
-        validationFunction: () => Promise.resolve({ isValid: true, errors: [] })
+        validationFunction: () => Promise.resolve({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(syncRule);
       registry.registerRule(asyncRule);
-      
+
       const stats = registry.getStatistics();
-      
+
       expect(stats.totalRules).toBe(2);
       expect(stats.syncRules).toBe(1);
       expect(stats.asyncRules).toBe(1);
@@ -396,11 +392,11 @@ describe('CustomValidationRegistry', () => {
         name: 'export-test',
         description: 'Export test rule',
         isAsync: false,
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule);
-      
+
       const exported = registry.exportRules();
       expect(exported).toHaveLength(1);
       expect(exported[0].name).toBe('export-test');
@@ -411,12 +407,12 @@ describe('CustomValidationRegistry', () => {
         name: 'clear-test',
         description: 'Clear test rule',
         isAsync: false,
-        validationFunction: () => ({ isValid: true, errors: [] })
+        validationFunction: () => ({ isValid: true, errors: [] }),
       };
 
       registry.registerRule(rule);
       registry.clear();
-      
+
       expect(registry.getRuleNames()).toHaveLength(0);
       expect(registry.getCategories()).toHaveLength(0);
     });
@@ -428,7 +424,7 @@ describe('CustomValidationRegistry', () => {
         'password-match',
         'password',
         'equals',
-        'Passwords must match'
+        'Passwords must match',
       );
 
       expect(rule.name).toBe('password-match');
@@ -440,14 +436,14 @@ describe('CustomValidationRegistry', () => {
       const condition = (context: any) => context.getFieldValue('enableValidation') === true;
       const validation: ValidationFunction = (value) => ({
         isValid: value.length > 5,
-        errors: value.length <= 5 ? [{ code: 'too_short', message: 'Too short' }] : []
+        errors: value.length <= 5 ? [{ code: 'too_short', message: 'Too short' }] : [],
       });
 
       const rule = ValidationRuleBuilders.createConditionalRule(
         'conditional-length',
         condition,
         validation,
-        'Conditional validation failed'
+        'Conditional validation failed',
       );
 
       expect(rule.name).toBe('conditional-length');
@@ -456,11 +452,11 @@ describe('CustomValidationRegistry', () => {
 
     it('should create async API rule', () => {
       const apiCall = vi.fn().mockResolvedValue(true);
-      
+
       const rule = ValidationRuleBuilders.createAsyncApiRule(
         'api-validation',
         apiCall,
-        'API validation failed'
+        'API validation failed',
       );
 
       expect(rule.name).toBe('api-validation');

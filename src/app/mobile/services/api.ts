@@ -1,6 +1,7 @@
+import { apiClient } from '@/lib/api';
 import { Course, Lesson, UserProgress, LearningSession } from '../types/mobile';
 
-const API_BASE_URL = '/api';
+const BASE = '/api';
 
 export interface ApiResponse<T> {
   data: T;
@@ -16,112 +17,36 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-class ApiService {
-  private headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') : ''}`
-  };
-
-  // Courses
-  async getCourses(params?: { page?: number; limit?: number; category?: string }): Promise<PaginatedResponse<Course>> {
+export const apiService = {
+  getCourses: (params?: { page?: number; limit?: number; category?: string }) => {
     const query = new URLSearchParams(params as Record<string, string>).toString();
-    const response = await fetch(`${API_BASE_URL}/courses?${query}`, {
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch courses');
-    return response.json();
-  }
+    return apiClient.get<PaginatedResponse<Course>>(`${BASE}/courses?${query}`);
+  },
 
-  async getCourse(id: string): Promise<ApiResponse<Course>> {
-    const response = await fetch(`${API_BASE_URL}/courses/${id}`, {
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch course');
-    return response.json();
-  }
+  getCourse: (id: string) => apiClient.get<ApiResponse<Course>>(`${BASE}/courses/${id}`),
 
-  async getCourseLessons(courseId: string): Promise<ApiResponse<Lesson[]>> {
-    const response = await fetch(`${API_BASE_URL}/courses/${courseId}/lessons`, {
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch lessons');
-    return response.json();
-  }
+  getCourseLessons: (courseId: string) =>
+    apiClient.get<ApiResponse<Lesson[]>>(`${BASE}/courses/${courseId}/lessons`),
 
-  // User Progress
-  async getUserProgress(): Promise<ApiResponse<UserProgress>> {
-    const response = await fetch(`${API_BASE_URL}/user/progress`, {
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch progress');
-    return response.json();
-  }
+  getUserProgress: () => apiClient.get<ApiResponse<UserProgress>>(`${BASE}/user/progress`),
 
-  async updateLessonProgress(lessonId: string, completed: boolean): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/progress`, {
-      method: 'PATCH',
-      headers: this.headers,
-      body: JSON.stringify({ completed })
-    });
-    
-    if (!response.ok) throw new Error('Failed to update progress');
-    return response.json();
-  }
+  updateLessonProgress: (lessonId: string, completed: boolean) =>
+    apiClient.patch<ApiResponse<void>>(`${BASE}/lessons/${lessonId}/progress`, { completed }),
 
-  // Offline Content
-  async getDownloadableCourses(): Promise<ApiResponse<Course[]>> {
-    const response = await fetch(`${API_BASE_URL}/courses/downloadable`, {
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch downloadable courses');
-    return response.json();
-  }
+  getDownloadableCourses: () =>
+    apiClient.get<ApiResponse<Course[]>>(`${BASE}/courses/downloadable`),
 
-  async downloadCourse(courseId: string): Promise<ApiResponse<{ downloadUrl: string; size: number }>> {
-    const response = await fetch(`${API_BASE_URL}/courses/${courseId}/download`, {
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to initiate download');
-    return response.json();
-  }
+  downloadCourse: (courseId: string) =>
+    apiClient.get<ApiResponse<{ downloadUrl: string; size: number }>>(
+      `${BASE}/courses/${courseId}/download`,
+    ),
 
-  async deleteDownloadedCourse(courseId: string): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/courses/${courseId}/offline`, {
-      method: 'DELETE',
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to delete downloaded course');
-    return response.json();
-  }
+  deleteDownloadedCourse: (courseId: string) =>
+    apiClient.delete<ApiResponse<void>>(`${BASE}/courses/${courseId}/offline`),
 
-  // Learning Session
-  async startLearningSession(lessonId: string): Promise<ApiResponse<LearningSession>> {
-    const response = await fetch(`${API_BASE_URL}/sessions`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify({ lessonId })
-    });
-    
-    if (!response.ok) throw new Error('Failed to start session');
-    return response.json();
-  }
+  startLearningSession: (lessonId: string) =>
+    apiClient.post<ApiResponse<LearningSession>>(`${BASE}/sessions`, { lessonId }),
 
-  async endLearningSession(sessionId: string): Promise<ApiResponse<void>> {
-    const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`, {
-      method: 'PATCH',
-      headers: this.headers
-    });
-    
-    if (!response.ok) throw new Error('Failed to end session');
-    return response.json();
-  }
-}
-
-export const apiService = new ApiService();
+  endLearningSession: (sessionId: string) =>
+    apiClient.patch<ApiResponse<void>>(`${BASE}/sessions/${sessionId}`, {}),
+};

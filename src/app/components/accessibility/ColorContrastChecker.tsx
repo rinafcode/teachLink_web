@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { calculateContrastRatio, getComputedColor, ColorContrastResult } from '@/utils/accessibilityUtils';
+import {
+  calculateContrastRatio,
+  getComputedColor,
+  ColorContrastResult,
+} from '@/utils/accessibilityUtils';
 import { Eye, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 interface ColorPair {
@@ -29,7 +33,7 @@ export function ColorContrastChecker({
 
     // Find all text elements
     const textElements = document.querySelectorAll(
-      'p, h1, h2, h3, h4, h5, h6, span, a, button, label, li, td, th'
+      'p, h1, h2, h3, h4, h5, h6, span, a, button, label, li, td, th',
     );
 
     const pairs: (ColorPair & { result: ColorContrastResult })[] = [];
@@ -74,6 +78,7 @@ export function ColorContrastChecker({
       const timer = setTimeout(checkPageContrast, 1000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [autoCheck, checkPageContrast]);
 
   const getStatusIcon = (result: ColorContrastResult) => {
@@ -160,10 +165,7 @@ export function ColorContrastChecker({
                 </div>
 
                 {colorPairs.map((pair, index) => (
-                  <div
-                    key={index}
-                    className="p-3 border border-gray-200 rounded-lg space-y-2"
-                  >
+                  <div key={index} className="p-3 border border-gray-200 rounded-lg space-y-2">
                     {/* Color Swatches */}
                     <div className="flex items-center gap-2">
                       <div
@@ -200,9 +202,7 @@ export function ColorContrastChecker({
                       </div>
                       <div>
                         <span className="font-medium">Text:</span>{' '}
-                        <span className="text-gray-600 truncate block">
-                          {pair.location}
-                        </span>
+                        <span className="text-gray-600 truncate block">{pair.location}</span>
                       </div>
                       <div>
                         <span className="font-medium">Colors:</span>
@@ -269,8 +269,8 @@ export function ColorContrastChecker({
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 bg-gray-50 text-xs text-gray-600">
             <p>
-              WCAG 2.1 requires a contrast ratio of at least 4.5:1 for normal text and 3:1 for
-              large text (18pt+ or 14pt+ bold).
+              WCAG 2.1 requires a contrast ratio of at least 4.5:1 for normal text and 3:1 for large
+              text (18pt+ or 14pt+ bold).
             </p>
           </div>
         </div>

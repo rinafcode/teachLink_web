@@ -2,17 +2,17 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Download, 
-  CheckCircle, 
-  XCircle, 
-  Pause, 
-  Play, 
-  Trash2, 
-  Wifi, 
+import {
+  Download,
+  CheckCircle,
+  XCircle,
+  Pause,
+  Play,
+  Trash2,
+  Wifi,
   WifiOff,
   HardDrive,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { useOfflineModeContext } from '../../context/OfflineModeContext';
 
@@ -37,12 +37,8 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
   const [showManager, setShowManager] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  const { 
-    isOnline, 
-    isOfflineModeEnabled, 
-    storageUsage,
-    enableOfflineMode 
-  } = useOfflineModeContext();
+  const { isOnline, isOfflineModeEnabled, storageUsage, enableOfflineMode } =
+    useOfflineModeContext();
 
   // Sample course data for demonstration
   const sampleCourses = [
@@ -50,89 +46,98 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
       id: 'course-1',
       title: 'React Fundamentals',
       size: 250 * 1024 * 1024, // 250MB
-      description: 'Learn the basics of React development'
+      description: 'Learn the basics of React development',
     },
     {
-      id: 'course-2', 
+      id: 'course-2',
       title: 'Advanced JavaScript',
       size: 180 * 1024 * 1024, // 180MB
-      description: 'Master advanced JavaScript concepts'
+      description: 'Master advanced JavaScript concepts',
     },
     {
       id: 'course-3',
       title: 'Node.js Backend Development',
       size: 320 * 1024 * 1024, // 320MB
-      description: 'Build scalable backend applications'
-    }
+      description: 'Build scalable backend applications',
+    },
   ];
 
-  const addToDownloadQueue = useCallback(async (course: { id: string; title: string; size: number }) => {
-    if (!isOfflineModeEnabled) {
-      await enableOfflineMode();
-    }
-
-    const downloadItem: DownloadItem = {
-      id: `download-${Date.now()}-${Math.random()}`,
-      courseId: course.id,
-      title: course.title,
-      size: course.size,
-      progress: 0,
-      status: 'pending',
-      startTime: new Date()
-    };
-
-    setDownloads(prev => [...prev, downloadItem]);
-
-    // Simulate download process
-    simulateDownload(downloadItem);
-  }, [isOfflineModeEnabled, enableOfflineMode]);
-
-  const simulateDownload = useCallback((item: DownloadItem) => {
-    const updateProgress = (progress: number) => {
-      setDownloads(prev => prev.map(download => 
-        download.id === item.id 
-          ? { ...download, progress, status: progress === 100 ? 'completed' : 'downloading' }
-          : download
-      ));
-    };
-
-    let progress = 0;
-    const interval = setInterval(() => {
-      if (isPaused) return;
-
-      progress += Math.random() * 10;
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-        updateProgress(progress);
-      } else {
-        updateProgress(progress);
+  const addToDownloadQueue = useCallback(
+    async (course: { id: string; title: string; size: number }) => {
+      if (!isOfflineModeEnabled) {
+        await enableOfflineMode();
       }
-    }, 500);
-  }, [isPaused]);
+
+      const downloadItem: DownloadItem = {
+        id: `download-${Date.now()}-${Math.random()}`,
+        courseId: course.id,
+        title: course.title,
+        size: course.size,
+        progress: 0,
+        status: 'pending',
+        startTime: new Date(),
+      };
+
+      setDownloads((prev) => [...prev, downloadItem]);
+
+      // Simulate download process
+      simulateDownload(downloadItem);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isOfflineModeEnabled, enableOfflineMode],
+  );
+
+  const simulateDownload = useCallback(
+    (item: DownloadItem) => {
+      const updateProgress = (progress: number) => {
+        setDownloads((prev) =>
+          prev.map((download) =>
+            download.id === item.id
+              ? { ...download, progress, status: progress === 100 ? 'completed' : 'downloading' }
+              : download,
+          ),
+        );
+      };
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        if (isPaused) return;
+
+        progress += Math.random() * 10;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          updateProgress(progress);
+        } else {
+          updateProgress(progress);
+        }
+      }, 500);
+    },
+    [isPaused],
+  );
 
   const pauseDownload = useCallback((downloadId: string) => {
-    setDownloads(prev => prev.map(download => 
-      download.id === downloadId 
-        ? { ...download, status: 'paused' as const }
-        : download
-    ));
+    setDownloads((prev) =>
+      prev.map((download) =>
+        download.id === downloadId ? { ...download, status: 'paused' as const } : download,
+      ),
+    );
   }, []);
 
   const resumeDownload = useCallback((downloadId: string) => {
-    setDownloads(prev => prev.map(download => 
-      download.id === downloadId 
-        ? { ...download, status: 'downloading' as const }
-        : download
-    ));
+    setDownloads((prev) =>
+      prev.map((download) =>
+        download.id === downloadId ? { ...download, status: 'downloading' as const } : download,
+      ),
+    );
   }, []);
 
   const cancelDownload = useCallback((downloadId: string) => {
-    setDownloads(prev => prev.filter(download => download.id !== downloadId));
+    setDownloads((prev) => prev.filter((download) => download.id !== downloadId));
   }, []);
 
   const clearCompleted = useCallback(() => {
-    setDownloads(prev => prev.filter(download => download.status !== 'completed'));
+    setDownloads((prev) => prev.filter((download) => download.status !== 'completed'));
   }, []);
 
   const formatFileSize = (bytes: number): string => {
@@ -177,7 +182,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
     }
   };
 
-  const activeDownloads = downloads.filter(d => d.status === 'downloading');
+  const activeDownloads = downloads.filter((d) => d.status === 'downloading');
 
   return (
     <div className={className}>
@@ -219,15 +224,17 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                   </span>
                 </div>
               </div>
-              
+
               {/* Storage Usage Bar */}
               <div className="mt-2">
                 <div className="flex justify-between text-xs text-gray-600 mb-1">
                   <span>Storage</span>
-                  <span>{formatFileSize(storageUsage.used)} / {formatFileSize(storageUsage.total)}</span>
+                  <span>
+                    {formatFileSize(storageUsage.used)} / {formatFileSize(storageUsage.total)}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                   />
@@ -254,9 +261,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                     <span>Clear</span>
                   </button>
                 </div>
-                <span className="text-sm text-gray-600">
-                  {activeDownloads.length} active
-                </span>
+                <span className="text-sm text-gray-600">{activeDownloads.length} active</span>
               </div>
             </div>
 
@@ -289,7 +294,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                             </p>
                           </div>
                         </div>
-                        
+
                         {/* Progress Bar */}
                         <div className="mt-2">
                           <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -297,7 +302,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                             <span>{formatFileSize((download.size * download.progress) / 100)}</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-1.5">
-                            <div 
+                            <div
                               className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
                               style={{ width: `${download.progress}%` }}
                             />
@@ -344,7 +349,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                   <button
                     key={course.id}
                     onClick={() => addToDownloadQueue(course)}
-                    disabled={downloads.some(d => d.courseId === course.id)}
+                    disabled={downloads.some((d) => d.courseId === course.id)}
                     className="w-full text-left p-2 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="flex items-center justify-between">

@@ -21,9 +21,7 @@ export default function QuestionCard({ question, quizState }: QuestionCardProps)
         {showFeedback ? (
           <div
             className={`text-sm font-medium ${
-              answer?.feedback === 'correct'
-                ? 'text-[#0066FF] dark:text-[#00C2FF]'
-                : 'text-red-700'
+              answer?.feedback === 'correct' ? 'text-[#0066FF] dark:text-[#00C2FF]' : 'text-red-700'
             }`}
           >
             {answer?.feedback === 'correct' ? 'Correct' : 'Incorrect'}

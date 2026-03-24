@@ -15,22 +15,22 @@ interface DynamicLanguageSwitcherProps {
    * Display mode: 'dropdown' | 'select' | 'buttons'
    */
   mode?: 'dropdown' | 'select' | 'buttons';
-  
+
   /**
    * Show native language names
    */
   showNativeNames?: boolean;
-  
+
   /**
    * Show flags/icons
    */
   showFlags?: boolean;
-  
+
   /**
    * Custom className
    */
   className?: string;
-  
+
   /**
    * Callback when language changes
    */
@@ -47,7 +47,7 @@ export function DynamicLanguageSwitcher({
   const { language, changeLanguage, isLoading, t } = useInternationalization();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  
+
   const availableLanguages = getAvailableLanguages();
   const currentConfig = getLocaleConfig(language);
 
@@ -57,7 +57,7 @@ export function DynamicLanguageSwitcher({
     startTransition(async () => {
       await changeLanguage(newLanguage);
       setIsOpen(false);
-      
+
       if (onLanguageChange) {
         onLanguageChange(newLanguage);
       }
@@ -83,15 +83,12 @@ export function DynamicLanguageSwitcher({
 
         {isOpen && (
           <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setIsOpen(false)}
-            />
+            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
             <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
               {availableLanguages.map((lang) => {
                 const config = getLocaleConfig(lang);
                 const isSelected = lang === language;
-                
+
                 return (
                   <button
                     key={lang}
@@ -113,9 +110,7 @@ export function DynamicLanguageSwitcher({
                         </div>
                       )}
                     </div>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    )}
+                    {isSelected && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                   </button>
                 );
               })}
@@ -156,7 +151,7 @@ export function DynamicLanguageSwitcher({
       {availableLanguages.map((lang) => {
         const config = getLocaleConfig(lang);
         const isSelected = lang === language;
-        
+
         return (
           <button
             key={lang}
@@ -199,6 +194,6 @@ function getLanguageFlag(language: LanguageCode): string {
     it: '🇮🇹',
     ko: '🇰🇷',
   };
-  
+
   return flagMap[language] || '🌐';
 }

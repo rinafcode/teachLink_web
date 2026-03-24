@@ -25,7 +25,7 @@ export const useSearchFilters = () => {
     priceRange: searchParams?.get('price') ? Number(searchParams.get('price')) : 200,
     sort: searchParams?.get('sort') || 'relevance',
     instructor: searchParams?.get('instructor') || '',
-    searchTerm: searchParams?.get('q') || ''
+    searchTerm: searchParams?.get('q') || '',
   });
 
   useEffect(() => {
@@ -58,9 +58,9 @@ export const useSearchFilters = () => {
   }, [filters, pathname, router]);
 
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
-    setFiltersState(prev => ({
+    setFiltersState((prev) => ({
       ...prev,
-      ...newFilters
+      ...newFilters,
     }));
   }, []);
 
@@ -72,13 +72,13 @@ export const useSearchFilters = () => {
       priceRange: 200,
       sort: 'relevance',
       instructor: '',
-      searchTerm: ''
+      searchTerm: '',
     });
   }, []);
 
   return {
     filters,
     setFilters,
-    resetFilters
+    resetFilters,
   };
 };

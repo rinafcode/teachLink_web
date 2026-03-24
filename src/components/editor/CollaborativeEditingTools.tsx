@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 // Mock data for collaborators
@@ -13,6 +12,7 @@ export const CollaborativeEditingTools: React.FC = () => {
     <div className="flex items-center gap-2">
       <div className="flex -space-x-2">
         {COLLABORATORS.map((user) => (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             key={user.id}
             src={user.avatar}

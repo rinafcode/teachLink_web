@@ -51,81 +51,84 @@ export const useCourseCreation = () => {
     level: 'beginner',
     lessons: [],
     assessments: [],
-    pricing: { type: 'free' }
+    pricing: { type: 'free' },
   });
 
   const updateCourseData = useCallback((data: Partial<CourseData>) => {
-    setCourseData(prev => ({ ...prev, ...data }));
+    setCourseData((prev) => ({ ...prev, ...data }));
   }, []);
 
-  const addLesson = useCallback((lesson: Omit<Lesson, 'id' | 'order'>) => {
-    const newLesson: Lesson = {
-      ...lesson,
-      id: `lesson-${Date.now()}`,
-      order: courseData.lessons.length
-    };
-    setCourseData(prev => ({
-      ...prev,
-      lessons: [...prev.lessons, newLesson]
-    }));
-  }, [courseData.lessons.length]);
+  const addLesson = useCallback(
+    (lesson: Omit<Lesson, 'id' | 'order'>) => {
+      const newLesson: Lesson = {
+        ...lesson,
+        id: `lesson-${Date.now()}`,
+        order: courseData.lessons.length,
+      };
+      setCourseData((prev) => ({
+        ...prev,
+        lessons: [...prev.lessons, newLesson],
+      }));
+    },
+    [courseData.lessons.length],
+  );
 
   const updateLesson = useCallback((id: string, updates: Partial<Lesson>) => {
-    setCourseData(prev => ({
+    setCourseData((prev) => ({
       ...prev,
-      lessons: prev.lessons.map(lesson =>
-        lesson.id === id ? { ...lesson, ...updates } : lesson
-      )
+      lessons: prev.lessons.map((lesson) =>
+        lesson.id === id ? { ...lesson, ...updates } : lesson,
+      ),
     }));
   }, []);
 
   const deleteLesson = useCallback((id: string) => {
-    setCourseData(prev => ({
+    setCourseData((prev) => ({
       ...prev,
-      lessons: prev.lessons.filter(lesson => lesson.id !== id)
+      lessons: prev.lessons.filter((lesson) => lesson.id !== id),
     }));
   }, []);
 
   const reorderLessons = useCallback((lessons: Lesson[]) => {
-    setCourseData(prev => ({
+    setCourseData((prev) => ({
       ...prev,
-      lessons: lessons.map((lesson, index) => ({ ...lesson, order: index }))
+      lessons: lessons.map((lesson, index) => ({ ...lesson, order: index })),
     }));
   }, []);
 
   const addAssessment = useCallback((assessment: Omit<Assessment, 'id'>) => {
     const newAssessment: Assessment = {
       ...assessment,
-      id: `assessment-${Date.now()}`
+      id: `assessment-${Date.now()}`,
     };
-    setCourseData(prev => ({
+    setCourseData((prev) => ({
       ...prev,
-      assessments: [...prev.assessments, newAssessment]
+      assessments: [...prev.assessments, newAssessment],
     }));
   }, []);
 
   const updateAssessment = useCallback((id: string, updates: Partial<Assessment>) => {
-    setCourseData(prev => ({
+    setCourseData((prev) => ({
       ...prev,
-      assessments: prev.assessments.map(assessment =>
-        assessment.id === id ? { ...assessment, ...updates } : assessment
-      )
+      assessments: prev.assessments.map((assessment) =>
+        assessment.id === id ? { ...assessment, ...updates } : assessment,
+      ),
     }));
   }, []);
 
   const deleteAssessment = useCallback((id: string) => {
-    setCourseData(prev => ({
+    setCourseData((prev) => ({
       ...prev,
-      assessments: prev.assessments.filter(assessment => assessment.id !== id)
+      assessments: prev.assessments.filter((assessment) => assessment.id !== id),
     }));
   }, []);
 
   const nextStep = useCallback(() => {
-    setCurrentStep(prev => Math.min(prev + 1, 4));
+    setCurrentStep((prev) => Math.min(prev + 1, 4));
   }, []);
 
   const previousStep = useCallback(() => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
   }, []);
 
   const goToStep = useCallback((step: number) => {
@@ -145,6 +148,6 @@ export const useCourseCreation = () => {
     deleteAssessment,
     nextStep,
     previousStep,
-    goToStep
+    goToStep,
   };
 };

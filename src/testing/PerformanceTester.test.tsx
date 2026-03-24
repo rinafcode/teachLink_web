@@ -9,12 +9,9 @@
 import React, { FC, memo, useMemo } from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import {
-  measureExecutionTime,
-  expectWithinBudget,
-} from '../utils/testUtils';
+import { measureExecutionTime, expectWithinBudget } from '../utils/testUtils';
 
-//  Budget constants (ms) 
+//  Budget constants (ms)
 
 const BUDGETS = {
   COMPONENT_RENDER: 50,
@@ -25,17 +22,23 @@ const BUDGETS = {
   RERENDER_CYCLE: 100,
 };
 
-// Stub components 
+// Stub components
 
-interface ListItem { id: number; label: string; value: number; }
+interface ListItem {
+  id: number;
+  label: string;
+  value: number;
+}
 
 const generateItems = (count: number): ListItem[] =>
   Array.from({ length: count }, (_, i) => ({ id: i, label: `Item ${i}`, value: Math.random() }));
 
 const VirtualList: FC<{ items: ListItem[] }> = memo(({ items }) => (
   <ul data-testid="list">
-    {items.map(item => (
-      <li key={item.id} data-testid="list-item">{item.label}</li>
+    {items.map((item) => (
+      <li key={item.id} data-testid="list-item">
+        {item.label}
+      </li>
     ))}
   </ul>
 ));
@@ -52,7 +55,7 @@ const ExpensiveComponent: FC<{ data: number[] }> = ({ data }) => {
 
 async function benchmark(
   fn: () => void | Promise<void>,
-  iterations = 10
+  iterations = 10,
 ): Promise<{ avg: number; max: number; min: number }> {
   const times: number[] = [];
   for (let i = 0; i < iterations; i++) {
@@ -66,31 +69,28 @@ async function benchmark(
   };
 }
 
-// Tests 
+// Tests
 
 describe('PerformanceTester – Render budgets', () => {
   it('renders a simple component within budget', async () => {
-    await expectWithinBudget(
-      () => { render(<ExpensiveComponent data={[1, 2, 3]} />); },
-      BUDGETS.COMPONENT_RENDER
-    );
+    await expectWithinBudget(() => {
+      render(<ExpensiveComponent data={[1, 2, 3]} />);
+    }, BUDGETS.COMPONENT_RENDER);
   });
 
   it('renders a 500-item list within budget', async () => {
     const items = generateItems(500);
-    await expectWithinBudget(
-      () => { render(<VirtualList items={items} />); },
-      BUDGETS.LARGE_LIST_RENDER
-    );
+    await expectWithinBudget(() => {
+      render(<VirtualList items={items} />);
+    }, BUDGETS.LARGE_LIST_RENDER);
     expect(screen.getAllByTestId('list-item')).toHaveLength(500);
   });
 
   it('renders a 1000-item list within extended budget', async () => {
     const items = generateItems(1000);
-    await expectWithinBudget(
-      () => { render(<VirtualList items={items} />); },
-      BUDGETS.LARGE_LIST_RENDER * 2
-    );
+    await expectWithinBudget(() => {
+      render(<VirtualList items={items} />);
+    }, BUDGETS.LARGE_LIST_RENDER * 2);
   });
 
   it('memoized component does not re-render on identical props', () => {
@@ -108,7 +108,6 @@ describe('PerformanceTester – Render budgets', () => {
   });
 });
 
-
 describe('PerformanceTester – Computation benchmarks', () => {
   it('computes sqrt-sum of 10 000 numbers within budget', async () => {
     const data = Array.from({ length: 10_000 }, (_, i) => i + 1);
@@ -119,28 +118,32 @@ describe('PerformanceTester – Computation benchmarks', () => {
 
   it('sorts 1000 items within budget', async () => {
     const arr = Array.from({ length: 1000 }, () => Math.random());
-    await expectWithinBudget(() => { [...arr].sort((a, b) => a - b); }, BUDGETS.SORT_1000);
+    await expectWithinBudget(() => {
+      [...arr].sort((a, b) => a - b);
+    }, BUDGETS.SORT_1000);
   });
 
   it('filters 10 000 items within search budget', async () => {
     const items = generateItems(10_000);
-    await expectWithinBudget(
-      () => { items.filter(i => i.label.includes('5')); },
-      BUDGETS.SEARCH_FILTER
-    );
+    await expectWithinBudget(() => {
+      items.filter((i) => i.label.includes('5'));
+    }, BUDGETS.SEARCH_FILTER);
   });
 
   it('JSON serialises 1000 objects under 50ms', async () => {
     const data = generateItems(1000);
-    await expectWithinBudget(() => { JSON.stringify(data); }, 50);
+    await expectWithinBudget(() => {
+      JSON.stringify(data);
+    }, 50);
   });
 
   it('JSON parses a 1000-item payload under 50ms', async () => {
     const json = JSON.stringify(generateItems(1000));
-    await expectWithinBudget(() => { JSON.parse(json); }, 50);
+    await expectWithinBudget(() => {
+      JSON.parse(json);
+    }, 50);
   });
 });
-
 
 describe('PerformanceTester – Re-render cycles', () => {
   it('re-renders 50 times within budget', async () => {
@@ -157,12 +160,11 @@ describe('PerformanceTester – Re-render cycles', () => {
     const { rerender } = render(<ExpensiveComponent data={[1]} />);
     const { avg } = await benchmark(
       () => rerender(<ExpensiveComponent data={[Math.random()]} />),
-      20
+      20,
     );
     expect(avg).toBeLessThan(5);
   });
 });
-
 
 describe('PerformanceTester – Storage estimates', () => {
   it('reads navigator.storage.estimate without error', async () => {
@@ -177,7 +179,6 @@ describe('PerformanceTester – Storage estimates', () => {
     expect(Number(pct)).toBeCloseTo(9.77, 1);
   });
 });
-
 
 describe('PerformanceTester – Async operation benchmarks', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -202,11 +203,10 @@ describe('PerformanceTester – Async operation benchmarks', () => {
     } as Response);
 
     await expectWithinBudget(async () => {
-      await Promise.all(Array.from({ length: 50 }, () => fetch('/api/ping').then(r => r.json())));
+      await Promise.all(Array.from({ length: 50 }, () => fetch('/api/ping').then((r) => r.json())));
     }, 200);
   });
 });
-
 
 describe('PerformanceTester – Benchmark utility', () => {
   it('returns avg, min, max for a synchronous operation', async () => {
@@ -222,7 +222,9 @@ describe('PerformanceTester – Benchmark utility', () => {
 
   it('runs exactly the requested number of iterations', async () => {
     let count = 0;
-    await benchmark(() => { count++; }, 7);
+    await benchmark(() => {
+      count++;
+    }, 7);
     expect(count).toBe(7);
   });
 });

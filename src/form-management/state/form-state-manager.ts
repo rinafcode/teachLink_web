@@ -11,7 +11,7 @@ import {
   ValidationResult,
   FormMetadata,
   FieldDescriptor,
-  ConditionalRule
+  ConditionalRule,
 } from '../types/core';
 import type { FormStateManager as IFormStateManager } from '../types/interfaces';
 import { DependencyManager, CascadeUpdateResult } from './dependency-manager';
@@ -39,10 +39,10 @@ export class FormStateManager implements IFormStateManager {
    */
   updateField(fieldId: string, value: any): void {
     const oldValue = this.state.values[fieldId];
-    
+
     // Update the field value
     this.state.values[fieldId] = value;
-    
+
     // Mark field as touched and dirty if value changed
     this.state.touched[fieldId] = true;
     if (oldValue !== value) {
@@ -59,7 +59,7 @@ export class FormStateManager implements IFormStateManager {
       fieldId,
       oldValue,
       newValue: value,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -76,7 +76,7 @@ export class FormStateManager implements IFormStateManager {
       fieldId,
       oldValue: oldResult,
       newValue: result,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -86,13 +86,13 @@ export class FormStateManager implements IFormStateManager {
   resetForm(): void {
     const formId = this.state.metadata.formId;
     const userId = this.state.metadata.userId;
-    
+
     this.state = this.createInitialState(formId, userId);
 
     // Emit form reset event
     this.emitStateChange({
       type: 'form-submit', // Using form-submit as closest match for reset
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -106,7 +106,7 @@ export class FormStateManager implements IFormStateManager {
     return {
       unsubscribe: () => {
         this.subscribers.delete(subscriptionId);
-      }
+      },
     };
   }
 
@@ -121,7 +121,7 @@ export class FormStateManager implements IFormStateManager {
    * Check if the entire form is valid
    */
   isFormValid(): boolean {
-    return Object.values(this.state.validation).every(result => result.isValid);
+    return Object.values(this.state.validation).every((result) => result.isValid);
   }
 
   /**
@@ -129,7 +129,7 @@ export class FormStateManager implements IFormStateManager {
    */
   private createInitialState(formId: string, userId?: string): FormState {
     const now = new Date();
-    
+
     return {
       values: {},
       validation: {},
@@ -143,8 +143,8 @@ export class FormStateManager implements IFormStateManager {
         createdAt: now,
         lastModified: now,
         version: '1.0.0',
-        userId
-      }
+        userId,
+      },
     };
   }
 
@@ -159,7 +159,7 @@ export class FormStateManager implements IFormStateManager {
    * Emit state change event to all subscribers
    */
   private emitStateChange(event: StateChangeEvent): void {
-    this.subscribers.forEach(callback => {
+    this.subscribers.forEach((callback) => {
       try {
         callback(event);
       } catch (error) {
@@ -179,7 +179,7 @@ export class FormStateManager implements IFormStateManager {
 
     this.emitStateChange({
       type: 'form-submit',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -243,13 +243,13 @@ export class FormStateManager implements IFormStateManager {
    */
   clearFieldValidation(fieldId: string): void {
     delete this.state.validation[fieldId];
-    
+
     this.emitStateChange({
       type: 'validation-change',
       fieldId,
       oldValue: undefined,
       newValue: undefined,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -279,7 +279,7 @@ export class FormStateManager implements IFormStateManager {
     // Emit a single validation change event for batch update
     this.emitStateChange({
       type: 'validation-change',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -288,7 +288,7 @@ export class FormStateManager implements IFormStateManager {
    */
   setFieldValuesBatch(values: Record<string, any>): void {
     const oldValues = { ...this.state.values };
-    
+
     Object.entries(values).forEach(([fieldId, value]) => {
       this.state.values[fieldId] = value;
       this.state.touched[fieldId] = true;
@@ -304,7 +304,7 @@ export class FormStateManager implements IFormStateManager {
       type: 'field-change',
       oldValue: oldValues,
       newValue: { ...this.state.values },
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -312,7 +312,7 @@ export class FormStateManager implements IFormStateManager {
    * Reset specific fields to their initial state
    */
   resetFields(fieldIds: string[]): void {
-    fieldIds.forEach(fieldId => {
+    fieldIds.forEach((fieldId) => {
       delete this.state.values[fieldId];
       delete this.state.validation[fieldId];
       delete this.state.touched[fieldId];
@@ -323,7 +323,7 @@ export class FormStateManager implements IFormStateManager {
 
     this.emitStateChange({
       type: 'field-change',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -334,7 +334,7 @@ export class FormStateManager implements IFormStateManager {
     this.state.metadata = {
       ...this.state.metadata,
       ...metadata,
-      lastModified: new Date()
+      lastModified: new Date(),
     };
   }
 
@@ -355,11 +355,11 @@ export class FormStateManager implements IFormStateManager {
 
     Object.entries(this.state.validation).forEach(([fieldId, result]) => {
       if (result.errors.length > 0) {
-        fieldErrors[fieldId] = result.errors.map(e => e.message);
+        fieldErrors[fieldId] = result.errors.map((e) => e.message);
         errorCount += result.errors.length;
       }
       if (result.warnings && result.warnings.length > 0) {
-        fieldWarnings[fieldId] = result.warnings.map(w => w.message);
+        fieldWarnings[fieldId] = result.warnings.map((w) => w.message);
         warningCount += result.warnings.length;
       }
     });
@@ -369,7 +369,7 @@ export class FormStateManager implements IFormStateManager {
       errorCount,
       warningCount,
       fieldErrors,
-      fieldWarnings
+      fieldWarnings,
     };
   }
 
@@ -377,7 +377,7 @@ export class FormStateManager implements IFormStateManager {
    * Check if form has any changes (is dirty)
    */
   isFormDirty(): boolean {
-    return Object.values(this.state.dirty).some(isDirty => isDirty);
+    return Object.values(this.state.dirty).some((isDirty) => isDirty);
   }
 
   /**
@@ -413,7 +413,7 @@ export class FormStateManager implements IFormStateManager {
    */
   completeSubmission(success: boolean, onSubmissionComplete?: (success: boolean) => void): void {
     this.setSubmitting(false);
-    
+
     if (success) {
       // Clear dirty state on successful submission
       this.state.dirty = {};
@@ -442,7 +442,7 @@ export class FormStateManager implements IFormStateManager {
       type: 'form-submit', // Using form-submit as closest match for state restoration
       oldValue: oldState,
       newValue: this.state,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -450,7 +450,7 @@ export class FormStateManager implements IFormStateManager {
    * Validate specific fields programmatically
    */
   validateFields(fieldIds: string[], validationResults: Record<string, ValidationResult>): void {
-    fieldIds.forEach(fieldId => {
+    fieldIds.forEach((fieldId) => {
       if (validationResults[fieldId]) {
         this.setValidationState(fieldId, validationResults[fieldId]);
       }
@@ -462,10 +462,10 @@ export class FormStateManager implements IFormStateManager {
    */
   clearAllValidation(): void {
     this.state.validation = {};
-    
+
     this.emitStateChange({
       type: 'validation-change',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -481,7 +481,7 @@ export class FormStateManager implements IFormStateManager {
    * Set multiple fields as pristine
    */
   markFieldsPristine(fieldIds: string[]): void {
-    fieldIds.forEach(fieldId => {
+    fieldIds.forEach((fieldId) => {
       this.state.dirty[fieldId] = false;
     });
     this.state.metadata.lastModified = new Date();
@@ -502,7 +502,7 @@ export class FormStateManager implements IFormStateManager {
       isValid: this.isFieldValid(fieldId),
       isTouched: this.isFieldTouched(fieldId),
       isDirty: this.isFieldDirty(fieldId),
-      validation: this.getFieldValidation(fieldId)
+      validation: this.getFieldValidation(fieldId),
     };
   }
 
@@ -511,11 +511,14 @@ export class FormStateManager implements IFormStateManager {
   /**
    * Initialize field dependencies and conditional logic
    */
-  initializeDependencies(fields: FieldDescriptor[], conditionalRules: ConditionalRule[] = []): void {
+  initializeDependencies(
+    fields: FieldDescriptor[],
+    conditionalRules: ConditionalRule[] = [],
+  ): void {
     this.dependencyManager.initialize(fields, conditionalRules);
-    
+
     // Initialize field visibility (all visible by default)
-    fields.forEach(field => {
+    fields.forEach((field) => {
       this.fieldVisibility[field.id] = true;
     });
 
@@ -533,7 +536,7 @@ export class FormStateManager implements IFormStateManager {
     const cascadeResult = this.dependencyManager.calculateCascadingUpdates(
       changedFieldId,
       newValue,
-      this.state
+      this.state,
     );
 
     this.applyCascadeResult(cascadeResult);
@@ -562,13 +565,14 @@ export class FormStateManager implements IFormStateManager {
     });
 
     // Emit cascade update event if there were changes
-    if (Object.keys(cascadeResult.visibilityChanges).length > 0 ||
-        Object.keys(cascadeResult.valueChanges).length > 0 ||
-        Object.keys(cascadeResult.validationChanges).length > 0) {
-      
+    if (
+      Object.keys(cascadeResult.visibilityChanges).length > 0 ||
+      Object.keys(cascadeResult.valueChanges).length > 0 ||
+      Object.keys(cascadeResult.validationChanges).length > 0
+    ) {
       this.emitStateChange({
         type: 'field-change', // Using field-change as closest match for cascade updates
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
   }
@@ -651,9 +655,9 @@ export class FormStateManager implements IFormStateManager {
   evaluateAllConditionalLogic(): void {
     // Get all fields in dependency order
     const fieldOrder = this.getFieldProcessingOrder();
-    
+
     // Process each field to trigger any conditional logic
-    fieldOrder.forEach(fieldId => {
+    fieldOrder.forEach((fieldId) => {
       if (this.state.values[fieldId] !== undefined) {
         this.triggerCascadingUpdates(fieldId);
       }
@@ -665,7 +669,7 @@ export class FormStateManager implements IFormStateManager {
    */
   resetCascadingState(): void {
     // Reset all fields to visible
-    Object.keys(this.fieldVisibility).forEach(fieldId => {
+    Object.keys(this.fieldVisibility).forEach((fieldId) => {
       this.fieldVisibility[fieldId] = true;
     });
 

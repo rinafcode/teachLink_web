@@ -1,6 +1,6 @@
-import { useMemo } from "react"
-import engine, { AnimationEngine } from "../components/animations/AnimationEngine"
-import { orchestrateTransitions, animateNumber } from "../components/animations/TransitionManager"
+import { useMemo } from 'react';
+import engine, { AnimationEngine } from '../components/animations/AnimationEngine';
+import { orchestrateTransitions, animateNumber } from '../components/animations/TransitionManager';
 
 export default function useAdvancedAnimations() {
   // expose a stable API
@@ -10,7 +10,7 @@ export default function useAdvancedAnimations() {
       orchestrateTransitions,
       animateNumber,
       stopAll: () => engine.stopAll(),
-    }
-  }, [])
-  return api
+    };
+  }, []);
+  return api;
 }

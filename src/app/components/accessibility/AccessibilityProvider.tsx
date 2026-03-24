@@ -33,9 +33,7 @@ export function AccessibilityProvider({
     <>
       {/* Screen Reader Optimization */}
       {enableScreenReader ? (
-        <ScreenReaderOptimizer enableAnnouncements={true}>
-          {children}
-        </ScreenReaderOptimizer>
+        <ScreenReaderOptimizer enableAnnouncements={true}>{children}</ScreenReaderOptimizer>
       ) : (
         children
       )}
@@ -49,9 +47,7 @@ export function AccessibilityProvider({
       )}
 
       {/* Accessibility Tester */}
-      {enableTester && (
-        <AccessibilityTester autoCheck={autoCheckAccessibility} showWidget={true} />
-      )}
+      {enableTester && <AccessibilityTester autoCheck={autoCheckAccessibility} showWidget={true} />}
     </>
   );
 }
@@ -59,7 +55,12 @@ export function AccessibilityProvider({
 /**
  * Hook to access accessibility features programmatically
  */
-export { useAccessibilityCheck, useScreenReaderAnnouncement, useFocusTrap, useKeyboardNavigation } from '@/hooks/useAccessibility';
+export {
+  useAccessibilityCheck,
+  useScreenReaderAnnouncement,
+  useFocusTrap,
+  useKeyboardNavigation,
+} from '@/hooks/useAccessibility';
 
 /**
  * Utility components for specific use cases

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -12,12 +11,9 @@ export default function EditorPage() {
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
         Advanced Content Editor Demo
       </h1>
-      
+
       <div className="mb-8">
-        <RichContentEditor
-          initialContent={content}
-          onUpdate={setContent}
-        />
+        <RichContentEditor initialContent={content} onUpdate={setContent} />
       </div>
 
       <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">

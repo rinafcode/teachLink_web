@@ -52,7 +52,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Update state with error information
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       errorInfo,
       errorCount: prevState.errorCount + 1,
     }));
@@ -197,7 +197,7 @@ export const ErrorBoundary: React.FC<ErrorBoundaryProps> = (props) => {
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  boundaryProps?: Omit<ErrorBoundaryProps, 'children'>
+  boundaryProps?: Omit<ErrorBoundaryProps, 'children'>,
 ) {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary {...boundaryProps}>
@@ -215,7 +215,7 @@ export function withErrorBoundary<P extends object>(
  */
 export function createErrorBoundary(
   displayName: string,
-  options?: Omit<ErrorBoundaryProps, 'children'>
+  options?: Omit<ErrorBoundaryProps, 'children'>,
 ) {
   const CustomErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
     <ErrorBoundary {...options}>{children}</ErrorBoundary>

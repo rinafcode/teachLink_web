@@ -10,9 +10,9 @@ import React, { useState, useEffect, FC, ReactNode } from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {  createMockFile } from '../utils/testUtils';
+import { createMockFile } from '../utils/testUtils';
 
-// Sample components used across tests 
+// Sample components used across tests
 
 interface ButtonProps {
   label: string;
@@ -50,7 +50,9 @@ const Counter: FC<CounterProps> = ({ initial = 0, step = 1, onCount }) => {
   return (
     <div>
       <span data-testid="count">{count}</span>
-      <button onClick={increment} data-testid="increment">+</button>
+      <button onClick={increment} data-testid="increment">
+        +
+      </button>
     </div>
   );
 };
@@ -81,13 +83,17 @@ class ErrorBoundary extends React.Component<
   { hasError: boolean }
 > {
   state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
   render() {
     return this.state.hasError ? this.props.fallback : this.props.children;
   }
 }
 
-const Throwing: FC = () => { throw new Error('Render error'); };
+const Throwing: FC = () => {
+  throw new Error('Render error');
+};
 
 interface FormProps {
   onSubmit: (value: string) => void;
@@ -98,7 +104,10 @@ const SimpleForm: FC<FormProps> = ({ onSubmit }) => {
   return (
     <form
       data-testid="form"
-      onSubmit={(e) => { e.preventDefault(); onSubmit(value); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(value);
+      }}
     >
       <label htmlFor="name">Name</label>
       <input
@@ -108,12 +117,14 @@ const SimpleForm: FC<FormProps> = ({ onSubmit }) => {
         onChange={(e) => setValue(e.target.value)}
         required
       />
-      <button type="submit" data-testid="submit">Submit</button>
+      <button type="submit" data-testid="submit">
+        Submit
+      </button>
     </form>
   );
 };
 
-// Button – rendering & variants 
+// Button – rendering & variants
 
 describe('ComponentTester – Button', () => {
   it('renders with the provided label', () => {
@@ -121,13 +132,10 @@ describe('ComponentTester – Button', () => {
     expect(screen.getByTestId('test-button')).toHaveTextContent('Click me');
   });
 
-  it.each(['primary', 'secondary', 'danger'] as const)(
-    'applies "%s" variant class',
-    (variant) => {
-      render(<Button label="X" variant={variant} />);
-      expect(screen.getByTestId('test-button')).toHaveClass(`btn--${variant}`);
-    }
-  );
+  it.each(['primary', 'secondary', 'danger'] as const)('applies "%s" variant class', (variant) => {
+    render(<Button label="X" variant={variant} />);
+    expect(screen.getByTestId('test-button')).toHaveClass(`btn--${variant}`);
+  });
 
   it('calls onClick handler when clicked', async () => {
     const user = userEvent.setup();
@@ -234,7 +242,7 @@ describe('ComponentTester – ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={<p data-testid="fallback">Something went wrong</p>}>
         <Throwing />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByTestId('fallback')).toBeInTheDocument();
     consoleSpy.mockRestore();
@@ -244,13 +252,13 @@ describe('ComponentTester – ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={<p>Error</p>}>
         <Button label="Safe" />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByTestId('test-button')).toBeInTheDocument();
   });
 });
 
-// SimpleForm 
+// SimpleForm
 
 describe('ComponentTester – SimpleForm', () => {
   it('submits with the entered value', async () => {
@@ -296,7 +304,7 @@ describe('ComponentTester – File handling', () => {
   });
 });
 
-// Snapshot regression 
+// Snapshot regression
 describe('ComponentTester – Snapshot', () => {
   it('matches stored snapshot for default Button', () => {
     const { container } = render(<Button label="Snapshot" />);

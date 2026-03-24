@@ -43,7 +43,7 @@ describe('AutoSaveManager', () => {
   const createMockFormState = (formId: string): FormState => ({
     values: {
       name: 'John Doe',
-      email: 'john@example.com'
+      email: 'john@example.com',
     },
     validation: {},
     touched: { name: true },
@@ -56,8 +56,8 @@ describe('AutoSaveManager', () => {
       createdAt: new Date(),
       lastModified: new Date(),
       version: '1.0',
-      userId: 'user-123'
-    }
+      userId: 'user-123',
+    },
   });
 
   beforeEach(() => {
@@ -107,7 +107,7 @@ describe('AutoSaveManager', () => {
       const formState = createMockFormState(formId);
       const statusUpdates: string[] = [];
 
-      manager.onSaveStatusChange(status => {
+      manager.onSaveStatusChange((status) => {
         statusUpdates.push(status.status);
       });
 
@@ -122,7 +122,7 @@ describe('AutoSaveManager', () => {
       const formState = createMockFormState(formId);
       let lastSaved: Date | undefined;
 
-      manager.onSaveStatusChange(status => {
+      manager.onSaveStatusChange((status) => {
         if (status.status === 'saved') {
           lastSaved = status.lastSaved;
         }
@@ -166,7 +166,7 @@ describe('AutoSaveManager', () => {
         createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
         expiresAt: new Date(Date.now() - 1000), // Expired
-        compressed: false
+        compressed: false,
       };
 
       mockStorage.setItem(`form-draft-${formId}`, JSON.stringify(draftData));
@@ -181,7 +181,7 @@ describe('AutoSaveManager', () => {
       // Create invalid draft (missing required fields)
       const invalidDraft = {
         formId,
-        data: { values: {} } // Missing metadata
+        data: { values: {} }, // Missing metadata
       };
 
       mockStorage.setItem(`form-draft-${formId}`, JSON.stringify(invalidDraft));
@@ -225,9 +225,9 @@ describe('AutoSaveManager', () => {
       const formState3 = createMockFormState('form-3');
 
       await manager.saveNow('form-1', formState1);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await manager.saveNow('form-2', formState2);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await manager.saveNow('form-3', formState3);
 
       // Oldest draft should be removed
@@ -245,7 +245,7 @@ describe('AutoSaveManager', () => {
       const formState = createMockFormState(formId);
       const statuses: string[] = [];
 
-      manager.onSaveStatusChange(status => {
+      manager.onSaveStatusChange((status) => {
         statuses.push(status.status);
       });
 
@@ -279,7 +279,7 @@ describe('AutoSaveManager', () => {
       const formState = createMockFormState(formId);
       let queuedSaves = 0;
 
-      manager.onSaveStatusChange(status => {
+      manager.onSaveStatusChange((status) => {
         queuedSaves = status.queuedSaves;
       });
 
@@ -308,7 +308,7 @@ describe('AutoSaveManager', () => {
       const formState = createMockFormState(formId);
       let errorStatus = false;
 
-      manager.onSaveStatusChange(status => {
+      manager.onSaveStatusChange((status) => {
         if (status.status === 'error') {
           errorStatus = true;
         }

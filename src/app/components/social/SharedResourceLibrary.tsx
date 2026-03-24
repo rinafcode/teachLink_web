@@ -7,7 +7,12 @@ import type { GroupResource } from '@/app/hooks/useStudyGroups';
 
 interface SharedResourceLibraryProps {
   resources: GroupResource[];
-  onAdd: (resource: { title: string; url?: string; description?: string; type: 'link' | 'file' }) => void;
+  onAdd: (resource: {
+    title: string;
+    url?: string;
+    description?: string;
+    type: 'link' | 'file';
+  }) => void;
 }
 
 export default function SharedResourceLibrary({ resources, onAdd }: SharedResourceLibraryProps) {
@@ -20,35 +25,46 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
 
   const filteredResources = useMemo(() => {
     let filtered = resources;
-    
+
     if (filterType !== 'all') {
-      filtered = filtered.filter(r => r.type === filterType);
+      filtered = filtered.filter((r) => r.type === filterType);
     }
-    
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(r => 
-        r.title.toLowerCase().includes(query) ||
-        r.description?.toLowerCase().includes(query) ||
-        r.addedBy.name.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (r) =>
+          r.title.toLowerCase().includes(query) ||
+          r.description?.toLowerCase().includes(query) ||
+          r.addedBy.name.toLowerCase().includes(query),
       );
     }
-    
+
     return filtered;
   }, [resources, filterType, searchQuery]);
 
   const handleAdd = () => {
     if (!title.trim()) return;
-    
+
     if (file) {
       const objectUrl = URL.createObjectURL(file);
-      onAdd({ title: title.trim(), type: 'file', description: description.trim() || undefined, url: objectUrl });
+      onAdd({
+        title: title.trim(),
+        type: 'file',
+        description: description.trim() || undefined,
+        url: objectUrl,
+      });
     } else if (url.trim()) {
-      onAdd({ title: title.trim(), type: 'link', description: description.trim() || undefined, url: url.trim() });
+      onAdd({
+        title: title.trim(),
+        type: 'link',
+        description: description.trim() || undefined,
+        url: url.trim(),
+      });
     } else {
       return;
     }
-    
+
     setTitle('');
     setUrl('');
     setDescription('');
@@ -84,10 +100,10 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
             <label className="inline-flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
               <Upload size={16} />
               <span>Upload file</span>
-              <input 
-                type="file" 
-                className="hidden" 
-                onChange={(e) => setFile(e.target.files?.[0] || null)} 
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
             </label>
           </div>
@@ -156,11 +172,11 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
         <div>
           <h4 className="flex items-center gap-2 text-gray-800 dark:text-gray-200 font-medium mb-3">
             <LinkIcon size={18} className="text-blue-600 dark:text-blue-400" />
-            Links ({filteredResources.filter(r => r.type === 'link').length})
+            Links ({filteredResources.filter((r) => r.type === 'link').length})
           </h4>
           <div className="space-y-2">
             {filteredResources
-              .filter(r => r.type === 'link')
+              .filter((r) => r.type === 'link')
               .map((r) => (
                 <motion.a
                   key={r.id}
@@ -185,11 +201,14 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
                         Added by {r.addedBy.name}
                       </div>
                     </div>
-                    <ExternalLink size={16} className="text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 flex-shrink-0 mt-0.5" />
+                    <ExternalLink
+                      size={16}
+                      className="text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 flex-shrink-0 mt-0.5"
+                    />
                   </div>
                 </motion.a>
               ))}
-            {filteredResources.filter(r => r.type === 'link').length === 0 && (
+            {filteredResources.filter((r) => r.type === 'link').length === 0 && (
               <div className="text-sm text-gray-500 dark:text-gray-400 p-4 text-center border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                 {searchQuery || filterType !== 'all' ? 'No matching links found.' : 'No links yet.'}
               </div>
@@ -199,11 +218,11 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
         <div>
           <h4 className="flex items-center gap-2 text-gray-800 dark:text-gray-200 font-medium mb-3">
             <FolderOpen size={18} className="text-purple-600 dark:text-purple-400" />
-            Files ({filteredResources.filter(r => r.type === 'file').length})
+            Files ({filteredResources.filter((r) => r.type === 'file').length})
           </h4>
           <div className="space-y-2">
             {filteredResources
-              .filter(r => r.type === 'file')
+              .filter((r) => r.type === 'file')
               .map((r) => (
                 <motion.a
                   key={r.id}
@@ -228,11 +247,14 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
                         Added by {r.addedBy.name}
                       </div>
                     </div>
-                    <ExternalLink size={16} className="text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 flex-shrink-0 mt-0.5" />
+                    <ExternalLink
+                      size={16}
+                      className="text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 flex-shrink-0 mt-0.5"
+                    />
                   </div>
                 </motion.a>
               ))}
-            {filteredResources.filter(r => r.type === 'file').length === 0 && (
+            {filteredResources.filter((r) => r.type === 'file').length === 0 && (
               <div className="text-sm text-gray-500 dark:text-gray-400 p-4 text-center border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                 {searchQuery || filterType !== 'all' ? 'No matching files found.' : 'No files yet.'}
               </div>

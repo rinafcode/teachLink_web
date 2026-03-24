@@ -31,7 +31,11 @@ const PerformanceMonitor: React.FC = () => {
   if (process.env.NODE_ENV === 'production' && !isVisible) return null;
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 p-4 rounded-lg bg-black/80 text-white text-xs font-mono shadow-xl transition-opacity ${isVisible ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}>
+    <div
+      className={`fixed bottom-4 right-4 z-50 p-4 rounded-lg bg-black/80 text-white text-xs font-mono shadow-xl transition-opacity ${
+        isVisible ? 'opacity-100' : 'opacity-0 hover:opacity-100'
+      }`}
+    >
       <div className="flex justify-between items-center mb-2 border-b border-white/20 pb-1">
         <span className="font-bold ">🚀 Performance Monitor</span>
         <button onClick={() => setIsVisible(!isVisible)} className="ml-2 hover:text-blue-400">
@@ -43,7 +47,8 @@ const PerformanceMonitor: React.FC = () => {
           <div key={metric.name} className="flex justify-between gap-4">
             <span>{metric.name}:</span>
             <span className={metric.value > 2000 ? 'text-red-400' : 'text-green-400'}>
-              {metric.value.toFixed(2)}{metric.label || ''}
+              {metric.value.toFixed(2)}
+              {metric.label || ''}
             </span>
           </div>
         ))}

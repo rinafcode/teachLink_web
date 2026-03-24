@@ -25,7 +25,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfileEditForm() {
   const { updateProfile, isLoading } = useProfileUpdate();
-  
+
   const {
     register,
     handleSubmit,
@@ -58,7 +58,7 @@ export default function ProfileEditForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
-        
+
         <div className="mb-6">
           <ImageUploader
             onImageSelect={(file) => {
@@ -70,9 +70,7 @@ export default function ProfileEditForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              First Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
             <input
               type="text"
               {...register('firstName')}
@@ -82,22 +80,18 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
             <input
               type="text"
               {...register('lastName')}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-           <FieldError error={errors.lastName?.message} id="lastName-error" />
+            <FieldError error={errors.lastName?.message} id="lastName-error" />
           </div>
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
             type="email"
             {...register('email')}
@@ -107,9 +101,7 @@ export default function ProfileEditForm() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Bio
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
           <textarea
             {...register('bio')}
             rows={4}
@@ -119,9 +111,7 @@ export default function ProfileEditForm() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Location
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
           <input
             type="text"
             {...register('location')}
@@ -132,12 +122,10 @@ export default function ProfileEditForm() {
 
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-6">Social Links</h2>
-        
+
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Website
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
             <input
               type="url"
               {...register('website')}
@@ -147,9 +135,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Twitter
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
             <input
               type="text"
               {...register('twitter')}
@@ -158,9 +144,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              GitHub
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
             <input
               type="text"
               {...register('github')}
@@ -169,9 +153,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
             <input
               type="text"
               {...register('linkedin')}
@@ -194,4 +176,4 @@ export default function ProfileEditForm() {
       </div>
     </form>
   );
-} 
+}

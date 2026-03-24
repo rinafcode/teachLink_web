@@ -1,19 +1,16 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from "react";
-import { Search, X, Clock, Trash2 } from "lucide-react";
-import { useSearch } from "../../hooks/useSearch";
-import clsx from "clsx";
+import React, { useEffect, useRef } from 'react';
+import { Search, X, Clock, Trash2 } from 'lucide-react';
+import { useSearch } from '../../hooks/useSearch';
+import clsx from 'clsx';
 
 interface SearchBarProps {
   className?: string;
   isExpanded?: boolean;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({
-  className,
-  isExpanded = false,
-}) => {
+export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = false }) => {
   const {
     query,
     results,
@@ -40,32 +37,25 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allResults = [
-      ...results.courses,
-      ...results.instructors,
-      ...results.topics,
-    ];
+    const allResults = [...results.courses, ...results.instructors, ...results.topics];
 
-    if (!isOpen && e.key === "Enter") {
+    if (!isOpen && e.key === 'Enter') {
       setIsOpen(true);
       return;
     }
 
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
-      selectedIndexRef.current = Math.min(
-        selectedIndexRef.current + 1,
-        allResults.length - 1,
-      );
+      selectedIndexRef.current = Math.min(selectedIndexRef.current + 1, allResults.length - 1);
       setIsOpen(true);
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       selectedIndexRef.current = Math.max(selectedIndexRef.current - 1, -1);
-    } else if (e.key === "Enter" && selectedIndexRef.current >= 0) {
+    } else if (e.key === 'Enter' && selectedIndexRef.current >= 0) {
       e.preventDefault();
       const selected = allResults[selectedIndexRef.current];
       navigate(query || selected.title);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       setIsOpen(false);
       selectedIndexRef.current = -1;
     }
@@ -83,7 +73,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const handleClear = () => {
-    search("");
+    search('');
     setIsOpen(false);
     selectedIndexRef.current = -1;
   };
@@ -91,41 +81,31 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setIsOpen]);
 
-  const allResults = [
-    ...results.courses,
-    ...results.instructors,
-    ...results.topics,
-  ];
+  const allResults = [...results.courses, ...results.instructors, ...results.topics];
 
   const hasResults = query && allResults.length > 0;
   const showSuggestions = !query && isOpen && searchHistory.length > 0;
 
   return (
-    <div ref={containerRef} className={clsx("relative", className)}>
+    <div ref={containerRef} className={clsx('relative', className)}>
       {/* Search Bar Container */}
       <div
         className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 ${
           localExpanded
-            ? "border-blue-500 bg-white dark:bg-gray-900 shadow-lg w-full"
-            : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 md:w-full"
+            ? 'border-blue-500 bg-white dark:bg-gray-900 shadow-lg w-full'
+            : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 md:w-full'
         }`}
       >
-        <Search
-          size={18}
-          className="text-gray-400 dark:text-gray-500 shrink-0"
-        />
+        <Search size={18} className="text-gray-400 dark:text-gray-500 shrink-0" />
 
         <input
           ref={inputRef}
@@ -139,10 +119,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             setIsOpen(true);
           }}
           className={clsx(
-            "flex-1 bg-transparent outline-none text-sm dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500",
-            localExpanded
-              ? "text-gray-800 dark:text-gray-100"
-              : "text-gray-500",
+            'flex-1 bg-transparent outline-none text-sm dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500',
+            localExpanded ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500',
           )}
         />
 
@@ -192,12 +170,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                         </picture>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">
-                          {course.title}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {course.instructor}
-                        </p>
+                        <p className="text-sm font-medium text-gray-800 truncate">{course.title}</p>
+                        <p className="text-xs text-gray-500">{course.instructor}</p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-xs text-yellow-500">★</span>
@@ -233,12 +207,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                         </picture>
                       )}
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800">
-                          {instructor.title}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {instructor.description}
-                        </p>
+                        <p className="text-sm font-medium text-gray-800">{instructor.title}</p>
+                        <p className="text-xs text-gray-500">{instructor.description}</p>
                       </div>
                     </button>
                   ))}
@@ -289,13 +259,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   onClick={() => handleSearch(item)}
                   className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                 >
-                  <Clock
-                    size={14}
-                    className="text-gray-400 dark:text-gray-500"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {item}
-                  </span>
+                  <Clock size={14} className="text-gray-400 dark:text-gray-500" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{item}</span>
                 </button>
               ))}
             </div>
@@ -313,9 +278,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           {/* Empty State */}
           {!isLoading && !query && searchHistory.length === 0 && (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Start typing to search
-              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Start typing to search</p>
             </div>
           )}
         </div>

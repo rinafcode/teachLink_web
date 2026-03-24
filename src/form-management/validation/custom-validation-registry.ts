@@ -2,12 +2,7 @@
  * Custom Validation Registry - Manages custom validation rules and execution context
  */
 
-import {
-  ValidationFunction,
-  ValidationResult,
-  FormState,
-  FieldDescriptor
-} from '../types/core.js';
+import { ValidationFunction, ValidationResult, FormState, FieldDescriptor } from '../types/core.js';
 
 export interface ValidationContext {
   fieldId: string;
@@ -134,7 +129,7 @@ export class CustomValidationRegistry {
     }
 
     return Array.from(ruleNames)
-      .map(name => this.rules.get(name)!)
+      .map((name) => this.rules.get(name)!)
       .filter(Boolean);
   }
 
@@ -155,19 +150,18 @@ export class CustomValidationRegistry {
   /**
    * Execute a custom validation rule with full context
    */
-  async executeRule(
-    ruleName: string,
-    context: ValidationContext
-  ): Promise<ValidationResult> {
+  async executeRule(ruleName: string, context: ValidationContext): Promise<ValidationResult> {
     const rule = this.rules.get(ruleName);
     if (!rule) {
       return {
         isValid: false,
-        errors: [{
-          code: 'unknown_rule',
-          message: `Unknown validation rule: ${ruleName}`,
-          field: context.fieldId
-        }]
+        errors: [
+          {
+            code: 'unknown_rule',
+            message: `Unknown validation rule: ${ruleName}`,
+            field: context.fieldId,
+          },
+        ],
       };
     }
 
@@ -177,20 +171,22 @@ export class CustomValidationRegistry {
 
       // Execute validation function
       const result = await Promise.resolve(
-        rule.validationFunction(context.fieldValue, context.formState, executionContext)
+        rule.validationFunction(context.fieldValue, context.formState, executionContext),
       );
 
       return result;
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
-          code: 'custom_rule_error',
-          message: `Custom validation error in '${ruleName}': ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-          field: context.fieldId
-        }]
+        errors: [
+          {
+            code: 'custom_rule_error',
+            message: `Custom validation error in '${ruleName}': ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
+            field: context.fieldId,
+          },
+        ],
       };
     }
   }
@@ -200,14 +196,14 @@ export class CustomValidationRegistry {
    */
   async executeRulesForField(
     ruleNames: string[],
-    context: ValidationContext
+    context: ValidationContext,
   ): Promise<ValidationResult> {
     const errors: ValidationResult['errors'] = [];
     const warnings: ValidationResult['warnings'] = [];
 
     // Execute rules in parallel
     const results = await Promise.allSettled(
-      ruleNames.map(ruleName => this.executeRule(ruleName, context))
+      ruleNames.map((ruleName) => this.executeRule(ruleName, context)),
     );
 
     // Collect results
@@ -224,7 +220,7 @@ export class CustomValidationRegistry {
         errors.push({
           code: 'rule_execution_failed',
           message: `Failed to execute rule '${ruleNames[index]}': ${result.reason}`,
-          field: context.fieldId
+          field: context.fieldId,
         });
       }
     });
@@ -232,7 +228,7 @@ export class CustomValidationRegistry {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings: warnings.length > 0 ? warnings : undefined
+      warnings: warnings.length > 0 ? warnings : undefined,
     };
   }
 
@@ -256,7 +252,7 @@ export class CustomValidationRegistry {
    */
   validateDependencies(
     ruleName: string,
-    availableFields: Set<string>
+    availableFields: Set<string>,
   ): { isValid: boolean; missingFields: string[] } {
     const dependencies = this.dependencies.get(ruleName);
     if (!dependencies) {
@@ -264,12 +260,12 @@ export class CustomValidationRegistry {
     }
 
     const missingFields = Array.from(dependencies).filter(
-      fieldId => !availableFields.has(fieldId)
+      (fieldId) => !availableFields.has(fieldId),
     );
 
     return {
       isValid: missingFields.length === 0,
-      missingFields
+      missingFields,
     };
   }
 
@@ -312,7 +308,7 @@ export class CustomValidationRegistry {
 
       setCustomData: (key: string, value: any) => {
         this.customData.set(key, value);
-      }
+      },
     };
   }
 
@@ -322,13 +318,15 @@ export class CustomValidationRegistry {
   registerRules(rules: CustomValidationRule[]): void {
     const errors: string[] = [];
 
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       try {
         this.registerRule(rule);
       } catch (error) {
-        errors.push(`Failed to register rule '${rule.name}': ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`);
+        errors.push(
+          `Failed to register rule '${rule.name}': ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        );
       }
     });
 
@@ -358,10 +356,10 @@ export class CustomValidationRegistry {
 
     return {
       totalRules: rules.length,
-      asyncRules: rules.filter(r => r.isAsync).length,
-      syncRules: rules.filter(r => !r.isAsync).length,
+      asyncRules: rules.filter((r) => r.isAsync).length,
+      syncRules: rules.filter((r) => !r.isAsync).length,
       categories: this.categories.size,
-      rulesWithDependencies: this.dependencies.size
+      rulesWithDependencies: this.dependencies.size,
     };
   }
 
@@ -369,10 +367,10 @@ export class CustomValidationRegistry {
    * Export rules configuration
    */
   exportRules(): CustomValidationRule[] {
-    return Array.from(this.rules.values()).map(rule => ({
+    return Array.from(this.rules.values()).map((rule) => ({
       ...rule,
       // Don't export the actual function, just metadata
-      validationFunction: rule.validationFunction
+      validationFunction: rule.validationFunction,
     }));
   }
 
@@ -391,7 +389,7 @@ export class CustomValidationRegistry {
 export type EnhancedValidationFunction = (
   value: any,
   formState: FormState,
-  context?: ValidationExecutionContext
+  context?: ValidationExecutionContext,
 ) => ValidationResult | Promise<ValidationResult>;
 
 // Common custom validation rule builders
@@ -403,7 +401,7 @@ export class ValidationRuleBuilders {
     name: string,
     targetFieldId: string,
     comparison: 'equals' | 'not-equals' | 'greater' | 'less' | 'greater-equal' | 'less-equal',
-    message: string
+    message: string,
   ): CustomValidationRule {
     return {
       name,
@@ -437,12 +435,16 @@ export class ValidationRuleBuilders {
 
         return {
           isValid,
-          errors: isValid ? [] : [{
-            code: 'field_comparison_failed',
-            message
-          }]
+          errors: isValid
+            ? []
+            : [
+                {
+                  code: 'field_comparison_failed',
+                  message,
+                },
+              ],
         };
-      }
+      },
     };
   }
 
@@ -453,7 +455,7 @@ export class ValidationRuleBuilders {
     name: string,
     condition: (context: ValidationExecutionContext) => boolean,
     validationFunction: ValidationFunction,
-    message: string
+    message: string,
   ): CustomValidationRule {
     return {
       name,
@@ -465,7 +467,7 @@ export class ValidationRuleBuilders {
         }
 
         return validationFunction(value, formState);
-      }
+      },
     };
   }
 
@@ -475,7 +477,7 @@ export class ValidationRuleBuilders {
   static createAsyncApiRule(
     name: string,
     apiCall: (value: any) => Promise<boolean>,
-    message: string
+    message: string,
   ): CustomValidationRule {
     return {
       name,
@@ -486,21 +488,29 @@ export class ValidationRuleBuilders {
           const isValid = await apiCall(value);
           return {
             isValid,
-            errors: isValid ? [] : [{
-              code: 'api_validation_failed',
-              message
-            }]
+            errors: isValid
+              ? []
+              : [
+                  {
+                    code: 'api_validation_failed',
+                    message,
+                  },
+                ],
           };
         } catch (error) {
           return {
             isValid: false,
-            errors: [{
-              code: 'api_validation_error',
-              message: `API validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-            }]
+            errors: [
+              {
+                code: 'api_validation_error',
+                message: `API validation failed: ${
+                  error instanceof Error ? error.message : 'Unknown error'
+                }`,
+              },
+            ],
           };
         }
-      }
+      },
     };
   }
 }

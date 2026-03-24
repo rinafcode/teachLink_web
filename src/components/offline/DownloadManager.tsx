@@ -28,7 +28,10 @@ const formatBytes = (bytes: number) => {
   return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
 };
 
-export const DownloadManager: React.FC<DownloadManagerProps> = ({ courses = [], className = '' }) => {
+export const DownloadManager: React.FC<DownloadManagerProps> = ({
+  courses = [],
+  className = '',
+}) => {
   const [downloadQueue, setDownloadQueue] = useState<DownloadItem[]>([]);
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({});
 
@@ -39,15 +42,15 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ courses = [], 
     enableOfflineMode,
     downloadCourse,
     isCourseAvailableOffline,
-    refreshStorageUsage
+    refreshStorageUsage,
   } = useOfflineModeContext();
 
   const refreshAvailability = useCallback(async () => {
     const results = await Promise.all(
       courses.map(async (course) => ({
         id: course.id,
-        available: await isCourseAvailableOffline(course.id)
-      }))
+        available: await isCourseAvailableOffline(course.id),
+      })),
     );
 
     const nextMap = results.reduce<Record<string, boolean>>((acc, result) => {
@@ -63,60 +66,78 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ courses = [], 
     refreshAvailability();
   }, [courses.length, refreshAvailability]);
 
-  const setDownloadState = useCallback((courseId: string, updater: (item: DownloadItem) => DownloadItem) => {
-    setDownloadQueue(prev => prev.map(item => (item.courseId === courseId ? updater(item) : item)));
-  }, []);
+  const setDownloadState = useCallback(
+    (courseId: string, updater: (item: DownloadItem) => DownloadItem) => {
+      setDownloadQueue((prev) =>
+        prev.map((item) => (item.courseId === courseId ? updater(item) : item)),
+      );
+    },
+    [],
+  );
 
-  const startDownload = useCallback(async (course: DownloadCourseInput) => {
-    if (!isOfflineModeEnabled) {
-      await enableOfflineMode();
-    }
+  const startDownload = useCallback(
+    async (course: DownloadCourseInput) => {
+      if (!isOfflineModeEnabled) {
+        await enableOfflineMode();
+      }
 
-    setDownloadQueue(prev => {
-      const exists = prev.find(item => item.courseId === course.id);
-      if (exists) return prev;
-      return [
-        ...prev,
-        {
-          id: `download-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          courseId: course.id,
-          title: course.title,
-          sizeBytes: course.sizeBytes,
-          progress: 0,
-          status: 'downloading'
-        }
-      ];
-    });
-
-    try {
-      await downloadCourse(course, {
-        onProgress: (progress) => {
-          setDownloadState(course.id, (item) => ({
-            ...item,
-            progress,
-            status: progress >= 100 ? 'completed' : 'downloading'
-          }));
-        }
+      setDownloadQueue((prev) => {
+        const exists = prev.find((item) => item.courseId === course.id);
+        if (exists) return prev;
+        return [
+          ...prev,
+          {
+            id: `download-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            courseId: course.id,
+            title: course.title,
+            sizeBytes: course.sizeBytes,
+            progress: 0,
+            status: 'downloading',
+          },
+        ];
       });
 
-      setDownloadState(course.id, (item) => ({
-        ...item,
-        progress: 100,
-        status: 'completed'
-      }));
+      try {
+        await downloadCourse(course, {
+          onProgress: (progress) => {
+            setDownloadState(course.id, (item) => ({
+              ...item,
+              progress,
+              status: progress >= 100 ? 'completed' : 'downloading',
+            }));
+          },
+        });
 
-      await refreshStorageUsage();
-      await refreshAvailability();
-    } catch (error) {
-      setDownloadState(course.id, (item) => ({
-        ...item,
-        status: 'error',
-        error: String(error)
-      }));
-    }
-  }, [downloadCourse, enableOfflineMode, isOfflineModeEnabled, refreshAvailability, refreshStorageUsage, setDownloadState]);
+        setDownloadState(course.id, (item) => ({
+          ...item,
+          progress: 100,
+          status: 'completed',
+        }));
 
-  const activeDownloads = useMemo(() => downloadQueue.filter(item => item.status === 'downloading'), [downloadQueue]);
+        await refreshStorageUsage();
+        await refreshAvailability();
+      } catch (error) {
+        setDownloadState(course.id, (item) => ({
+          ...item,
+          status: 'error',
+          error: String(error),
+        }));
+      }
+    },
+    [
+      downloadCourse,
+      enableOfflineMode,
+      isOfflineModeEnabled,
+      refreshAvailability,
+      refreshStorageUsage,
+      setDownloadState,
+    ],
+  );
+
+  const activeDownloads = useMemo(
+    () => downloadQueue.filter((item) => item.status === 'downloading'),
+    [downloadQueue],
+  );
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -136,7 +157,9 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ courses = [], 
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <HardDrive className="h-4 w-4" />
-          <span>{formatBytes(storageUsage.used)} / {formatBytes(storageUsage.total)}</span>
+          <span>
+            {formatBytes(storageUsage.used)} / {formatBytes(storageUsage.total)}
+          </span>
         </div>
       </div>
 
@@ -146,16 +169,21 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ courses = [], 
         </div>
       ) : (
         <div className="space-y-3">
-          {courses.map(course => {
+          {courses.map((course) => {
             const available = availabilityMap[course.id];
-            const inQueue = downloadQueue.find(item => item.courseId === course.id);
+            const inQueue = downloadQueue.find((item) => item.courseId === course.id);
             const status = inQueue?.status;
 
             return (
-              <div key={course.id} className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div
+                key={course.id}
+                className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+              >
                 <div>
                   <p className="text-sm font-semibold text-gray-900">{course.title}</p>
-                  <p className="text-xs text-gray-500">{course.description || 'Course content ready for offline access.'}</p>
+                  <p className="text-xs text-gray-500">
+                    {course.description || 'Course content ready for offline access.'}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   {available && !status && (
@@ -178,7 +206,11 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ courses = [], 
                     className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   >
                     <Download className="h-4 w-4" />
-                    {available ? 'Downloaded' : status === 'downloading' ? 'Downloading' : 'Download'}
+                    {available
+                      ? 'Downloaded'
+                      : status === 'downloading'
+                      ? 'Downloading'
+                      : 'Download'}
                   </button>
                 </div>
               </div>
@@ -191,7 +223,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ courses = [], 
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-sm font-semibold text-gray-900">Active downloads</p>
           <div className="mt-3 space-y-3">
-            {activeDownloads.map(item => (
+            {activeDownloads.map((item) => (
               <div key={item.id}>
                 <div className="flex items-center justify-between text-xs text-gray-600">
                   <span>{item.title}</span>

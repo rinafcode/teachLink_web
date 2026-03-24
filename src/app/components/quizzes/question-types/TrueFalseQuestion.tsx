@@ -8,10 +8,7 @@ interface TrueFalseQuestionProps {
   isReviewMode: boolean;
 }
 
-export default function TrueFalseQuestion({
-  question,
-  isReviewMode,
-}: TrueFalseQuestionProps) {
+export default function TrueFalseQuestion({ question, isReviewMode }: TrueFalseQuestionProps) {
   const { answers, setAnswer } = useQuizStore();
   const selectedAnswer = answers[question.id];
   const correctAnswer = question.correctAnswer;
@@ -37,9 +34,7 @@ export default function TrueFalseQuestion({
               onClick={() => handleAnswerSelect(option)}
               disabled={isReviewMode}
               className={`flex-1 p-4 text-center rounded-lg border transition-colors ${
-                isSelected
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-blue-300'
+                isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
               } ${
                 showFeedback
                   ? isCorrect
@@ -74,4 +69,4 @@ export default function TrueFalseQuestion({
       )}
     </div>
   );
-} 
+}

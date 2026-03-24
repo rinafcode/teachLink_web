@@ -26,13 +26,13 @@ export const useSearchFilters = () => {
     priceRange: searchParams?.get('price') ? Number(searchParams.get('price')) : 500,
     sort: searchParams?.get('sort') || 'relevance',
     instructor: searchParams?.get('instructor') || '',
-    searchTerm: searchParams?.get('q') || ''
+    searchTerm: searchParams?.get('q') || '',
   });
 
   // Sync URL with state changes
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     if (filters.difficulty && filters.difficulty.length > 0) {
       params.set('difficulty', filters.difficulty.join(','));
     }
@@ -61,9 +61,9 @@ export const useSearchFilters = () => {
 
   // Update filters function
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
-    setFiltersState(prev => ({
+    setFiltersState((prev) => ({
       ...prev,
-      ...newFilters
+      ...newFilters,
     }));
   }, []);
 
@@ -76,13 +76,13 @@ export const useSearchFilters = () => {
       priceRange: 500,
       sort: 'relevance',
       instructor: '',
-      searchTerm: ''
+      searchTerm: '',
     });
   }, []);
 
   return {
     filters,
     setFilters,
-    resetFilters
+    resetFilters,
   };
 };

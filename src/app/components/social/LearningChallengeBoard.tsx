@@ -7,32 +7,45 @@ import type { GroupChallenge } from '@/app/hooks/useStudyGroups';
 
 interface LearningChallengeBoardProps {
   challenges: GroupChallenge[];
-  onCreate: (challenge: { title: string; description?: string; startDate: string; endDate: string; target: number }) => void;
+  onCreate: (challenge: {
+    title: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    target: number;
+  }) => void;
   onUpdateProgress: (challengeId: string, progress: number) => void;
   getLeaderboard: (challengeId: string) => { userId: string; userName: string; progress: number }[];
 }
 
-export default function LearningChallengeBoard({ challenges, onCreate, onUpdateProgress, getLeaderboard }: LearningChallengeBoardProps) {
+export default function LearningChallengeBoard({
+  challenges,
+  onCreate,
+  onUpdateProgress,
+  getLeaderboard,
+}: LearningChallengeBoardProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [target, setTarget] = useState<number>(100);
   const [start, setStart] = useState<string>(() => new Date().toISOString().slice(0, 10));
-  const [end, setEnd] = useState<string>(() => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+  const [end, setEnd] = useState<string>(() =>
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+  );
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   const activeChallenges = useMemo(
-    () => challenges.filter(c => new Date(c.endDate) >= new Date()),
-    [challenges]
+    () => challenges.filter((c) => new Date(c.endDate) >= new Date()),
+    [challenges],
   );
 
   const handleCreate = () => {
     if (!title.trim()) return;
-    onCreate({ 
-      title: title.trim(), 
+    onCreate({
+      title: title.trim(),
       description: description.trim() || undefined,
-      startDate: start, 
-      endDate: end, 
-      target 
+      startDate: start,
+      endDate: end,
+      target,
     });
     setTitle('');
     setDescription('');
@@ -44,7 +57,11 @@ export default function LearningChallengeBoard({ challenges, onCreate, onUpdateP
     if (index === 0) return <Trophy className="text-yellow-500" size={20} />;
     if (index === 1) return <Award className="text-gray-400" size={20} />;
     if (index === 2) return <Award className="text-amber-700" size={20} />;
-    return <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-5 text-center">{index + 1}</span>;
+    return (
+      <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-5 text-center">
+        {index + 1}
+      </span>
+    );
   };
 
   return (
@@ -135,8 +152,8 @@ export default function LearningChallengeBoard({ challenges, onCreate, onUpdateP
           activeChallenges.map((c) => {
             const lb = getLeaderboard(c.id);
             const sortedLeaderboard = [...lb].sort((a, b) => b.progress - a.progress);
-            const maxProgress = Math.max(...sortedLeaderboard.map(p => p.progress), c.target);
-            
+            const maxProgress = Math.max(...sortedLeaderboard.map((p) => p.progress), c.target);
+
             return (
               <motion.div
                 key={c.id}
@@ -151,12 +168,15 @@ export default function LearningChallengeBoard({ challenges, onCreate, onUpdateP
                       {c.title}
                     </div>
                     {c.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{c.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        {c.description}
+                      </p>
                     )}
                     <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-1">
                         <Calendar size={14} />
-                        {new Date(c.startDate).toLocaleDateString()} - {new Date(c.endDate).toLocaleDateString()}
+                        {new Date(c.startDate).toLocaleDateString()} -{' '}
+                        {new Date(c.endDate).toLocaleDateString()}
                       </div>
                       <div className="flex items-center gap-1">
                         <Target size={14} />
@@ -171,7 +191,12 @@ export default function LearningChallengeBoard({ challenges, onCreate, onUpdateP
                       max={100}
                       placeholder="Your %"
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md w-24 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      onChange={(e) => onUpdateProgress(c.id, Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                      onChange={(e) =>
+                        onUpdateProgress(
+                          c.id,
+                          Math.max(0, Math.min(100, Number(e.target.value) || 0)),
+                        )
+                      }
                     />
                   </div>
                 </div>
@@ -179,9 +204,12 @@ export default function LearningChallengeBoard({ challenges, onCreate, onUpdateP
                 {/* Leaderboard */}
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h5 className="text-sm font-medium text-gray-800 dark:text-gray-200">Leaderboard</h5>
+                    <h5 className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                      Leaderboard
+                    </h5>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {sortedLeaderboard.length} participant{sortedLeaderboard.length !== 1 ? 's' : ''}
+                      {sortedLeaderboard.length} participant
+                      {sortedLeaderboard.length !== 1 ? 's' : ''}
                     </span>
                   </div>
                   <div className="space-y-2">
@@ -213,16 +241,22 @@ export default function LearningChallengeBoard({ challenges, onCreate, onUpdateP
                                   animate={{ width: `${percentage}%` }}
                                   transition={{ duration: 0.5, delay: i * 0.1 }}
                                   className={`h-2 rounded-full ${
-                                    i === 0 ? 'bg-yellow-500' :
-                                    i === 1 ? 'bg-gray-400' :
-                                    i === 2 ? 'bg-amber-700' :
-                                    'bg-purple-500'
+                                    i === 0
+                                      ? 'bg-yellow-500'
+                                      : i === 1
+                                      ? 'bg-gray-400'
+                                      : i === 2
+                                      ? 'bg-amber-700'
+                                      : 'bg-purple-500'
                                   }`}
                                 />
                               </div>
                             </div>
                             <div className="flex items-center gap-1 flex-shrink-0">
-                              <TrendingUp size={14} className="text-green-600 dark:text-green-400" />
+                              <TrendingUp
+                                size={14}
+                                className="text-green-600 dark:text-green-400"
+                              />
                               <span className="text-sm font-semibold text-gray-900 dark:text-gray-50 min-w-[3rem] text-right">
                                 {p.progress}%
                               </span>

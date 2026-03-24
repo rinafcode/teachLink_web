@@ -12,7 +12,21 @@ interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-  ({ label, error, icon, type, onDrag, onDragStart, onDragEnd, onAnimationStart, onAnimationEnd, ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      icon,
+      type,
+      onDrag,
+      onDragStart,
+      onDragEnd,
+      onAnimationStart,
+      onAnimationEnd,
+      ...props
+    },
+    ref,
+  ) => {
     void onDrag;
     void onDragStart;
     void onDragEnd;
@@ -35,9 +49,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         </label>
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              {icon}
-            </div>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>
           )}
           <motion.input
             ref={ref}
@@ -46,11 +58,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             onBlur={() => setIsFocused(false)}
             animate={{
               scale: isFocused ? 1.01 : 1,
-              borderColor: error
-                ? '#ef4444'
-                : isFocused
-                ? '#3b82f6'
-                : '#d1d5db',
+              borderColor: error ? '#ef4444' : isFocused ? '#3b82f6' : '#d1d5db',
             }}
             transition={{ duration: 0.2 }}
             className={`w-full px-4 py-3 ${
@@ -73,7 +81,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         <FieldError error={error} />
       </motion.div>
     );
-  }
+  },
 );
 
 FormInput.displayName = 'FormInput';

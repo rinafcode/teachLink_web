@@ -12,7 +12,7 @@ const STEPS = [
   { id: 1, name: 'Lessons', description: 'Build curriculum' },
   { id: 2, name: 'Content', description: 'Upload materials' },
   { id: 3, name: 'Assessments', description: 'Create quizzes' },
-  { id: 4, name: 'Preview', description: 'Review & publish' }
+  { id: 4, name: 'Preview', description: 'Review & publish' },
 ];
 
 export const CourseCreationWizard = () => {
@@ -27,7 +27,7 @@ export const CourseCreationWizard = () => {
     addAssessment,
     nextStep,
     previousStep,
-    goToStep
+    goToStep,
   } = useCourseCreation();
 
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
@@ -145,7 +145,7 @@ export const CourseCreationWizard = () => {
                     value={courseData.pricing.amount || 0}
                     onChange={(e) =>
                       updateCourseData({
-                        pricing: { type: 'paid', amount: Number(e.target.value) }
+                        pricing: { type: 'paid', amount: Number(e.target.value) },
                       })
                     }
                     placeholder="Price in USD"
@@ -168,17 +168,13 @@ export const CourseCreationWizard = () => {
                   <input
                     type="text"
                     value={lessonForm.title}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, title: e.target.value })
-                    }
+                    onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
                     placeholder="Lesson title"
                     className="w-full px-4 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
                   />
                   <textarea
                     value={lessonForm.description}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, description: e.target.value })
-                    }
+                    onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
                     placeholder="Lesson description"
                     rows={3}
                     className="w-full px-4 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
@@ -261,7 +257,9 @@ export const CourseCreationWizard = () => {
             <h2 className="text-xl sm:text-2xl font-bold">Preview & Publish</h2>
             <div className="border rounded-lg p-4 sm:p-6 bg-white dark:bg-gray-800 dark:border-gray-700 space-y-4">
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold dark:text-white">{courseData.title}</h3>
+                <h3 className="text-lg sm:text-xl font-semibold dark:text-white">
+                  {courseData.title}
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300 mt-2">{courseData.description}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -275,8 +273,7 @@ export const CourseCreationWizard = () => {
                   <span className="font-medium">Lessons:</span> {courseData.lessons.length}
                 </div>
                 <div className="dark:text-gray-300">
-                  <span className="font-medium">Assessments:</span>{' '}
-                  {courseData.assessments.length}
+                  <span className="font-medium">Assessments:</span> {courseData.assessments.length}
                 </div>
               </div>
               <div className="pt-4 border-t">
@@ -310,7 +307,11 @@ export const CourseCreationWizard = () => {
                       : 'bg-gray-200 text-gray-600'
                   }`}
                 >
-                  {currentStep > step.id ? <Check className="h-4 w-4 sm:h-5 sm:w-5" /> : step.id + 1}
+                  {currentStep > step.id ? (
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                  ) : (
+                    step.id + 1
+                  )}
                 </button>
                 <div className="mt-2 text-center hidden sm:block">
                   <div className="text-sm font-medium">{step.name}</div>

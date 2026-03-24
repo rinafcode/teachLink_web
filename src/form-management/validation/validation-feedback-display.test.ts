@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ValidationFeedbackDisplay, FeedbackDisplayOptions } from './validation-feedback-display.js';
+import {
+  ValidationFeedbackDisplay,
+  FeedbackDisplayOptions,
+} from './validation-feedback-display.js';
 import { ValidationResult } from '../types/core.js';
 
 // Mock DOM environment
@@ -21,25 +24,25 @@ Object.defineProperty(global, 'document', {
       classList: {
         add: vi.fn(),
         remove: vi.fn(),
-        contains: vi.fn()
+        contains: vi.fn(),
       },
-      parentNode: null
+      parentNode: null,
     })),
     body: {
       appendChild: vi.fn(),
-      removeChild: vi.fn()
+      removeChild: vi.fn(),
     },
     head: {
-      appendChild: vi.fn()
+      appendChild: vi.fn(),
     },
-    getElementById: vi.fn()
+    getElementById: vi.fn(),
   },
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'requestAnimationFrame', {
   value: vi.fn((callback: () => void) => setTimeout(callback, 0)),
-  writable: true
+  writable: true,
 });
 
 describe('ValidationFeedbackDisplay', () => {
@@ -49,7 +52,7 @@ describe('ValidationFeedbackDisplay', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
-    
+
     // Create mock container
     mockContainer = document.createElement('div') as any;
     feedbackDisplay = new ValidationFeedbackDisplay(mockContainer);
@@ -77,8 +80,8 @@ describe('ValidationFeedbackDisplay', () => {
         isValid: false,
         errors: [
           { code: 'required', message: 'This field is required' },
-          { code: 'email', message: 'Invalid email format' }
-        ]
+          { code: 'email', message: 'Invalid email format' },
+        ],
       };
 
       feedbackDisplay.displayFeedback('email', validationResult);
@@ -94,9 +97,7 @@ describe('ValidationFeedbackDisplay', () => {
       const validationResult: ValidationResult = {
         isValid: true,
         errors: [],
-        warnings: [
-          { code: 'weak_password', message: 'Password could be stronger' }
-        ]
+        warnings: [{ code: 'weak_password', message: 'Password could be stronger' }],
       };
 
       feedbackDisplay.displayFeedback('password', validationResult);
@@ -111,11 +112,11 @@ describe('ValidationFeedbackDisplay', () => {
     it('should display success feedback when valid', () => {
       const validationResult: ValidationResult = {
         isValid: true,
-        errors: []
+        errors: [],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        showSuccessState: true
+        showSuccessState: true,
       };
 
       feedbackDisplay.displayFeedback('email', validationResult, options);
@@ -123,24 +124,24 @@ describe('ValidationFeedbackDisplay', () => {
       const state = feedbackDisplay.getDisplayState('email');
       expect(state).toBeDefined();
       expect(state!.isValid).toBe(true);
-      expect(state!.elements.some(e => e.type === 'success')).toBe(true);
+      expect(state!.elements.some((e) => e.type === 'success')).toBe(true);
     });
 
     it('should not display success feedback when disabled', () => {
       const validationResult: ValidationResult = {
         isValid: true,
-        errors: []
+        errors: [],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        showSuccessState: false
+        showSuccessState: false,
       };
 
       feedbackDisplay.displayFeedback('email', validationResult, options);
 
       const state = feedbackDisplay.getDisplayState('email');
       expect(state).toBeDefined();
-      expect(state!.elements.some(e => e.type === 'success')).toBe(false);
+      expect(state!.elements.some((e) => e.type === 'success')).toBe(false);
     });
   });
 
@@ -152,19 +153,19 @@ describe('ValidationFeedbackDisplay', () => {
           { code: 'error1', message: 'Error 1' },
           { code: 'error2', message: 'Error 2' },
           { code: 'error3', message: 'Error 3' },
-          { code: 'error4', message: 'Error 4' }
-        ]
+          { code: 'error4', message: 'Error 4' },
+        ],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        maxErrors: 2
+        maxErrors: 2,
       };
 
       feedbackDisplay.displayFeedback('field', validationResult, options);
 
       const state = feedbackDisplay.getDisplayState('field');
       expect(state).toBeDefined();
-      expect(state!.elements.filter(e => e.type === 'error')).toHaveLength(3); // 2 errors + 1 "more errors" message
+      expect(state!.elements.filter((e) => e.type === 'error')).toHaveLength(3); // 2 errors + 1 "more errors" message
     });
 
     it('should group similar errors when enabled', () => {
@@ -173,19 +174,19 @@ describe('ValidationFeedbackDisplay', () => {
         errors: [
           { code: 'required', message: 'Field 1 is required' },
           { code: 'required', message: 'Field 2 is required' },
-          { code: 'email', message: 'Invalid email' }
-        ]
+          { code: 'email', message: 'Invalid email' },
+        ],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        groupSimilarErrors: true
+        groupSimilarErrors: true,
       };
 
       feedbackDisplay.displayFeedback('field', validationResult, options);
 
       const state = feedbackDisplay.getDisplayState('field');
       expect(state).toBeDefined();
-      expect(state!.elements.filter(e => e.type === 'error')).toHaveLength(2); // Grouped required + email
+      expect(state!.elements.filter((e) => e.type === 'error')).toHaveLength(2); // Grouped required + email
     });
   });
 
@@ -193,15 +194,15 @@ describe('ValidationFeedbackDisplay', () => {
     it('should apply custom positioning', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        position: 'tooltip'
+        position: 'tooltip',
       };
 
       feedbackDisplay.displayFeedback('field', validationResult, options);
-      
+
       // Verify positioning was applied (mocked DOM doesn't actually apply styles)
       expect(document.createElement).toHaveBeenCalledWith('div');
     });
@@ -209,12 +210,12 @@ describe('ValidationFeedbackDisplay', () => {
     it('should apply custom styles', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
         customStyles: { color: 'red', fontSize: '14px' },
-        customClassName: 'custom-feedback'
+        customClassName: 'custom-feedback',
       };
 
       feedbackDisplay.displayFeedback('field', validationResult, options);
@@ -226,7 +227,7 @@ describe('ValidationFeedbackDisplay', () => {
     it('should update positioning after display', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       feedbackDisplay.displayFeedback('field', validationResult);
@@ -245,7 +246,7 @@ describe('ValidationFeedbackDisplay', () => {
 
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       feedbackDisplay.displayFeedback('field', validationResult);
@@ -254,8 +255,8 @@ describe('ValidationFeedbackDisplay', () => {
         expect.objectContaining({
           fieldId: 'field',
           hasErrors: true,
-          isValid: false
-        })
+          isValid: false,
+        }),
       );
 
       unsubscribe();
@@ -265,20 +266,23 @@ describe('ValidationFeedbackDisplay', () => {
       const errorCallback = vi.fn().mockImplementation(() => {
         throw new Error('Callback error');
       });
-      
+
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       feedbackDisplay.subscribe(errorCallback);
 
       const validationResult: ValidationResult = {
         isValid: true,
-        errors: []
+        errors: [],
       };
 
       feedbackDisplay.displayFeedback('field', validationResult);
 
-      expect(consoleSpy).toHaveBeenCalledWith('Error in feedback display callback:', expect.any(Error));
-      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error in feedback display callback:',
+        expect.any(Error),
+      );
+
       consoleSpy.mockRestore();
     });
   });
@@ -287,7 +291,7 @@ describe('ValidationFeedbackDisplay', () => {
     it('should clear feedback for specific field', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       feedbackDisplay.displayFeedback('field1', validationResult);
@@ -305,7 +309,7 @@ describe('ValidationFeedbackDisplay', () => {
     it('should clear all feedback', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       feedbackDisplay.displayFeedback('field1', validationResult);
@@ -320,7 +324,7 @@ describe('ValidationFeedbackDisplay', () => {
     it('should get all display states', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       feedbackDisplay.displayFeedback('field1', validationResult);
@@ -337,18 +341,18 @@ describe('ValidationFeedbackDisplay', () => {
     it('should provide feedback statistics', () => {
       const errorResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Error' }]
+        errors: [{ code: 'error', message: 'Error' }],
       };
 
       const warningResult: ValidationResult = {
         isValid: true,
         errors: [],
-        warnings: [{ code: 'warning', message: 'Warning' }]
+        warnings: [{ code: 'warning', message: 'Warning' }],
       };
 
       const validResult: ValidationResult = {
         isValid: true,
-        errors: []
+        errors: [],
       };
 
       feedbackDisplay.displayFeedback('field1', errorResult);
@@ -356,7 +360,7 @@ describe('ValidationFeedbackDisplay', () => {
       feedbackDisplay.displayFeedback('field3', validResult, { showSuccessState: true });
 
       const stats = feedbackDisplay.getStatistics();
-      
+
       expect(stats.totalFields).toBe(3);
       expect(stats.fieldsWithErrors).toBe(1);
       expect(stats.fieldsWithWarnings).toBe(1);
@@ -368,11 +372,11 @@ describe('ValidationFeedbackDisplay', () => {
     it('should set appropriate ARIA attributes', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        ariaLive: 'assertive'
+        ariaLive: 'assertive',
       };
 
       feedbackDisplay.displayFeedback('field', validationResult, options);
@@ -384,11 +388,11 @@ describe('ValidationFeedbackDisplay', () => {
     it('should create proper content structure with icons', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        showIcons: true
+        showIcons: true,
       };
 
       feedbackDisplay.displayFeedback('field', validationResult, options);
@@ -401,11 +405,11 @@ describe('ValidationFeedbackDisplay', () => {
     it('should create content without icons when disabled', () => {
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'error', message: 'Test error' }]
+        errors: [{ code: 'error', message: 'Test error' }],
       };
 
       const options: Partial<FeedbackDisplayOptions> = {
-        showIcons: false
+        showIcons: false,
       };
 
       feedbackDisplay.displayFeedback('field', validationResult, options);

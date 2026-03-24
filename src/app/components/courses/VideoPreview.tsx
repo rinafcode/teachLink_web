@@ -22,11 +22,8 @@ export default function VideoPreview({
         onClick={() => setIsOpen(true)}
         className="group relative w-full aspect-video rounded-xl overflow-hidden border-2 border-[#E2E8F0] dark:border-[#334155] hover:border-[#0066FF] dark:hover:border-[#00C2FF] transition-all duration-200"
       >
-        <img
-          src={thumbnailUrl}
-          alt="Video preview"
-          className="w-full h-full object-cover"
-        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={thumbnailUrl} alt="Video preview" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
           <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white group-hover:scale-110 transition-all duration-200 flex items-center justify-center">
             <svg className="w-8 h-8 text-[#0066FF] ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -40,22 +37,25 @@ export default function VideoPreview({
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setIsOpen(false)}>
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setIsOpen(false)}
+        >
           <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setIsOpen(false)}
               className="absolute -top-12 right-0 text-white hover:text-[#00C2FF] transition-colors"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
-            <video
-              src={videoUrl}
-              controls
-              autoPlay
-              className="w-full aspect-video rounded-xl"
-            />
+            <video src={videoUrl} controls autoPlay className="w-full aspect-video rounded-xl" />
           </div>
         </div>
       )}

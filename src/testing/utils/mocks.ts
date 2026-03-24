@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vitest';
 
 /** Wallet mock for tipping/connection flows */
 export const mockWallet = {
@@ -7,19 +7,19 @@ export const mockWallet = {
   connect: vi.fn().mockResolvedValue(undefined),
   disconnect: vi.fn().mockResolvedValue(undefined),
   balance: '1.5',
-}
+};
 
 export const mockDisconnectedWallet = {
   ...mockWallet,
   address: null,
   isConnected: false,
-}
+};
 
 /** Generic async handler that resolves successfully */
-export const mockSuccessHandler = vi.fn().mockResolvedValue({ success: true })
+export const mockSuccessHandler = vi.fn().mockResolvedValue({ success: true });
 
 /** Generic async handler that rejects */
-export const mockErrorHandler = vi.fn().mockRejectedValue(new Error('Something went wrong'))
+export const mockErrorHandler = vi.fn().mockRejectedValue(new Error('Something went wrong'));
 
 /** Mock user */
 export const mockUser = {
@@ -27,9 +27,9 @@ export const mockUser = {
   name: 'Test User',
   email: 'test@teachlink.com',
   avatar: '/avatar.png',
-}
+};
 
 /** Reset all mocks between tests */
 export function resetMocks() {
-  vi.clearAllMocks()
+  vi.clearAllMocks();
 }

@@ -5,11 +5,19 @@ import type { GroupChallenge } from '@/app/hooks/useStudyGroups';
 
 describe('LearningChallengeBoard', () => {
   it('renders challenge and updates progress', () => {
-    const challenges: GroupChallenge[] = [{
-      id: 'c1', groupId: 'g1', title: 'Weekly Study', description: '',
-      startDate: new Date().toISOString(), endDate: new Date(Date.now() + 86400000).toISOString(),
-      target: 100, progress: [], createdAt: new Date().toISOString(),
-    }];
+    const challenges: GroupChallenge[] = [
+      {
+        id: 'c1',
+        groupId: 'g1',
+        title: 'Weekly Study',
+        description: '',
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 86400000).toISOString(),
+        target: 100,
+        progress: [],
+        createdAt: new Date().toISOString(),
+      },
+    ];
 
     const onCreate = vi.fn();
     const onUpdateProgress = vi.fn();
@@ -21,7 +29,7 @@ describe('LearningChallengeBoard', () => {
         onCreate={onCreate}
         onUpdateProgress={onUpdateProgress}
         getLeaderboard={getLeaderboard}
-      />
+      />,
     );
 
     const input = screen.getByPlaceholderText('Your %');

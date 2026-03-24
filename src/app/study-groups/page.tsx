@@ -3,7 +3,8 @@ import StudyGroupsPage from '../pages/StudyGroups';
 
 export const metadata: Metadata = {
   title: 'Study Groups | TeachLink',
-  description: 'Create and collaborate in study groups with discussions, resources, and challenges.',
+  description:
+    'Create and collaborate in study groups with discussions, resources, and challenges.',
 };
 
 export default function Page() {

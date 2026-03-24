@@ -1,29 +1,29 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/lib/theme-provider";
-import { OfflineModeProvider } from "./context/OfflineModeContext";
-import { I18nProvider } from "@/hooks/useInternationalization";
-import { InternationalizationEngine } from "@/components/i18n/InternationalizationEngine";
-import { CulturalAdaptationManager } from "@/components/i18n/CulturalAdaptationManager";
-import PerformanceMonitor from "@/components/performance/PerformanceMonitor";
-import PrefetchingEngine from "@/components/performance/PrefetchingEngine";
-import StateManagerIntegration from "@/components/state/StateManagerIntegration";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '@/lib/theme-provider';
+import { OfflineModeProvider } from './context/OfflineModeContext';
+import { I18nProvider } from '@/hooks/useInternationalization';
+import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
+import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
+import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
+import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 
 const geistSans = Geist({
-// ...
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  // ...
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "TeachLink - Offline Learning Platform",
-  description: "Learn anywhere, anytime with offline capabilities",
+  title: 'TeachLink - Offline Learning Platform',
+  description: 'Learn anywhere, anytime with offline capabilities',
 };
 
 export default function RootLayout({

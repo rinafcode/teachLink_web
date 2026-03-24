@@ -5,26 +5,25 @@ interface CourseCardProps {
   title: string;
   subtitle: string;
   author: string;
-  progress: number;       // 0–100
-  timeRemaining: string;  // e.g. "12h remaining"
-  imageUrl?: string;      // optional background image
+  progress: number; // 0–100
+  timeRemaining: string; // e.g. "12h remaining"
+  imageUrl?: string; // optional background image
 }
 
 export default function CourseCard({
-  title = "Web3 UX Design Principles",
-  subtitle = "Create intuitive interfaces for decentralized applications",
-  author = "Sarah Johnson",
+  title = 'Web3 UX Design Principles',
+  subtitle = 'Create intuitive interfaces for decentralized applications',
+  author = 'Sarah Johnson',
   progress = 68,
-  timeRemaining = "12h remaining",
+  timeRemaining = '12h remaining',
   imageUrl,
 }: CourseCardProps) {
   return (
-    <div
-      className="group relative w-full overflow-hidden rounded-xl bg-[#262f40] border border-gray- shadow-lg transition-all duration-300 hover:shadow-xl"
-    >
+    <div className="group relative w-full overflow-hidden rounded-xl bg-[#262f40] border border-gray- shadow-lg transition-all duration-300 hover:shadow-xl">
       {/* Course Image */}
       <div className="relative h-48 w-full overflow-hidden bg-gray-900">
         {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt={title}
@@ -38,19 +37,13 @@ export default function CourseCard({
       {/* Content */}
       <div className="flex flex-col gap-3 p-5">
         {/* Title */}
-        <h3 className="text-lg font-semibold text-white leading-tight">
-          {title}
-        </h3>
+        <h3 className="text-lg font-semibold text-white leading-tight">{title}</h3>
 
         {/* Author */}
-        <p className="text-sm text-gray-400">
-          By {author}
-        </p>
+        <p className="text-sm text-gray-400">By {author}</p>
 
         {/* Subtitle/Description */}
-        <p className="text-sm text-gray-400 line-clamp-2">
-          {subtitle}
-        </p>
+        <p className="text-sm text-gray-400 line-clamp-2">{subtitle}</p>
 
         {/* Progress section */}
         <div className="mt-1 space-y-2">
@@ -75,9 +68,7 @@ export default function CourseCard({
         </div>
 
         {/* CTA Button */}
-        <button
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:scale-[0.98]"
-        >
+        <button className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:scale-[0.98]">
           <Play size={16} className="fill-current" />
           Continue Learning
         </button>

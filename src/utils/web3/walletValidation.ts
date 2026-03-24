@@ -23,7 +23,7 @@ export function validateWalletInteraction(): WalletInteractionResult {
 
   // Check for Starknet wallet
   const hasStarknet = !!(window as Window & { starknet?: unknown }).starknet;
-  
+
   if (!hasStarknet) {
     return {
       canInteract: false,
@@ -43,7 +43,7 @@ export function validateWalletInteraction(): WalletInteractionResult {
  */
 export async function safeWalletCall<T>(
   operation: () => Promise<T>,
-  fallback: T
+  fallback: T,
 ): Promise<{ success: boolean; data: T; error: string | null }> {
   try {
     const data = await operation();

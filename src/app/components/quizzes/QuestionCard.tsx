@@ -15,23 +15,11 @@ export default function QuestionCard({ question }: QuestionCardProps) {
   const renderQuestion = () => {
     switch (question.type) {
       case 'multiple-choice':
-        return (
-          <MultipleChoiceQuestion
-            question={question}
-            isReviewMode={isReviewMode}
-          />
-        );
+        return <MultipleChoiceQuestion question={question} isReviewMode={isReviewMode} />;
       case 'true-false':
-        return (
-          <TrueFalseQuestion question={question} isReviewMode={isReviewMode} />
-        );
+        return <TrueFalseQuestion question={question} isReviewMode={isReviewMode} />;
       case 'code-challenge':
-        return (
-          <CodeChallengeQuestion
-            question={question}
-            isReviewMode={isReviewMode}
-          />
-        );
+        return <CodeChallengeQuestion question={question} isReviewMode={isReviewMode} />;
       default:
         return <div>Unsupported question type</div>;
     }
@@ -47,4 +35,4 @@ export default function QuestionCard({ question }: QuestionCardProps) {
       {renderQuestion()}
     </div>
   );
-} 
+}

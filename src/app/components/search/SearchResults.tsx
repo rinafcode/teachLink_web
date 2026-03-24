@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Star, Clock, User, ArrowRight } from "lucide-react";
-import Link from "next/link";
-import clsx from "clsx";
+import React from 'react';
+import { Star, Clock, User, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
 
 export interface CourseResult {
   id: string;
@@ -14,7 +14,7 @@ export interface CourseResult {
   price: number;
   originalPrice?: number | null;
   category: string;
-  level: "beginner" | "intermediate" | "advanced";
+  level: 'beginner' | 'intermediate' | 'advanced';
   image: string;
   tag?: string | null;
   color: string;
@@ -30,17 +30,14 @@ interface SearchResultsProps {
 export const SearchResults: React.FC<SearchResultsProps> = ({
   results,
   isLoading = false,
-  sortBy = "relevance",
+  sortBy = 'relevance',
   onSortChange,
 }) => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="bg-gray-200 dark:bg-gray-700 rounded-lg h-96 animate-pulse"
-          />
+          <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-lg h-96 animate-pulse" />
         ))}
       </div>
     );
@@ -58,9 +55,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
   const getPriceDisplay = (price: number, originalPrice?: number | null) => {
     if (originalPrice) {
-      const discount = Math.round(
-        ((originalPrice - price) / originalPrice) * 100,
-      );
+      const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
       return (
         <div className="flex items-end gap-2">
           <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -69,9 +64,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           <span className="text-sm line-through text-gray-400 dark:text-gray-500">
             ${originalPrice.toFixed(2)}
           </span>
-          <span className="text-xs font-bold text-red-600 dark:text-red-400">
-            {discount}% OFF
-          </span>
+          <span className="text-xs font-bold text-red-600 dark:text-red-400">{discount}% OFF</span>
         </div>
       );
     }
@@ -84,14 +77,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "beginner":
-        return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200";
-      case "intermediate":
-        return "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200";
-      case "advanced":
-        return "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200";
+      case 'beginner':
+        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+      case 'intermediate':
+        return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+      case 'advanced':
+        return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
       default:
-        return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200";
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -99,9 +92,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     <div>
       {/* Sort Controls */}
       <div className="mb-6 flex justify-between items-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {results.length} results found
-        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{results.length} results found</p>
         {onSortChange && (
           <select
             value={sortBy}
@@ -142,7 +133,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               )}
               <div
                 className={clsx(
-                  "absolute top-3 left-3 px-2 py-1 rounded text-xs font-semibold",
+                  'absolute top-3 left-3 px-2 py-1 rounded text-xs font-semibold',
                   getLevelColor(course.level),
                 )}
               >

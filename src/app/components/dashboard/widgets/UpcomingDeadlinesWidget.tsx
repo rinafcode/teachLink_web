@@ -37,7 +37,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
   onRemove,
   size,
   onChangeSize,
-  onUpdateTitle
+  onUpdateTitle,
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [tempTitle, setTempTitle] = useState(title);
@@ -62,7 +62,9 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
         if (!cancelled) setIsLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   // Mock schedule data matching Figma design
@@ -73,7 +75,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       subtitle: 'Intro to Starknet Course',
       date: new Date(new Date().setHours(14, 0, 0, 0)), // Today, 2:00 PM
       type: 'qa',
-      icon: Clock as React.ComponentType<{ size?: number; className?: string }>
+      icon: Clock as React.ComponentType<{ size?: number; className?: string }>,
     },
     {
       id: '2',
@@ -81,7 +83,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       subtitle: 'With John Smith',
       date: new Date(addDays(new Date(), 1).setHours(10, 0, 0, 0)), // Tomorrow, 10:00 AM
       type: 'mentoring',
-      icon: Users as React.ComponentType<{ size?: number; className?: string }>
+      icon: Users as React.ComponentType<{ size?: number; className?: string }>,
     },
     {
       id: '3',
@@ -89,8 +91,8 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
       subtitle: 'Smart Contract Security',
       date: new Date(addDays(new Date(), 3).setHours(15, 30, 0, 0)), // Fri, 15, 3:30 PM
       type: 'workshop',
-      icon: FileText as React.ComponentType<{ size?: number; className?: string }>
-    }
+      icon: FileText as React.ComponentType<{ size?: number; className?: string }>,
+    },
   ];
 
   const formatScheduleDate = (date: Date) => {
@@ -190,7 +192,9 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Show Completed</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                Show Completed
+              </label>
               <select
                 value={settings.showCompleted ? 'yes' : 'no'}
                 onChange={(e) => onUpdateSettings({ showCompleted: e.target.value === 'yes' })}
@@ -234,9 +238,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
                     <h4 className="font-medium text-gray-900 dark:text-gray-50 mb-1">
                       {event.title}
                     </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {event.subtitle}
-                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{event.subtitle}</p>
                   </div>
                 </div>
                 <div className="flex-shrink-0 text-right">

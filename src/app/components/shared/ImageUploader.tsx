@@ -35,12 +35,7 @@ export default function ImageUploader({ onImageSelect, initialImageUrl }: ImageU
         onClick={handleClick}
       >
         {previewUrl ? (
-          <Image
-            src={previewUrl}
-            alt="Profile preview"
-            fill
-            className="object-cover"
-          />
+          <Image src={previewUrl} alt="Profile preview" fill className="object-cover" />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
             <svg
@@ -71,9 +66,7 @@ export default function ImageUploader({ onImageSelect, initialImageUrl }: ImageU
         accept="image/*"
         className="hidden"
       />
-      <p className="mt-2 text-sm text-gray-500">
-        Click to upload a new profile photo
-      </p>
+      <p className="mt-2 text-sm text-gray-500">Click to upload a new profile photo</p>
     </div>
   );
-} 
+}

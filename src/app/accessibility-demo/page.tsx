@@ -31,12 +31,8 @@ export default function AccessibilityDemoPage() {
         {/* Header */}
         <header role="banner" className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Accessibility Features Demo
-            </h1>
-            <p className="mt-2 text-gray-600">
-              WCAG 2.1 AA Compliant Components and Tools
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900">Accessibility Features Demo</h1>
+            <p className="mt-2 text-gray-600">WCAG 2.1 AA Compliant Components and Tools</p>
           </div>
         </header>
 

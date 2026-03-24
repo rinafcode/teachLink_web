@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize, X } from "lucide-react";
+import { useState, useRef, useEffect } from 'react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize, X } from 'lucide-react';
 
 interface TouchOptimizedControlsProps {
   videoTitle: string;
@@ -10,7 +10,7 @@ interface TouchOptimizedControlsProps {
 export default function TouchOptimizedControls({
   videoTitle,
   videoUrl,
-  onClose
+  onClose,
 }: TouchOptimizedControlsProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -27,7 +27,7 @@ export default function TouchOptimizedControls({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleTap = () => {
@@ -73,12 +73,12 @@ export default function TouchOptimizedControls({
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!videoRef.current) return;
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = x / rect.width;
     const newTime = Math.max(0, Math.min(percentage * duration, duration));
-    
+
     videoRef.current.currentTime = newTime;
     setCurrentTime(newTime);
     resetControlsTimer();
@@ -86,13 +86,13 @@ export default function TouchOptimizedControls({
 
   const handleProgressTouch = (e: React.TouchEvent<HTMLDivElement>) => {
     if (!videoRef.current) return;
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const touch = e.touches[0];
     const x = touch.clientX - rect.left;
     const percentage = x / rect.width;
     const newTime = Math.max(0, Math.min(percentage * duration, duration));
-    
+
     videoRef.current.currentTime = newTime;
     setCurrentTime(newTime);
     resetControlsTimer();
@@ -127,7 +127,7 @@ export default function TouchOptimizedControls({
     if (!element) return;
 
     if (!document.fullscreenElement) {
-      element.requestFullscreen().catch(err => {
+      element.requestFullscreen().catch((err) => {
         console.error('Error entering fullscreen:', err);
       });
     } else {
@@ -138,12 +138,12 @@ export default function TouchOptimizedControls({
 
   const changePlaybackRate = () => {
     if (!videoRef.current) return;
-    
+
     const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
     const currentIndex = rates.indexOf(playbackRate);
     const nextIndex = (currentIndex + 1) % rates.length;
     const newRate = rates[nextIndex];
-    
+
     videoRef.current.playbackRate = newRate;
     setPlaybackRate(newRate);
     resetControlsTimer();
@@ -200,28 +200,20 @@ export default function TouchOptimizedControls({
         clearTimeout(controlsTimeout.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoUrl]);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div 
-      className="relative w-full h-screen bg-black"
-      onTouchStart={handleTap}
-      onClick={handleTap}
-    >
+    <div className="relative w-full h-screen bg-black" onTouchStart={handleTap} onClick={handleTap}>
       {/* Video Element */}
-      <video
-        ref={videoRef}
-        className="w-full h-full object-contain"
-        playsInline
-        preload="auto"
-      />
+      <video ref={videoRef} className="w-full h-full object-contain" playsInline preload="auto" />
 
       {/* Controls Overlay */}
       <div
         className={`absolute inset-0 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+          showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
         {/* Top Bar */}
@@ -232,9 +224,7 @@ export default function TouchOptimizedControls({
           >
             <X className="w-6 h-6 text-white" />
           </button>
-          <h2 className="text-white font-semibold text-lg truncate max-w-[70%]">
-            {videoTitle}
-          </h2>
+          <h2 className="text-white font-semibold text-lg truncate max-w-[70%]">{videoTitle}</h2>
           <div className="w-10"></div> {/* Spacer */}
         </div>
 
@@ -307,7 +297,7 @@ export default function TouchOptimizedControls({
               <button
                 onClick={togglePlay}
                 className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 touch-manipulation"
-                aria-label={isPlaying ? "Pause" : "Play"}
+                aria-label={isPlaying ? 'Pause' : 'Play'}
               >
                 {isPlaying ? (
                   <Pause className="w-7 h-7 text-white" />
@@ -331,7 +321,7 @@ export default function TouchOptimizedControls({
                 <button
                   onClick={toggleMute}
                   className="w-10 h-10 flex items-center justify-center touch-manipulation"
-                  aria-label={isMuted ? "Unmute" : "Mute"}
+                  aria-label={isMuted ? 'Unmute' : 'Mute'}
                 >
                   {isMuted ? (
                     <VolumeX className="w-5 h-5 text-white" />

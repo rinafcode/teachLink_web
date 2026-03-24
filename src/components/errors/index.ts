@@ -17,7 +17,11 @@ export {
 } from '@/utils/errorUtils';
 
 // Error Reporting Service
-export { errorReportingService, type ErrorReport, type BreadcrumbEntry } from '@/services/errorReporting';
+export {
+  errorReportingService,
+  type ErrorReport,
+  type BreadcrumbEntry,
+} from '@/services/errorReporting';
 
 // Error Recovery Mechanism
 export {

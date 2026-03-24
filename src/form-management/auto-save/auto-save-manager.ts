@@ -9,7 +9,7 @@ import {
   SaveStatus,
   SaveStatusCallback,
   Subscription,
-  DraftData
+  DraftData,
 } from '../types';
 
 interface SaveQueueItem {
@@ -42,7 +42,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
     // Set initial status
     this.updateSaveStatus(formId, {
       status: 'idle',
-      queuedSaves: 0
+      queuedSaves: 0,
     });
 
     // Create interval for automatic saves
@@ -83,7 +83,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
   async saveNow(formId: string, data: FormState): Promise<void> {
     this.updateSaveStatus(formId, {
       status: 'saving',
-      queuedSaves: this.saveQueue.length
+      queuedSaves: this.saveQueue.length,
     });
 
     try {
@@ -102,7 +102,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
         createdAt: new Date(data.metadata.createdAt),
         updatedAt: new Date(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        compressed: false
+        compressed: false,
       };
 
       // Check storage quota before saving
@@ -115,13 +115,13 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
       this.updateSaveStatus(formId, {
         status: 'saved',
         lastSaved: new Date(),
-        queuedSaves: this.saveQueue.length
+        queuedSaves: this.saveQueue.length,
       });
     } catch (error) {
       this.updateSaveStatus(formId, {
         status: 'error',
         error: error as Error,
-        queuedSaves: this.saveQueue.length
+        queuedSaves: this.saveQueue.length,
       });
 
       // Queue for retry if it's a network error
@@ -197,7 +197,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
     return {
       unsubscribe: () => {
         this.statusCallbacks.delete(callback);
-      }
+      },
     };
   }
 
@@ -205,7 +205,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
    * Queue a save operation for retry
    */
   private queueSave(formId: string, data: FormState): void {
-    const existingIndex = this.saveQueue.findIndex(item => item.formId === formId);
+    const existingIndex = this.saveQueue.findIndex((item) => item.formId === formId);
 
     if (existingIndex >= 0) {
       // Update existing queue item
@@ -213,7 +213,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
         formId,
         data,
         timestamp: new Date(),
-        retryCount: this.saveQueue[existingIndex].retryCount
+        retryCount: this.saveQueue[existingIndex].retryCount,
       };
     } else {
       // Add new queue item
@@ -221,14 +221,14 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
         formId,
         data,
         timestamp: new Date(),
-        retryCount: 0
+        retryCount: 0,
       });
     }
 
     this.updateSaveStatus(formId, {
       status: 'error',
       error: new Error('Save queued due to network connectivity'),
-      queuedSaves: this.saveQueue.length
+      queuedSaves: this.saveQueue.length,
     });
   }
 
@@ -279,18 +279,18 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
   private updateSaveStatus(formId: string, updates: Partial<SaveStatus>): void {
     const currentStatus = this.saveStatus.get(formId) || {
       status: 'idle',
-      queuedSaves: 0
+      queuedSaves: 0,
     };
 
     const newStatus: SaveStatus = {
       ...currentStatus,
-      ...updates
+      ...updates,
     };
 
     this.saveStatus.set(formId, newStatus);
 
     // Notify all callbacks
-    this.statusCallbacks.forEach(callback => {
+    this.statusCallbacks.forEach((callback) => {
       callback(newStatus);
     });
   }
@@ -372,7 +372,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
             drafts.push({
               key,
               updatedAt: new Date(draftData.updatedAt),
-              size: value.length
+              size: value.length,
             });
           } catch (error) {
             // Invalid draft, remove it
@@ -410,7 +410,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
    */
   destroy(): void {
     // Clear all intervals
-    this.saveIntervals.forEach(intervalId => clearInterval(intervalId));
+    this.saveIntervals.forEach((intervalId) => clearInterval(intervalId));
     this.saveIntervals.clear();
 
     // Clear callbacks

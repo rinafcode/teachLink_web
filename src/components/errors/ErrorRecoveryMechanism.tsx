@@ -38,11 +38,7 @@ class ErrorRecoveryMechanism {
   /**
    * Execute function with automatic recovery
    */
-  async execute<T>(
-    id: string,
-    fn: () => Promise<T>,
-    options: RecoveryOptions = {}
-  ): Promise<T> {
+  async execute<T>(id: string, fn: () => Promise<T>, options: RecoveryOptions = {}): Promise<T> {
     const state: RecoveryState = {
       isRecovering: true,
       attempts: 0,
@@ -65,7 +61,7 @@ class ErrorRecoveryMechanism {
           initialDelayMs: options.initialDelayMs || 1000,
           maxDelayMs: options.maxDelayMs || 30000,
           backoffFactor: options.backoffFactor || 2,
-        }
+        },
       );
     } catch (error) {
       state.lastError = error;
@@ -92,7 +88,7 @@ class ErrorRecoveryMechanism {
    * Retry a failed recovery
    */
   async retryRecovery(id: string): Promise<any> {
-    const recovery = this.recoveryQueue.find(r => r.id === id);
+    const recovery = this.recoveryQueue.find((r) => r.id === id);
     if (!recovery) throw new Error(`Recovery with id ${id} not found`);
 
     return this.execute(id, recovery.fn, recovery.options);
@@ -109,14 +105,14 @@ class ErrorRecoveryMechanism {
    * Get recovery state
    */
   getRecoveryState(id: string): RecoveryState | undefined {
-    return this.recoveryQueue.find(r => r.id === id)?.state;
+    return this.recoveryQueue.find((r) => r.id === id)?.state;
   }
 
   /**
    * Remove recovery from queue
    */
   private removeRecovery(id: string): void {
-    this.recoveryQueue = this.recoveryQueue.filter(r => r.id !== id);
+    this.recoveryQueue = this.recoveryQueue.filter((r) => r.id !== id);
   }
 
   /**
@@ -133,7 +129,7 @@ class ErrorRecoveryMechanism {
     id: string;
     state: RecoveryState;
   }> {
-    return this.recoveryQueue.map(r => ({
+    return this.recoveryQueue.map((r) => ({
       id: r.id,
       state: r.state,
     }));
@@ -199,7 +195,7 @@ export function useErrorRecovery(id: string) {
         throw error;
       }
     },
-    [id]
+    [id],
   );
 
   const retry = useCallback(async () => {

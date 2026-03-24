@@ -17,13 +17,20 @@ interface StudyGroupCardProps {
 const getInitials = (name: string) => {
   return name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
 };
 
-export default function StudyGroupCard({ group, challenges = [], isMember, onJoin, onLeave, onOpen }: StudyGroupCardProps) {
+export default function StudyGroupCard({
+  group,
+  challenges = [],
+  isMember,
+  onJoin,
+  onLeave,
+  onOpen,
+}: StudyGroupCardProps) {
   const memberCount = group.members.length;
   const upcoming = challenges
     .filter((c) => new Date(c.endDate) > new Date())
@@ -40,9 +47,13 @@ export default function StudyGroupCard({ group, challenges = [], isMember, onJoi
       onClick={onOpen}
     >
       {group.coverImage ? (
-        <div 
-          className="h-24 w-full bg-gray-100 dark:bg-gray-700" 
-          style={{ backgroundImage: `url(${group.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
+        <div
+          className="h-24 w-full bg-gray-100 dark:bg-gray-700"
+          style={{
+            backgroundImage: `url(${group.coverImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
         />
       ) : (
         <div className="h-2 w-full bg-gradient-to-r from-purple-500/30 via-blue-500/30 to-purple-500/30" />
@@ -50,9 +61,13 @@ export default function StudyGroupCard({ group, challenges = [], isMember, onJoi
       <div className="p-4 space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 truncate">{group.name}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 truncate">
+              {group.name}
+            </h3>
             {group.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">{group.description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+                {group.description}
+              </p>
             )}
           </div>
           <button
@@ -92,7 +107,9 @@ export default function StudyGroupCard({ group, challenges = [], isMember, onJoi
         <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <div className="flex items-center gap-1.5">
             <Users size={16} className="text-purple-600 dark:text-purple-400" />
-            <span>{memberCount} {memberCount === 1 ? 'member' : 'members'}</span>
+            <span>
+              {memberCount} {memberCount === 1 ? 'member' : 'members'}
+            </span>
           </div>
           {upcoming && (
             <div className="flex items-center gap-1.5" title={upcoming.title}>

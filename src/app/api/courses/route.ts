@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const limit = searchParams.get('limit') || '10';
-  
+
   // Mock course data
   const courses = [
     {
@@ -15,8 +15,9 @@ export async function GET(request: Request) {
       totalLessons: 12,
       progress: 68,
       size: '250MB',
-      thumbnailUrl: 'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
-      downloaded: false
+      thumbnailUrl:
+        'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
+      downloaded: false,
     },
     {
       id: '2',
@@ -27,8 +28,9 @@ export async function GET(request: Request) {
       totalLessons: 18,
       progress: 45,
       size: '380MB',
-      thumbnailUrl: 'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
-      downloaded: true
+      thumbnailUrl:
+        'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
+      downloaded: true,
     },
     {
       id: '3',
@@ -39,13 +41,14 @@ export async function GET(request: Request) {
       totalLessons: 24,
       progress: 12,
       size: '520MB',
-      thumbnailUrl: 'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',
-      downloaded: false
-    }
+      thumbnailUrl:
+        'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',
+      downloaded: false,
+    },
   ];
 
   return NextResponse.json({
     data: courses.slice(0, parseInt(limit)),
-    total: courses.length
+    total: courses.length,
   });
 }

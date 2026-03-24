@@ -57,7 +57,9 @@ class OfflineDatabase {
 
         // Progress store
         if (!db.objectStoreNames.contains('progress')) {
-          const progressStore = db.createObjectStore('progress', { keyPath: ['courseId', 'moduleId'] });
+          const progressStore = db.createObjectStore('progress', {
+            keyPath: ['courseId', 'moduleId'],
+          });
           progressStore.createIndex('courseId', 'courseId', { unique: false });
           progressStore.createIndex('synced', 'synced', { unique: false });
         }
@@ -173,9 +175,10 @@ class OfflineDatabase {
     const progress = await this.db.getAll('progress');
     const syncQueue = await this.getSyncQueue();
 
-    const used = courses.reduce((acc, course) => acc + (course.size || 0), 0) +
+    const used =
+      courses.reduce((acc, course) => acc + (course.size || 0), 0) +
       progress.length * 1024 + // Estimate 1KB per progress record
-      syncQueue.length * 512;  // Estimate 512B per sync item
+      syncQueue.length * 512; // Estimate 512B per sync item
 
     // Get quota info if available
     if ('storage' in navigator && 'estimate' in navigator.storage) {
@@ -221,76 +224,91 @@ export const useOfflineMode = () => {
     }
   }, [db]);
 
-  const downloadCourse = useCallback(async (courseId: string, courseData: unknown): Promise<void> => {
-    if (!db) throw new Error('Database not initialized');
+  const downloadCourse = useCallback(
+    async (courseId: string, courseData: unknown): Promise<void> => {
+      if (!db) throw new Error('Database not initialized');
 
-    try {
-      // Simulate downloading course content
-      const course: CourseData = {
-        id: courseId,
-        // @ts-expect-error - courseData is of type unknown
-        title: courseData.title,
-        // @ts-expect-error - courseData is of type unknown
-        description: courseData.description,
-        // @ts-expect-error - courseData is of type unknown
-        thumbnail: courseData.thumbnail,
-        // @ts-expect-error - courseData is of type unknown
-        duration: courseData.duration || 0,
-        // @ts-expect-error - courseData is of type unknown
-        modules: courseData.modules || [],
-        downloadedAt: new Date(),
-        // @ts-expect-error - courseData is of type unknown
-        size: courseData.size || 0
-      };
+      try {
+        // Simulate downloading course content
+        const course: CourseData = {
+          id: courseId,
+          // @ts-expect-error - courseData is of type unknown
+          title: courseData.title,
+          // @ts-expect-error - courseData is of type unknown
+          description: courseData.description,
+          // @ts-expect-error - courseData is of type unknown
+          thumbnail: courseData.thumbnail,
+          // @ts-expect-error - courseData is of type unknown
+          duration: courseData.duration || 0,
+          // @ts-expect-error - courseData is of type unknown
+          modules: courseData.modules || [],
+          downloadedAt: new Date(),
+          // @ts-expect-error - courseData is of type unknown
+          size: courseData.size || 0,
+        };
 
-      await db.saveCourse(course);
-    } catch (error) {
-      console.error('Failed to download course:', error);
-      throw error;
-    }
-  }, [db]);
+        await db.saveCourse(course);
+      } catch (error) {
+        console.error('Failed to download course:', error);
+        throw error;
+      }
+    },
+    [db],
+  );
 
   const getCourses = useCallback(async (): Promise<CourseData[]> => {
     if (!db) return [];
     return await db.getAllCourses();
   }, [db]);
 
-  const checkCourseAvailability = useCallback(async (courseId: string): Promise<boolean> => {
-    if (!db) return false;
-    const course = await db.getCourse(courseId);
-    return !!course;
-  }, [db]);
+  const checkCourseAvailability = useCallback(
+    async (courseId: string): Promise<boolean> => {
+      if (!db) return false;
+      const course = await db.getCourse(courseId);
+      return !!course;
+    },
+    [db],
+  );
 
-  const saveProgress = useCallback(async (
-    courseId: string,
-    moduleId: string,
-    progress: number,
-    completed: boolean = false
-  ): Promise<void> => {
-    if (!db) throw new Error('Database not initialized');
+  const saveProgress = useCallback(
+    async (
+      courseId: string,
+      moduleId: string,
+      progress: number,
+      completed: boolean = false,
+    ): Promise<void> => {
+      if (!db) throw new Error('Database not initialized');
 
-    const progressData: ProgressData = {
-      courseId,
-      moduleId,
-      progress,
-      completed,
-      lastAccessed: new Date(),
-      offlineTimestamp: new Date(),
-      synced: false
-    };
+      const progressData: ProgressData = {
+        courseId,
+        moduleId,
+        progress,
+        completed,
+        lastAccessed: new Date(),
+        offlineTimestamp: new Date(),
+        synced: false,
+      };
 
-    await db.saveProgress(progressData);
-  }, [db]);
+      await db.saveProgress(progressData);
+    },
+    [db],
+  );
 
-  const getProgress = useCallback(async (courseId: string, moduleId: string): Promise<ProgressData | undefined> => {
-    if (!db) return undefined;
-    return await db.getProgress(courseId, moduleId);
-  }, [db]);
+  const getProgress = useCallback(
+    async (courseId: string, moduleId: string): Promise<ProgressData | undefined> => {
+      if (!db) return undefined;
+      return await db.getProgress(courseId, moduleId);
+    },
+    [db],
+  );
 
-  const getCourseProgress = useCallback(async (courseId: string): Promise<ProgressData[]> => {
-    if (!db) return [];
-    return await db.getCourseProgress(courseId);
-  }, [db]);
+  const getCourseProgress = useCallback(
+    async (courseId: string): Promise<ProgressData[]> => {
+      if (!db) return [];
+      return await db.getCourseProgress(courseId);
+    },
+    [db],
+  );
 
   const syncData = useCallback(async (): Promise<void> => {
     if (!db) throw new Error('Database not initialized');
@@ -305,14 +323,14 @@ export const useOfflineMode = () => {
       // Simulate API calls to sync data
       for (const progress of unsyncedProgress) {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         await db.markProgressSynced(progress.courseId, progress.moduleId);
       }
 
       // Process sync queue
       for (const item of syncQueue) {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         await db.removeFromSyncQueue(item.id);
       }
     } catch (error) {
@@ -331,29 +349,38 @@ export const useOfflineMode = () => {
     return await db.getStorageUsage();
   }, [db]);
 
-  const addToSyncQueue = useCallback(async (type: string, data: unknown): Promise<void> => {
-    if (!db) throw new Error('Database not initialized');
+  const addToSyncQueue = useCallback(
+    async (type: string, data: unknown): Promise<void> => {
+      if (!db) throw new Error('Database not initialized');
 
-    const syncItem: SyncQueueItem = {
-      id: `${type}-${Date.now()}-${Math.random()}`,
-      type: type as SyncQueueItem['type'],
-      data,
-      timestamp: new Date(),
-      retryCount: 0
-    };
+      const syncItem: SyncQueueItem = {
+        id: `${type}-${Date.now()}-${Math.random()}`,
+        type: type as SyncQueueItem['type'],
+        data,
+        timestamp: new Date(),
+        retryCount: 0,
+      };
 
-    await db.addToSyncQueue(syncItem);
-  }, [db]);
+      await db.addToSyncQueue(syncItem);
+    },
+    [db],
+  );
 
-  const cacheAsset = useCallback(async (url: string, data: unknown): Promise<void> => {
-    if (!db) throw new Error('Database not initialized');
-    await db.cacheAsset(url, data);
-  }, [db]);
+  const cacheAsset = useCallback(
+    async (url: string, data: unknown): Promise<void> => {
+      if (!db) throw new Error('Database not initialized');
+      await db.cacheAsset(url, data);
+    },
+    [db],
+  );
 
-  const getCachedAsset = useCallback(async (url: string): Promise<unknown> => {
-    if (!db) return null;
-    return await db.getCachedAsset(url);
-  }, [db]);
+  const getCachedAsset = useCallback(
+    async (url: string): Promise<unknown> => {
+      if (!db) return null;
+      return await db.getCachedAsset(url);
+    },
+    [db],
+  );
 
   return {
     isInitialized,
@@ -370,6 +397,6 @@ export const useOfflineMode = () => {
     getStorageInfo,
     addToSyncQueue,
     cacheAsset,
-    getCachedAsset
+    getCachedAsset,
   };
 };

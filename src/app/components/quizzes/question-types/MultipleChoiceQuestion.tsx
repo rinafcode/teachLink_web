@@ -35,9 +35,7 @@ export default function MultipleChoiceQuestion({
               onClick={() => handleOptionSelect(option.id)}
               disabled={isReviewMode}
               className={`w-full p-4 text-left rounded-lg border transition-colors ${
-                isSelected
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-blue-300'
+                isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
               } ${
                 showFeedback
                   ? isCorrect
@@ -72,4 +70,4 @@ export default function MultipleChoiceQuestion({
       )}
     </div>
   );
-} 
+}

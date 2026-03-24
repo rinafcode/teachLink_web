@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { useOfflineMode } from '../hooks/useOfflineMode';
 
 interface OfflineModeContextType {
@@ -37,7 +44,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
   const [storageUsage, setStorageUsage] = useState({
     used: 0,
     total: 0,
-    percentage: 0
+    percentage: 0,
   });
 
   const {
@@ -47,7 +54,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     clearData,
     getCourses,
     checkCourseAvailability,
-    getStorageInfo
+    getStorageInfo,
   } = useOfflineMode();
 
   // Monitor online/offline status
@@ -72,6 +79,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     if (isOnline && isOfflineModeEnabled && pendingSyncCount > 0) {
       syncOfflineData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline, isOfflineModeEnabled, pendingSyncCount]);
 
   // Update storage usage periodically
@@ -146,10 +154,13 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     return await getCourses();
   }, [isOfflineModeEnabled, getCourses]);
 
-  const isCourseAvailableOffline = useCallback(async (courseId: string) => {
-    if (!isOfflineModeEnabled) return false;
-    return await checkCourseAvailability(courseId);
-  }, [isOfflineModeEnabled, checkCourseAvailability]);
+  const isCourseAvailableOffline = useCallback(
+    async (courseId: string) => {
+      if (!isOfflineModeEnabled) return false;
+      return await checkCourseAvailability(courseId);
+    },
+    [isOfflineModeEnabled, checkCourseAvailability],
+  );
 
   const value: OfflineModeContextType = {
     isOnline,
@@ -163,14 +174,10 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     syncOfflineData,
     clearOfflineData,
     getOfflineCourses,
-    isCourseAvailableOffline
+    isCourseAvailableOffline,
   };
 
-  return (
-    <OfflineModeContext.Provider value={value}>
-      {children}
-    </OfflineModeContext.Provider>
-  );
+  return <OfflineModeContext.Provider value={value}>{children}</OfflineModeContext.Provider>;
 };
 
 export const useOfflineModeContext = () => {

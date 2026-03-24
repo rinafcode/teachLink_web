@@ -31,14 +31,14 @@ export async function loadTranslations(language: LanguageCode): Promise<Translat
     // Dynamic import of translation file
     const translations = await import(`./${language}.json`);
     const loadedTranslations = translations.default || translations;
-    
+
     // Cache the loaded translations
     translationCache.set(language, loadedTranslations);
-    
+
     return loadedTranslations;
   } catch (error) {
     console.warn(`Failed to load translations for ${language}:`, error);
-    
+
     // Try to load English as fallback
     if (language !== 'en') {
       try {
@@ -49,7 +49,7 @@ export async function loadTranslations(language: LanguageCode): Promise<Translat
         return fallbackTranslations;
       }
     }
-    
+
     return fallbackTranslations;
   }
 }
@@ -58,7 +58,7 @@ export async function loadTranslations(language: LanguageCode): Promise<Translat
  * Preload translations for multiple languages
  */
 export async function preloadTranslations(languages: LanguageCode[]): Promise<void> {
-  await Promise.all(languages.map(lang => loadTranslations(lang)));
+  await Promise.all(languages.map((lang) => loadTranslations(lang)));
 }
 
 /**
@@ -67,7 +67,7 @@ export async function preloadTranslations(languages: LanguageCode[]): Promise<vo
 export function getTranslation(
   translations: Translations,
   key: string,
-  params?: Record<string, string | number>
+  params?: Record<string, string | number>,
 ): string {
   const keys = key.split('.');
   let value: any = translations;
@@ -118,7 +118,7 @@ export function hasTranslation(translations: Translations, key: string): boolean
 export function getMissingTranslations(
   reference: Translations,
   target: Translations,
-  prefix = ''
+  prefix = '',
 ): string[] {
   const missing: string[] = [];
 
