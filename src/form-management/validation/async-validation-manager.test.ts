@@ -181,7 +181,9 @@ describe('AsyncValidationManager', () => {
     });
 
     it('should fail after max retry attempts', async () => {
-      const mockValidation: ValidationFunction = vi.fn().mockRejectedValue(new Error('Persistent validation error'));
+      const mockValidation: ValidationFunction = vi
+        .fn()
+        .mockRejectedValue(new Error('Persistent validation error'));
 
       const request: AsyncValidationRequest = {
         fieldId: 'test-field',

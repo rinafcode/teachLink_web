@@ -239,8 +239,8 @@ export class AsyncValidationManager {
 
         const validationPromise = Promise.resolve(validationFunction(value, formState));
         // Ensure the promise is handled even if it loses the race or rejects immediately
-        validationPromise.catch(() => {}); 
-        
+        validationPromise.catch(() => {});
+
         const result = await Promise.race([validationPromise, timeoutPromise]);
         clearTimeout(timeoutId);
 
