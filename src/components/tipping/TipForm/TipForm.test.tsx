@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderWithProviders, screen, waitFor } from '@/testing';
+import { render, screen, waitFor } from '@/testing/utils/render';
 import { createMockUser, asyncMock, asyncErrorMock } from '@/testing/utils/mocks';
 
 // ── Service mock ──────────────────────────────────────────────────────────
@@ -79,20 +79,20 @@ describe('TipForm', () => {
   });
 
   it('renders form with recipient name', () => {
-    renderWithProviders(<TipForm recipient={recipient} />);
+    render(<TipForm recipient={recipient} />);
     expect(screen.getByLabelText(/Tip Alice/i)).toBeInTheDocument();
     expect(screen.getByTestId('tip-submit')).toHaveTextContent('Send Tip');
   });
 
   it('shows validation error for empty amount', async () => {
-    const { user } = renderWithProviders(<TipForm recipient={recipient} />);
+    const { user } = render(<TipForm recipient={recipient} />);
     await user.click(screen.getByTestId('tip-submit'));
     expect(screen.getByTestId('tip-error')).toHaveTextContent(/valid tip amount/i);
     expect(mockSendTip).not.toHaveBeenCalled();
   });
 
   it('shows validation error for zero amount', async () => {
-    const { user } = renderWithProviders(<TipForm recipient={recipient} />);
+    const { user } = render(<TipForm recipient={recipient} />);
     await user.type(screen.getByTestId('tip-amount-input'), '0');
     await user.click(screen.getByTestId('tip-submit'));
     expect(screen.getByTestId('tip-error')).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('TipForm', () => {
 
   it('shows loading state while sending tip', async () => {
     mockSendTip.mockImplementation(() => new Promise(() => {})); // never resolves
-    const { user } = renderWithProviders(<TipForm recipient={recipient} />);
+    const { user } = render(<TipForm recipient={recipient} />);
     await user.type(screen.getByTestId('tip-amount-input'), '0.01');
     await user.click(screen.getByTestId('tip-submit'));
     expect(screen.getByTestId('tip-submit')).toBeDisabled();
@@ -109,7 +109,7 @@ describe('TipForm', () => {
 
   it('shows success message after successful tip', async () => {
     mockSendTip.mockResolvedValueOnce({ txHash: '0xabc' });
-    const { user } = renderWithProviders(<TipForm recipient={recipient} />);
+    const { user } = render(<TipForm recipient={recipient} />);
     await user.type(screen.getByTestId('tip-amount-input'), '0.05');
     await user.click(screen.getByTestId('tip-submit'));
     await waitFor(() => expect(screen.getByTestId('success-msg')).toBeInTheDocument());
@@ -117,7 +117,7 @@ describe('TipForm', () => {
 
   it('shows error message when tip transaction fails', async () => {
     mockSendTip.mockRejectedValueOnce(new Error('Insufficient funds'));
-    const { user } = renderWithProviders(<TipForm recipient={recipient} />);
+    const { user } = render(<TipForm recipient={recipient} />);
     await user.type(screen.getByTestId('tip-amount-input'), '999');
     await user.click(screen.getByTestId('tip-submit'));
     await waitFor(() =>
