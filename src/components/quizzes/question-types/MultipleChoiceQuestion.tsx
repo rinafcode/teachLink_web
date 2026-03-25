@@ -21,7 +21,8 @@ export default function MultipleChoiceQuestion({
       <div className="space-y-2">
         {question.options.map((option) => {
           const isSelected = selected === option.id;
-          const shouldReveal = (hasAnswered || isReviewMode || isCompleted) && (isSelected || option.isCorrect);
+          const shouldReveal =
+            (hasAnswered || isReviewMode || isCompleted) && (isSelected || option.isCorrect);
 
           const colorClasses = shouldReveal
             ? option.isCorrect
@@ -44,7 +45,9 @@ export default function MultipleChoiceQuestion({
                 <span className="text-[#0F172A] dark:text-white">{option.text}</span>
                 {shouldReveal ? (
                   option.isCorrect ? (
-                    <span className="text-[#0066FF] dark:text-[#00C2FF] text-sm font-medium">Correct</span>
+                    <span className="text-[#0066FF] dark:text-[#00C2FF] text-sm font-medium">
+                      Correct
+                    </span>
                   ) : isSelected ? (
                     <span className="text-red-700 text-sm font-medium">Your answer</span>
                   ) : null

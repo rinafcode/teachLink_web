@@ -25,7 +25,7 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
   onRemove,
   size,
   onChangeSize,
-  onUpdateTitle
+  onUpdateTitle,
 }) => {
   // Mock streak data
   const currentStreak = 7;
@@ -39,7 +39,9 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { setTempTitle(title); }, [title]);
+  useEffect(() => {
+    setTempTitle(title);
+  }, [title]);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +57,9 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
         if (!cancelled) setIsLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const streakDays = Array.from({ length: 30 }, (_, i) => {
@@ -64,16 +68,13 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
     return {
       date,
       studied: i >= 23, // Last 7 days
-      hours: i >= 23 ? Math.floor(Math.random() * 3) + 1 : 0
+      hours: i >= 23 ? Math.floor(Math.random() * 3) + 1 : 0,
     };
   });
 
   if (isCollapsed) {
     return (
-      <motion.div
-        layout
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
-      >
+      <motion.div layout className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900">{title}</h3>
           <div className="flex items-center space-x-2">
@@ -128,7 +129,8 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
                 onChange={(e) => setTempTitle(e.target.value)}
                 onBlur={() => {
                   const t = tempTitle.trim();
-                  if (t) onUpdateTitle(t); else setTempTitle(title);
+                  if (t) onUpdateTitle(t);
+                  else setTempTitle(title);
                 }}
                 className="w-full px-2 py-1 border border-gray-300 rounded"
               />
@@ -189,12 +191,9 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.02 }}
-                className={`w-4 h-4 rounded-sm ${day.studied
-                    ? day.hours >= 2
-                      ? 'bg-green-500'
-                      : 'bg-green-300'
-                    : 'bg-gray-200'
-                  }`}
+                className={`w-4 h-4 rounded-sm ${
+                  day.studied ? (day.hours >= 2 ? 'bg-green-500' : 'bg-green-300') : 'bg-gray-200'
+                }`}
                 title={`${day.date.toLocaleDateString()}: ${day.hours}h`}
               />
             ))}
@@ -223,7 +222,9 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
         <div>
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-medium text-gray-900">Weekly Goal</h4>
-            <span className="text-sm text-gray-600">{weeklyProgress}/{weeklyGoal} days</span>
+            <span className="text-sm text-gray-600">
+              {weeklyProgress}/{weeklyGoal} days
+            </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <motion.div
@@ -241,11 +242,13 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
             <Flame size={16} className="text-orange-600" />
             <div>
               <p className="text-sm font-medium text-gray-900">Keep the fire burning!</p>
-              <p className="text-xs text-gray-600">You&apos;re on a great streak. Don&apos;t break it!</p>
+              <p className="text-xs text-gray-600">
+                You&apos;re on a great streak. Don&apos;t break it!
+              </p>
             </div>
           </div>
         </div>
       </div>
     </motion.div>
   );
-}; 
+};

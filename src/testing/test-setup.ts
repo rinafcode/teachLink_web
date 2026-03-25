@@ -15,10 +15,12 @@ Object.defineProperty(window, 'indexedDB', {
 // Mock navigator.storage
 Object.defineProperty(navigator, 'storage', {
   value: {
-    estimate: vi.fn(() => Promise.resolve({
-      quota: 1024 * 1024 * 1024, // 1GB
-      usage: 100 * 1024 * 1024, // 100MB
-    })),
+    estimate: vi.fn(() =>
+      Promise.resolve({
+        quota: 1024 * 1024 * 1024, // 1GB
+        usage: 100 * 1024 * 1024, // 100MB
+      }),
+    ),
   },
   writable: true,
 });

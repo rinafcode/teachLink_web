@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Image as ImageIcon, Youtube as YoutubeIcon, Link as LinkIcon } from 'lucide-react';
 
@@ -27,14 +26,20 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
     return (
       <div className="flex gap-2">
         <button
-          onClick={() => { setType('image'); setIsOpen(true); }}
+          onClick={() => {
+            setType('image');
+            setIsOpen(true);
+          }}
           className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
           title="Add Image"
         >
           <ImageIcon className="w-5 h-5" />
         </button>
         <button
-          onClick={() => { setType('youtube'); setIsOpen(true); }}
+          onClick={() => {
+            setType('youtube');
+            setIsOpen(true);
+          }}
           className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
           title="Add YouTube Video"
         >

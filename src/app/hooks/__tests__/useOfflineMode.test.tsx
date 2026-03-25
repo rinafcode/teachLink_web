@@ -12,96 +12,104 @@ const mockData = {
 
 // Mock the idb library with realistic behavior
 vi.mock('idb', () => ({
-  openDB: vi.fn(() => Promise.resolve({
-    objectStoreNames: {
-      contains: vi.fn(() => false),
-    },
-    createObjectStore: vi.fn(() => ({
-      createIndex: vi.fn(),
-    })),
-    put: vi.fn((storeName, data) => {
-      if (storeName === 'courses') {
-        mockData.courses.set(data.id, data);
-      } else if (storeName === 'progress') {
-        const key = `${data.courseId}-${data.moduleId}`;
-        mockData.progress.set(key, data);
-      } else if (storeName === 'syncQueue') {
-        mockData.syncQueue.set(data.id, data);
-      } else if (storeName === 'cache') {
-        mockData.cache.set(data.url, data);
-      }
-      return Promise.resolve();
-    }),
-    get: vi.fn((storeName, key) => {
-      if (storeName === 'courses') {
-        return Promise.resolve(mockData.courses.get(key));
-      } else if (storeName === 'progress') {
-        // Handle both string and array keys for progress
-        const progressKey = Array.isArray(key) ? `${key[0]}-${key[1]}` : key;
-        return Promise.resolve(mockData.progress.get(progressKey));
-      } else if (storeName === 'cache') {
-        return Promise.resolve(mockData.cache.get(key));
-      }
-      return Promise.resolve();
-    }),
-    getAll: vi.fn((storeName) => {
-      if (storeName === 'courses') {
-        return Promise.resolve(Array.from(mockData.courses.values()));
-      } else if (storeName === 'progress') {
-        return Promise.resolve(Array.from(mockData.progress.values()));
-      } else if (storeName === 'syncQueue') {
-        return Promise.resolve(Array.from(mockData.syncQueue.values()));
-      }
-      return Promise.resolve([]);
-    }),
-    delete: vi.fn((storeName, key) => {
-      if (storeName === 'courses') {
-        mockData.courses.delete(key);
-      } else if (storeName === 'progress') {
-        mockData.progress.delete(key);
-      } else if (storeName === 'syncQueue') {
-        mockData.syncQueue.delete(key);
-      } else if (storeName === 'cache') {
-        mockData.cache.delete(key);
-      }
-      return Promise.resolve();
-    }),
-    clear: vi.fn((storeName) => {
-      if (storeName === 'courses') {
-        mockData.courses.clear();
-      } else if (storeName === 'progress') {
-        mockData.progress.clear();
-      } else if (storeName === 'syncQueue') {
-        mockData.syncQueue.clear();
-      } else if (storeName === 'cache') {
-        mockData.cache.clear();
-      }
-      return Promise.resolve();
-    }),
-    transaction: vi.fn(() => ({
-      objectStore: vi.fn(() => ({
-        index: vi.fn(() => ({
-          getAll: vi.fn((key) => {
-            if (key === false) {
-              // Return unsynced progress
-              return Promise.resolve(Array.from(mockData.progress.values()).filter(p => !p.synced));
-            }
-            // Return progress by courseId
-            return Promise.resolve(Array.from(mockData.progress.values()).filter(p => p.courseId === key));
-          }),
+  openDB: vi.fn(() =>
+    Promise.resolve({
+      objectStoreNames: {
+        contains: vi.fn(() => false),
+      },
+      createObjectStore: vi.fn(() => ({
+        createIndex: vi.fn(),
+      })),
+      put: vi.fn((storeName, data) => {
+        if (storeName === 'courses') {
+          mockData.courses.set(data.id, data);
+        } else if (storeName === 'progress') {
+          const key = `${data.courseId}-${data.moduleId}`;
+          mockData.progress.set(key, data);
+        } else if (storeName === 'syncQueue') {
+          mockData.syncQueue.set(data.id, data);
+        } else if (storeName === 'cache') {
+          mockData.cache.set(data.url, data);
+        }
+        return Promise.resolve();
+      }),
+      get: vi.fn((storeName, key) => {
+        if (storeName === 'courses') {
+          return Promise.resolve(mockData.courses.get(key));
+        } else if (storeName === 'progress') {
+          // Handle both string and array keys for progress
+          const progressKey = Array.isArray(key) ? `${key[0]}-${key[1]}` : key;
+          return Promise.resolve(mockData.progress.get(progressKey));
+        } else if (storeName === 'cache') {
+          return Promise.resolve(mockData.cache.get(key));
+        }
+        return Promise.resolve();
+      }),
+      getAll: vi.fn((storeName) => {
+        if (storeName === 'courses') {
+          return Promise.resolve(Array.from(mockData.courses.values()));
+        } else if (storeName === 'progress') {
+          return Promise.resolve(Array.from(mockData.progress.values()));
+        } else if (storeName === 'syncQueue') {
+          return Promise.resolve(Array.from(mockData.syncQueue.values()));
+        }
+        return Promise.resolve([]);
+      }),
+      delete: vi.fn((storeName, key) => {
+        if (storeName === 'courses') {
+          mockData.courses.delete(key);
+        } else if (storeName === 'progress') {
+          mockData.progress.delete(key);
+        } else if (storeName === 'syncQueue') {
+          mockData.syncQueue.delete(key);
+        } else if (storeName === 'cache') {
+          mockData.cache.delete(key);
+        }
+        return Promise.resolve();
+      }),
+      clear: vi.fn((storeName) => {
+        if (storeName === 'courses') {
+          mockData.courses.clear();
+        } else if (storeName === 'progress') {
+          mockData.progress.clear();
+        } else if (storeName === 'syncQueue') {
+          mockData.syncQueue.clear();
+        } else if (storeName === 'cache') {
+          mockData.cache.clear();
+        }
+        return Promise.resolve();
+      }),
+      transaction: vi.fn(() => ({
+        objectStore: vi.fn(() => ({
+          index: vi.fn(() => ({
+            getAll: vi.fn((key) => {
+              if (key === false) {
+                // Return unsynced progress
+                return Promise.resolve(
+                  Array.from(mockData.progress.values()).filter((p) => !p.synced),
+                );
+              }
+              // Return progress by courseId
+              return Promise.resolve(
+                Array.from(mockData.progress.values()).filter((p) => p.courseId === key),
+              );
+            }),
+          })),
         })),
       })),
-    })),
-  })),
+    }),
+  ),
 }));
 
 // Mock navigator.storage
 Object.defineProperty(navigator, 'storage', {
   value: {
-    estimate: vi.fn(() => Promise.resolve({
-      quota: 1024 * 1024 * 1024, // 1GB
-      usage: 100 * 1024 * 1024, // 100MB
-    })),
+    estimate: vi.fn(() =>
+      Promise.resolve({
+        quota: 1024 * 1024 * 1024, // 1GB
+        usage: 100 * 1024 * 1024, // 100MB
+      }),
+    ),
   },
   writable: true,
 });
@@ -133,7 +141,7 @@ describe('useOfflineMode', () => {
 
     it('should handle initialization errors', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       // Mock the openDB to throw an error
       const { openDB } = await import('idb');
       vi.mocked(openDB).mockRejectedValueOnce(new Error('Database error'));
@@ -148,7 +156,10 @@ describe('useOfflineMode', () => {
         }
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to initialize offline mode:', expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to initialize offline mode:',
+        expect.any(Error),
+      );
       expect(result.current.isInitialized).toBe(false);
     });
   });
@@ -347,7 +358,7 @@ describe('useOfflineMode', () => {
 
       const syncData = {
         type: 'progress',
-        data: { courseId: 'test', moduleId: 'test', progress: 50 }
+        data: { courseId: 'test', moduleId: 'test', progress: 50 },
       };
 
       await act(async () => {
@@ -382,8 +393,12 @@ describe('useOfflineMode', () => {
       const { result } = renderHook(() => useOfflineMode());
 
       // Try to use methods without initializing
-      await expect(result.current.downloadCourse('test', {})).rejects.toThrow('Database not initialized');
-      await expect(result.current.saveProgress('test', 'test', 50)).rejects.toThrow('Database not initialized');
+      await expect(result.current.downloadCourse('test', {})).rejects.toThrow(
+        'Database not initialized',
+      );
+      await expect(result.current.saveProgress('test', 'test', 50)).rejects.toThrow(
+        'Database not initialized',
+      );
       await expect(result.current.syncData()).rejects.toThrow('Database not initialized');
     });
 
@@ -414,9 +429,9 @@ describe('useOfflineMode', () => {
 
       // Simulate adding many courses
       const startTime = performance.now();
-      
+
       await act(async () => {
-        const promises = Array.from({ length: 100 }, (_, i) => 
+        const promises = Array.from({ length: 100 }, (_, i) =>
           result.current.downloadCourse(`course-${i}`, {
             id: `course-${i}`,
             title: `Course ${i}`,
@@ -425,7 +440,7 @@ describe('useOfflineMode', () => {
             duration: 3600,
             modules: [],
             size: 10 * 1024 * 1024, // 10MB each
-          })
+          }),
         );
         await Promise.all(promises);
       });
@@ -450,7 +465,15 @@ describe('useOfflineMode', () => {
       // Perform multiple concurrent operations
       await act(async () => {
         const operations = [
-          result.current.downloadCourse('course-1', { id: 'course-1', title: 'Course 1', description: '', thumbnail: '', duration: 0, modules: [], size: 0 }),
+          result.current.downloadCourse('course-1', {
+            id: 'course-1',
+            title: 'Course 1',
+            description: '',
+            thumbnail: '',
+            duration: 0,
+            modules: [],
+            size: 0,
+          }),
           result.current.saveProgress('course-1', 'module-1', 50, false),
           result.current.saveProgress('course-1', 'module-2', 75, false),
           result.current.addToSyncQueue('progress', { courseId: 'course-1', progress: 50 }),
@@ -462,7 +485,7 @@ describe('useOfflineMode', () => {
       // Verify all operations completed successfully
       const courses = await result.current.getCourses();
       expect(courses).toHaveLength(1);
-      
+
       const progress = await result.current.getProgress('course-1', 'module-1');
       expect(progress?.progress).toBe(50);
     });

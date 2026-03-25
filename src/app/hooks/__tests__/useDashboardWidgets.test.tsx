@@ -8,17 +8,28 @@ import { useDashboardWidgets } from '../useDashboardWidgets';
 // Simple in-memory localStorage mock
 class LocalStorageMock {
   private store: Record<string, string> = {};
-  getItem(key: string) { return this.store[key] ?? null; }
-  setItem(key: string, value: string) { this.store[key] = String(value); }
-  removeItem(key: string) { delete this.store[key]; }
-  clear() { this.store = {}; }
+  getItem(key: string) {
+    return this.store[key] ?? null;
+  }
+  setItem(key: string, value: string) {
+    this.store[key] = String(value);
+  }
+  removeItem(key: string) {
+    delete this.store[key];
+  }
+  clear() {
+    this.store = {};
+  }
 }
 
 // Test component to expose hook API
-const TestHarness: React.FC<{ onReady: (api: ReturnType<typeof useDashboardWidgets>) => void }>
-= ({ onReady }) => {
+const TestHarness: React.FC<{ onReady: (api: ReturnType<typeof useDashboardWidgets>) => void }> = ({
+  onReady,
+}) => {
   const api = useDashboardWidgets();
-  useEffect(() => { onReady(api); }, [onReady, api]);
+  useEffect(() => {
+    onReady(api);
+  }, [onReady, api]);
   return null;
 };
 
@@ -37,7 +48,13 @@ describe('useDashboardWidgets', () => {
   it('initializes with defaults and persists layout', async () => {
     let api: any;
     await act(async () => {
-      root.render(<TestHarness onReady={(a) => { api = a; }} />);
+      root.render(
+        <TestHarness
+          onReady={(a) => {
+            api = a;
+          }}
+        />,
+      );
     });
 
     // After first mount, default widgets should be set and saved
@@ -49,12 +66,24 @@ describe('useDashboardWidgets', () => {
   it('adds, reorders, updates, collapses, resizes, and removes widgets', async () => {
     let api: any;
     await act(async () => {
-      root.render(<TestHarness onReady={(a) => { api = a; }} />);
+      root.render(
+        <TestHarness
+          onReady={(a) => {
+            api = a;
+          }}
+        />,
+      );
     });
 
     // Add
     await act(async () => {
-      api.addWidget({ type: 'learning-streak', title: 'My Streak', size: 'small', isCollapsed: false, settings: {} });
+      api.addWidget({
+        type: 'learning-streak',
+        title: 'My Streak',
+        size: 'small',
+        isCollapsed: false,
+        settings: {},
+      });
     });
     expect(api.widgets.some((w: any) => w.title === 'My Streak')).toBe(true);
 
@@ -93,4 +122,4 @@ describe('useDashboardWidgets', () => {
     });
     expect(api.widgets.find((w: any) => w.id === targetId)).toBeUndefined();
   });
-}); 
+});

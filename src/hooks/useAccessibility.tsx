@@ -100,12 +100,9 @@ export function useFocusVisible() {
  * Hook for screen reader announcements
  */
 export function useScreenReaderAnnouncement() {
-  const announce = useCallback(
-    (message: string, priority: 'polite' | 'assertive' = 'polite') => {
-      announceToScreenReader(message, priority);
-    },
-    []
-  );
+  const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
+    announceToScreenReader(message, priority);
+  }, []);
 
   return announce;
 }
@@ -133,6 +130,7 @@ export function useAccessibilityCheck(autoCheck: boolean = false) {
       const timer = setTimeout(checkAccessibility, 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [autoCheck, checkAccessibility]);
 
   return {
@@ -173,7 +171,7 @@ export function useAriaLive() {
         className="sr-only"
       />
     ),
-    []
+    [],
   );
 
   return { announce, LiveRegion };

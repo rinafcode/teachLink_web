@@ -157,14 +157,14 @@ class ErrorReportingService {
     if (typeof window === 'undefined') return;
 
     // Catch unhandled promise rejections
-    window.addEventListener('unhandledrejection', event => {
+    window.addEventListener('unhandledrejection', (event) => {
       this.addBreadcrumb('unhandledRejection', {
         reason: event.reason?.message || String(event.reason),
       });
     });
 
     // Catch global errors
-    window.addEventListener('error', event => {
+    window.addEventListener('error', (event) => {
       this.addBreadcrumb('globalError', {
         message: event.message,
         filename: event.filename,
@@ -208,11 +208,11 @@ class ErrorReportingService {
     };
   } {
     const errorBreadcrumbs = this.breadcrumbs.filter(
-      b => b.action === 'globalError' || b.action === 'unhandledRejection'
+      (b) => b.action === 'globalError' || b.action === 'unhandledRejection',
     );
 
     const errorTypes: Record<string, number> = {};
-    errorBreadcrumbs.forEach(breadcrumb => {
+    errorBreadcrumbs.forEach((breadcrumb) => {
       const type = breadcrumb.details?.type || breadcrumb.action;
       errorTypes[type] = (errorTypes[type] || 0) + 1;
     });
@@ -221,13 +221,16 @@ class ErrorReportingService {
       sessionId: this.sessionId,
       totalErrors: errorBreadcrumbs.length,
       errorTypes,
-      mostRecentError: errorBreadcrumbs.length > 0
-        ? {
-            timestamp: new Date(errorBreadcrumbs[errorBreadcrumbs.length - 1].timestamp).toISOString(),
-            type: errorBreadcrumbs[errorBreadcrumbs.length - 1].action,
-            message: String(errorBreadcrumbs[errorBreadcrumbs.length - 1].details?.message || ''),
-          }
-        : undefined,
+      mostRecentError:
+        errorBreadcrumbs.length > 0
+          ? {
+              timestamp: new Date(
+                errorBreadcrumbs[errorBreadcrumbs.length - 1].timestamp,
+              ).toISOString(),
+              type: errorBreadcrumbs[errorBreadcrumbs.length - 1].action,
+              message: String(errorBreadcrumbs[errorBreadcrumbs.length - 1].details?.message || ''),
+            }
+          : undefined,
     };
   }
 }

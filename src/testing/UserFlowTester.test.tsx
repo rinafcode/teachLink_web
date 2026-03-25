@@ -5,21 +5,22 @@
  * auth, navigation, CRUD, search, multi-step forms, and error recovery.
  */
 
-import React, { FC, useState,  } from 'react';
+import React, { FC, useState } from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  mockFetch,
-  mockFetchError,
-  createTestUser,
-} from '../utils/testUtils';
+import { mockFetch, mockFetchError, createTestUser } from '../utils/testUtils';
 
 // ─── Lightweight in-app components (stubs until real ones exist) ──────────────
 
-interface User { id: string; name: string; email: string; role: string; }
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
-//  Auth Flow 
+//  Auth Flow
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -35,15 +36,31 @@ const LoginForm: FC<LoginFormProps> = ({ onLogin }) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    try { await onLogin(email, password); }
-    catch (err) { setError((err as Error).message); }
-    finally { setLoading(false); }
+    try {
+      await onLogin(email, password);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} data-testid="login-form">
-      <input data-testid="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-      <input data-testid="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
+      <input
+        data-testid="email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+      />
+      <input
+        data-testid="password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+      />
       {error && <p data-testid="auth-error">{error}</p>}
       <button type="submit" disabled={loading} data-testid="login-btn">
         {loading ? 'Logging in…' : 'Login'}
@@ -52,9 +69,13 @@ const LoginForm: FC<LoginFormProps> = ({ onLogin }) => {
   );
 };
 
-// Todo CRUD Flow 
+// Todo CRUD Flow
 
-interface Todo { id: number; text: string; done: boolean; }
+interface Todo {
+  id: number;
+  text: string;
+  done: boolean;
+}
 
 const TodoApp: FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -62,22 +83,34 @@ const TodoApp: FC = () => {
 
   const add = () => {
     if (!input.trim()) return;
-    setTodos(prev => [...prev, { id: Date.now(), text: input.trim(), done: false }]);
+    setTodos((prev) => [...prev, { id: Date.now(), text: input.trim(), done: false }]);
     setInput('');
   };
-  const toggle = (id: number) => setTodos(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  const remove = (id: number) => setTodos(prev => prev.filter(t => t.id !== id));
+  const toggle = (id: number) =>
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  const remove = (id: number) => setTodos((prev) => prev.filter((t) => t.id !== id));
 
   return (
     <div>
-      <input data-testid="todo-input" value={input} onChange={e => setInput(e.target.value)} />
-      <button data-testid="add-btn" onClick={add}>Add</button>
+      <input data-testid="todo-input" value={input} onChange={(e) => setInput(e.target.value)} />
+      <button data-testid="add-btn" onClick={add}>
+        Add
+      </button>
       <ul data-testid="todo-list">
-        {todos.map(t => (
+        {todos.map((t) => (
           <li key={t.id} data-testid={`todo-${t.id}`}>
-            <span data-testid="todo-text" style={{ textDecoration: t.done ? 'line-through' : 'none' }}>{t.text}</span>
-            <button data-testid="toggle-btn" onClick={() => toggle(t.id)}>Toggle</button>
-            <button data-testid="delete-btn" onClick={() => remove(t.id)}>Delete</button>
+            <span
+              data-testid="todo-text"
+              style={{ textDecoration: t.done ? 'line-through' : 'none' }}
+            >
+              {t.text}
+            </span>
+            <button data-testid="toggle-btn" onClick={() => toggle(t.id)}>
+              Toggle
+            </button>
+            <button data-testid="delete-btn" onClick={() => remove(t.id)}>
+              Delete
+            </button>
           </li>
         ))}
       </ul>
@@ -85,24 +118,33 @@ const TodoApp: FC = () => {
   );
 };
 
-// Search Flow 
+// Search Flow
 
 const ITEMS = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'];
 
 const SearchComponent: FC = () => {
   const [query, setQuery] = useState('');
-  const results = ITEMS.filter(i => i.toLowerCase().includes(query.toLowerCase()));
+  const results = ITEMS.filter((i) => i.toLowerCase().includes(query.toLowerCase()));
   return (
     <div>
-      <input data-testid="search-input" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search…" />
+      <input
+        data-testid="search-input"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search…"
+      />
       <ul data-testid="results">
-        {results.map(r => <li key={r} data-testid="result-item">{r}</li>)}
+        {results.map((r) => (
+          <li key={r} data-testid="result-item">
+            {r}
+          </li>
+        ))}
       </ul>
     </div>
   );
 };
 
-//  Multi-step form 
+//  Multi-step form
 
 const steps = ['Personal Info', 'Address', 'Review'];
 
@@ -110,19 +152,31 @@ const MultiStepForm: FC<{ onSubmit: (data: Record<string, string>) => void }> = 
   const [step, setStep] = useState(0);
   const [data, setData] = useState<Record<string, string>>({});
 
-  const update = (key: string, value: string) => setData(prev => ({ ...prev, [key]: value }));
+  const update = (key: string, value: string) => setData((prev) => ({ ...prev, [key]: value }));
 
   return (
     <div>
       <p data-testid="step-label">{steps[step]}</p>
       {step === 0 && (
         <>
-          <input data-testid="field-name" placeholder="Name" onChange={e => update('name', e.target.value)} />
-          <input data-testid="field-email" placeholder="Email" onChange={e => update('email', e.target.value)} />
+          <input
+            data-testid="field-name"
+            placeholder="Name"
+            onChange={(e) => update('name', e.target.value)}
+          />
+          <input
+            data-testid="field-email"
+            placeholder="Email"
+            onChange={(e) => update('email', e.target.value)}
+          />
         </>
       )}
       {step === 1 && (
-        <input data-testid="field-address" placeholder="Address" onChange={e => update('address', e.target.value)} />
+        <input
+          data-testid="field-address"
+          placeholder="Address"
+          onChange={(e) => update('address', e.target.value)}
+        />
       )}
       {step === 2 && (
         <div data-testid="review">
@@ -131,15 +185,25 @@ const MultiStepForm: FC<{ onSubmit: (data: Record<string, string>) => void }> = 
           <p data-testid="review-address">{data.address}</p>
         </div>
       )}
-      {step < steps.length - 1
-        ? <button data-testid="next-btn" onClick={() => setStep(s => s + 1)}>Next</button>
-        : <button data-testid="submit-btn" onClick={() => onSubmit(data)}>Submit</button>}
-      {step > 0 && <button data-testid="back-btn" onClick={() => setStep(s => s - 1)}>Back</button>}
+      {step < steps.length - 1 ? (
+        <button data-testid="next-btn" onClick={() => setStep((s) => s + 1)}>
+          Next
+        </button>
+      ) : (
+        <button data-testid="submit-btn" onClick={() => onSubmit(data)}>
+          Submit
+        </button>
+      )}
+      {step > 0 && (
+        <button data-testid="back-btn" onClick={() => setStep((s) => s - 1)}>
+          Back
+        </button>
+      )}
     </div>
   );
 };
 
-// Tests 
+// Tests
 
 describe('UserFlowTester – Authentication', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -159,7 +223,12 @@ describe('UserFlowTester – Authentication', () => {
   it('shows loading state while authenticating', async () => {
     const user = userEvent.setup();
     let resolve!: () => void;
-    const onLogin = vi.fn(() => new Promise<void>(res => { resolve = res; }));
+    const onLogin = vi.fn(
+      () =>
+        new Promise<void>((res) => {
+          resolve = res;
+        }),
+    );
     render(<LoginForm onLogin={onLogin} />);
 
     await user.type(screen.getByTestId('email'), 'a@b.com');
@@ -182,13 +251,14 @@ describe('UserFlowTester – Authentication', () => {
     await user.click(screen.getByTestId('login-btn'));
 
     await waitFor(() =>
-      expect(screen.getByTestId('auth-error')).toHaveTextContent('Invalid credentials')
+      expect(screen.getByTestId('auth-error')).toHaveTextContent('Invalid credentials'),
     );
   });
 
   it('clears error on subsequent login attempt', async () => {
     const user = userEvent.setup();
-    const onLogin = vi.fn()
+    const onLogin = vi
+      .fn()
       .mockRejectedValueOnce(new Error('Bad credentials'))
       .mockResolvedValue(undefined);
 
@@ -202,7 +272,6 @@ describe('UserFlowTester – Authentication', () => {
     await waitFor(() => expect(screen.queryByTestId('auth-error')).not.toBeInTheDocument());
   });
 });
-
 
 describe('UserFlowTester – Todo CRUD', () => {
   it('adds a new todo', async () => {
@@ -258,7 +327,6 @@ describe('UserFlowTester – Todo CRUD', () => {
   });
 });
 
-
 describe('UserFlowTester – Search', () => {
   it('shows all items when query is empty', () => {
     render(<SearchComponent />);
@@ -269,9 +337,9 @@ describe('UserFlowTester – Search', () => {
     const user = userEvent.setup();
     render(<SearchComponent />);
     await user.type(screen.getByTestId('search-input'), 'an');
-    const items = screen.getAllByTestId('result-item').map(el => el.textContent);
+    const items = screen.getAllByTestId('result-item').map((el) => el.textContent);
     expect(items).toEqual(expect.arrayContaining(['Banana']));
-    expect(items.every(i => i!.toLowerCase().includes('an'))).toBe(true);
+    expect(items.every((i) => i!.toLowerCase().includes('an'))).toBe(true);
   });
 
   it('is case-insensitive', async () => {
@@ -297,7 +365,6 @@ describe('UserFlowTester – Search', () => {
     expect(screen.getAllByTestId('result-item')).toHaveLength(ITEMS.length);
   });
 });
-
 
 describe('UserFlowTester – Multi-step form', () => {
   it('starts on step 1 and shows correct label', () => {

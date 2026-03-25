@@ -15,12 +15,7 @@ interface AccessibleModalProps {
  * Example of an accessible modal dialog with focus trap,
  * keyboard navigation, and proper ARIA attributes
  */
-export function AccessibleModalExample({
-  isOpen,
-  onClose,
-  title,
-  children,
-}: AccessibleModalProps) {
+export function AccessibleModalExample({ isOpen, onClose, title, children }: AccessibleModalProps) {
   const containerRef = useFocusTrap(isOpen);
   const announce = useScreenReaderAnnouncement();
 

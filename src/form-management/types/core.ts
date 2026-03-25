@@ -4,18 +4,18 @@
  */
 
 // Field Type Definitions
-export type FieldType = 
-  | 'text' 
-  | 'number' 
-  | 'email' 
-  | 'password' 
-  | 'select' 
-  | 'checkbox' 
-  | 'radio' 
-  | 'textarea' 
-  | 'file' 
-  | 'date' 
-  | 'time' 
+export type FieldType =
+  | 'text'
+  | 'number'
+  | 'email'
+  | 'password'
+  | 'select'
+  | 'checkbox'
+  | 'radio'
+  | 'textarea'
+  | 'file'
+  | 'date'
+  | 'time'
   | 'datetime-local';
 
 // Validation Rule Types
@@ -122,7 +122,11 @@ export interface ValidationExecutionContext {
   getCustomData(key: string): unknown;
   setCustomData(key: string, value: unknown): void;
 }
-export type ValidationFunction = (value: unknown, formState: FormState, context?: ValidationExecutionContext) => ValidationResult | Promise<ValidationResult>;
+export type ValidationFunction = (
+  value: unknown,
+  formState: FormState,
+  context?: ValidationExecutionContext,
+) => ValidationResult | Promise<ValidationResult>;
 
 // Form Configuration Schema
 export interface FormConfiguration {

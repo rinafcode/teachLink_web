@@ -19,7 +19,7 @@ import {
   SaveStatusCallback,
   DraftData,
   WizardStep,
-  WizardProgress
+  WizardProgress,
 } from './core';
 
 // Form Builder Interface
@@ -77,11 +77,14 @@ export interface ConfigurationParser {
   validate(config: FormConfiguration): ValidationResult;
   formatToJson(config: FormConfiguration): string;
   formatToCompactJson(config: FormConfiguration): string;
-  formatToJsonWithOptions(config: FormConfiguration, options?: {
-    indent?: number | string;
-    sortKeys?: boolean;
-    includeMetadata?: boolean;
-  }): string;
+  formatToJsonWithOptions(
+    config: FormConfiguration,
+    options?: {
+      indent?: number | string;
+      sortKeys?: boolean;
+      includeMetadata?: boolean;
+    },
+  ): string;
 }
 
 // Analytics Tracker Interface

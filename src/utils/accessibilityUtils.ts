@@ -52,7 +52,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
  */
 export function calculateContrastRatio(
   foreground: string,
-  background: string
+  background: string,
 ): ColorContrastResult {
   const fg = hexToRgb(foreground);
   const bg = hexToRgb(background);
@@ -168,7 +168,7 @@ export function generateAriaId(prefix: string = 'aria'): string {
  */
 export function announceToScreenReader(
   message: string,
-  priority: 'polite' | 'assertive' = 'polite'
+  priority: 'polite' | 'assertive' = 'polite',
 ): void {
   const announcement = document.createElement('div');
   announcement.setAttribute('role', 'status');
@@ -187,9 +187,7 @@ export function announceToScreenReader(
 /**
  * Check for common accessibility issues
  */
-export function checkAccessibilityIssues(
-  container: HTMLElement
-): AccessibilityIssue[] {
+export function checkAccessibilityIssues(container: HTMLElement): AccessibilityIssue[] {
   const issues: AccessibilityIssue[] = [];
 
   // Check images for alt text

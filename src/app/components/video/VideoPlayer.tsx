@@ -1,6 +1,18 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, PictureInPicture, PictureInPicture2, Bookmark, FileText, MessageSquare } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
+  PictureInPicture,
+  PictureInPicture2,
+  Bookmark,
+  FileText,
+  MessageSquare,
+} from 'lucide-react';
 import { PlaybackControls } from './PlaybackControls';
 import { BookmarkManager } from './BookmarkManager';
 import { TranscriptView } from './TranscriptView';
@@ -24,7 +36,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onProgress,
   onBookmark,
   onNote,
-  className = ''
+  className = '',
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,13 +70,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     toggleMute,
     isMuted,
     retry,
-    resetError
+    resetError,
   } = useVideoPlayer(videoRef);
 
   // Auto-hide controls
   useEffect(() => {
     if (!isPlaying) return;
-    
+
     const timer = setTimeout(() => {
       setShowControls(false);
     }, 3000);
@@ -84,12 +96,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const touch = e.touches[0];
     setTouchStartX(touch.clientX);
     setTouchStartTime(Date.now());
-    
+
     // Double tap detection for play/pause
     const currentTime = Date.now();
     if (currentTime - lastTapTime < 300) {
       e.preventDefault();
-      if (isPlaying) pause(); else play();
+      if (isPlaying) pause();
+      else play();
       setLastTapTime(0);
     } else {
       setLastTapTime(currentTime);
@@ -105,10 +118,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const touch = e.changedTouches[0];
     const touchEndX = touch.clientX;
     const touchEndTime = Date.now();
-    
+
     const deltaX = touchEndX - touchStartX;
     const deltaTime = touchEndTime - touchStartTime;
-    
+
     // Swipe detection for seeking (horizontal swipe)
     if (Math.abs(deltaX) > 50 && deltaTime < 500) {
       e.preventDefault();
@@ -124,6 +137,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     } else if (!isPlaying && currentTime > 0) {
       setAnnouncement('Video paused');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
   useEffect(() => {
@@ -206,7 +220,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       switch (e.key) {
         case ' ':
           e.preventDefault();
-          if (isPlaying) pause(); else play();
+          if (isPlaying) pause();
+          else play();
           break;
         case 'ArrowLeft':
           e.preventDefault();
@@ -243,7 +258,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, currentTime, duration, volume, play, pause, seekTo, setVolume, toggleMute, toggleFullscreen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
+    play,
+    pause,
+    seekTo,
+    setVolume,
+    toggleMute,
+    toggleFullscreen,
+  ]);
 
   if (error) {
     return (
@@ -251,8 +278,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <div className="text-center max-w-md p-6">
           <div className="mb-4">
             <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-8 h-8 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Video Error</h3>
@@ -261,7 +298,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               Error Type: {error.type} • Attempt {retryCount + 1} of {maxRetries + 1}
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {retryCount < maxRetries && (
               <button
@@ -269,12 +306,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
                 </svg>
                 Retry ({maxRetries - retryCount} attempts left)
               </button>
             )}
-            
+
             <button
               onClick={resetError}
               className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
@@ -282,7 +324,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               Reset
             </button>
           </div>
-          
+
           <div className="mt-6 text-xs text-gray-400">
             <p>Troubleshooting tips:</p>
             <ul className="mt-2 text-left list-disc list-inside space-y-1">
@@ -316,7 +358,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ref={containerRef}
       className={`relative bg-black rounded-lg overflow-hidden group ${className}`}
       onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
+      onMouseLeave={() => {
+        if (isPlaying) setShowControls(false);
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -325,11 +369,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       tabIndex={0}
     >
       {/* Visually hidden screen reader announcements */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="sr-only"
-      >
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
         {announcement}
       </div>
       {/* Video Element */}
@@ -368,7 +408,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           >
             {/* Progress Bar */}
             <div className="mb-4">
-              <div 
+              <div
                 className="relative h-1 bg-white/30 rounded-full cursor-pointer"
                 onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
@@ -393,11 +433,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   }
                 }}
               >
-                <div 
+                <div
                   className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all duration-150"
                   style={{ width: `${(currentTime / duration) * 100}%` }}
                 />
-                <div 
+                <div
                   className="absolute top-0 h-full bg-white/50 rounded-full transition-all duration-150"
                   style={{ width: `${(buffered / duration) * 100}%` }}
                 />
@@ -410,18 +450,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <button
                   onClick={isPlaying ? pause : play}
                   className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors md:p-2"
-                  aria-label={isPlaying ? "Pause video" : "Play video"}
+                  aria-label={isPlaying ? 'Pause video' : 'Play video'}
                 >
-                  {isPlaying ? <Pause size={24} className="md:w-5 md:h-5" /> : <Play size={24} className="md:w-5 md:h-5" />}
+                  {isPlaying ? (
+                    <Pause size={24} className="md:w-5 md:h-5" />
+                  ) : (
+                    <Play size={24} className="md:w-5 md:h-5" />
+                  )}
                 </button>
 
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={toggleMute}
                     className="p-2 rounded hover:bg-white/20 transition-colors md:p-1"
-                    aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+                    aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
                   >
-                    {isMuted ? <VolumeX size={20} className="md:w-4 md:h-4" /> : <Volume2 size={20} className="md:w-4 md:h-4" />}
+                    {isMuted ? (
+                      <VolumeX size={20} className="md:w-4 md:h-4" />
+                    ) : (
+                      <Volume2 size={20} className="md:w-4 md:h-4" />
+                    )}
                   </button>
                   <input
                     type="range"
@@ -443,9 +491,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setShowBookmarks(!showBookmarks)}
-                  className={`p-3 rounded ${showBookmarks ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'} transition-colors md:p-2`}
+                  className={`p-3 rounded ${
+                    showBookmarks ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                  } transition-colors md:p-2`}
                   title="Bookmarks"
-                  aria-label={showBookmarks ? "Hide bookmarks panel" : "Show bookmarks panel"}
+                  aria-label={showBookmarks ? 'Hide bookmarks panel' : 'Show bookmarks panel'}
                   aria-expanded={showBookmarks}
                 >
                   <Bookmark size={20} className="md:w-4 md:h-4" />
@@ -453,9 +503,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
                 <button
                   onClick={() => setShowTranscript(!showTranscript)}
-                  className={`p-3 rounded ${showTranscript ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'} transition-colors md:p-2`}
+                  className={`p-3 rounded ${
+                    showTranscript ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                  } transition-colors md:p-2`}
                   title="Transcript"
-                  aria-label={showTranscript ? "Hide transcript panel" : "Show transcript panel"}
+                  aria-label={showTranscript ? 'Hide transcript panel' : 'Show transcript panel'}
                   aria-expanded={showTranscript}
                 >
                   <FileText size={20} className="md:w-4 md:h-4" />
@@ -463,9 +515,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
                 <button
                   onClick={() => setShowNotes(!showNotes)}
-                  className={`p-3 rounded ${showNotes ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'} transition-colors md:p-2`}
+                  className={`p-3 rounded ${
+                    showNotes ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                  } transition-colors md:p-2`}
                   title="Notes"
-                  aria-label={showNotes ? "Hide notes panel" : "Show notes panel"}
+                  aria-label={showNotes ? 'Hide notes panel' : 'Show notes panel'}
                   aria-expanded={showNotes}
                 >
                   <MessageSquare size={20} className="md:w-4 md:h-4" />
@@ -474,11 +528,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 {document.pictureInPictureEnabled && (
                   <button
                     onClick={togglePiP}
-                    className={`p-3 rounded ${isPiP ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'} transition-colors md:p-2`}
+                    className={`p-3 rounded ${
+                      isPiP ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                    } transition-colors md:p-2`}
                     title="Picture-in-Picture"
-                    aria-label={isPiP ? "Exit Picture-in-Picture" : "Enter Picture-in-Picture"}
+                    aria-label={isPiP ? 'Exit Picture-in-Picture' : 'Enter Picture-in-Picture'}
                   >
-                    {isPiP ? <PictureInPicture2 size={20} className="md:w-4 md:h-4" /> : <PictureInPicture size={20} className="md:w-4 md:h-4" />}
+                    {isPiP ? (
+                      <PictureInPicture2 size={20} className="md:w-4 md:h-4" />
+                    ) : (
+                      <PictureInPicture size={20} className="md:w-4 md:h-4" />
+                    )}
                   </button>
                 )}
 
@@ -486,18 +546,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   onClick={toggleFullscreen}
                   className="p-3 rounded bg-white/20 hover:bg-white/30 transition-colors md:p-2"
                   title="Fullscreen"
-                  aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                  aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                 >
-                  {isFullscreen ? <Minimize size={20} className="md:w-4 md:h-4" /> : <Maximize size={20} className="md:w-4 md:h-4" />}
+                  {isFullscreen ? (
+                    <Minimize size={20} className="md:w-4 md:h-4" />
+                  ) : (
+                    <Maximize size={20} className="md:w-4 md:h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             {/* Playback Controls */}
-            <PlaybackControls
-              playbackRate={playbackRate}
-              onPlaybackRateChange={setPlaybackRate}
-            />
+            <PlaybackControls playbackRate={playbackRate} onPlaybackRateChange={setPlaybackRate} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -530,11 +591,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               exit={{ x: 300 }}
               className="w-80 bg-white shadow-lg"
             >
-              <TranscriptView
-                transcript={transcript}
-                currentTime={currentTime}
-                onSeek={seekTo}
-              />
+              <TranscriptView transcript={transcript} currentTime={currentTime} onSeek={seekTo} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -547,10 +604,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               exit={{ x: 300 }}
               className="w-80 bg-white shadow-lg"
             >
-              <NotesTaker
-                currentTime={currentTime}
-                onNote={onNote}
-              />
+              <NotesTaker currentTime={currentTime} onNote={onNote} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -563,4 +617,4 @@ const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
-}; 
+};

@@ -63,10 +63,11 @@ export default function MessagesPage() {
         </div>
         <div className="flex items-center gap-2">
           <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${isConnected
-              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'
-              : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400'
-              }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+              isConnected
+                ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'
+                : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400'
+            }`}
           >
             {isConnected ? (
               <>
@@ -87,9 +88,11 @@ export default function MessagesPage() {
       <div className="flex-1 flex min-h-0">
         {/* Sidebar */}
         <div
-          className={`${showSidebar ? 'w-80 lg:w-96' : 'w-0'
-            } flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 transition-all duration-300 overflow-hidden ${currentConversation ? 'hidden md:block' : 'block'
-            }`}
+          className={`${
+            showSidebar ? 'w-80 lg:w-96' : 'w-0'
+          } flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 transition-all duration-300 overflow-hidden ${
+            currentConversation ? 'hidden md:block' : 'block'
+          }`}
         >
           <ConversationList
             conversations={conversations}
@@ -105,8 +108,9 @@ export default function MessagesPage() {
 
         {/* Chat Area */}
         <div
-          className={`flex-1 flex flex-col bg-gray-50 dark:bg-gray-950 min-h-0 ${!currentConversation ? 'hidden md:flex' : 'flex'
-            }`}
+          className={`flex-1 flex flex-col bg-gray-50 dark:bg-gray-950 min-h-0 ${
+            !currentConversation ? 'hidden md:flex' : 'flex'
+          }`}
         >
           {/* Mobile Back Button */}
           {currentConversation && (

@@ -2,12 +2,7 @@
  * Async Validation Manager - Handles asynchronous validation with loading states and retry logic
  */
 
-import {
-  ValidationResult,
-  ValidationError,
-  FormState,
-  ValidationFunction
-} from '../types/core.js';
+import { ValidationResult, ValidationError, FormState, ValidationFunction } from '../types/core.js';
 
 export interface AsyncValidationState {
   isLoading: boolean;
@@ -45,12 +40,12 @@ export class AsyncValidationManager {
   private pendingValidations: Map<string, Promise<ValidationResult>> = new Map();
   private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
   private callbacks: Set<AsyncValidationCallback> = new Set();
-  
+
   private defaultOptions: AsyncValidationOptions = {
     timeout: 5000,
     retryAttempts: 3,
     retryDelay: 1000,
-    debounceMs: 300
+    debounceMs: 300,
   };
 
   /**
@@ -65,17 +60,19 @@ export class AsyncValidationManager {
    * Get current validation state for a field
    */
   getValidationState(fieldId: string): AsyncValidationState {
-    return this.validationStates.get(fieldId) || {
-      isLoading: false,
-      retryCount: 0
-    };
+    return (
+      this.validationStates.get(fieldId) || {
+        isLoading: false,
+        retryCount: 0,
+      }
+    );
   }
 
   /**
    * Check if any field is currently being validated
    */
   isAnyFieldValidating(): boolean {
-    return Array.from(this.validationStates.values()).some(state => state.isLoading);
+    return Array.from(this.validationStates.values()).some((state) => state.isLoading);
   }
 
   /**
@@ -110,14 +107,14 @@ export class AsyncValidationManager {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(async () => {
         this.debounceTimers.delete(fieldId);
-        
+
         try {
           const result = await this.executeValidationWithRetry(
             fieldId,
             value,
             formState,
             validationFunction,
-            mergedOptions
+            mergedOptions,
           );
           resolve(result);
         } catch (error) {
@@ -137,12 +134,12 @@ export class AsyncValidationManager {
     value: any,
     formState: FormState,
     validationFunction: ValidationFunction,
-    options: AsyncValidationOptions
+    options: AsyncValidationOptions,
   ): Promise<ValidationResult> {
     // Initialize validation state
     this.setValidationState(fieldId, {
       isLoading: true,
-      retryCount: 0
+      retryCount: 0,
     });
 
     const validationPromise = this.performValidationWithRetries(
@@ -150,7 +147,7 @@ export class AsyncValidationManager {
       value,
       formState,
       validationFunction,
-      options
+      options,
     );
 
     // Store pending validation
@@ -158,12 +155,12 @@ export class AsyncValidationManager {
 
     try {
       const result = await validationPromise;
-      
+
       // Update state on success
       this.setValidationState(fieldId, {
         isLoading: false,
         lastValidated: new Date(),
-        retryCount: 0
+        retryCount: 0,
       });
 
       // Notify callbacks
@@ -171,7 +168,7 @@ export class AsyncValidationManager {
         fieldId,
         result,
         state: this.getValidationState(fieldId),
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
       return result;
@@ -181,17 +178,21 @@ export class AsyncValidationManager {
         isLoading: false,
         lastValidated: new Date(),
         retryCount: options.retryAttempts,
-        error: error instanceof Error ? error : new Error('Unknown validation error')
+        error: error instanceof Error ? error : new Error('Unknown validation error'),
       });
 
       // Create error result
       const errorResult: ValidationResult = {
         isValid: false,
-        errors: [{
-          code: 'async_validation_failed',
-          message: `Async validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          field: fieldId
-        }]
+        errors: [
+          {
+            code: 'async_validation_failed',
+            message: `Async validation failed: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
+            field: fieldId,
+          },
+        ],
       };
 
       // Notify callbacks
@@ -199,7 +200,7 @@ export class AsyncValidationManager {
         fieldId,
         result: errorResult,
         state: this.getValidationState(fieldId),
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
       throw error;
@@ -217,7 +218,7 @@ export class AsyncValidationManager {
     value: any,
     formState: FormState,
     validationFunction: ValidationFunction,
-    options: AsyncValidationOptions
+    options: AsyncValidationOptions,
   ): Promise<ValidationResult> {
     let lastError: Error | null = null;
 
@@ -241,7 +242,7 @@ export class AsyncValidationManager {
         return result;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error');
-        
+
         // Don't retry on the last attempt
         if (attempt === options.retryAttempts) {
           break;
@@ -270,7 +271,7 @@ export class AsyncValidationManager {
     // Update state
     this.setValidationState(fieldId, {
       isLoading: false,
-      retryCount: 0
+      retryCount: 0,
     });
 
     // Remove pending validation
@@ -282,14 +283,14 @@ export class AsyncValidationManager {
    */
   cancelAllValidations(): void {
     // Clear all debounce timers
-    this.debounceTimers.forEach(timer => clearTimeout(timer));
+    this.debounceTimers.forEach((timer) => clearTimeout(timer));
     this.debounceTimers.clear();
 
     // Update all states
     this.validationStates.forEach((_, fieldId) => {
       this.setValidationState(fieldId, {
         isLoading: false,
-        retryCount: 0
+        retryCount: 0,
       });
     });
 
@@ -302,7 +303,7 @@ export class AsyncValidationManager {
    */
   async validateFields(requests: AsyncValidationRequest[]): Promise<Map<string, ValidationResult>> {
     const results = new Map<string, ValidationResult>();
-    
+
     // Execute all validations concurrently
     const validationPromises = requests.map(async (request) => {
       try {
@@ -312,11 +313,15 @@ export class AsyncValidationManager {
         // Create error result for failed validation
         results.set(request.fieldId, {
           isValid: false,
-          errors: [{
-            code: 'async_validation_error',
-            message: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            field: request.fieldId
-          }]
+          errors: [
+            {
+              code: 'async_validation_error',
+              message: `Validation failed: ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`,
+              field: request.fieldId,
+            },
+          ],
         });
       }
     });
@@ -345,7 +350,7 @@ export class AsyncValidationManager {
    * Notify all callbacks of validation state change
    */
   private notifyCallbacks(response: AsyncValidationResponse): void {
-    this.callbacks.forEach(callback => {
+    this.callbacks.forEach((callback) => {
       try {
         callback(response);
       } catch (error) {
@@ -358,7 +363,7 @@ export class AsyncValidationManager {
    * Utility method for delays
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -380,14 +385,13 @@ export class AsyncValidationManager {
     averageRetryCount: number;
   } {
     const states = Array.from(this.validationStates.values());
-    
+
     return {
       totalFields: states.length,
-      validatingFields: states.filter(s => s.isLoading).length,
-      failedFields: states.filter(s => s.error).length,
-      averageRetryCount: states.length > 0 
-        ? states.reduce((sum, s) => sum + s.retryCount, 0) / states.length 
-        : 0
+      validatingFields: states.filter((s) => s.isLoading).length,
+      failedFields: states.filter((s) => s.error).length,
+      averageRetryCount:
+        states.length > 0 ? states.reduce((sum, s) => sum + s.retryCount, 0) / states.length : 0,
     };
   }
 }

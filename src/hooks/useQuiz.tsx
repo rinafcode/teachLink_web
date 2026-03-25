@@ -75,26 +75,26 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const [isReviewMode, setIsReviewMode] = useState(false);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(
-    quiz.timeLimit ?? null
+    quiz.timeLimit ?? null,
   );
 
   const timerIntervalRef = useRef<number | null>(null);
 
   const maxScore = useMemo(
     () => quiz.questions.reduce((sum, q) => sum + q.points, 0),
-    [quiz.questions]
+    [quiz.questions],
   );
 
   const score = useMemo(
     () => Object.values(answers).reduce((sum, a) => sum + a.earnedPoints, 0),
-    [answers]
+    [answers],
   );
 
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
 
   const currentQuestion = useMemo(
     () => quiz.questions[currentQuestionIndex],
-    [quiz.questions, currentQuestionIndex]
+    [quiz.questions, currentQuestionIndex],
   );
 
   const isCompleted = endedAt !== null;
@@ -156,35 +156,32 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
     setCurrentQuestionIndex((i) => Math.max(i - 1, 0));
   }, []);
 
-  const gradeNonCodeQuestion = useCallback(
-    (question: QuizQuestion, value: string) => {
-      if (question.type === 'multiple-choice') {
-        const correct = question.options.find((o) => o.isCorrect);
-        const isCorrect = correct ? correct.id === value : false;
-        return {
-          isCorrect,
-          earnedPoints: isCorrect ? question.points : 0,
-          feedback: (isCorrect ? 'correct' : 'incorrect') as QuizFeedbackStatus,
-        };
-      }
-
-      if (question.type === 'true-false') {
-        const isCorrect = question.correctAnswer === value;
-        return {
-          isCorrect,
-          earnedPoints: isCorrect ? question.points : 0,
-          feedback: (isCorrect ? 'correct' : 'incorrect') as QuizFeedbackStatus,
-        };
-      }
-
+  const gradeNonCodeQuestion = useCallback((question: QuizQuestion, value: string) => {
+    if (question.type === 'multiple-choice') {
+      const correct = question.options.find((o) => o.isCorrect);
+      const isCorrect = correct ? correct.id === value : false;
       return {
-        isCorrect: null,
-        earnedPoints: 0,
-        feedback: null as QuizFeedbackStatus,
+        isCorrect,
+        earnedPoints: isCorrect ? question.points : 0,
+        feedback: (isCorrect ? 'correct' : 'incorrect') as QuizFeedbackStatus,
       };
-    },
-    []
-  );
+    }
+
+    if (question.type === 'true-false') {
+      const isCorrect = question.correctAnswer === value;
+      return {
+        isCorrect,
+        earnedPoints: isCorrect ? question.points : 0,
+        feedback: (isCorrect ? 'correct' : 'incorrect') as QuizFeedbackStatus,
+      };
+    }
+
+    return {
+      isCorrect: null,
+      earnedPoints: 0,
+      feedback: null as QuizFeedbackStatus,
+    };
+  }, []);
 
   const answerQuestion = useCallback(
     (questionId: string, value: string) => {
@@ -220,7 +217,7 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
         };
       });
     },
-    [gradeNonCodeQuestion, isReviewMode, isCompleted, quiz.questions]
+    [gradeNonCodeQuestion, isReviewMode, isCompleted, quiz.questions],
   );
 
   const setCodeDraft = useCallback(
@@ -244,7 +241,7 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
         };
       });
     },
-    [isReviewMode, isCompleted, quiz.questions]
+    [isReviewMode, isCompleted, quiz.questions],
   );
 
   const setCodeChallengeResult = useCallback(
@@ -253,7 +250,7 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
       params: {
         code: string;
         testResults: boolean[];
-      }
+      },
     ) => {
       if (isReviewMode || isCompleted) return;
 
@@ -261,9 +258,7 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
         const question = quiz.questions.find((q) => q.id === questionId);
         if (!question || question.type !== 'code-challenge') return prev;
 
-        const allPassed = params.testResults.length
-          ? params.testResults.every(Boolean)
-          : false;
+        const allPassed = params.testResults.length ? params.testResults.every(Boolean) : false;
 
         return {
           ...prev,
@@ -279,7 +274,7 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
         };
       });
     },
-    [isReviewMode, isCompleted, quiz.questions]
+    [isReviewMode, isCompleted, quiz.questions],
   );
 
   const restart = useCallback(() => {

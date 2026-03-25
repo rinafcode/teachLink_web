@@ -2,11 +2,7 @@
  * Validation Feedback Display System - Handles error message rendering and visual feedback
  */
 
-import {
-  ValidationResult,
-  ValidationError,
-  ValidationWarning
-} from '../types/core.js';
+import { ValidationResult, ValidationError, ValidationWarning } from '../types/core.js';
 
 export interface FeedbackDisplayOptions {
   position: 'top' | 'bottom' | 'left' | 'right' | 'inline' | 'tooltip';
@@ -48,7 +44,7 @@ export class ValidationFeedbackDisplay {
   private displayStates: Map<string, FeedbackDisplayState> = new Map();
   private callbacks: Set<FeedbackDisplayCallback> = new Set();
   private container: HTMLElement;
-  
+
   private defaultOptions: FeedbackDisplayOptions = {
     position: 'bottom',
     showIcons: true,
@@ -56,7 +52,7 @@ export class ValidationFeedbackDisplay {
     animationDuration: 300,
     maxErrors: 5,
     groupSimilarErrors: true,
-    ariaLive: 'polite'
+    ariaLive: 'polite',
   };
 
   constructor(container?: HTMLElement) {
@@ -78,10 +74,10 @@ export class ValidationFeedbackDisplay {
   displayFeedback(
     fieldId: string,
     validationResult: ValidationResult,
-    options?: Partial<FeedbackDisplayOptions>
+    options?: Partial<FeedbackDisplayOptions>,
   ): void {
     const mergedOptions = { ...this.defaultOptions, ...options };
-    
+
     // Clear existing feedback
     this.clearFieldFeedback(fieldId);
 
@@ -91,7 +87,7 @@ export class ValidationFeedbackDisplay {
     // Process errors
     if (validationResult.errors && validationResult.errors.length > 0) {
       const processedErrors = this.processErrors(validationResult.errors, mergedOptions);
-      processedErrors.forEach(error => {
+      processedErrors.forEach((error) => {
         const element = this.createFeedbackElement(fieldId, 'error', error, mergedOptions);
         elements.push(element);
       });
@@ -99,7 +95,7 @@ export class ValidationFeedbackDisplay {
 
     // Process warnings
     if (validationResult.warnings && validationResult.warnings.length > 0) {
-      validationResult.warnings.forEach(warning => {
+      validationResult.warnings.forEach((warning) => {
         const element = this.createFeedbackElement(fieldId, 'warning', warning, mergedOptions);
         elements.push(element);
       });
@@ -126,8 +122,8 @@ export class ValidationFeedbackDisplay {
    */
   clearFieldFeedback(fieldId: string): void {
     const elements = this.feedbackElements.get(fieldId) || [];
-    
-    elements.forEach(element => {
+
+    elements.forEach((element) => {
       this.animateElementOut(element, this.defaultOptions).then(() => {
         if (element.element.parentNode) {
           element.element.parentNode.removeChild(element.element);
@@ -144,7 +140,7 @@ export class ValidationFeedbackDisplay {
    */
   clearAllFeedback(): void {
     const fieldIds = Array.from(this.feedbackElements.keys());
-    fieldIds.forEach(fieldId => this.clearFieldFeedback(fieldId));
+    fieldIds.forEach((fieldId) => this.clearFieldFeedback(fieldId));
   }
 
   /**
@@ -166,7 +162,7 @@ export class ValidationFeedbackDisplay {
    */
   updatePosition(fieldId: string, position: FeedbackDisplayOptions['position']): void {
     const elements = this.feedbackElements.get(fieldId) || [];
-    elements.forEach(element => {
+    elements.forEach((element) => {
       this.applyPositioning(element.element, position);
     });
   }
@@ -176,7 +172,7 @@ export class ValidationFeedbackDisplay {
    */
   private processErrors(
     errors: ValidationError[],
-    options: FeedbackDisplayOptions
+    options: FeedbackDisplayOptions,
   ): ValidationError[] {
     let processedErrors = [...errors];
 
@@ -190,7 +186,7 @@ export class ValidationFeedbackDisplay {
       processedErrors = processedErrors.slice(0, options.maxErrors);
       processedErrors.push({
         code: 'more_errors',
-        message: `... and ${errors.length - options.maxErrors} more error(s)`
+        message: `... and ${errors.length - options.maxErrors} more error(s)`,
       });
     }
 
@@ -203,7 +199,7 @@ export class ValidationFeedbackDisplay {
   private groupSimilarErrors(errors: ValidationError[]): ValidationError[] {
     const grouped = new Map<string, ValidationError[]>();
 
-    errors.forEach(error => {
+    errors.forEach((error) => {
       const key = error.code || 'unknown';
       if (!grouped.has(key)) {
         grouped.set(key, []);
@@ -218,7 +214,7 @@ export class ValidationFeedbackDisplay {
       } else {
         result.push({
           code,
-          message: `${groupedErrors[0].message} (${groupedErrors.length} occurrences)`
+          message: `${groupedErrors[0].message} (${groupedErrors.length} occurrences)`,
         });
       }
     });
@@ -233,16 +229,18 @@ export class ValidationFeedbackDisplay {
     fieldId: string,
     type: 'error' | 'warning',
     item: ValidationError | ValidationWarning,
-    options: FeedbackDisplayOptions
+    options: FeedbackDisplayOptions,
   ): FeedbackElement {
     const element = document.createElement('div');
-    const id = `feedback-${fieldId}-${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+    const id = `feedback-${fieldId}-${type}-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
     element.id = id;
     element.className = this.getFeedbackClassName(type, options);
     element.setAttribute('role', 'alert');
     element.setAttribute('aria-live', options.ariaLive);
-    
+
     // Create content
     const content = this.createFeedbackContent(type, item.message, options);
     element.appendChild(content);
@@ -266,25 +264,22 @@ export class ValidationFeedbackDisplay {
       code: item.code,
       element,
       isVisible: false,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
   /**
    * Create success feedback element
    */
-  private createSuccessElement(
-    fieldId: string,
-    options: FeedbackDisplayOptions
-  ): FeedbackElement {
+  private createSuccessElement(fieldId: string, options: FeedbackDisplayOptions): FeedbackElement {
     const element = document.createElement('div');
     const id = `feedback-${fieldId}-success-${Date.now()}`;
-    
+
     element.id = id;
     element.className = this.getFeedbackClassName('success', options);
     element.setAttribute('role', 'status');
     element.setAttribute('aria-live', 'polite');
-    
+
     const content = this.createFeedbackContent('success', 'Valid', options);
     element.appendChild(content);
 
@@ -302,7 +297,7 @@ export class ValidationFeedbackDisplay {
       message: 'Valid',
       element,
       isVisible: false,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
@@ -312,7 +307,7 @@ export class ValidationFeedbackDisplay {
   private createFeedbackContent(
     type: 'error' | 'warning' | 'success',
     message: string,
-    options: FeedbackDisplayOptions
+    options: FeedbackDisplayOptions,
   ): HTMLElement {
     const content = document.createElement('div');
     content.className = 'feedback-content';
@@ -337,14 +332,14 @@ export class ValidationFeedbackDisplay {
     const icon = document.createElement('span');
     icon.className = `feedback-icon feedback-icon-${type}`;
     icon.setAttribute('aria-hidden', 'true');
-    
+
     // Use Unicode symbols as fallback
     const symbols = {
       error: '✕',
       warning: '⚠',
-      success: '✓'
+      success: '✓',
     };
-    
+
     icon.textContent = symbols[type];
     return icon;
   }
@@ -354,25 +349,28 @@ export class ValidationFeedbackDisplay {
    */
   private getFeedbackClassName(
     type: 'error' | 'warning' | 'success',
-    options: FeedbackDisplayOptions
+    options: FeedbackDisplayOptions,
   ): string {
     const baseClass = 'validation-feedback';
     const typeClass = `validation-feedback-${type}`;
     const positionClass = `validation-feedback-${options.position}`;
-    
+
     const classes = [baseClass, typeClass, positionClass];
-    
+
     if (options.customClassName) {
       classes.push(options.customClassName);
     }
-    
+
     return classes.join(' ');
   }
 
   /**
    * Apply positioning styles to feedback element
    */
-  private applyPositioning(element: HTMLElement, position: FeedbackDisplayOptions['position']): void {
+  private applyPositioning(
+    element: HTMLElement,
+    position: FeedbackDisplayOptions['position'],
+  ): void {
     // Reset positioning classes
     element.classList.remove(
       'validation-feedback-top',
@@ -380,11 +378,11 @@ export class ValidationFeedbackDisplay {
       'validation-feedback-left',
       'validation-feedback-right',
       'validation-feedback-inline',
-      'validation-feedback-tooltip'
+      'validation-feedback-tooltip',
     );
-    
+
     element.classList.add(`validation-feedback-${position}`);
-    
+
     // Apply specific positioning styles
     switch (position) {
       case 'tooltip':
@@ -405,7 +403,7 @@ export class ValidationFeedbackDisplay {
   private updateDisplayState(
     fieldId: string,
     validationResult: ValidationResult,
-    elements: FeedbackElement[]
+    elements: FeedbackElement[],
   ): void {
     const state: FeedbackDisplayState = {
       fieldId,
@@ -414,7 +412,7 @@ export class ValidationFeedbackDisplay {
       isValid: validationResult.isValid,
       errorCount: validationResult.errors.length,
       warningCount: validationResult.warnings?.length || 0,
-      elements
+      elements,
     };
 
     this.displayStates.set(fieldId, state);
@@ -426,9 +424,9 @@ export class ValidationFeedbackDisplay {
    */
   private async animateElementsIn(
     elements: FeedbackElement[],
-    options: FeedbackDisplayOptions
+    options: FeedbackDisplayOptions,
   ): Promise<void> {
-    const promises = elements.map(element => this.animateElementIn(element, options));
+    const promises = elements.map((element) => this.animateElementIn(element, options));
     await Promise.all(promises);
   }
 
@@ -437,22 +435,22 @@ export class ValidationFeedbackDisplay {
    */
   private animateElementIn(
     feedbackElement: FeedbackElement,
-    options: FeedbackDisplayOptions
+    options: FeedbackDisplayOptions,
   ): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const element = feedbackElement.element;
-      
+
       // Set initial state
       element.style.opacity = '0';
       element.style.transform = 'translateY(-10px)';
       element.style.transition = `all ${options.animationDuration}ms ease-out`;
-      
+
       // Trigger animation
       requestAnimationFrame(() => {
         element.style.opacity = '1';
         element.style.transform = 'translateY(0)';
         feedbackElement.isVisible = true;
-        
+
         setTimeout(() => resolve(), options.animationDuration);
       });
     });
@@ -463,17 +461,17 @@ export class ValidationFeedbackDisplay {
    */
   private animateElementOut(
     feedbackElement: FeedbackElement,
-    options: FeedbackDisplayOptions
+    options: FeedbackDisplayOptions,
   ): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const element = feedbackElement.element;
-      
+
       element.style.transition = `all ${options.animationDuration}ms ease-in`;
       element.style.opacity = '0';
       element.style.transform = 'translateY(-10px)';
-      
+
       feedbackElement.isVisible = false;
-      
+
       setTimeout(() => resolve(), options.animationDuration);
     });
   }
@@ -482,7 +480,7 @@ export class ValidationFeedbackDisplay {
    * Notify callbacks of state changes
    */
   private notifyCallbacks(state: FeedbackDisplayState): void {
-    this.callbacks.forEach(callback => {
+    this.callbacks.forEach((callback) => {
       try {
         callback(state);
       } catch (error) {
@@ -561,7 +559,7 @@ export class ValidationFeedbackDisplay {
         }
       }
     `;
-    
+
     document.head.appendChild(styles);
   }
 
@@ -576,13 +574,13 @@ export class ValidationFeedbackDisplay {
     totalElements: number;
   } {
     const states = Array.from(this.displayStates.values());
-    
+
     return {
       totalFields: states.length,
-      fieldsWithErrors: states.filter(s => s.hasErrors).length,
-      fieldsWithWarnings: states.filter(s => s.hasWarnings).length,
-      validFields: states.filter(s => s.isValid).length,
-      totalElements: states.reduce((sum, s) => sum + s.elements.length, 0)
+      fieldsWithErrors: states.filter((s) => s.hasErrors).length,
+      fieldsWithWarnings: states.filter((s) => s.hasWarnings).length,
+      validFields: states.filter((s) => s.isValid).length,
+      totalElements: states.reduce((sum, s) => sum + s.elements.length, 0),
     };
   }
 
@@ -592,7 +590,7 @@ export class ValidationFeedbackDisplay {
   dispose(): void {
     this.clearAllFeedback();
     this.callbacks.clear();
-    
+
     // Remove styles if no other instances exist
     const styleElement = document.getElementById('validation-feedback-styles');
     if (styleElement) {

@@ -25,12 +25,13 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
     if (videoRef.current) {
       videoRef.current.play().catch((err: unknown) => {
         const errorObj = err instanceof Error ? err : new Error('Failed to play video');
-        const code = typeof (err as { code?: number }).code === 'number' ? (err as { code: number }).code : 0;
+        const code =
+          typeof (err as { code?: number }).code === 'number' ? (err as { code: number }).code : 0;
         setError({
           message: errorObj.message || 'Failed to play video',
           code,
           type: categorizeError(err),
-          retryCount: 0
+          retryCount: 0,
         });
       });
     }
@@ -46,10 +47,10 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
 
   const retry = useCallback(() => {
     if (retryCount < maxRetries && videoRef.current?.src) {
-      setRetryCount(prev => prev + 1);
+      setRetryCount((prev) => prev + 1);
       setError(null);
       setIsLoading(true);
-      
+
       // Reload the video source
       const currentSrc = videoRef.current.src;
       videoRef.current.src = '';
@@ -67,25 +68,34 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
     }
   }, [videoRef]);
 
-  const seekTo = useCallback((time: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = time;
-    }
-  }, [videoRef]);
+  const seekTo = useCallback(
+    (time: number) => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = time;
+      }
+    },
+    [videoRef],
+  );
 
-  const setVolume = useCallback((newVolume: number) => {
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume;
-      setVolumeState(newVolume);
-    }
-  }, [videoRef]);
+  const setVolume = useCallback(
+    (newVolume: number) => {
+      if (videoRef.current) {
+        videoRef.current.volume = newVolume;
+        setVolumeState(newVolume);
+      }
+    },
+    [videoRef],
+  );
 
-  const setPlaybackRate = useCallback((rate: number) => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate;
-      setPlaybackRateState(rate);
-    }
-  }, [videoRef]);
+  const setPlaybackRate = useCallback(
+    (rate: number) => {
+      if (videoRef.current) {
+        videoRef.current.playbackRate = rate;
+        setPlaybackRateState(rate);
+      }
+    },
+    [videoRef],
+  );
 
   const toggleMute = useCallback(() => {
     if (videoRef.current) {
@@ -138,7 +148,7 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
       const video = e.target as HTMLVideoElement;
       let errorMessage = 'Failed to load video';
       let errorType: VideoError['type'] = 'unknown';
-      
+
       if (video.error) {
         switch (video.error.code) {
           case video.error.MEDIA_ERR_NETWORK:
@@ -157,12 +167,12 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
             errorMessage = 'Unknown video error occurred';
         }
       }
-      
+
       setError({
         message: errorMessage,
         code: video.error?.code || 0,
         type: errorType,
-        retryCount
+        retryCount,
       });
       setIsLoading(false);
     };
@@ -200,6 +210,7 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
       video.removeEventListener('volumechange', handleVolumeChange);
       video.removeEventListener('ratechange', handleRateChange);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoRef]);
 
   return {
@@ -223,4 +234,4 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
     retry,
     resetError,
   };
-}; 
+};

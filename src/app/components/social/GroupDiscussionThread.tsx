@@ -15,7 +15,7 @@ interface GroupDiscussionThreadProps {
 const getInitials = (name: string) => {
   return name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
@@ -27,14 +27,15 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const attachments = useMemo<Attachment[]>(() =>
-    files.map((f) => ({ 
-      id: `${f.name}_${f.size}_${f.lastModified}`, 
-      name: f.name, 
-      url: URL.createObjectURL(f), 
-      type: f.type 
-    })),
-    [files]
+  const attachments = useMemo<Attachment[]>(
+    () =>
+      files.map((f) => ({
+        id: `${f.name}_${f.size}_${f.lastModified}`,
+        name: f.name,
+        url: URL.createObjectURL(f),
+        type: f.type,
+      })),
+    [files],
   );
 
   // Auto-scroll to bottom when new messages arrive
@@ -84,9 +85,9 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
                       {formatDistanceToNow(new Date(m.createdAt), { addSuffix: true })}
                     </span>
                   </div>
-                  <div 
-                    className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3" 
-                    dangerouslySetInnerHTML={{ __html: m.contentHtml }} 
+                  <div
+                    className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3"
+                    dangerouslySetInnerHTML={{ __html: m.contentHtml }}
                   />
                   {!!m.attachments?.length && (
                     <div className="mt-2 space-y-1">
@@ -114,11 +115,7 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
 
       {/* Message Input */}
       <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-900/50">
-        <RichTextEditor 
-          content={content} 
-          onChange={setContent} 
-          placeholder="Share an update..." 
-        />
+        <RichTextEditor content={content} onChange={setContent} placeholder="Share an update..." />
         <div className="flex items-center justify-between">
           <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
             <Paperclip size={16} />
@@ -145,7 +142,9 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
         </div>
         {!!files.length && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500 dark:text-gray-400">{files.length} file(s) ready:</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {files.length} file(s) ready:
+            </span>
             {files.map((file, index) => (
               <span
                 key={`${file.name}-${index}`}
@@ -162,9 +161,7 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
             ))}
           </div>
         )}
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Press Cmd/Ctrl + Enter to post
-        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Press Cmd/Ctrl + Enter to post</p>
       </div>
     </div>
   );

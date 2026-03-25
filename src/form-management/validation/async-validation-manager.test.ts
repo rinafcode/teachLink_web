@@ -24,10 +24,10 @@ describe('AsyncValidationManager', () => {
         sessionId: 'test-session',
         createdAt: new Date(),
         lastModified: new Date(),
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     };
-    
+
     // Mock timers
     vi.useFakeTimers();
   });
@@ -56,7 +56,7 @@ describe('AsyncValidationManager', () => {
     it('should execute successful async validation', async () => {
       const mockValidation: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
 
       const request: AsyncValidationRequest = {
@@ -64,19 +64,19 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 0 } // No debounce for testing
+        options: { debounceMs: 0 }, // No debounce for testing
       };
 
       const resultPromise = manager.validateField(request);
-      
+
       // Fast-forward past debounce
       vi.advanceTimersByTime(0);
-      
+
       const result = await resultPromise;
-      
+
       expect(result.isValid).toBe(true);
       expect(mockValidation).toHaveBeenCalledWith('test-value', mockFormState);
-      
+
       const state = manager.getValidationState('test-field');
       expect(state.isLoading).toBe(false);
       expect(state.lastValidated).toBeDefined();
@@ -86,7 +86,7 @@ describe('AsyncValidationManager', () => {
     it('should handle debouncing correctly', async () => {
       const mockValidation: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
 
       const request: AsyncValidationRequest = {
@@ -94,27 +94,27 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 300 }
+        options: { debounceMs: 300 },
       };
 
       // Start validation
       const resultPromise = manager.validateField(request);
-      
+
       // Validation should not have started yet
       expect(mockValidation).not.toHaveBeenCalled();
-      
+
       // Fast-forward past debounce
       vi.advanceTimersByTime(300);
-      
+
       await resultPromise;
-      
+
       expect(mockValidation).toHaveBeenCalledOnce();
     });
 
     it('should cancel previous debounced validation when new one starts', async () => {
       const mockValidation: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
 
       const request: AsyncValidationRequest = {
@@ -122,23 +122,23 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 300 }
+        options: { debounceMs: 300 },
       };
 
       // Start first validation
       manager.validateField(request);
-      
+
       // Start second validation before first completes
       const secondPromise = manager.validateField({
         ...request,
-        value: 'new-value'
+        value: 'new-value',
       });
-      
+
       // Fast-forward past debounce
       vi.advanceTimersByTime(300);
-      
+
       await secondPromise;
-      
+
       // Should only be called once (for the second validation)
       expect(mockValidation).toHaveBeenCalledOnce();
       expect(mockValidation).toHaveBeenCalledWith('new-value', mockFormState);
@@ -161,60 +161,60 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { 
+        options: {
           debounceMs: 0,
           retryAttempts: 3,
-          retryDelay: 100
-        }
+          retryDelay: 100,
+        },
       };
 
       const resultPromise = manager.validateField(request);
-      
+
       // Fast-forward through debounce and retries
       vi.advanceTimersByTime(0); // Initial debounce
-      
+
       // Wait for retries
       for (let i = 0; i < 3; i++) {
         vi.advanceTimersByTime(100 * Math.pow(2, i)); // Exponential backoff
         await Promise.resolve(); // Allow promises to resolve
       }
-      
+
       const result = await resultPromise;
-      
+
       expect(result.isValid).toBe(true);
       expect(mockValidation).toHaveBeenCalledTimes(3);
     });
 
     it('should fail after max retry attempts', async () => {
-      const mockValidation: ValidationFunction = vi.fn().mockRejectedValue(
-        new Error('Persistent validation error')
-      );
+      const mockValidation: ValidationFunction = vi
+        .fn()
+        .mockRejectedValue(new Error('Persistent validation error'));
 
       const request: AsyncValidationRequest = {
         fieldId: 'test-field',
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { 
+        options: {
           debounceMs: 0,
           retryAttempts: 2,
-          retryDelay: 100
-        }
+          retryDelay: 100,
+        },
       };
 
       const resultPromise = manager.validateField(request);
-      
+
       // Fast-forward through debounce and all retries
       vi.advanceTimersByTime(0);
-      
+
       for (let i = 0; i <= 2; i++) {
         vi.advanceTimersByTime(100 * Math.pow(2, i));
         await Promise.resolve();
       }
-      
+
       await expect(resultPromise).rejects.toThrow('Persistent validation error');
       expect(mockValidation).toHaveBeenCalledTimes(3); // Initial + 2 retries
-      
+
       const state = manager.getValidationState('test-field');
       expect(state.isLoading).toBe(false);
       expect(state.error).toBeDefined();
@@ -231,19 +231,19 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { 
+        options: {
           debounceMs: 0,
           timeout: 1000,
-          retryAttempts: 0
-        }
+          retryAttempts: 0,
+        },
       };
 
       const resultPromise = manager.validateField(request);
-      
+
       // Fast-forward past debounce and timeout
       vi.advanceTimersByTime(0);
       vi.advanceTimersByTime(1000);
-      
+
       await expect(resultPromise).rejects.toThrow('Validation timeout');
     });
   });
@@ -255,7 +255,7 @@ describe('AsyncValidationManager', () => {
 
       const mockValidation: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
 
       const request: AsyncValidationRequest = {
@@ -263,7 +263,7 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 0 }
+        options: { debounceMs: 0 },
       };
 
       const resultPromise = manager.validateField(request);
@@ -276,8 +276,8 @@ describe('AsyncValidationManager', () => {
           fieldId: 'test-field',
           result: expect.objectContaining({ isValid: true }),
           state: expect.objectContaining({ isLoading: false }),
-          timestamp: expect.any(Date)
-        })
+          timestamp: expect.any(Date),
+        }),
       );
 
       unsubscribe();
@@ -287,14 +287,14 @@ describe('AsyncValidationManager', () => {
       const errorCallback = vi.fn().mockImplementation(() => {
         throw new Error('Callback error');
       });
-      
+
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       manager.subscribe(errorCallback);
 
       const mockValidation: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
 
       const request: AsyncValidationRequest = {
@@ -302,15 +302,18 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 0 }
+        options: { debounceMs: 0 },
       };
 
       const resultPromise = manager.validateField(request);
       vi.advanceTimersByTime(0);
       await resultPromise;
 
-      expect(consoleSpy).toHaveBeenCalledWith('Error in async validation callback:', expect.any(Error));
-      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error in async validation callback:',
+        expect.any(Error),
+      );
+
       consoleSpy.mockRestore();
     });
   });
@@ -319,12 +322,12 @@ describe('AsyncValidationManager', () => {
     it('should validate multiple fields concurrently', async () => {
       const mockValidation1: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
-      
+
       const mockValidation2: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: false,
-        errors: [{ code: 'test_error', message: 'Test error' }]
+        errors: [{ code: 'test_error', message: 'Test error' }],
       });
 
       const requests: AsyncValidationRequest[] = [
@@ -333,15 +336,15 @@ describe('AsyncValidationManager', () => {
           value: 'value1',
           formState: mockFormState,
           validationFunction: mockValidation1,
-          options: { debounceMs: 0 }
+          options: { debounceMs: 0 },
         },
         {
           fieldId: 'field2',
           value: 'value2',
           formState: mockFormState,
           validationFunction: mockValidation2,
-          options: { debounceMs: 0 }
-        }
+          options: { debounceMs: 0 },
+        },
       ];
 
       const resultPromise = manager.validateFields(requests);
@@ -365,14 +368,14 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 300 }
+        options: { debounceMs: 300 },
       };
 
       manager.validateField(request);
-      
+
       // Cancel before debounce completes
       manager.cancelValidation('test-field');
-      
+
       const state = manager.getValidationState('test-field');
       expect(state.isLoading).toBe(false);
     });
@@ -387,16 +390,16 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 300 }
+        options: { debounceMs: 300 },
       };
 
       manager.validateField(request);
       manager.validateField({ ...request, fieldId: 'test-field-2' });
-      
+
       expect(manager.getValidatingFields()).toHaveLength(0); // Still debouncing
-      
+
       manager.cancelAllValidations();
-      
+
       expect(manager.getValidatingFields()).toHaveLength(0);
     });
   });
@@ -405,7 +408,7 @@ describe('AsyncValidationManager', () => {
     it('should provide validation statistics', async () => {
       const mockValidation: ValidationFunction = vi.fn().mockResolvedValue({
         isValid: true,
-        errors: []
+        errors: [],
       });
 
       const request: AsyncValidationRequest = {
@@ -413,7 +416,7 @@ describe('AsyncValidationManager', () => {
         value: 'test-value',
         formState: mockFormState,
         validationFunction: mockValidation,
-        options: { debounceMs: 0 }
+        options: { debounceMs: 0 },
       };
 
       const resultPromise = manager.validateField(request);

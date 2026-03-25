@@ -12,15 +12,13 @@ interface FilterSidebarProps {
   onReset: () => void;
 }
 
-const TOPIC_OPTIONS = [
-  'Design',
-  'Coding',
-  'Business',
-  'Marketing',
-  'Health',
-];
+const TOPIC_OPTIONS = ['Design', 'Coding', 'Business', 'Marketing', 'Health'];
 
-export const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, onFilterChange, onReset }) => {
+export const FilterSidebar: React.FC<FilterSidebarProps> = ({
+  filters,
+  onFilterChange,
+  onReset,
+}) => {
   const handleDifficultyChange = (input: string) => {
     const current = filters.difficulty || [];
     const updated = current.includes(input)
@@ -82,7 +80,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, onFilterC
         />
         <div className="flex justify-between mt-3 font-mono text-[10px] text-slate-400 uppercase">
           <span>0h</span>
-          <span className="text-primary font-bold bg-blue-50 px-2 py-0.5 rounded">Max: {filters.duration}h</span>
+          <span className="text-primary font-bold bg-blue-50 px-2 py-0.5 rounded">
+            Max: {filters.duration}h
+          </span>
           <span>100h+</span>
         </div>
       </div>
@@ -100,7 +100,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, onFilterC
         />
         <div className="flex justify-between mt-3 font-mono text-[10px] text-slate-400 uppercase">
           <span>$0</span>
-          <span className="text-primary font-bold bg-blue-50 px-2 py-0.5 rounded">Max: ${filters.priceRange}</span>
+          <span className="text-primary font-bold bg-blue-50 px-2 py-0.5 rounded">
+            Max: ${filters.priceRange}
+          </span>
           <span>$200+</span>
         </div>
       </div>
@@ -148,7 +150,11 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, onFilterC
                     isSelected ? 'border-primary' : 'border-slate-300 group-hover:border-primary'
                   }`}
                 >
-                  <div className={`w-2 h-2 bg-primary rounded-sm transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`}></div>
+                  <div
+                    className={`w-2 h-2 bg-primary rounded-sm transition-opacity ${
+                      isSelected ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  ></div>
                 </div>
                 <span className="text-sm text-slate-600 font-medium group-hover:text-primary transition-colors">
                   {instructor}

@@ -19,9 +19,7 @@ export function AccessibilityTester({
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
 
   const filteredIssues =
-    filterSeverity === 'all'
-      ? issues
-      : issues.filter((issue) => issue.severity === filterSeverity);
+    filterSeverity === 'all' ? issues : issues.filter((issue) => issue.severity === filterSeverity);
 
   const severityCounts = {
     critical: issues.filter((i) => i.severity === 'critical').length,
@@ -151,7 +149,7 @@ export function AccessibilityTester({
               <span className="text-sm text-gray-600">WCAG Compliance:</span>
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${getWCAGLevelColor(
-                  wcagLevel
+                  wcagLevel,
                 )}`}
               >
                 {wcagLevel}
@@ -186,9 +184,7 @@ export function AccessibilityTester({
                   <div className="text-xs text-gray-600">Critical</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {severityCounts.serious}
-                  </div>
+                  <div className="text-2xl font-bold text-orange-600">{severityCounts.serious}</div>
                   <div className="text-xs text-gray-600">Serious</div>
                 </div>
                 <div>
@@ -208,7 +204,10 @@ export function AccessibilityTester({
           {/* Filter */}
           {issues.length > 0 && (
             <div className="p-4 border-b border-gray-200">
-              <label htmlFor="severity-filter" className="text-sm font-medium text-gray-700 mb-2 block">
+              <label
+                htmlFor="severity-filter"
+                className="text-sm font-medium text-gray-700 mb-2 block"
+              >
                 Filter by Severity:
               </label>
               <select
@@ -255,15 +254,17 @@ export function AccessibilityTester({
                       <div className="flex-1">
                         <div className="font-medium text-sm">{issue.message}</div>
                         <div className="text-xs mt-1 opacity-75">
-                          Element: <code className="bg-white bg-opacity-50 px-1 rounded">{issue.element}</code>
+                          Element:{' '}
+                          <code className="bg-white bg-opacity-50 px-1 rounded">
+                            {issue.element}
+                          </code>
                         </div>
                       </div>
                     </div>
 
                     <div className="text-xs space-y-1 mt-2 pt-2 border-t border-current border-opacity-20">
                       <div>
-                        <span className="font-medium">WCAG:</span>{' '}
-                        {issue.wcagCriteria.join(', ')}
+                        <span className="font-medium">WCAG:</span> {issue.wcagCriteria.join(', ')}
                       </div>
                       <div>
                         <span className="font-medium">Suggestion:</span> {issue.suggestion}

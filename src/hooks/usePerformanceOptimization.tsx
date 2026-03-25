@@ -10,7 +10,10 @@ interface UsePerformanceOptions {
 /**
  * Hook to monitor component render performance and identify potential bottlenecks.
  */
-export const usePerformanceOptimization = ({ componentName, threshold = 16 }: UsePerformanceOptions) => {
+export const usePerformanceOptimization = ({
+  componentName,
+  threshold = 16,
+}: UsePerformanceOptions) => {
   const startTime = useRef(performance.now());
 
   useEffect(() => {
@@ -18,7 +21,11 @@ export const usePerformanceOptimization = ({ componentName, threshold = 16 }: Us
     const duration = endTime - startTime.current;
 
     if (duration > threshold) {
-      console.warn(`[Performance Warning] Component "${componentName}" took ${duration.toFixed(2)}ms to mount. Threshold is ${threshold}ms.`);
+      console.warn(
+        `[Performance Warning] Component "${componentName}" took ${duration.toFixed(
+          2,
+        )}ms to mount. Threshold is ${threshold}ms.`,
+      );
     }
 
     // Capture render count for optimization analysis
@@ -32,7 +39,11 @@ export const usePerformanceOptimization = ({ componentName, threshold = 16 }: Us
     const end = performance.now();
     const duration = end - start;
     if (duration > threshold) {
-      console.warn(`[Performance Warning] Interaction "${actionName}" in "${componentName}" took ${duration.toFixed(2)}ms.`);
+      console.warn(
+        `[Performance Warning] Interaction "${actionName}" in "${componentName}" took ${duration.toFixed(
+          2,
+        )}ms.`,
+      );
     }
   };
 

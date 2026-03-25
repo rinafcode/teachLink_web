@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
 interface RangeSliderProps {
   min: number;
@@ -16,7 +16,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   max,
   value,
   onChange,
-  className = "",
+  className = '',
   step = 1,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

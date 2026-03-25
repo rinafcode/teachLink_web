@@ -19,13 +19,13 @@ const LazyLoadingManager: React.FC<LazyLoadingManagerProps> = ({
   fallback = <div className="animate-pulse bg-gray-200 h-32 w-full rounded-md" />,
   threshold = 0.1,
   rootMargin = '200px',
-  componentName = 'Component'
+  componentName = 'Component',
 }) => {
   const [hasBeenInView, setHasBeenInView] = useState(false);
   const { ref, inView } = useInView({
     threshold,
     rootMargin,
-    triggerOnce: true
+    triggerOnce: true,
   });
 
   useEffect(() => {
@@ -37,13 +37,7 @@ const LazyLoadingManager: React.FC<LazyLoadingManagerProps> = ({
 
   return (
     <div ref={ref} className="w-full">
-      {hasBeenInView ? (
-        <Suspense fallback={fallback}>
-          {children}
-        </Suspense>
-      ) : (
-        fallback
-      )}
+      {hasBeenInView ? <Suspense fallback={fallback}>{children}</Suspense> : fallback}
     </div>
   );
 };

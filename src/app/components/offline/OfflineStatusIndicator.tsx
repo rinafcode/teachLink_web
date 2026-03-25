@@ -2,18 +2,18 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
   Settings,
   Download,
   Upload,
   HardDrive,
   Clock,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { useOfflineModeContext } from '../../context/OfflineModeContext';
 
@@ -22,9 +22,9 @@ interface OfflineStatusIndicatorProps {
   showDetails?: boolean;
 }
 
-export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({ 
+export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
   className = '',
-  showDetails = true 
+  showDetails = true,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -39,14 +39,14 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
     enableOfflineMode,
     disableOfflineMode,
     syncOfflineData,
-    clearOfflineData
+    clearOfflineData,
   } = useOfflineModeContext();
 
   const getStatusIcon = () => {
     if (!isOnline) {
       return <WifiOff className="w-4 h-4 text-red-500" />;
     }
-    
+
     if (!isOfflineModeEnabled) {
       return <Wifi className="w-4 h-4 text-gray-400" />;
     }
@@ -67,7 +67,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
     if (!isOnline) {
       return 'Offline';
     }
-    
+
     if (!isOfflineModeEnabled) {
       return 'Online';
     }
@@ -88,7 +88,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
     if (!isOnline) {
       return 'text-red-500';
     }
-    
+
     if (!isOfflineModeEnabled) {
       return 'text-gray-400';
     }
@@ -152,9 +152,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
       >
         {getStatusIcon()}
         {showDetails && (
-          <span className={`text-sm font-medium ${getStatusColor()}`}>
-            {getStatusText()}
-          </span>
+          <span className={`text-sm font-medium ${getStatusColor()}`}>{getStatusText()}</span>
         )}
         {pendingSyncCount > 0 && (
           <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -194,9 +192,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
                     ) : (
                       <WifiOff className="w-4 h-4 text-red-500" />
                     )}
-                    <span className="text-sm font-medium">
-                      {isOnline ? 'Online' : 'Offline'}
-                    </span>
+                    <span className="text-sm font-medium">{isOnline ? 'Online' : 'Offline'}</span>
                   </div>
                 </div>
 
@@ -221,9 +217,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
                     <span className="text-sm text-gray-600">Sync Status</span>
                     <div className="flex items-center space-x-2">
                       {getStatusIcon()}
-                      <span className="text-sm font-medium capitalize">
-                        {syncStatus}
-                      </span>
+                      <span className="text-sm font-medium capitalize">{syncStatus}</span>
                     </div>
                   </div>
                 )}
@@ -234,9 +228,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
                     <span className="text-sm text-gray-600">Last Sync</span>
                     <div className="flex items-center space-x-2">
                       <Clock className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-900">
-                        {formatTime(lastSyncTime)}
-                      </span>
+                      <span className="text-sm text-gray-900">{formatTime(lastSyncTime)}</span>
                     </div>
                   </div>
                 )}
@@ -267,7 +259,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                       />

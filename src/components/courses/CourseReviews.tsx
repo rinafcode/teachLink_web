@@ -25,34 +25,40 @@ export default function CourseReviews({
     {
       id: '1',
       userName: 'Sarah Johnson',
-      userAvatar: 'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
+      userAvatar:
+        'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
       rating: 5,
       date: '2 days ago',
-      comment: 'Excellent course! The instructor explains complex concepts in a very clear and understandable way. Highly recommend!',
+      comment:
+        'Excellent course! The instructor explains complex concepts in a very clear and understandable way. Highly recommend!',
       helpful: 24,
     },
     {
       id: '2',
       userName: 'Michael Chen',
-      userAvatar: 'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
+      userAvatar:
+        'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
       rating: 4,
       date: '1 week ago',
-      comment: 'Great content and well-structured. Would have liked more practical examples, but overall very satisfied.',
+      comment:
+        'Great content and well-structured. Would have liked more practical examples, but overall very satisfied.',
       helpful: 15,
     },
     {
       id: '3',
       userName: 'Emma Davis',
-      userAvatar: 'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',
+      userAvatar:
+        'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',
       rating: 5,
       date: '2 weeks ago',
-      comment: 'This course exceeded my expectations. The projects are challenging but rewarding. Worth every penny!',
+      comment:
+        'This course exceeded my expectations. The projects are challenging but rewarding. Worth every penny!',
       helpful: 32,
     },
   ],
 }: CourseReviewsProps) {
   const [helpful, setHelpful] = useState<Record<string, number>>(
-    reviews.reduce((acc, review) => ({ ...acc, [review.id]: review.helpful }), {})
+    reviews.reduce((acc, review) => ({ ...acc, [review.id]: review.helpful }), {}),
   );
 
   const markHelpful = (reviewId: string) => {
@@ -91,28 +97,38 @@ export default function CourseReviews({
 
   return (
     <div className="bg-white dark:bg-[#1E293B] rounded-xl shadow-sm border border-[#E2E8F0] dark:border-[#334155] p-6 lg:p-8 mb-6 lg:mb-8">
-      <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-[#0F172A] dark:text-white">Student Reviews</h2>
+      <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-[#0F172A] dark:text-white">
+        Student Reviews
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 pb-8 border-b border-[#E2E8F0] dark:border-[#334155]">
         <div className="text-center md:text-left">
-          <div className="text-5xl font-bold text-[#0F172A] dark:text-white mb-2">{averageRating}</div>
+          <div className="text-5xl font-bold text-[#0F172A] dark:text-white mb-2">
+            {averageRating}
+          </div>
           <div className="flex items-center justify-center md:justify-start mb-2">
             {renderStars(Math.round(averageRating))}
           </div>
-          <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">{totalReviews.toLocaleString()} reviews</p>
+          <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+            {totalReviews.toLocaleString()} reviews
+          </p>
         </div>
 
         <div className="md:col-span-2 space-y-2">
           {ratingDistribution.map((dist) => (
             <div key={dist.stars} className="flex items-center gap-3">
-              <span className="text-sm text-[#64748B] dark:text-[#94A3B8] w-12">{dist.stars} star</span>
+              <span className="text-sm text-[#64748B] dark:text-[#94A3B8] w-12">
+                {dist.stars} star
+              </span>
               <div className="flex-1 h-2 bg-[#E2E8F0] dark:bg-[#334155] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-yellow-400 rounded-full"
                   style={{ width: `${dist.percentage}%` }}
                 />
               </div>
-              <span className="text-sm text-[#64748B] dark:text-[#94A3B8] w-12 text-right">{dist.percentage}%</span>
+              <span className="text-sm text-[#64748B] dark:text-[#94A3B8] w-12 text-right">
+                {dist.percentage}%
+              </span>
             </div>
           ))}
         </div>
@@ -120,8 +136,12 @@ export default function CourseReviews({
 
       <div className="space-y-6">
         {reviews.map((review) => (
-          <div key={review.id} className="border-b border-[#E2E8F0] dark:border-[#334155] last:border-b-0 pb-6 last:pb-0">
+          <div
+            key={review.id}
+            className="border-b border-[#E2E8F0] dark:border-[#334155] last:border-b-0 pb-6 last:pb-0"
+          >
             <div className="flex items-start gap-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={review.userAvatar}
                 alt={review.userName}
@@ -130,20 +150,31 @@ export default function CourseReviews({
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h4 className="font-semibold text-[#0F172A] dark:text-white">{review.userName}</h4>
+                    <h4 className="font-semibold text-[#0F172A] dark:text-white">
+                      {review.userName}
+                    </h4>
                     <div className="flex items-center gap-3 mt-1">
                       {renderStars(review.rating)}
-                      <span className="text-sm text-[#64748B] dark:text-[#94A3B8]">{review.date}</span>
+                      <span className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                        {review.date}
+                      </span>
                     </div>
                   </div>
                 </div>
-                <p className="text-[#475569] dark:text-[#CBD5E1] mb-3 leading-relaxed">{review.comment}</p>
+                <p className="text-[#475569] dark:text-[#CBD5E1] mb-3 leading-relaxed">
+                  {review.comment}
+                </p>
                 <button
                   onClick={() => markHelpful(review.id)}
                   className="inline-flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8] hover:text-[#0066FF] dark:hover:text-[#00C2FF] transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                    />
                   </svg>
                   Helpful ({helpful[review.id]})
                 </button>

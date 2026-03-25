@@ -23,14 +23,14 @@ interface AppState {
 interface StoreState {
   user: UserState;
   app: AppState;
-  
+
   // Actions
   setUser: (user: Partial<UserState>) => void;
   setPreferences: (prefs: Partial<UserState['preferences']>) => void;
   toggleSidebar: () => void;
   setOfflineMode: (mode: boolean) => void;
   updateSyncTime: () => void;
-  
+
   // Entire state replacement (used by sync engine)
   rehydrate: (state: Partial<StoreState>) => void;
 }
@@ -57,9 +57,9 @@ export const useStore = create<StoreState>()(
           lastSynced: null,
         },
 
-        setUser: (user: Partial<UserState>) => 
+        setUser: (user: Partial<UserState>) =>
           set((state: StoreState) => ({ user: { ...state.user, ...user } })),
-        
+
         setPreferences: (prefs: Partial<UserState['preferences']>) =>
           set((state: StoreState) => ({
             user: {
@@ -69,7 +69,9 @@ export const useStore = create<StoreState>()(
           })),
 
         toggleSidebar: () =>
-          set((state: StoreState) => ({ app: { ...state.app, isSidebarOpen: !state.app.isSidebarOpen } })),
+          set((state: StoreState) => ({
+            app: { ...state.app, isSidebarOpen: !state.app.isSidebarOpen },
+          })),
 
         setOfflineMode: (mode: boolean) =>
           set((state: StoreState) => ({ app: { ...state.app, offlineMode: mode } })),
@@ -78,7 +80,13 @@ export const useStore = create<StoreState>()(
           set((state: StoreState) => ({ app: { ...state.app, lastSynced: Date.now() } })),
 
         rehydrate: (newState: Partial<StoreState>) =>
-          set((state: StoreState) => deepMerge(state as unknown as Record<string, unknown>, newState as Record<string, unknown>) as unknown as StoreState),
+          set(
+            (state: StoreState) =>
+              deepMerge(
+                state as unknown as Record<string, unknown>,
+                newState as Record<string, unknown>,
+              ) as unknown as StoreState,
+          ),
       }),
       {
         name: 'teachlink-storage',
@@ -87,7 +95,7 @@ export const useStore = create<StoreState>()(
           user: state.user,
           app: state.app,
         }), // Only persist these fields
-      }
-    )
-  )
+      },
+    ),
+  ),
 );

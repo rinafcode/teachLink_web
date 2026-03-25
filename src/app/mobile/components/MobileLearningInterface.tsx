@@ -1,19 +1,19 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react";
-import { Home, BookOpen, Download, BarChart3, User, Play, Loader2 } from "lucide-react";
-import TouchOptimizedControls from "./TouchOptimizedControls";
-import OfflineContentManager from "./OfflineContentManager";
-import MobileProgressTracker from "./MobileProgressTracker";
-import { useMobileOptimization } from "../hooks/useMobileOptimization";
-import { apiService } from "../services/api";
-import { offlineStorage } from "../services/offlineStorage";
-import { Course, Lesson } from "../types/mobile";
+import { useState, useEffect } from 'react';
+import { Home, BookOpen, Download, BarChart3, User, Play, Loader2 } from 'lucide-react';
+import TouchOptimizedControls from './TouchOptimizedControls';
+import OfflineContentManager from './OfflineContentManager';
+import MobileProgressTracker from './MobileProgressTracker';
+import { useMobileOptimization } from '../hooks/useMobileOptimization';
+import { apiService } from '../services/api';
+import { offlineStorage } from '../services/offlineStorage';
+import { Course, Lesson } from '../types/mobile';
 
-type Tab = "home" | "courses" | "downloads" | "progress" | "profile";
+type Tab = 'home' | 'courses' | 'downloads' | 'progress' | 'profile';
 
 export default function MobileLearningInterface() {
-  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [activeTab, setActiveTab] = useState<Tab>('home');
   const [showVideo, setShowVideo] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
@@ -23,9 +23,10 @@ export default function MobileLearningInterface() {
   const { isOnline, deviceType } = useMobileOptimization();
 
   useEffect(() => {
-       if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -37,11 +38,11 @@ export default function MobileLearningInterface() {
       if (isOnline) {
         const [coursesResponse, userProgressResponse] = await Promise.all([
           apiService.getCourses({ limit: 3 }),
-          apiService.getUserProgress()
+          apiService.getUserProgress(),
         ]);
 
         setFeaturedCourses(coursesResponse.data);
-        
+
         // Save to offline storage
         await offlineStorage.saveUserProgress(userProgressResponse.data);
       } else {
@@ -92,7 +93,7 @@ export default function MobileLearningInterface() {
   if (showVideo && currentLesson) {
     return (
       <div className="relative">
-        <TouchOptimizedControls 
+        <TouchOptimizedControls
           videoTitle={currentLesson.title}
           videoUrl={currentLesson.videoUrl}
           onClose={handleVideoClose}
@@ -115,10 +116,7 @@ export default function MobileLearningInterface() {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
             <p className="text-red-600 mb-2">{error}</p>
-            <button
-              onClick={loadData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-            >
+            <button onClick={loadData} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
               Retry
             </button>
           </div>
@@ -137,10 +135,12 @@ export default function MobileLearningInterface() {
 
           {/* Status indicators */}
           <div className="flex gap-2">
-            <div className={`px-3 py-1 rounded-full text-xs ${
-              isOnline ? "bg-green-500/20 text-green-100" : "bg-orange-500/20 text-orange-100"
-            }`}>
-              {isOnline ? "🟢 Online" : "🟠 Offline"}
+            <div
+              className={`px-3 py-1 rounded-full text-xs ${
+                isOnline ? 'bg-green-500/20 text-green-100' : 'bg-orange-500/20 text-orange-100'
+              }`}
+            >
+              {isOnline ? '🟢 Online' : '🟠 Offline'}
             </div>
             <div className="px-3 py-1 rounded-full text-xs bg-white/20 text-white">
               {deviceType}
@@ -151,9 +151,7 @@ export default function MobileLearningInterface() {
         {/* Continue Learning */}
         {recentLessons.length > 0 && (
           <div className="p-4">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">
-              Continue Learning
-            </h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">Continue Learning</h2>
             <div
               onClick={() => handlePlayLesson(recentLessons[0])}
               className="bg-linear-to-br from-purple-500 to-indigo-600 rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform"
@@ -170,15 +168,11 @@ export default function MobileLearningInterface() {
                 <h3 className="font-semibold text-gray-900 mb-1 truncate">
                   {recentLessons[0].title}
                 </h3>
-                <p className="text-sm text-gray-500 mb-2 truncate">
-                  Course Name
-                </p>
+                <p className="text-sm text-gray-500 mb-2 truncate">Course Name</p>
                 <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div className="w-2/3 h-full bg-linear-to-r from-purple-500 to-indigo-500" />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  65% complete • 6:32 remaining
-                </p>
+                <p className="text-xs text-gray-500 mt-2">65% complete • 6:32 remaining</p>
               </div>
             </div>
           </div>
@@ -186,20 +180,16 @@ export default function MobileLearningInterface() {
 
         {/* Featured Courses */}
         <div className="p-4">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">
-            Featured Courses
-          </h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-3">Featured Courses</h2>
           <div className="space-y-3">
             {featuredCourses.map((course) => (
               <div
                 key={course.id}
                 className="bg-white rounded-xl shadow-sm p-4 active:scale-[0.98] transition-transform"
-                onClick={() => setActiveTab("courses")}
+                onClick={() => setActiveTab('courses')}
               >
                 <div className="mb-3">
-                  <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                    {course.title}
-                  </h3>
+                  <h3 className="font-semibold text-gray-900 mb-1 truncate">{course.title}</h3>
                   <p className="text-sm text-gray-500 truncate">{course.instructor}</p>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
@@ -215,9 +205,7 @@ export default function MobileLearningInterface() {
                         style={{ width: `${course.progress}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-500">
-                      {course.progress}% complete
-                    </p>
+                    <p className="text-xs text-gray-500">{course.progress}% complete</p>
                   </div>
                 )}
               </div>
@@ -231,8 +219,8 @@ export default function MobileLearningInterface() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Content Area */}
-      {activeTab === "home" && renderHome()}
-      {activeTab === "courses" && (
+      {activeTab === 'home' && renderHome()}
+      {activeTab === 'courses' && (
         <div className="flex-1 flex items-center justify-center text-gray-500">
           <div className="text-center p-8">
             <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -240,9 +228,9 @@ export default function MobileLearningInterface() {
           </div>
         </div>
       )}
-      {activeTab === "downloads" && <OfflineContentManager />}
-      {activeTab === "progress" && <MobileProgressTracker />}
-      {activeTab === "profile" && (
+      {activeTab === 'downloads' && <OfflineContentManager />}
+      {activeTab === 'progress' && <MobileProgressTracker />}
+      {activeTab === 'profile' && (
         <div className="flex-1 flex items-center justify-center text-gray-500">
           <div className="text-center p-8">
             <User className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -255,9 +243,9 @@ export default function MobileLearningInterface() {
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-bottom">
         <div className="flex items-center justify-around px-2 py-2">
           <button
-            onClick={() => setActiveTab("home")}
+            onClick={() => setActiveTab('home')}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg active:scale-95 transition-transform ${
-              activeTab === "home" ? "text-blue-600 bg-blue-50" : "text-gray-600"
+              activeTab === 'home' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
             <Home className="w-6 h-6" />
@@ -265,9 +253,9 @@ export default function MobileLearningInterface() {
           </button>
 
           <button
-            onClick={() => setActiveTab("courses")}
+            onClick={() => setActiveTab('courses')}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg active:scale-95 transition-transform ${
-              activeTab === "courses" ? "text-blue-600 bg-blue-50" : "text-gray-600"
+              activeTab === 'courses' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
             <BookOpen className="w-6 h-6" />
@@ -275,9 +263,9 @@ export default function MobileLearningInterface() {
           </button>
 
           <button
-            onClick={() => setActiveTab("downloads")}
+            onClick={() => setActiveTab('downloads')}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg active:scale-95 transition-transform ${
-              activeTab === "downloads" ? "text-blue-600 bg-blue-50" : "text-gray-600"
+              activeTab === 'downloads' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
             <Download className="w-6 h-6" />
@@ -285,9 +273,9 @@ export default function MobileLearningInterface() {
           </button>
 
           <button
-            onClick={() => setActiveTab("progress")}
+            onClick={() => setActiveTab('progress')}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg active:scale-95 transition-transform ${
-              activeTab === "progress" ? "text-blue-600 bg-blue-50" : "text-gray-600"
+              activeTab === 'progress' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
             <BarChart3 className="w-6 h-6" />
@@ -295,9 +283,9 @@ export default function MobileLearningInterface() {
           </button>
 
           <button
-            onClick={() => setActiveTab("profile")}
+            onClick={() => setActiveTab('profile')}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg active:scale-95 transition-transform ${
-              activeTab === "profile" ? "text-blue-600 bg-blue-50" : "text-gray-600"
+              activeTab === 'profile' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'
             }`}
           >
             <User className="w-6 h-6" />

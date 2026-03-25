@@ -12,7 +12,7 @@ interface ContentUploaderProps {
 export const ContentUploader: React.FC<ContentUploaderProps> = ({
   onUpload,
   accept = 'video/*,.pdf,.txt,.md',
-  maxSize = 100 * 1024 * 1024
+  maxSize = 100 * 1024 * 1024,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<{
@@ -27,30 +27,39 @@ export const ContentUploader: React.FC<ContentUploaderProps> = ({
     return 'text';
   };
 
-  const handleFile = useCallback((file: File) => {
-    if (file.size > maxSize) {
-      alert(`File size must be less than ${maxSize / (1024 * 1024)}MB`);
-      return;
-    }
+  const handleFile = useCallback(
+    (file: File) => {
+      if (file.size > maxSize) {
+        alert(`File size must be less than ${maxSize / (1024 * 1024)}MB`);
+        return;
+      }
 
-    const type = getFileType(file);
-    const url = type === 'video' ? URL.createObjectURL(file) : undefined;
+      const type = getFileType(file);
+      const url = type === 'video' ? URL.createObjectURL(file) : undefined;
 
-    setPreview({ file, type, url });
-  }, [maxSize]);
+      setPreview({ file, type, url });
+    },
+    [maxSize],
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
 
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile],
+  );
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    },
+    [handleFile],
+  );
 
   const handleUpload = useCallback(() => {
     if (preview) {
@@ -76,7 +85,9 @@ export const ContentUploader: React.FC<ContentUploaderProps> = ({
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            isDragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' : 'border-gray-300 dark:border-gray-600'
+            isDragging
+              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+              : 'border-gray-300 dark:border-gray-600'
           }`}
         >
           <Upload className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
@@ -87,12 +98,7 @@ export const ContentUploader: React.FC<ContentUploaderProps> = ({
             <span className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-700">
               Browse Files
             </span>
-            <input
-              type="file"
-              className="hidden"
-              accept={accept}
-              onChange={handleChange}
-            />
+            <input type="file" className="hidden" accept={accept} onChange={handleChange} />
           </label>
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
             Supported: Videos, PDFs, Text (Max {maxSize / (1024 * 1024)}MB)
@@ -112,20 +118,13 @@ export const ContentUploader: React.FC<ContentUploaderProps> = ({
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleCancel}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={handleCancel} className="text-gray-400 hover:text-gray-600">
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {preview.type === 'video' && preview.url && (
-            <video
-              src={preview.url}
-              controls
-              className="w-full max-h-64 rounded-md mb-4"
-            />
+            <video src={preview.url} controls className="w-full max-h-64 rounded-md mb-4" />
           )}
 
           <div className="flex gap-2">

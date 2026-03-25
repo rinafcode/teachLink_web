@@ -1,12 +1,12 @@
-import '@testing-library/jest-dom'
-import type React from 'react'
-import { cleanup } from '@testing-library/react'
-import { afterEach, vi, beforeAll } from 'vitest'
+import '@testing-library/jest-dom';
+import type React from 'react';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi, beforeAll } from 'vitest';
 
 // Cleanup after each test
 afterEach(() => {
-  cleanup()
-})
+  cleanup();
+});
 
 // ─── Next.js App Router mocks ──────────────────────────────────────────────
 vi.mock('next/navigation', () => ({
@@ -23,20 +23,33 @@ vi.mock('next/navigation', () => ({
   useParams: () => ({}),
   redirect: vi.fn(),
   notFound: vi.fn(),
-}))
+}));
 
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { src: string; alt: string }) => {
+  default: ({
+    src,
+    alt,
+    ...props
+  }: React.ImgHTMLAttributes<HTMLImageElement> & { src: string; alt: string }) => {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} {...props} />
+    return <img src={src} alt={alt} {...props} />;
   },
-}))
+}));
 
 vi.mock('next/link', () => ({
-  default: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>{children}</a>
+  default: ({
+    children,
+    href,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children: React.ReactNode;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
-}))
+}));
 
 // ─── Browser API stubs ──────────────────────────────────────────────────────
 beforeAll(() => {
@@ -45,14 +58,14 @@ beforeAll(() => {
     observe: vi.fn(),
     unobserve: vi.fn(),
     disconnect: vi.fn(),
-  }))
+  }));
 
   // ResizeObserver
   globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
     observe: vi.fn(),
     unobserve: vi.fn(),
     disconnect: vi.fn(),
-  }))
+  }));
 
   // matchMedia
   Object.defineProperty(window, 'matchMedia', {
@@ -67,8 +80,8 @@ beforeAll(() => {
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     })),
-  })
+  });
 
   // scrollTo
-  window.scrollTo = vi.fn()
-})
+  window.scrollTo = vi.fn();
+});

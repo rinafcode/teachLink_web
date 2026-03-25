@@ -16,12 +16,12 @@ interface LocalizationTesterProps {
    * Whether to show the tester UI
    */
   show?: boolean;
-  
+
   /**
    * Reference language for comparison
    */
   referenceLanguage?: LanguageCode;
-  
+
   /**
    * Custom className
    */
@@ -48,50 +48,50 @@ export function LocalizationTester({
   // Get all translation keys recursively
   const getAllKeys = (obj: Translations, prefix = ''): string[] => {
     const keys: string[] = [];
-    
+
     for (const key in obj) {
       const fullKey = prefix ? `${prefix}.${key}` : key;
       const value = obj[key];
-      
+
       if (typeof value === 'string') {
         keys.push(fullKey);
       } else if (typeof value === 'object' && value !== null) {
         keys.push(...getAllKeys(value, fullKey));
       }
     }
-    
+
     return keys;
   };
 
   // Validate translations
   const validateTranslations = async () => {
     setIsValidating(true);
-    
+
     try {
       // Load reference translations
       const { loadTranslations } = await import('@/locales/translationManager');
       const referenceTranslations = await loadTranslations(referenceLanguage);
       const referenceKeys = getAllKeys(referenceTranslations);
-      
+
       const newIssues: TranslationIssue[] = [];
-      
+
       // Check each language
       for (const lang of getAvailableLanguages()) {
         if (lang === referenceLanguage) continue;
-        
+
         try {
           const langTranslations = await loadTranslations(lang);
           const langKeys = getAllKeys(langTranslations);
-          
+
           // Find missing keys
-          const missingKeys = referenceKeys.filter(key => !hasTranslation(langTranslations, key));
-          
+          const missingKeys = referenceKeys.filter((key) => !hasTranslation(langTranslations, key));
+
           // Find empty translations
-          const emptyKeys = langKeys.filter(key => {
+          const emptyKeys = langKeys.filter((key) => {
             const translation = t(key);
             return !translation || translation.trim() === '';
           });
-          
+
           if (missingKeys.length > 0) {
             newIssues.push({
               language: lang,
@@ -99,7 +99,7 @@ export function LocalizationTester({
               keys: missingKeys,
             });
           }
-          
+
           if (emptyKeys.length > 0) {
             newIssues.push({
               language: lang,
@@ -111,7 +111,7 @@ export function LocalizationTester({
           console.error(`Failed to validate ${lang}:`, error);
         }
       }
-      
+
       setIssues(newIssues);
     } catch (error) {
       console.error('Validation failed:', error);
@@ -123,14 +123,16 @@ export function LocalizationTester({
   // Get translation keys for current language
   const translationKeys = useMemo(() => {
     return getAllKeys(translations);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [translations]);
 
   // Filter keys by search term
   const filteredKeys = useMemo(() => {
     if (!searchTerm) return translationKeys;
-    return translationKeys.filter(key => 
-      key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t(key).toLowerCase().includes(searchTerm.toLowerCase())
+    return translationKeys.filter(
+      (key) =>
+        key.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t(key).toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [translationKeys, searchTerm, t]);
 
@@ -149,7 +151,9 @@ export function LocalizationTester({
   if (!show) return null;
 
   return (
-    <div className={`bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6 ${className}`}>
+    <div
+      className={`bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6 ${className}`}
+    >
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Localization Tester</h2>
         <div className="flex gap-2">
@@ -200,7 +204,8 @@ export function LocalizationTester({
               )}
               <div className="flex-1">
                 <div className="font-medium">
-                  {issue.language.toUpperCase()} - {issue.type === 'missing' ? 'Missing' : 'Empty'} Translations
+                  {issue.language.toUpperCase()} - {issue.type === 'missing' ? 'Missing' : 'Empty'}{' '}
+                  Translations
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {issue.keys.length} {issue.keys.length === 1 ? 'key' : 'keys'}
@@ -228,19 +233,15 @@ export function LocalizationTester({
 
       {/* Translation Keys List */}
       <div>
-        <h3 className="font-semibold mb-3">
-          Translation Keys ({filteredKeys.length})
-        </h3>
+        <h3 className="font-semibold mb-3">Translation Keys ({filteredKeys.length})</h3>
         <div className="max-h-96 overflow-y-auto space-y-2">
           {filteredKeys.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No translations found
-            </div>
+            <div className="text-center py-8 text-gray-500">No translations found</div>
           ) : (
             filteredKeys.map((key) => {
               const translation = t(key);
               const isEmpty = !translation || translation.trim() === '';
-              
+
               return (
                 <div
                   key={key}
@@ -252,10 +253,14 @@ export function LocalizationTester({
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="font-mono text-sm font-semibold mb-1">
-                        {key}
-                      </div>
-                      <div className={`text-sm ${isEmpty ? 'text-yellow-700 dark:text-yellow-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <div className="font-mono text-sm font-semibold mb-1">{key}</div>
+                      <div
+                        className={`text-sm ${
+                          isEmpty
+                            ? 'text-yellow-700 dark:text-yellow-300'
+                            : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
                         {isEmpty ? '(Empty)' : translation}
                       </div>
                     </div>

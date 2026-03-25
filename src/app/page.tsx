@@ -1,5 +1,5 @@
-import CourseCard from "./components/courses/CourseCard";
-import Link from "next/link";
+import CourseCard from './components/courses/CourseCard';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -13,29 +13,29 @@ export default function Home() {
           <p className="text-xl text-gray-300 mb-8">
             Learn anytime, anywhere with our comprehensive platform
           </p>
-          
+
           {/* Navigation Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all duration-300 hover:scale-105"
             >
               <div className="text-3xl mb-3">🖥️</div>
               <h3 className="text-xl font-semibold mb-2">Desktop Dashboard</h3>
               <p className="text-gray-400">Full-featured learning platform with advanced tools</p>
             </Link>
-            
-            <Link 
-              href="/mobile-app" 
+
+            <Link
+              href="/mobile-app"
               className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all duration-300 hover:scale-105"
             >
               <div className="text-3xl mb-3">📱</div>
               <h3 className="text-xl font-semibold mb-2">Mobile App</h3>
               <p className="text-gray-400">Touch-optimized learning experience for on-the-go</p>
             </Link>
-            
-            <Link 
-              href="/courses/1" 
+
+            <Link
+              href="/courses/1"
               className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all duration-300 hover:scale-105"
             >
               <div className="text-3xl mb-3">📚</div>
@@ -50,13 +50,15 @@ export default function Home() {
       <div className="px-4 py-10 md:px-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold mb-8 text-center">Featured Courses</h2>
-          
-          <div className="
+
+          <div
+            className="
             grid grid-cols-1 
             md:grid-cols-2 
             lg:grid-cols-3 
             gap-6 xl:gap-8
-          ">
+          "
+          >
             {/* Card 1 - Web3 UX */}
             <CourseCard
               title="Web3 UX Design Principles"
@@ -94,20 +96,24 @@ export default function Home() {
       <div className="px-4 py-16 md:px-8 bg-gray-800/30">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold mb-12 text-center">Why TeachLink?</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
               <div className="text-4xl mb-4">🌐</div>
               <h3 className="text-xl font-semibold mb-3">Offline Learning</h3>
-              <p className="text-gray-400">Download courses and learn without internet connection</p>
+              <p className="text-gray-400">
+                Download courses and learn without internet connection
+              </p>
             </div>
-            
+
             <div className="text-center p-6">
               <div className="text-4xl mb-4">⚡</div>
               <h3 className="text-xl font-semibold mb-3">Cross-Platform</h3>
-              <p className="text-gray-400">Seamless experience across desktop, mobile, and tablet</p>
+              <p className="text-gray-400">
+                Seamless experience across desktop, mobile, and tablet
+              </p>
             </div>
-            
+
             <div className="text-center p-6">
               <div className="text-4xl mb-4">🔒</div>
               <h3 className="text-xl font-semibold mb-3">Web3 Integration</h3>
@@ -120,21 +126,19 @@ export default function Home() {
       {/* CTA Section */}
       <div className="px-4 py-16 md:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to start learning?
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to start learning?</h2>
           <p className="text-xl text-gray-300 mb-8">
             Join thousands of learners on TeachLink today
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/signup" 
+            <Link
+              href="/signup"
               className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold text-lg transition-colors"
             >
               Get Started
             </Link>
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold text-lg transition-colors"
             >
               Sign In

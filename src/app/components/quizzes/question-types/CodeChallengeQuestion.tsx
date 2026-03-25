@@ -32,17 +32,19 @@ export default function CodeChallengeQuestion({
     if (!question.testCases) return;
 
     setIsRunning(true);
-    const results = question.testCases.map((testCase: { input: string; expectedOutput: string }) => {
-      try {
-        // Create a function from the user's code
-        const userFunction = new Function('input', code);
-        const output = userFunction(testCase.input);
-        return output === testCase.expectedOutput;
-      } catch (error) {
-        console.error('Error running test:', error);
-        return false;
-      }
-    });
+    const results = question.testCases.map(
+      (testCase: { input: string; expectedOutput: string }) => {
+        try {
+          // Create a function from the user's code
+          const userFunction = new Function('input', code);
+          const output = userFunction(testCase.input);
+          return output === testCase.expectedOutput;
+        } catch (error) {
+          console.error('Error running test:', error);
+          return false;
+        }
+      },
+    );
 
     setTestResults(results);
     setIsRunning(false);
@@ -51,7 +53,7 @@ export default function CodeChallengeQuestion({
   return (
     <div className="space-y-4">
       <div className="text-lg font-medium">{question.text}</div>
-      
+
       <div className="border rounded-lg overflow-hidden">
         <Editor
           height="300px"
@@ -84,33 +86,31 @@ export default function CodeChallengeQuestion({
       {testResults.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium">Test Results:</h4>
-          {question.testCases?.map((testCase: { input: string; expectedOutput: string }, index: number) => (
-            <div
-              key={index}
-              className={`p-3 rounded-lg ${
-                testResults[index]
-                  ? 'bg-green-50 border border-green-200'
-                  : 'bg-red-50 border border-red-200'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Test Case {index + 1}</p>
-                  <p className="text-sm text-gray-600">
-                    Input: {testCase.input}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Expected: {testCase.expectedOutput}
-                  </p>
+          {question.testCases?.map(
+            (testCase: { input: string; expectedOutput: string }, index: number) => (
+              <div
+                key={index}
+                className={`p-3 rounded-lg ${
+                  testResults[index]
+                    ? 'bg-green-50 border border-green-200'
+                    : 'bg-red-50 border border-red-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Test Case {index + 1}</p>
+                    <p className="text-sm text-gray-600">Input: {testCase.input}</p>
+                    <p className="text-sm text-gray-600">Expected: {testCase.expectedOutput}</p>
+                  </div>
+                  {testResults[index] ? (
+                    <FaCheck className="text-green-500" />
+                  ) : (
+                    <FaTimes className="text-red-500" />
+                  )}
                 </div>
-                {testResults[index] ? (
-                  <FaCheck className="text-green-500" />
-                ) : (
-                  <FaTimes className="text-red-500" />
-                )}
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       )}
 
@@ -122,4 +122,4 @@ export default function CodeChallengeQuestion({
       )}
     </div>
   );
-} 
+}

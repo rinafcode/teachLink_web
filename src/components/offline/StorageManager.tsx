@@ -28,13 +28,8 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
   const [courses, setCourses] = useState<OfflineCourseRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    storageUsage,
-    getOfflineCourses,
-    removeCourse,
-    clearOfflineData,
-    refreshStorageUsage
-  } = useOfflineModeContext();
+  const { storageUsage, getOfflineCourses, removeCourse, clearOfflineData, refreshStorageUsage } =
+    useOfflineModeContext();
 
   const fetchCourses = useCallback(async () => {
     setIsLoading(true);
@@ -48,13 +43,19 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
     fetchCourses();
   }, [fetchCourses, isOpen]);
 
-  const totalCourseSize = useMemo(() => courses.reduce((acc, course) => acc + course.sizeBytes, 0), [courses]);
+  const totalCourseSize = useMemo(
+    () => courses.reduce((acc, course) => acc + course.sizeBytes, 0),
+    [courses],
+  );
 
-  const handleRemoveCourse = useCallback(async (courseId: string) => {
-    await removeCourse(courseId);
-    await fetchCourses();
-    await refreshStorageUsage();
-  }, [fetchCourses, refreshStorageUsage, removeCourse]);
+  const handleRemoveCourse = useCallback(
+    async (courseId: string) => {
+      await removeCourse(courseId);
+      await fetchCourses();
+      await refreshStorageUsage();
+    },
+    [fetchCourses, refreshStorageUsage, removeCourse],
+  );
 
   const handleClearAll = useCallback(async () => {
     await clearOfflineData();
@@ -75,7 +76,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
           </div>
         </div>
         <button
-          onClick={() => setIsOpen(prev => !prev)}
+          onClick={() => setIsOpen((prev) => !prev)}
           className="text-xs font-semibold text-blue-600 hover:text-blue-700"
         >
           {isOpen ? 'Hide details' : 'View details'}
@@ -85,7 +86,9 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       <div className="mt-4 space-y-2">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span>Storage used</span>
-          <span>{formatBytes(storageUsage.used)} / {formatBytes(storageUsage.total)}</span>
+          <span>
+            {formatBytes(storageUsage.used)} / {formatBytes(storageUsage.total)}
+          </span>
         </div>
         <div className="h-2 w-full rounded-full bg-gray-100">
           <div
@@ -115,13 +118,18 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
             </div>
           ) : (
             <div className="space-y-3">
-              {courses.map(course => (
-                <div key={course.id} className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4">
+              {courses.map((course) => (
+                <div
+                  key={course.id}
+                  className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4"
+                >
                   <div className="flex items-center gap-3">
                     <DownloadCloud className="h-5 w-5 text-blue-500" />
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{course.title}</p>
-                      <p className="text-xs text-gray-500">Downloaded {formatDate(course.downloadedAt)}</p>
+                      <p className="text-xs text-gray-500">
+                        Downloaded {formatDate(course.downloadedAt)}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-gray-500">

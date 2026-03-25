@@ -38,14 +38,16 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
   onRemove,
   size,
   onChangeSize,
-  onUpdateTitle
+  onUpdateTitle,
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [tempTitle, setTempTitle] = useState(title);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { setTempTitle(title); }, [title]);
+  useEffect(() => {
+    setTempTitle(title);
+  }, [title]);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,7 +63,9 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
         if (!cancelled) setIsLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   // Mock recommended courses
@@ -76,7 +80,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
       level: 'advanced',
       category: 'Web Development',
       image: 'https://via.placeholder.com/300x200/3B82F6/ffffff?text=React',
-      price: 89
+      price: 89,
     },
     {
       id: '2',
@@ -88,7 +92,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
       level: 'intermediate',
       category: 'Data Science',
       image: 'https://via.placeholder.com/300x200/10B981/ffffff?text=ML',
-      price: 129
+      price: 129,
     },
     {
       id: '3',
@@ -100,25 +104,26 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
       level: 'beginner',
       category: 'Design',
       image: 'https://via.placeholder.com/300x200/8B5CF6/ffffff?text=Design',
-      price: 69
-    }
+      price: 69,
+    },
   ];
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'beginner': return 'text-green-600 bg-green-100';
-      case 'intermediate': return 'text-yellow-600 bg-yellow-100';
-      case 'advanced': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'beginner':
+        return 'text-green-600 bg-green-100';
+      case 'intermediate':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'advanced':
+        return 'text-red-600 bg-red-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
   if (isCollapsed) {
     return (
-      <motion.div
-        layout
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
-      >
+      <motion.div layout className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900">{title}</h3>
           <div className="flex items-center space-x-2">
@@ -178,7 +183,8 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
                 onChange={(e) => setTempTitle(e.target.value)}
                 onBlur={() => {
                   const t = tempTitle.trim();
-                  if (t) onUpdateTitle(t); else setTempTitle(title);
+                  if (t) onUpdateTitle(t);
+                  else setTempTitle(title);
                 }}
                 className="w-full px-2 py-1 border border-gray-300 rounded"
               />
@@ -223,11 +229,8 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
           >
             <div className="flex">
               <div className="w-24 h-20 bg-gray-200 flex-shrink-0">
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="w-full h-full object-cover"
-                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 p-3">
                 <h4 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
@@ -251,7 +254,11 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(course.level)}`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(
+                      course.level,
+                    )}`}
+                  >
                     {course.level}
                   </span>
                   <span className="text-sm font-bold text-gray-900">${course.price}</span>
@@ -268,4 +275,4 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
       </div>
     </motion.div>
   );
-}; 
+};

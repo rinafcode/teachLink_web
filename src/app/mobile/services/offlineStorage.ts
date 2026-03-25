@@ -1,12 +1,12 @@
 // src/services/offlineStorage.ts
-import { Course, OfflineContent, Lesson } from "../types/mobile";
+import { Course, OfflineContent, Lesson } from '../types/mobile';
 
-const DB_NAME = "LearningAppDB";
+const DB_NAME = 'LearningAppDB';
 const DB_VERSION = 2;
 
 class OfflineStorageService {
   private db: IDBDatabase | null = null;
-  private isServer = typeof window === "undefined";
+  private isServer = typeof window === 'undefined';
 
   async init(): Promise<void> {
     if (this.isServer) {
@@ -26,30 +26,30 @@ class OfflineStorageService {
         const db = (event.target as IDBOpenDBRequest).result;
 
         // Courses store
-        if (!db.objectStoreNames.contains("courses")) {
-          const store = db.createObjectStore("courses", { keyPath: "id" });
-          store.createIndex("downloaded", "downloaded", { unique: false });
-          store.createIndex("lastAccessed", "lastAccessed", { unique: false });
+        if (!db.objectStoreNames.contains('courses')) {
+          const store = db.createObjectStore('courses', { keyPath: 'id' });
+          store.createIndex('downloaded', 'downloaded', { unique: false });
+          store.createIndex('lastAccessed', 'lastAccessed', { unique: false });
         }
 
         // Lessons store
-        if (!db.objectStoreNames.contains("lessons")) {
-          const store = db.createObjectStore("lessons", { keyPath: "id" });
-          store.createIndex("courseId", "courseId", { unique: false });
-          store.createIndex("completed", "completed", { unique: false });
+        if (!db.objectStoreNames.contains('lessons')) {
+          const store = db.createObjectStore('lessons', { keyPath: 'id' });
+          store.createIndex('courseId', 'courseId', { unique: false });
+          store.createIndex('completed', 'completed', { unique: false });
         }
 
         // Offline content store
-        if (!db.objectStoreNames.contains("offlineContent")) {
-          const store = db.createObjectStore("offlineContent", {
-            keyPath: "courseId",
+        if (!db.objectStoreNames.contains('offlineContent')) {
+          const store = db.createObjectStore('offlineContent', {
+            keyPath: 'courseId',
           });
-          store.createIndex("downloadedAt", "downloadedAt", { unique: false });
+          store.createIndex('downloadedAt', 'downloadedAt', { unique: false });
         }
 
         // User progress store
-        if (!db.objectStoreNames.contains("userProgress")) {
-          db.createObjectStore("userProgress", { keyPath: "userId" });
+        if (!db.objectStoreNames.contains('userProgress')) {
+          db.createObjectStore('userProgress', { keyPath: 'userId' });
         }
       };
     });
@@ -71,12 +71,12 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["courses"], "readwrite");
-      const store = transaction.objectStore("courses");
+      const transaction = this.db.transaction(['courses'], 'readwrite');
+      const store = transaction.objectStore('courses');
       const request = store.put(course);
 
       request.onerror = () => reject(request.error);
@@ -90,12 +90,12 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["courses"], "readonly");
-      const store = transaction.objectStore("courses");
+      const transaction = this.db.transaction(['courses'], 'readonly');
+      const store = transaction.objectStore('courses');
       const request = store.get(id);
 
       request.onerror = () => reject(request.error);
@@ -109,13 +109,13 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["courses"], "readonly");
-      const store = transaction.objectStore("courses");
-      const index = store.index("downloaded");
+      const transaction = this.db.transaction(['courses'], 'readonly');
+      const store = transaction.objectStore('courses');
+      const index = store.index('downloaded');
       const request = index.getAll(IDBKeyRange.only(true));
 
       request.onerror = () => reject(request.error);
@@ -129,12 +129,12 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["lessons"], "readwrite");
-      const store = transaction.objectStore("lessons");
+      const transaction = this.db.transaction(['lessons'], 'readwrite');
+      const store = transaction.objectStore('lessons');
 
       lessons.forEach((lesson) => {
         store.put(lesson);
@@ -151,13 +151,13 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["lessons"], "readonly");
-      const store = transaction.objectStore("lessons");
-      const index = store.index("courseId");
+      const transaction = this.db.transaction(['lessons'], 'readonly');
+      const store = transaction.objectStore('lessons');
+      const index = store.index('courseId');
       const request = index.getAll(courseId);
 
       request.onerror = () => reject(request.error);
@@ -171,12 +171,12 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["offlineContent"], "readwrite");
-      const store = transaction.objectStore("offlineContent");
+      const transaction = this.db.transaction(['offlineContent'], 'readwrite');
+      const store = transaction.objectStore('offlineContent');
       const request = store.put(content);
 
       request.onerror = () => reject(request.error);
@@ -190,12 +190,12 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["offlineContent"], "readonly");
-      const store = transaction.objectStore("offlineContent");
+      const transaction = this.db.transaction(['offlineContent'], 'readonly');
+      const store = transaction.objectStore('offlineContent');
       const request = store.get(courseId);
 
       request.onerror = () => reject(request.error);
@@ -209,12 +209,12 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["offlineContent"], "readwrite");
-      const store = transaction.objectStore("offlineContent");
+      const transaction = this.db.transaction(['offlineContent'], 'readwrite');
+      const store = transaction.objectStore('offlineContent');
       const request = store.delete(courseId);
 
       request.onerror = () => reject(request.error);
@@ -228,12 +228,12 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["userProgress"], "readwrite");
-      const store = transaction.objectStore("userProgress");
+      const transaction = this.db.transaction(['userProgress'], 'readwrite');
+      const store = transaction.objectStore('userProgress');
       const request = store.put(progress);
 
       request.onerror = () => reject(request.error);
@@ -247,13 +247,13 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject(new Error("Database not initialized"));
+        reject(new Error('Database not initialized'));
         return;
       }
 
-      const transaction = this.db.transaction(["userProgress"], "readonly");
-      const store = transaction.objectStore("userProgress");
-      const request = store.get("current-user");
+      const transaction = this.db.transaction(['userProgress'], 'readonly');
+      const store = transaction.objectStore('userProgress');
+      const request = store.get('current-user');
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
@@ -276,7 +276,7 @@ class OfflineStorageService {
         total: estimate.quota || 5000 * 1024 * 1024,
       };
     } catch (error) {
-      console.error("Failed to get storage estimate:", error);
+      console.error('Failed to get storage estimate:', error);
       return { used: 0, total: 5000 * 1024 * 1024 };
     }
   }
