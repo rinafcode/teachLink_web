@@ -74,7 +74,10 @@ import { AccessibleError } from '@/app/components/accessibility/ScreenReaderOpti
 
 <form onSubmit={handleSubmit} aria-label="Contact form">
   <label htmlFor="email">
-    Email <span className="text-red-600" aria-label="required">*</span>
+    Email{' '}
+    <span className="text-red-600" aria-label="required">
+      *
+    </span>
   </label>
   <input
     type="email"
@@ -88,7 +91,7 @@ import { AccessibleError } from '@/app/components/accessibility/ScreenReaderOpti
       <AccessibleError message={errors.email} />
     </div>
   )}
-</form>
+</form>;
 ```
 
 ### Modals/Dialogs
@@ -100,12 +103,7 @@ function Modal({ isOpen, onClose, title, children }) {
   const containerRef = useFocusTrap(isOpen);
 
   return (
-    <div
-      ref={containerRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
+    <div ref={containerRef} role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <h2 id="modal-title">{title}</h2>
       {children}
     </div>
@@ -118,7 +116,7 @@ function Modal({ isOpen, onClose, title, children }) {
 ```tsx
 import { AccessibleLoading } from '@/app/components/accessibility/ScreenReaderOptimizer';
 
-<AccessibleLoading message="Loading courses" isLoading={isLoading} />
+<AccessibleLoading message="Loading courses" isLoading={isLoading} />;
 ```
 
 ### Progress Indicators
@@ -126,12 +124,7 @@ import { AccessibleLoading } from '@/app/components/accessibility/ScreenReaderOp
 ```tsx
 import { AccessibleProgress } from '@/app/components/accessibility/ScreenReaderOptimizer';
 
-<AccessibleProgress 
-  value={75} 
-  max={100} 
-  label="Course completion"
-  showPercentage={true}
-/>
+<AccessibleProgress value={75} max={100} label="Course completion" showPercentage={true} />;
 ```
 
 ### Announcements
@@ -190,11 +183,13 @@ function MyComponent() {
 ### Automated Testing
 
 1. **Run Accessibility Tester**
+
    - Click the green button (bottom-right)
    - Click "Run Accessibility Check"
    - Review and fix all critical and serious issues
 
 2. **Check Color Contrast**
+
    - Click the purple button (middle-right)
    - Click "Check Page Contrast"
    - Fix any failing contrast ratios
@@ -207,17 +202,20 @@ function MyComponent() {
 ### Manual Testing
 
 1. **Keyboard Navigation**
+
    - Unplug your mouse
    - Navigate entire site using only keyboard
    - Verify all interactive elements are reachable
    - Check focus indicators are visible
 
 2. **Screen Reader Testing**
+
    - **Windows**: NVDA (free) or JAWS
    - **Mac**: VoiceOver (built-in)
    - **Mobile**: TalkBack (Android) or VoiceOver (iOS)
-   
+
    Test checklist:
+
    - [ ] All content is announced
    - [ ] Form labels are read correctly
    - [ ] Buttons have clear names
@@ -226,6 +224,7 @@ function MyComponent() {
    - [ ] Status messages are announced
 
 3. **Zoom Testing**
+
    - Zoom to 200% (Ctrl/Cmd + +)
    - Verify all content is readable
    - Check for horizontal scrolling
@@ -242,6 +241,7 @@ function MyComponent() {
 
 **Problem**: Images without alt attributes
 **Solution**:
+
 ```tsx
 // Decorative image
 <img src="decoration.png" alt="" />
@@ -254,6 +254,7 @@ function MyComponent() {
 
 **Problem**: Inputs without associated labels
 **Solution**:
+
 ```tsx
 // Option 1: Explicit label
 <label htmlFor="email">Email</label>
@@ -273,21 +274,32 @@ function MyComponent() {
 
 **Problem**: Text doesn't meet 4.5:1 contrast ratio
 **Solution**:
+
 ```css
 /* Bad: 2.5:1 contrast */
-.text { color: #999; background: #fff; }
+.text {
+  color: #999;
+  background: #fff;
+}
 
 /* Good: 4.6:1 contrast */
-.text { color: #767676; background: #fff; }
+.text {
+  color: #767676;
+  background: #fff;
+}
 
 /* Better: 7:1 contrast */
-.text { color: #595959; background: #fff; }
+.text {
+  color: #595959;
+  background: #fff;
+}
 ```
 
 ### Issue: Keyboard Trap
 
 **Problem**: Focus gets stuck in a component
 **Solution**:
+
 ```tsx
 import { useFocusTrap } from '@/hooks/useAccessibility';
 
@@ -308,6 +320,7 @@ useEffect(() => {
 
 **Problem**: Can't see which element has focus
 **Solution**:
+
 ```css
 /* Global focus styles already added in globals.css */
 *:focus-visible {
@@ -398,6 +411,7 @@ useEffect(() => {
 ## Support
 
 For questions or issues:
+
 1. Check the README in `src/app/components/accessibility/`
 2. Review examples in `src/app/components/accessibility/examples/`
 3. Test on the demo page at `/accessibility-demo`

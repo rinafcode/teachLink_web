@@ -36,7 +36,7 @@ export const AppUpdateManager: React.FC = () => {
             </button>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => setShow(false)}
           className="p-1 hover:bg-blue-500 rounded-full transition-colors"
         >

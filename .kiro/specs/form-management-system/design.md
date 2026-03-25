@@ -17,25 +17,25 @@ graph TB
         FW[Form Wizard]
         UI[UI Components]
     end
-    
+
     subgraph "Business Logic Layer"
         VE[Validation Engine]
         FSM[Form State Manager]
         CP[Configuration Parser]
         AT[Analytics Tracker]
     end
-    
+
     subgraph "Data Layer"
         ASM[Auto Save Manager]
         DS[Data Store]
         LS[Local Storage]
     end
-    
+
     subgraph "External"
         API[Validation APIs]
         Analytics[Analytics Service]
     end
-    
+
     FB --> FSM
     FB --> VE
     FB --> CP
@@ -45,12 +45,12 @@ graph TB
     ASM --> DS
     ASM --> LS
     AT --> Analytics
-    
+
     classDef presentation fill:#e1f5fe
     classDef business fill:#f3e5f5
     classDef data fill:#e8f5e8
     classDef external fill:#fff3e0
-    
+
     class FB,FW,UI presentation
     class VE,FSM,CP,AT business
     class ASM,DS,LS data
@@ -224,18 +224,18 @@ interface FormConfiguration {
 }
 
 // Field Type Definitions
-type FieldType = 
-  | 'text' 
-  | 'number' 
-  | 'email' 
-  | 'password' 
-  | 'select' 
-  | 'checkbox' 
-  | 'radio' 
-  | 'textarea' 
-  | 'file' 
-  | 'date' 
-  | 'time' 
+type FieldType =
+  | 'text'
+  | 'number'
+  | 'email'
+  | 'password'
+  | 'select'
+  | 'checkbox'
+  | 'radio'
+  | 'textarea'
+  | 'file'
+  | 'date'
+  | 'time'
   | 'datetime-local';
 
 // Validation Configuration
@@ -298,7 +298,7 @@ sequenceDiagram
     participant ValidationEngine
     participant AutoSaveManager
     participant Analytics
-    
+
     User->>FormBuilder: Interact with field
     FormBuilder->>StateManager: Update field value
     StateManager->>ValidationEngine: Validate field
@@ -313,245 +313,245 @@ The data flow ensures that all components stay synchronized while maintaining cl
 
 ## Correctness Properties
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+_A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
 
 ### Property 1: Complete Form Rendering
 
-*For any* valid Form_Configuration, the Form_Builder should render a complete form containing all specified fields with their correct types and properties.
+_For any_ valid Form_Configuration, the Form_Builder should render a complete form containing all specified fields with their correct types and properties.
 
 **Validates: Requirements 1.1, 1.2**
 
 ### Property 2: Conditional Field Visibility
 
-*For any* form with field dependencies, when a dependent field's value changes, all fields that depend on it should update their visibility according to the dependency rules.
+_For any_ form with field dependencies, when a dependent field's value changes, all fields that depend on it should update their visibility according to the dependency rules.
 
 **Validates: Requirements 1.3, 1.5**
 
 ### Property 3: Configuration Styling Application
 
-*For any* Form_Configuration with styling and layout options, the rendered form should apply all specified styling and layout configurations to the appropriate elements.
+_For any_ Form_Configuration with styling and layout options, the rendered form should apply all specified styling and layout configurations to the appropriate elements.
 
 **Validates: Requirements 1.4**
 
 ### Property 4: Validation Execution
 
-*For any* form field with validation rules, validation should execute on blur, change, and submit events, returning appropriate validation results for both synchronous and asynchronous rules.
+_For any_ form field with validation rules, validation should execute on blur, change, and submit events, returning appropriate validation results for both synchronous and asynchronous rules.
 
 **Validates: Requirements 2.1, 2.2, 2.3, 2.4**
 
 ### Property 5: Custom Validation Context
 
-*For any* custom validation function, it should receive access to the complete current form state when executed.
+_For any_ custom validation function, it should receive access to the complete current form state when executed.
 
 **Validates: Requirements 2.5**
 
 ### Property 6: Validation Feedback Display
 
-*For any* validation result (success or failure), the system should display appropriate visual feedback with configurable positioning and styling.
+_For any_ validation result (success or failure), the system should display appropriate visual feedback with configurable positioning and styling.
 
 **Validates: Requirements 2.6, 2.7**
 
 ### Property 7: Auto-Save Triggering
 
-*For any* form with auto-save enabled, data should be automatically saved at configured intervals and on field blur events.
+_For any_ form with auto-save enabled, data should be automatically saved at configured intervals and on field blur events.
 
 **Validates: Requirements 3.1, 3.3**
 
 ### Property 8: Draft Data Recovery
 
-*For any* form with saved draft data, when a user returns to the form, the system should restore all previously saved field values and state.
+_For any_ form with saved draft data, when a user returns to the form, the system should restore all previously saved field values and state.
 
 **Validates: Requirements 3.2**
 
 ### Property 9: Offline Save Management
 
-*For any* auto-save operation that fails due to network connectivity, the system should queue the save and retry when connectivity is restored.
+_For any_ auto-save operation that fails due to network connectivity, the system should queue the save and retry when connectivity is restored.
 
 **Validates: Requirements 3.4**
 
 ### Property 10: Save Status Indication
 
-*For any* auto-save operation, the system should display appropriate visual indicators reflecting the current save status (saving, saved, error).
+_For any_ auto-save operation, the system should display appropriate visual indicators reflecting the current save status (saving, saved, error).
 
 **Validates: Requirements 3.5**
 
 ### Property 11: Draft Cleanup
 
-*For any* form that is successfully submitted, all associated draft data should be cleared from storage.
+_For any_ form that is successfully submitted, all associated draft data should be cleared from storage.
 
 **Validates: Requirements 3.6**
 
 ### Property 12: Storage Quota Management
 
-*For any* storage system approaching quota limits, the Auto_Save_Manager should remove oldest drafts to maintain storage within limits.
+_For any_ storage system approaching quota limits, the Auto_Save_Manager should remove oldest drafts to maintain storage within limits.
 
 **Validates: Requirements 3.7**
 
 ### Property 13: Wizard Step Navigation
 
-*For any* multi-step form, users should be able to navigate between steps using next/previous controls, with navigation blocked if the current step is invalid.
+_For any_ multi-step form, users should be able to navigate between steps using next/previous controls, with navigation blocked if the current step is invalid.
 
 **Validates: Requirements 4.1, 4.2**
 
 ### Property 14: Step Data Preservation
 
-*For any* multi-step form navigation, all entered data should be preserved when moving between steps.
+_For any_ multi-step form navigation, all entered data should be preserved when moving between steps.
 
 **Validates: Requirements 4.3**
 
 ### Property 15: Progress Indication
 
-*For any* multi-step form, progress indicators should accurately reflect the current step and overall completion status.
+_For any_ multi-step form, progress indicators should accurately reflect the current step and overall completion status.
 
 **Validates: Requirements 4.4**
 
 ### Property 16: Conditional Step Routing
 
-*For any* multi-step form with conditional routing rules, navigation should follow the correct path based on previous answers.
+_For any_ multi-step form with conditional routing rules, navigation should follow the correct path based on previous answers.
 
 **Validates: Requirements 4.5**
 
 ### Property 17: Non-Linear Step Access
 
-*For any* multi-step form, users should be able to jump directly to any previously completed step.
+_For any_ multi-step form, users should be able to jump directly to any previously completed step.
 
 **Validates: Requirements 4.6**
 
 ### Property 18: Final Step Submission
 
-*For any* multi-step form on the final step, form submission functionality should be available and functional.
+_For any_ multi-step form on the final step, form submission functionality should be available and functional.
 
 **Validates: Requirements 4.7**
 
 ### Property 19: Comprehensive Analytics Tracking
 
-*For any* form interaction (start, field focus/blur/change, abandonment), the Analytics_Tracker should record the appropriate event data with timestamps and context.
+_For any_ form interaction (start, field focus/blur/change, abandonment), the Analytics_Tracker should record the appropriate event data with timestamps and context.
 
 **Validates: Requirements 5.1, 5.2, 5.3**
 
 ### Property 20: Time Measurement Tracking
 
-*For any* form step or field interaction, the system should accurately measure and record time spent.
+_For any_ form step or field interaction, the system should accurately measure and record time spent.
 
 **Validates: Requirements 5.4**
 
 ### Property 21: Analytics Calculations
 
-*For any* set of form analytics data, the system should correctly calculate completion rates and identify bottleneck fields.
+_For any_ set of form analytics data, the system should correctly calculate completion rates and identify bottleneck fields.
 
 **Validates: Requirements 5.5**
 
 ### Property 22: Analytics Reporting
 
-*For any* collected analytics data, it should be accessible through the reporting interface in aggregated form.
+_For any_ collected analytics data, it should be accessible through the reporting interface in aggregated form.
 
 **Validates: Requirements 5.6**
 
 ### Property 23: Privacy Mode Anonymization
 
-*For any* analytics data collected when privacy mode is enabled, all personally identifiable information should be anonymized.
+_For any_ analytics data collected when privacy mode is enabled, all personally identifiable information should be anonymized.
 
 **Validates: Requirements 5.7**
 
 ### Property 24: Configuration Parsing
 
-*For any* valid Form_Configuration JSON, the Configuration_Parser should successfully parse it into the correct internal form structure.
+_For any_ valid Form_Configuration JSON, the Configuration_Parser should successfully parse it into the correct internal form structure.
 
 **Validates: Requirements 6.1**
 
 ### Property 25: Configuration Validation
 
-*For any* invalid Form_Configuration, the Configuration_Parser should return descriptive validation errors identifying the specific issues.
+_For any_ invalid Form_Configuration, the Configuration_Parser should return descriptive validation errors identifying the specific issues.
 
 **Validates: Requirements 6.2**
 
 ### Property 26: Complex Structure Parsing
 
-*For any* Form_Configuration with nested field groups and complex layouts, the parser should correctly handle the nested structure.
+_For any_ Form_Configuration with nested field groups and complex layouts, the parser should correctly handle the nested structure.
 
 **Validates: Requirements 6.3**
 
 ### Property 27: Configuration Formatting
 
-*For any* internal Form_Configuration object, the Pretty_Printer should format it into valid JSON.
+_For any_ internal Form_Configuration object, the Pretty_Printer should format it into valid JSON.
 
 **Validates: Requirements 6.4**
 
 ### Property 28: Configuration Round-Trip
 
-*For any* valid Form_Configuration object, parsing then printing then parsing should produce an equivalent object.
+_For any_ valid Form_Configuration object, parsing then printing then parsing should produce an equivalent object.
 
 **Validates: Requirements 6.5**
 
 ### Property 29: Comprehensive State Management
 
-*For any* form field value or validation state change, the Form_State_Manager should maintain accurate current values and validation status for all fields and the overall form.
+_For any_ form field value or validation state change, the Form_State_Manager should maintain accurate current values and validation status for all fields and the overall form.
 
 **Validates: Requirements 7.1, 7.2**
 
 ### Property 30: Cascading State Updates
 
-*For any* field value change, the Form_State_Manager should update all dependent field visibility and validation states accordingly.
+_For any_ field value change, the Form_State_Manager should update all dependent field visibility and validation states accordingly.
 
 **Validates: Requirements 7.3**
 
 ### Property 31: Programmatic State Control
 
-*For any* programmatic state manipulation through Form_State_Manager methods, field values and validation states should update correctly.
+_For any_ programmatic state manipulation through Form_State_Manager methods, field values and validation states should update correctly.
 
 **Validates: Requirements 7.4**
 
 ### Property 32: Form Reset Functionality
 
-*For any* form reset operation, all field data and validation states should be cleared to their initial state.
+_For any_ form reset operation, all field data and validation states should be cleared to their initial state.
 
 **Validates: Requirements 7.5**
 
 ### Property 33: State Change Events
 
-*For any* form state change, appropriate events should be emitted to enable reactive updates.
+_For any_ form state change, appropriate events should be emitted to enable reactive updates.
 
 **Validates: Requirements 7.6**
 
 ### Property 34: Accessibility Markup Generation
 
-*For any* generated form, all elements should include proper ARIA labels, descriptions, and semantic HTML structure.
+_For any_ generated form, all elements should include proper ARIA labels, descriptions, and semantic HTML structure.
 
 **Validates: Requirements 8.1, 8.6**
 
 ### Property 35: Keyboard Navigation Support
 
-*For any* form element, keyboard navigation should work correctly with customizable focus indicators and proper tab order.
+_For any_ form element, keyboard navigation should work correctly with customizable focus indicators and proper tab order.
 
 **Validates: Requirements 8.2, 8.5**
 
 ### Property 36: Screen Reader Error Announcements
 
-*For any* validation error, the system should make appropriate announcements to screen readers.
+_For any_ validation error, the system should make appropriate announcements to screen readers.
 
 **Validates: Requirements 8.3**
 
 ### Property 37: High Contrast Mode Support
 
-*For any* form in high contrast mode, all elements should display with appropriate contrast and visibility.
+_For any_ form in high contrast mode, all elements should display with appropriate contrast and visibility.
 
 **Validates: Requirements 8.4**
 
 ### Property 38: Performance Optimizations
 
-*For any* large form, the system should implement virtual scrolling, lazy loading, and debouncing to maintain responsive performance.
+_For any_ large form, the system should implement virtual scrolling, lazy loading, and debouncing to maintain responsive performance.
 
 **Validates: Requirements 9.1, 9.2, 9.3**
 
 ### Property 39: Data Compression
 
-*For any* draft data saved to storage, the Auto_Save_Manager should compress the data to minimize storage usage.
+_For any_ draft data saved to storage, the Auto_Save_Manager should compress the data to minimize storage usage.
 
 **Validates: Requirements 9.5**
 
 ### Property 40: Progressive Enhancement
 
-*For any* form, core functionality should work without JavaScript through progressive enhancement.
+_For any_ form, core functionality should work without JavaScript through progressive enhancement.
 
 **Validates: Requirements 9.6**
 
@@ -616,16 +616,15 @@ Each property test references its corresponding design document property:
 describe('Form Management System Properties', () => {
   it('Property 1: Complete Form Rendering', () => {
     // Feature: form-management-system, Property 1: Complete Form Rendering
-    fc.assert(fc.property(
-      formConfigurationArbitrary(),
-      (config) => {
+    fc.assert(
+      fc.property(formConfigurationArbitrary(), (config) => {
         const form = formBuilder.render(config);
-        return config.fields.every(field => 
-          form.hasField(field.id) && 
-          form.getFieldType(field.id) === field.type
+        return config.fields.every(
+          (field) => form.hasField(field.id) && form.getFieldType(field.id) === field.type,
         );
-      }
-    ), { numRuns: 100 });
+      }),
+      { numRuns: 100 },
+    );
   });
 });
 ```

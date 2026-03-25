@@ -18,7 +18,7 @@ export const PWAManager: React.FC = () => {
       <AppUpdateManager />
       <OfflineSyncManager />
       <NativeIntegrationLayer />
-      
+
       {/* Offline Status Toast */}
       {isOffline && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium border border-gray-700 shadow-xl z-[9999] animate-in fade-in zoom-in duration-300">

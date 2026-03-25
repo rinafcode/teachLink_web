@@ -7,6 +7,7 @@ This implementation provides a comprehensive offline learning system for the Tea
 ## Features
 
 ### 🎯 Core Functionality
+
 - **Course Downloading**: Download complete courses for offline viewing
 - **Progress Tracking**: Track learning progress offline with automatic sync
 - **Storage Management**: Monitor and manage offline storage usage
@@ -14,6 +15,7 @@ This implementation provides a comprehensive offline learning system for the Tea
 - **Real-time Status**: Visual indicators for connection and sync status
 
 ### 📱 User Experience
+
 - **Seamless Offline/Online Transition**: Automatic detection and handling
 - **Visual Status Indicators**: Clear feedback on connection and sync status
 - **Download Manager**: Intuitive interface for managing course downloads
@@ -43,6 +45,7 @@ src/app/
 The implementation uses IndexedDB with the following stores:
 
 #### Courses Store
+
 ```typescript
 interface CourseData {
   id: string;
@@ -57,6 +60,7 @@ interface CourseData {
 ```
 
 #### Progress Store
+
 ```typescript
 interface ProgressData {
   courseId: string;
@@ -70,6 +74,7 @@ interface ProgressData {
 ```
 
 #### Sync Queue Store
+
 ```typescript
 interface SyncQueueItem {
   id: string;
@@ -85,12 +90,14 @@ interface SyncQueueItem {
 ### Basic Setup
 
 1. **Enable Offline Mode**:
+
    ```typescript
    const { enableOfflineMode } = useOfflineModeContext();
    await enableOfflineMode();
    ```
 
 2. **Download a Course**:
+
    ```typescript
    const { downloadCourse } = useOfflineModeContext();
    await downloadCourse(courseId, courseData);
@@ -105,27 +112,27 @@ interface SyncQueueItem {
 ### Component Integration
 
 #### Offline Status Indicator
+
 ```tsx
 import { OfflineStatusIndicator } from './components/offline/OfflineStatusIndicator';
 
-<OfflineStatusIndicator 
-  showDetails={true}
-  className="fixed top-4 right-4"
-/>
+<OfflineStatusIndicator showDetails={true} className="fixed top-4 right-4" />;
 ```
 
 #### Download Manager
+
 ```tsx
 import { DownloadManager } from './components/offline/DownloadManager';
 
-<DownloadManager className="fixed bottom-6 right-6" />
+<DownloadManager className="fixed bottom-6 right-6" />;
 ```
 
 #### Storage Manager
+
 ```tsx
 import { StorageManager } from './components/offline/StorageManager';
 
-<StorageManager className="fixed bottom-6 left-6" />
+<StorageManager className="fixed bottom-6 left-6" />;
 ```
 
 ## API Reference
@@ -133,6 +140,7 @@ import { StorageManager } from './components/offline/StorageManager';
 ### OfflineModeContext
 
 #### State Properties
+
 - `isOnline: boolean` - Current connection status
 - `isOfflineModeEnabled: boolean` - Whether offline mode is active
 - `syncStatus: 'idle' | 'syncing' | 'synced' | 'error'` - Current sync status
@@ -141,6 +149,7 @@ import { StorageManager } from './components/offline/StorageManager';
 - `storageUsage: { used: number; total: number; percentage: number }` - Storage information
 
 #### Methods
+
 - `enableOfflineMode(): Promise<void>` - Enable offline functionality
 - `disableOfflineMode(): Promise<void>` - Disable offline functionality
 - `syncOfflineData(): Promise<void>` - Manually trigger sync
@@ -151,6 +160,7 @@ import { StorageManager } from './components/offline/StorageManager';
 ### useOfflineMode Hook
 
 #### Methods
+
 - `initializeOfflineMode(): Promise<void>` - Initialize the offline database
 - `downloadCourse(courseId: string, courseData: any): Promise<void>` - Download course content
 - `saveProgress(courseId: string, moduleId: string, progress: number, completed: boolean): Promise<void>` - Save progress
@@ -210,6 +220,7 @@ src/app/hooks/__tests__/
 ```
 
 Tests are organized into logical groups:
+
 - Initialization tests
 - Course operation tests
 - Progress tracking tests
@@ -243,12 +254,14 @@ Tests are organized into logical groups:
 ## Browser Compatibility
 
 ### Supported Browsers
+
 - Chrome 60+
 - Firefox 55+
 - Safari 11+
 - Edge 79+
 
 ### Required APIs
+
 - IndexedDB
 - Service Workers (for PWA features)
 - Fetch API
@@ -257,12 +270,14 @@ Tests are organized into logical groups:
 ## Security Considerations
 
 ### Data Protection
+
 - **Local Storage**: All data is stored locally in IndexedDB
 - **No Sensitive Data**: No passwords or sensitive information stored offline
 - **Encryption**: Consider encrypting sensitive course content
 - **Access Control**: Proper access controls for offline data
 
 ### Privacy
+
 - **User Consent**: Clear consent for offline storage
 - **Data Retention**: Automatic cleanup of old data
 - **Opt-out**: Users can disable offline mode at any time
@@ -270,6 +285,7 @@ Tests are organized into logical groups:
 ## Future Enhancements
 
 ### Planned Features
+
 - **Offline Video Streaming**: Optimized video playback offline
 - **Advanced Compression**: Better compression algorithms
 - **Multi-device Sync**: Sync across multiple devices
@@ -277,6 +293,7 @@ Tests are organized into logical groups:
 - **Smart Preloading**: Predictive course downloading
 
 ### Performance Improvements
+
 - **WebAssembly**: Use WASM for heavy computations
 - **Web Workers**: Background processing for sync operations
 - **Streaming**: Stream large files during download
@@ -287,16 +304,19 @@ Tests are organized into logical groups:
 ### Common Issues
 
 1. **Database Initialization Failed**
+
    - Check browser IndexedDB support
    - Clear browser data and retry
    - Check for storage quota issues
 
 2. **Sync Conflicts**
+
    - Review conflict resolution settings
    - Manually resolve conflicts if needed
    - Check network connectivity
 
 3. **Storage Full**
+
    - Use Storage Manager to clear old data
    - Remove unused courses
    - Check browser storage limits
@@ -309,6 +329,7 @@ Tests are organized into logical groups:
 ### Debug Mode
 
 Enable debug logging by setting:
+
 ```typescript
 localStorage.setItem('offline-debug', 'true');
 ```
@@ -318,11 +339,13 @@ localStorage.setItem('offline-debug', 'true');
 ### Development Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Start development server:
+
    ```bash
    npm run dev
    ```

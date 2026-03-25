@@ -11,12 +11,12 @@
 /* Presets */
 .preset-fade-in {
   opacity: 0;
-  transform: translate3d(0,6px,0);
+  transform: translate3d(0, 6px, 0);
 }
 
 .preset-fade-in.anim-enter {
   opacity: 1;
-  transform: translate3d(0,0,0);
+  transform: translate3d(0, 0, 0);
 }
 
 @keyframes subtle-pop {

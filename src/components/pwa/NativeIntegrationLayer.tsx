@@ -22,7 +22,7 @@ export const NativeIntegrationLayer: React.FC = () => {
       // In a real app, this would open a camera modal or start a scan
       console.log('Camera access granted');
       // Stop stream immediately for demo
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
     } catch (err) {
       console.error('Camera access denied:', err);
     }

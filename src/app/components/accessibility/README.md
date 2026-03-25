@@ -5,31 +5,36 @@ This directory contains comprehensive accessibility features ensuring WCAG 2.1 A
 ## Components
 
 ### 1. AccessibilityNavigator
+
 Provides keyboard navigation and skip links for efficient page navigation.
 
 **Features:**
+
 - Skip to main content, navigation, and footer
 - Landmark navigation menu
 - Keyboard shortcuts reference
 - Visual navigation helper
 
 **Usage:**
+
 ```tsx
 import { AccessibilityNavigator } from '@/app/components/accessibility/AccessibilityNavigator';
 
-<AccessibilityNavigator 
+<AccessibilityNavigator
   skipLinks={[
     { id: 'skip-main', label: 'Skip to main content', targetId: 'main-content' },
-    { id: 'skip-nav', label: 'Skip to navigation', targetId: 'main-navigation' }
+    { id: 'skip-nav', label: 'Skip to navigation', targetId: 'main-navigation' },
   ]}
   showLandmarks={true}
-/>
+/>;
 ```
 
 ### 2. ScreenReaderOptimizer
+
 Optimizes content for screen readers with ARIA labels and live regions.
 
 **Features:**
+
 - Automatic screen reader detection
 - ARIA live regions for announcements
 - Accessible loading states
@@ -37,12 +42,13 @@ Optimizes content for screen readers with ARIA labels and live regions.
 - Progress indicators with proper ARIA attributes
 
 **Usage:**
+
 ```tsx
-import { 
+import {
   ScreenReaderOptimizer,
   AccessibleLoading,
   AccessibleError,
-  AccessibleProgress 
+  AccessibleProgress
 } from '@/app/components/accessibility/ScreenReaderOptimizer';
 
 <ScreenReaderOptimizer enableAnnouncements={true}>
@@ -60,9 +66,11 @@ import {
 ```
 
 ### 3. ColorContrastChecker
+
 Validates color contrast ratios against WCAG standards.
 
 **Features:**
+
 - Automatic page contrast checking
 - Visual contrast ratio display
 - WCAG AA/AAA compliance indicators
@@ -70,19 +78,19 @@ Validates color contrast ratios against WCAG standards.
 - Detailed failure reports
 
 **Usage:**
+
 ```tsx
 import { ColorContrastChecker } from '@/app/components/accessibility/ColorContrastChecker';
 
-<ColorContrastChecker 
-  autoCheck={false}
-  showWidget={true}
-/>
+<ColorContrastChecker autoCheck={false} showWidget={true} />;
 ```
 
 ### 4. AccessibilityTester
+
 Automated accessibility testing and issue reporting.
 
 **Features:**
+
 - Comprehensive accessibility checks
 - Issue severity classification (critical, serious, moderate, minor)
 - WCAG criteria mapping
@@ -90,19 +98,19 @@ Automated accessibility testing and issue reporting.
 - Real-time issue filtering
 
 **Usage:**
+
 ```tsx
 import { AccessibilityTester } from '@/app/components/accessibility/AccessibilityTester';
 
-<AccessibilityTester 
-  autoCheck={false}
-  showWidget={true}
-/>
+<AccessibilityTester autoCheck={false} showWidget={true} />;
 ```
 
 ### 5. AccessibilityProvider
+
 Wrapper component that enables all accessibility features.
 
 **Usage:**
+
 ```tsx
 import { AccessibilityProvider } from '@/app/components/accessibility/AccessibilityProvider';
 
@@ -125,6 +133,7 @@ function App() {
 ## Hooks
 
 ### useKeyboardNavigation
+
 Manages keyboard navigation within a container.
 
 ```tsx
@@ -135,6 +144,7 @@ return <div ref={containerRef}>{/* content */}</div>;
 ```
 
 ### useFocusTrap
+
 Traps focus within a container (for modals/dialogs).
 
 ```tsx
@@ -145,6 +155,7 @@ return <div ref={containerRef}>{/* modal content */}</div>;
 ```
 
 ### useScreenReaderAnnouncement
+
 Announces messages to screen readers.
 
 ```tsx
@@ -155,6 +166,7 @@ announce('Form submitted successfully', 'polite');
 ```
 
 ### useAccessibilityCheck
+
 Performs accessibility checks on a container.
 
 ```tsx
@@ -164,6 +176,7 @@ const { containerRef, issues, checkAccessibility } = useAccessibilityCheck(false
 ```
 
 ### useReducedMotion
+
 Detects user's reduced motion preference.
 
 ```tsx
@@ -176,6 +189,7 @@ const animationDuration = prefersReducedMotion ? 0 : 300;
 ## Utility Functions
 
 ### calculateContrastRatio
+
 Calculates contrast ratio between two colors.
 
 ```tsx
@@ -187,18 +201,20 @@ console.log(result.passes.aa); // true
 ```
 
 ### checkAccessibilityIssues
+
 Checks for common accessibility issues in a container.
 
 ```tsx
 import { checkAccessibilityIssues } from '@/utils/accessibilityUtils';
 
 const issues = checkAccessibilityIssues(document.body);
-issues.forEach(issue => {
+issues.forEach((issue) => {
   console.log(issue.severity, issue.message);
 });
 ```
 
 ### announceToScreenReader
+
 Announces a message to screen readers.
 
 ```tsx
@@ -210,12 +226,14 @@ announceToScreenReader('Page loaded', 'polite');
 ## WCAG 2.1 AA Compliance Checklist
 
 ### ✅ Perceivable
+
 - [x] 1.1.1 Non-text Content - Alt text checking
 - [x] 1.3.1 Info and Relationships - Semantic HTML and ARIA
 - [x] 1.4.3 Contrast (Minimum) - Color contrast checker
 - [x] 1.4.11 Non-text Contrast - UI component contrast
 
 ### ✅ Operable
+
 - [x] 2.1.1 Keyboard - Full keyboard navigation
 - [x] 2.1.2 No Keyboard Trap - Focus trap management
 - [x] 2.4.1 Bypass Blocks - Skip links
@@ -223,27 +241,31 @@ announceToScreenReader('Page loaded', 'polite');
 - [x] 2.4.7 Focus Visible - Visible focus indicators
 
 ### ✅ Understandable
+
 - [x] 3.1.1 Language of Page - Lang attributes
 - [x] 3.2.1 On Focus - No unexpected changes
 - [x] 3.3.1 Error Identification - Accessible errors
 - [x] 3.3.2 Labels or Instructions - Form labels
 
 ### ✅ Robust
+
 - [x] 4.1.2 Name, Role, Value - ARIA attributes
 - [x] 4.1.3 Status Messages - Live regions
 
 ## Testing
 
 ### Manual Testing
+
 1. **Keyboard Navigation**: Navigate entire site using only Tab, Shift+Tab, Enter, and Arrow keys
 2. **Screen Reader**: Test with NVDA (Windows), JAWS (Windows), or VoiceOver (Mac)
 3. **Zoom**: Test at 200% zoom level
 4. **Color Blindness**: Use browser extensions to simulate color blindness
 
 ### Automated Testing
+
 ```tsx
 // Run accessibility check
-<AccessibilityTester autoCheck={true} />
+<AccessibilityTester autoCheck={true} />;
 
 // Or programmatically
 const { issues, checkAccessibility } = useAccessibilityCheck();

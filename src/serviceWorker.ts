@@ -40,7 +40,7 @@ registerRoute(
     // Return true to signal that we want to use the handler.
     return true;
   },
-  createHandlerBoundToURL('/index.html')
+  createHandlerBoundToURL('/index.html'),
 );
 
 // An example runtime caching route for requests that aren't handled by the precache,
@@ -55,21 +55,21 @@ registerRoute(
       // Ensure that once this runtime cache reaches a maximum size the least-recently used images are removed.
       new ExpirationPlugin({ maxEntries: 50 }),
     ],
-  })
+  }),
 );
 
 // Cache common external image providers
 registerRoute(
-  ({ url }) => 
-    url.hostname === 'images.unsplash.com' || 
-    url.hostname === 'thumbs.dreamstime.com' || 
+  ({ url }) =>
+    url.hostname === 'images.unsplash.com' ||
+    url.hostname === 'thumbs.dreamstime.com' ||
     url.hostname === 'static.vecteezy.com',
   new StaleWhileRevalidate({
     cacheName: 'external-images',
     plugins: [
       new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 }), // 30 Days
     ],
-  })
+  }),
 );
 
 // Cache API requests
@@ -80,7 +80,7 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 }), // 24 Hours
     ],
-  })
+  }),
 );
 
 // Background Sync for offline actions
@@ -93,7 +93,7 @@ registerRoute(
   new NetworkFirst({
     plugins: [bgSyncPlugin],
   }),
-  'POST'
+  'POST',
 );
 
 // This allows the web app to trigger skipWaiting via registration.waiting.postMessage({type: 'SKIP_WAITING'})
