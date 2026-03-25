@@ -181,9 +181,7 @@ describe('AsyncValidationManager', () => {
     });
 
     it('should fail after max retry attempts', async () => {
-      const mockValidation: ValidationFunction = vi
-        .fn()
-        .mockRejectedValue(new Error('Persistent validation error'));
+      const mockValidation: ValidationFunction = vi.fn().mockRejectedValue(new Error('Persistent validation error'));
 
       const request: AsyncValidationRequest = {
         fieldId: 'test-field',
@@ -199,10 +197,13 @@ describe('AsyncValidationManager', () => {
 
       const resultPromise = manager.validateField(request);
 
+      // Set up the expectation before advancing timers to avoid unhandled rejections
+      const errorPromise = expect(resultPromise).rejects.toThrow('Persistent validation error');
+
       // Fast-forward through all retries
       await vi.runAllTimersAsync();
 
-      await expect(resultPromise).rejects.toThrow('Persistent validation error');
+      await errorPromise;
       expect(mockValidation).toHaveBeenCalledTimes(3); // Initial + 2 retries
 
       const state = manager.getValidationState('test-field');

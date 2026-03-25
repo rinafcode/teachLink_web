@@ -234,8 +234,13 @@ export class AsyncValidationManager {
             reject(new Error(`Validation timeout after ${options.timeout}ms`));
           }, options.timeout);
         });
+        // Ensure timeout promise is always handled to prevent unhandled rejection warnings
+        timeoutPromise.catch(() => {});
 
         const validationPromise = Promise.resolve(validationFunction(value, formState));
+        // Ensure the promise is handled even if it loses the race or rejects immediately
+        validationPromise.catch(() => {}); 
+        
         const result = await Promise.race([validationPromise, timeoutPromise]);
         clearTimeout(timeoutId);
 
