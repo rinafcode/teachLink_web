@@ -33,6 +33,7 @@ describe('AsyncValidationManager', () => {
   });
 
   afterEach(() => {
+    vi.clearAllTimers();
     vi.useRealTimers();
     manager.dispose();
   });
@@ -170,14 +171,8 @@ describe('AsyncValidationManager', () => {
 
       const resultPromise = manager.validateField(request);
 
-      // Fast-forward through debounce and retries
-      vi.advanceTimersByTime(0); // Initial debounce
-
-      // Wait for retries
-      for (let i = 0; i < 3; i++) {
-        vi.advanceTimersByTime(100 * Math.pow(2, i)); // Exponential backoff
-        await Promise.resolve(); // Allow promises to resolve
-      }
+      // Fast-forward through all retries
+      await vi.runAllTimersAsync();
 
       const result = await resultPromise;
 
@@ -204,13 +199,8 @@ describe('AsyncValidationManager', () => {
 
       const resultPromise = manager.validateField(request);
 
-      // Fast-forward through debounce and all retries
-      vi.advanceTimersByTime(0);
-
-      for (let i = 0; i <= 2; i++) {
-        vi.advanceTimersByTime(100 * Math.pow(2, i));
-        await Promise.resolve();
-      }
+      // Fast-forward through all retries
+      await vi.runAllTimersAsync();
 
       await expect(resultPromise).rejects.toThrow('Persistent validation error');
       expect(mockValidation).toHaveBeenCalledTimes(3); // Initial + 2 retries

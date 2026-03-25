@@ -227,16 +227,17 @@ export class AsyncValidationManager {
         // Update retry count in state
         this.updateValidationState(fieldId, { retryCount: attempt });
 
-        // Create timeout promise
+        // Execute validation with timeout
+        let timeoutId: any;
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => {
+          timeoutId = setTimeout(() => {
             reject(new Error(`Validation timeout after ${options.timeout}ms`));
           }, options.timeout);
         });
 
-        // Execute validation with timeout
         const validationPromise = Promise.resolve(validationFunction(value, formState));
         const result = await Promise.race([validationPromise, timeoutPromise]);
+        clearTimeout(timeoutId);
 
         // Validation succeeded
         return result;
