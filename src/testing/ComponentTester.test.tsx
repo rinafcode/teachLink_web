@@ -237,14 +237,23 @@ describe('ComponentTester – AsyncDataComponent', () => {
 
 describe('ComponentTester – ErrorBoundary', () => {
   it('renders fallback when child throws', () => {
-    // Suppress console.error for this test
+    // Suppress console.error and window error event for this test
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const handleError = (e: ErrorEvent) => {
+      if (e.message.includes('Render error')) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('error', handleError);
+
     render(
       <ErrorBoundary fallback={<p data-testid="fallback">Something went wrong</p>}>
         <Throwing />
       </ErrorBoundary>,
     );
     expect(screen.getByTestId('fallback')).toBeInTheDocument();
+
+    window.removeEventListener('error', handleError);
     consoleSpy.mockRestore();
   });
 
