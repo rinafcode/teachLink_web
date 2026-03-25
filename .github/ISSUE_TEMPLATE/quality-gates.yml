@@ -1,7 +1,7 @@
-name: "PR Quality Gates / Governance"
-description: "Work related to CI, branch protection, PR process, governance"
-title: "[Governance] <short description>"
-labels: ["frontend", "devops", "ci", "governance", "priority-high"]
+name: 'PR Quality Gates / Governance'
+description: 'Work related to CI, branch protection, PR process, governance'
+title: '[Governance] <short description>'
+labels: ['frontend', 'devops', 'ci', 'governance', 'priority-high']
 body:
   - type: markdown
     attributes:

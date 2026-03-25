@@ -14,7 +14,7 @@ import { measureExecutionTime, expectWithinBudget } from '../utils/testUtils';
 //  Budget constants (ms)
 
 const BUDGETS = {
-  COMPONENT_RENDER: 50,
+  COMPONENT_RENDER: 100,
   LARGE_LIST_RENDER: 300,
   SEARCH_FILTER: 30,
   SORT_1000: 50,

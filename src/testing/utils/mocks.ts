@@ -29,6 +29,14 @@ export const mockUser = {
   avatar: '/avatar.png',
 };
 
+export const createMockUser = (overrides = {}) => ({
+  ...mockUser,
+  ...overrides,
+});
+
+export const asyncMock = (data: any) => vi.fn().mockResolvedValue(data);
+export const asyncErrorMock = (msg: string) => vi.fn().mockRejectedValue(new Error(msg));
+
 /** Reset all mocks between tests */
 export function resetMocks() {
   vi.clearAllMocks();

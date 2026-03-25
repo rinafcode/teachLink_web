@@ -25,6 +25,23 @@ Object.defineProperty(navigator, 'storage', {
   writable: true,
 });
 
+// Mock navigator.serviceWorker
+Object.defineProperty(navigator, 'serviceWorker', {
+  value: {
+    register: vi.fn(() =>
+      Promise.resolve({
+        addEventListener: vi.fn(),
+        unregister: vi.fn(),
+        update: vi.fn(),
+      }),
+    ),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    controller: null,
+  },
+  writable: true,
+});
+
 // Mock console methods to avoid noise in tests
 global.console = {
   ...console,
@@ -32,3 +49,5 @@ global.console = {
   warn: vi.fn(),
   log: vi.fn(),
 };
+// Mock scrollIntoView for JSDOM
+window.HTMLElement.prototype.scrollIntoView = vi.fn();

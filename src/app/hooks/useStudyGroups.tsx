@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNotificationStore } from '@/app/store/notificationStore';
 
@@ -149,6 +149,28 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     [groups, messages, resources, challenges],
   );
 
+  // Sync across instances in the same window/process
+  useEffect(() => {
+    const handleSync = () => {
+      setGroups(load(STORAGE_KEYS.groups, []));
+      setMessages(load(STORAGE_KEYS.messages, []));
+      setResources(load(STORAGE_KEYS.resources, []));
+      setChallenges(load(STORAGE_KEYS.challenges, []));
+    };
+
+    window.addEventListener('sl_sync', handleSync);
+    window.addEventListener('storage', handleSync); // also for other tabs
+
+    return () => {
+      window.removeEventListener('sl_sync', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  const triggerSync = useCallback(() => {
+    window.dispatchEvent(new Event('sl_sync'));
+  }, []);
+
   const createGroup = useCallback<UseStudyGroupsApi['createGroup']>(
     (input) => {
       const group: StudyGroup = {
@@ -162,6 +184,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       setGroups((prev) => {
         const next = [group, ...prev];
         save(STORAGE_KEYS.groups, next);
+        triggerSync();
         return next;
       });
       // notifications
@@ -176,7 +199,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       toast.success(`Created group “${group.name}”`);
       return group;
     },
-    [me.id, me.name],
+    [me.id, me.name, triggerSync],
   );
 
   const joinGroup = useCallback<UseStudyGroupsApi['joinGroup']>(
@@ -191,6 +214,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           return g;
         });
         save(STORAGE_KEYS.groups, next);
+        triggerSync();
         return next;
       });
       try {
@@ -203,7 +227,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       } catch {}
       toast.success('Joined group');
     },
-    [me.id, me.name],
+    [me.id, me.name, triggerSync],
   );
 
   const leaveGroup = useCallback<UseStudyGroupsApi['leaveGroup']>(
@@ -218,6 +242,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           return g;
         });
         save(STORAGE_KEYS.groups, next);
+        triggerSync();
         return next;
       });
       try {
@@ -230,7 +255,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       } catch {}
       toast('Left group', { icon: '👋' });
     },
-    [me.id],
+    [me.id, triggerSync],
   );
 
   const postMessage = useCallback<UseStudyGroupsApi['postMessage']>(
@@ -247,6 +272,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       setMessages((prev) => {
         const next = [...prev, msg];
         save(STORAGE_KEYS.messages, next);
+        triggerSync();
         return next;
       });
       try {
@@ -261,7 +287,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       toast.success('Message posted');
       return msg;
     },
-    [me.id, me.name, groups],
+    [me.id, me.name, groups, triggerSync],
   );
 
   const addResource = useCallback<UseStudyGroupsApi['addResource']>(
@@ -279,6 +305,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       setResources((prev) => {
         const next = [res, ...prev];
         save(STORAGE_KEYS.resources, next);
+        triggerSync();
         return next;
       });
       try {
@@ -293,7 +320,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       toast.success('Resource added');
       return res;
     },
-    [me.id, me.name, groups],
+    [me.id, me.name, groups, triggerSync],
   );
 
   const createChallenge = useCallback<UseStudyGroupsApi['createChallenge']>(
@@ -312,6 +339,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       setChallenges((prev) => {
         const next = [ch, ...prev];
         save(STORAGE_KEYS.challenges, next);
+        triggerSync();
         return next;
       });
       try {
@@ -326,7 +354,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       toast.success('Challenge created');
       return ch;
     },
-    [groups],
+    [groups, triggerSync],
   );
 
   const updateChallengeProgress = useCallback<UseStudyGroupsApi['updateChallengeProgress']>(
@@ -354,6 +382,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           return updated;
         });
         save(STORAGE_KEYS.challenges, next);
+        triggerSync();
         return next;
       });
       if (updated) {
@@ -372,7 +401,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       }
       return updated;
     },
-    [me.id, me.name, groups],
+    [me.id, me.name, groups, triggerSync],
   );
 
   const groupMessages = useCallback<UseStudyGroupsApi['groupMessages']>(

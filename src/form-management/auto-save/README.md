@@ -5,30 +5,35 @@ The Auto-Save Manager provides automatic form data persistence to prevent data l
 ## Features
 
 ### 1. Basic Auto-Save Functionality (Requirements 3.1, 3.3)
+
 - **Automatic Save Triggers**: Configurable intervals for automatic saves
 - **Field Blur Events**: Save data when users leave a field
 - **Draft Storage**: Store form data with timestamps and metadata
 - **Metadata Tracking**: Track form ID, session ID, user ID, and timestamps
 
 ### 2. Draft Data Recovery (Requirement 3.2)
+
 - **Draft Loading**: Restore previously saved form data
 - **Data Integrity Validation**: Verify draft data structure and completeness
 - **Expiration Handling**: Automatically remove expired drafts
 - **Session Recovery**: Restore form state from previous sessions
 
 ### 3. Offline Save Management (Requirement 3.4)
+
 - **Save Queue**: Queue failed save operations for retry
 - **Network Detection**: Monitor online/offline status
 - **Automatic Retry**: Retry queued saves when connectivity is restored
 - **Retry Limits**: Configurable maximum retry attempts
 
 ### 4. Save Status Indication (Requirement 3.5)
+
 - **Status States**: idle, saving, saved, error
 - **Status Callbacks**: Subscribe to status changes
 - **Visual Indicators**: Support for UI status indicators
 - **Error Reporting**: Detailed error information
 
 ### 5. Storage Management (Requirements 3.6, 3.7)
+
 - **Draft Cleanup**: Clear drafts after successful submission
 - **Storage Quota**: Configurable storage size limits
 - **Oldest-First Cleanup**: Remove oldest drafts when quota is exceeded
@@ -71,8 +76,8 @@ const formState: FormState = {
     sessionId: 'session-123',
     createdAt: new Date(),
     lastModified: new Date(),
-    version: '1.0'
-  }
+    version: '1.0',
+  },
 };
 
 await autoSaveManager.saveNow('my-form', formState);
@@ -114,21 +119,27 @@ autoSaveManager.setStorageQuota(5 * 1024 * 1024);
 ### AutoSaveManager Interface
 
 #### `enableAutoSave(formId: string, interval: number): void`
+
 Enable automatic saving for a form at specified interval (in milliseconds).
 
 #### `saveNow(formId: string, data: FormState): Promise<void>`
+
 Save form data immediately. Throws error if save fails.
 
 #### `loadDraft(formId: string): Promise<FormState | null>`
+
 Load previously saved draft. Returns null if no draft exists or draft is invalid/expired.
 
 #### `clearDraft(formId: string): Promise<void>`
+
 Remove draft data for a form. Safe to call even if no draft exists.
 
 #### `setStorageQuota(maxSize: number): void`
+
 Set maximum storage size in bytes. Oldest drafts are removed when quota is exceeded.
 
 #### `onSaveStatusChange(callback: SaveStatusCallback): Subscription`
+
 Subscribe to save status changes. Returns subscription object with `unsubscribe()` method.
 
 ### SaveStatus Interface
@@ -160,30 +171,35 @@ interface DraftData {
 ## Implementation Details
 
 ### Storage Strategy
+
 - Uses browser's `localStorage` by default
 - Can be configured with custom storage provider
 - Drafts are stored with key format: `form-draft-{formId}`
 - Each draft includes metadata for tracking and validation
 
 ### Network Handling
+
 - Monitors `online` and `offline` events
 - Queues saves when offline
 - Automatically processes queue when connectivity is restored
 - Configurable retry limits (default: 3 attempts)
 
 ### Data Integrity
+
 - Validates draft structure before loading
 - Checks for required fields (formId, data, sessionId)
 - Verifies data structure (values, metadata)
 - Handles corrupted data gracefully
 
 ### Storage Quota Management
+
 - Tracks total storage usage
 - Sorts drafts by update time
 - Removes oldest drafts first when quota is exceeded
 - Ensures new saves can complete successfully
 
 ### Expiration Handling
+
 - Drafts expire after 7 days by default
 - Expired drafts are automatically removed on load
 - Expiration time is stored in draft metadata
@@ -201,6 +217,7 @@ The Auto-Save Manager includes comprehensive unit tests covering:
 - Resource cleanup
 
 Run tests with:
+
 ```bash
 npm test -- auto-save-manager.test.ts
 ```

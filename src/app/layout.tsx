@@ -9,6 +9,7 @@ import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationM
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
 import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
+import { PWAManager } from '@/components/pwa/PWAManager';
 
 const geistSans = Geist({
   // ...
@@ -24,6 +25,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'TeachLink - Offline Learning Platform',
   description: 'Learn anywhere, anytime with offline capabilities',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -41,6 +43,7 @@ export default function RootLayout({
             <CulturalAdaptationManager>
               <ThemeProvider>
                 <OfflineModeProvider>
+                  <PWAManager />
                   <StateManagerIntegration />
                   <PerformanceMonitor />
                   <PrefetchingEngine />
