@@ -7,10 +7,10 @@ interface AdaptiveLayoutProps {
   breakpoint?: number;
 }
 
-export const AdaptiveLayout: React.FC<AdaptiveLayoutProps> = ({ 
-  mobileView, 
-  desktopView, 
-  breakpoint = 768 
+export const AdaptiveLayout: React.FC<AdaptiveLayoutProps> = ({
+  mobileView,
+  desktopView,
+  breakpoint = 768,
 }) => {
   const [isMobile, setIsMobile] = useState<boolean>(true); // Default to mobile for mobile-first approach
 
@@ -22,7 +22,7 @@ export const AdaptiveLayout: React.FC<AdaptiveLayoutProps> = ({
     };
 
     checkIsMobile(); // Initial check
-    
+
     // Performance optimization: debounce resize handler
     let timeoutId: ReturnType<typeof setTimeout>;
     const handleResize = () => {
@@ -41,9 +41,9 @@ export const AdaptiveLayout: React.FC<AdaptiveLayoutProps> = ({
 };
 
 // Also export a container that changes layout direction, padding, etc., based on sizing
-export const AdaptiveContainer: React.FC<{children: React.ReactNode; className?: string}> = ({
+export const AdaptiveContainer: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
-  className = ''
+  className = '',
 }) => {
   // Mobile-first container: stacked by default, becomes flex-row on md screens
   return (

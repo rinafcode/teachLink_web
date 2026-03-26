@@ -14,13 +14,26 @@ interface GestureHandlerProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const GestureHandler: React.FC<GestureHandlerProps> = ({
-  onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown,
-  onPinchIn, onPinchOut, onTap, swipeThreshold,
-  children, ...props
+  onSwipeLeft,
+  onSwipeRight,
+  onSwipeUp,
+  onSwipeDown,
+  onPinchIn,
+  onPinchOut,
+  onTap,
+  swipeThreshold,
+  children,
+  ...props
 }) => {
   const gestureProps = useMobileGestures({
-    onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown,
-    onPinchIn, onPinchOut, onTap, swipeThreshold
+    onSwipeLeft,
+    onSwipeRight,
+    onSwipeUp,
+    onSwipeDown,
+    onPinchIn,
+    onPinchOut,
+    onTap,
+    swipeThreshold,
   });
 
   return (

@@ -8,24 +8,28 @@ interface TouchButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-export const TouchButton: React.FC<TouchButtonProps> = ({ 
-  children, 
-  variant = 'primary', 
+export const TouchButton: React.FC<TouchButtonProps> = ({
+  children,
+  variant = 'primary',
   fullWidth = true,
   className = '',
-  ...props 
+  ...props
 }) => {
   const [isTouched, setIsTouched] = useState(false);
   
-  const baseClasses = "relative overflow-hidden rounded-xl font-medium transition-all duration-200 active:scale-95 flex items-center justify-center";
-  const sizeClasses = "min-h-[48px] px-6 py-3 text-base"; // Minimum 48px height for touch targets
-  const widthClasses = fullWidth ? "w-full" : "";
+  const baseClasses =
+    'relative overflow-hidden rounded-xl font-medium transition-all duration-200 active:scale-95 flex items-center justify-center';
+  const sizeClasses = 'min-h-[48px] px-6 py-3 text-base'; // Minimum 48px height for touch targets
+  const widthClasses = fullWidth ? 'w-full' : '';
   
   const variantClasses = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800",
-    secondary: "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600",
-    outline: "border-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 bg-transparent active:bg-blue-50 dark:active:bg-gray-800",
-    ghost: "bg-transparent text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-800"
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
+    secondary:
+      'bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600',
+    outline:
+      'border-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 bg-transparent active:bg-blue-50 dark:active:bg-gray-800',
+    ghost:
+      'bg-transparent text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-800',
   };
 
   return (
@@ -57,7 +61,7 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   onSwipeRight,
   onSwipeUp,
   onSwipeDown,
-  className = ''
+  className = '',
 }) => {
   return (
     <GestureHandler
@@ -84,24 +88,21 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   isOpen,
   onClose,
   children,
-  title
+  title,
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
       {/* Sheet Content */}
       <div className="relative bg-white dark:bg-gray-900 w-full rounded-t-3xl p-6 shadow-xl animate-in slide-in-from-bottom-full duration-300 pb-safe">
-        <GestureHandler 
-          onSwipeDown={onClose}
-          swipeThreshold={40}
-        >
+        <GestureHandler onSwipeDown={onClose} swipeThreshold={40}>
           {/* Handle bar for swiping */}
           <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-6 cursor-pointer" />
         </GestureHandler>

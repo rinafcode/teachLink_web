@@ -219,9 +219,7 @@ export default function VisualizationDemoPage() {
 
         {/* Footer */}
         <div className="mt-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
-            Features
-          </h3>
+          <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Features</h3>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-600 dark:text-gray-400">
             <li className="flex items-start space-x-2">
               <span className="text-green-500 mt-1">✓</span>
