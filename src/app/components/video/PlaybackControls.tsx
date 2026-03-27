@@ -96,7 +96,10 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
             {onAutoQualityChange && (
               <button
-                onClick={() => onAutoQualityChange(!autoQuality)}
+                onClick={() => {
+                  setShowQualityMenu(false);
+                  onAutoQualityChange(!autoQuality);
+                }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   autoQuality
                     ? 'bg-blue-500 text-white'
