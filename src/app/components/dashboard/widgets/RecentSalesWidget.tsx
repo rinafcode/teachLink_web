@@ -36,7 +36,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
   onRemove,
   size,
   onChangeSize,
-  onUpdateTitle
+  onUpdateTitle,
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [tempTitle, setTempTitle] = useState(title);
@@ -61,7 +61,9 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
         if (!cancelled) setIsLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   // Mock sales data
@@ -71,36 +73,36 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
       userEmail: 'user1@example.com',
       userName: 'User 1',
       date: new Date(2025, 4, 28),
-      amount: 49.99
+      amount: 49.99,
     },
     {
       id: '2',
       userEmail: 'user2@example.com',
       userName: 'User 2',
       date: new Date(2025, 4, 27),
-      amount: 79.99
+      amount: 79.99,
     },
     {
       id: '3',
       userEmail: 'user3@example.com',
       userName: 'User 3',
       date: new Date(2025, 4, 26),
-      amount: 29.99
+      amount: 29.99,
     },
     {
       id: '4',
       userEmail: 'user4@example.com',
       userName: 'User 4',
       date: new Date(2025, 4, 25),
-      amount: 99.99
+      amount: 99.99,
     },
     {
       id: '5',
       userEmail: 'user5@example.com',
       userName: 'User 5',
       date: new Date(2025, 4, 24),
-      amount: 59.99
-    }
+      amount: 59.99,
+    },
   ];
 
   const totalSales = sales.length;
@@ -108,7 +110,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
   const getInitials = (name: string) => {
     return name
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);

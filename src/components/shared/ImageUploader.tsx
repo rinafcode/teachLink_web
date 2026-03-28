@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useRef, ChangeEvent } from "react";
-import Image from "next/image";
+import { useState, useRef, ChangeEvent } from 'react';
+import Image from 'next/image';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -12,11 +12,9 @@ interface ImageUploaderProps {
 export default function ImageUploader({
   onImageSelect,
   initialImageUrl,
-  className = "",
+  className = '',
 }: ImageUploaderProps) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialImageUrl || null,
-  );
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -45,11 +43,8 @@ export default function ImageUploader({
         className="relative w-32 h-32 rounded-full overflow-hidden cursor-pointer border-4 border-gray-100 hover:border-blue-500 transition-colors group"
       >
         {previewUrl ? (
-          <img
-            src={previewUrl}
-            alt="Profile Preview"
-            className="w-full h-full object-cover"
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewUrl} alt="Profile Preview" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
             <svg

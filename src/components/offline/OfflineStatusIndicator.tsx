@@ -8,7 +8,7 @@ import {
   CheckCircle,
   AlertTriangle,
   CloudOff,
-  Cloud
+  Cloud,
 } from 'lucide-react';
 import { useOfflineModeContext } from '../../context/OfflineModeContext';
 
@@ -28,7 +28,9 @@ const formatTimeAgo = (timestamp: string | null) => {
   return `${days}d ago`;
 };
 
-export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({ className = '' }) => {
+export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
+  className = '',
+}) => {
   const [showPanel, setShowPanel] = useState(false);
 
   const {
@@ -41,7 +43,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({ 
     enableOfflineMode,
     disableOfflineMode,
     syncOfflineData,
-    resolveAllConflicts
+    resolveAllConflicts,
   } = useOfflineModeContext();
 
   const statusLabel = useMemo(() => {
@@ -63,10 +65,12 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({ 
   return (
     <div className={`relative ${className}`}>
       <button
-        onClick={() => setShowPanel(prev => !prev)}
+        onClick={() => setShowPanel((prev) => !prev)}
         className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm"
       >
-        <StatusIcon className={`h-4 w-4 ${syncStatus === 'syncing' ? 'animate-spin text-blue-600' : ''}`} />
+        <StatusIcon
+          className={`h-4 w-4 ${syncStatus === 'syncing' ? 'animate-spin text-blue-600' : ''}`}
+        />
         {statusLabel}
         {pendingSyncCount > 0 && (
           <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white">
@@ -82,7 +86,11 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({ 
               <p className="text-sm font-semibold text-gray-900">Offline status</p>
               <p className="text-xs text-gray-500">Last sync {formatTimeAgo(lastSyncTime)}</p>
             </div>
-            {isOnline ? <Cloud className="h-5 w-5 text-green-500" /> : <CloudOff className="h-5 w-5 text-red-500" />}
+            {isOnline ? (
+              <Cloud className="h-5 w-5 text-green-500" />
+            ) : (
+              <CloudOff className="h-5 w-5 text-red-500" />
+            )}
           </div>
 
           <div className="mt-4 space-y-3 text-sm text-gray-600">
@@ -92,7 +100,9 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({ 
             </div>
             <div className="flex items-center justify-between">
               <span>Offline mode</span>
-              <span className="font-semibold text-gray-800">{isOfflineModeEnabled ? 'Enabled' : 'Disabled'}</span>
+              <span className="font-semibold text-gray-800">
+                {isOfflineModeEnabled ? 'Enabled' : 'Disabled'}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span>Sync status</span>

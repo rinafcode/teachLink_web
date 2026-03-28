@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
-* Error utility functions for classification, formatting, and retry logic
-*/
+ * Error utility functions for classification, formatting, and retry logic
+ */
 
 export enum ErrorType {
   NETWORK = 'NETWORK',
@@ -209,7 +209,7 @@ export async function retryWithBackoff<T>(
     initialDelayMs?: number;
     maxDelayMs?: number;
     backoffFactor?: number;
-  }
+  },
 ): Promise<T> {
   const {
     maxAttempts = 3,
@@ -234,7 +234,7 @@ export async function retryWithBackoff<T>(
 
       // Calculate delay with exponential backoff
       const actualDelay = Math.min(delayMs, maxDelayMs);
-      await new Promise(resolve => setTimeout(resolve, actualDelay));
+      await new Promise((resolve) => setTimeout(resolve, actualDelay));
 
       // Increase delay for next attempt
       delayMs *= backoffFactor;
@@ -269,7 +269,7 @@ export class TypedError extends Error {
     public type: ErrorType,
     message: string,
     public details?: Record<string, any>,
-    public statusCode?: number
+    public statusCode?: number,
   ) {
     super(message);
     this.name = 'TypedError';

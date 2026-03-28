@@ -30,10 +30,10 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     { label: '1080p', value: '1080p', width: 1920, height: 1080, bitrate: 5000 },
     { label: '720p', value: '720p', width: 1280, height: 720, bitrate: 2500 },
     { label: '480p', value: '480p', width: 854, height: 480, bitrate: 1000 },
-    { label: '360p', value: '360p', width: 640, height: 360, bitrate: 500 }
+    { label: '360p', value: '360p', width: 640, height: 360, bitrate: 500 },
   ],
   autoQuality = true,
-  onAutoQualityChange
+  onAutoQualityChange,
 }) => {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
@@ -88,16 +88,21 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               className="flex items-center space-x-1 px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors text-white text-sm"
             >
               <Settings size={12} />
-              <span>{quality ? qualities.find(q => q.value === quality)?.label || quality : 'Auto'}</span>
+              <span>
+                {quality ? qualities.find((q) => q.value === quality)?.label || quality : 'Auto'}
+              </span>
               <ChevronDown size={12} />
             </button>
-            
+
             {onAutoQualityChange && (
               <button
-                onClick={() => onAutoQualityChange(!autoQuality)}
+                onClick={() => {
+                  setShowQualityMenu(false);
+                  onAutoQualityChange(!autoQuality);
+                }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  autoQuality 
-                    ? 'bg-blue-500 text-white' 
+                  autoQuality
+                    ? 'bg-blue-500 text-white'
                     : 'bg-white/20 text-white hover:bg-white/30'
                 }`}
                 title="Auto Quality"
@@ -144,4 +149,4 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       )}
     </div>
   );
-}; 
+};

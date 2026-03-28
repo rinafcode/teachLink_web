@@ -6,13 +6,13 @@
 export { ValidationEngineImpl, type ValidationEngine } from './validation-engine.js';
 
 // Async validation management
-export { 
+export {
   AsyncValidationManager,
   type AsyncValidationState,
   type AsyncValidationOptions,
   type AsyncValidationRequest,
   type AsyncValidationResponse,
-  type AsyncValidationCallback
+  type AsyncValidationCallback,
 } from './async-validation-manager.js';
 
 // Custom validation registry
@@ -22,7 +22,7 @@ export {
   type ValidationContext,
   type CustomValidationRule,
   type ValidationExecutionContext,
-  type EnhancedValidationFunction
+  type EnhancedValidationFunction,
 } from './custom-validation-registry.js';
 
 // Validation feedback display
@@ -31,7 +31,7 @@ export {
   type FeedbackDisplayOptions,
   type FeedbackElement,
   type FeedbackDisplayState,
-  type FeedbackDisplayCallback
+  type FeedbackDisplayCallback,
 } from './validation-feedback-display.js';
 
 // Re-export core validation types
@@ -41,5 +41,5 @@ export type {
   ValidationError,
   ValidationWarning,
   FormValidationResult,
-  ValidationFunction
+  ValidationFunction,
 } from '../types/core.js';

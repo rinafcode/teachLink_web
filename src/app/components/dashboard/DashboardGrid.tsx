@@ -44,13 +44,15 @@ interface DashboardGridProps {
 }
 
 // Sortable wrapper for grid items
-const SortableItem: React.FC<{ id: string; children: React.ReactNode; }> = ({ id, children }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+const SortableItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.6 : 1,
-    cursor: 'grab'
+    cursor: 'grab',
   };
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
@@ -61,7 +63,7 @@ const SortableItem: React.FC<{ id: string; children: React.ReactNode; }> = ({ id
 
 export const DashboardGrid: React.FC<DashboardGridProps> = ({
   widgets: initialWidgets = [],
-  onWidgetChange
+  onWidgetChange,
 }) => {
   const [widgets, setWidgets] = useState<Widget[]>(initialWidgets);
   const [showSettings, setShowSettings] = useState(false);
@@ -73,7 +75,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const { saveWidgetLayout, loadWidgetLayout } = useDashboardWidgets();
@@ -97,7 +99,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
   // Save layout when widgets change (but not on initial load)
   useEffect(() => {
     if (widgets.length === 0) return; // Don't save empty state
-    
+
     try {
       saveWidgetLayout(widgets);
       onWidgetChange?.(widgets);
@@ -116,55 +118,65 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         if (oldIndex === -1 || newIndex === -1) return items;
-        const reordered = arrayMove(items, oldIndex, newIndex).map((w, idx) => ({ ...w, position: idx }));
+        const reordered = arrayMove(items, oldIndex, newIndex).map((w, idx) => ({
+          ...w,
+          position: idx,
+        }));
         return reordered;
       });
     }
   };
 
   const toggleWidgetCollapse = (widgetId: string) => {
-    setWidgets(prev => prev.map(widget =>
-      widget.id === widgetId
-        ? { ...widget, isCollapsed: !widget.isCollapsed }
-        : widget
-    ));
+    setWidgets((prev) =>
+      prev.map((widget) =>
+        widget.id === widgetId ? { ...widget, isCollapsed: !widget.isCollapsed } : widget,
+      ),
+    );
   };
 
   const updateWidgetSettings = (widgetId: string, settings: Record<string, unknown>) => {
-    setWidgets(prev => prev.map(widget =>
-      widget.id === widgetId
-        ? { ...widget, settings: { ...widget.settings, ...settings } }
-        : widget
-    ));
+    setWidgets((prev) =>
+      prev.map((widget) =>
+        widget.id === widgetId
+          ? { ...widget, settings: { ...widget.settings, ...settings } }
+          : widget,
+      ),
+    );
   };
 
   const updateWidgetTitle = (widgetId: string, title: string) => {
     const trimmed = (title ?? '').trim();
     if (!trimmed) return; // simple validation
-    setWidgets(prev => prev.map(widget =>
-      widget.id === widgetId
-        ? { ...widget, title: trimmed }
-        : widget
-    ));
+    setWidgets((prev) =>
+      prev.map((widget) => (widget.id === widgetId ? { ...widget, title: trimmed } : widget)),
+    );
   };
 
   const changeWidgetSize = (widgetId: string, size: 'small' | 'medium' | 'large') => {
     if (!['small', 'medium', 'large'].includes(size)) return; // validate
-    setWidgets(prev => prev.map(widget =>
-      widget.id === widgetId
-        ? { ...widget, size }
-        : widget
-    ));
+    setWidgets((prev) =>
+      prev.map((widget) => (widget.id === widgetId ? { ...widget, size } : widget)),
+    );
   };
 
   const removeWidget = (widgetId: string) => {
-    setWidgets(prev => prev.filter(widget => widget.id !== widgetId).map((w, idx) => ({ ...w, position: idx })));
+    setWidgets((prev) =>
+      prev.filter((widget) => widget.id !== widgetId).map((w, idx) => ({ ...w, position: idx })),
+    );
   };
 
   const addWidget = (type: string, title: string) => {
     const trimmedTitle = (title ?? '').trim();
     if (!trimmedTitle) return;
-    const validTypes = ['progress-summary', 'upcoming-deadlines', 'recommended-courses', 'learning-streak', 'recent-activity', 'recent-sales'];
+    const validTypes = [
+      'progress-summary',
+      'upcoming-deadlines',
+      'recommended-courses',
+      'learning-streak',
+      'recent-activity',
+      'recent-sales',
+    ];
     if (!validTypes.includes(type)) return;
     const newWidget: Widget = {
       id: `${type}-${Date.now()}`,
@@ -173,9 +185,9 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       size: 'medium',
       position: widgets.length,
       isCollapsed: false,
-      settings: {}
+      settings: {},
     };
-    setWidgets(prev => [...prev, newWidget]);
+    setWidgets((prev) => [...prev, newWidget]);
     setShowAddWidget(false);
   };
 
@@ -186,11 +198,12 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       isCollapsed: widget.isCollapsed,
       settings: widget.settings,
       onToggleCollapse: () => toggleWidgetCollapse(widget.id),
-      onUpdateSettings: (settings: Record<string, unknown>) => updateWidgetSettings(widget.id, settings),
+      onUpdateSettings: (settings: Record<string, unknown>) =>
+        updateWidgetSettings(widget.id, settings),
       onRemove: () => removeWidget(widget.id),
       size: widget.size as 'small' | 'medium' | 'large',
       onChangeSize: (size: 'small' | 'medium' | 'large') => changeWidgetSize(widget.id, size),
-      onUpdateTitle: (newTitle: string) => updateWidgetTitle(widget.id, newTitle)
+      onUpdateTitle: (newTitle: string) => updateWidgetTitle(widget.id, newTitle),
     };
 
     switch (widget.type) {
@@ -213,16 +226,22 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
 
   const getGridCols = (size: string) => {
     switch (size) {
-      case 'small': return 'col-span-1';
-      case 'medium': return 'col-span-2';
-      case 'large': return 'col-span-3';
-      default: return 'col-span-2';
+      case 'small':
+        return 'col-span-1';
+      case 'medium':
+        return 'col-span-2';
+      case 'large':
+        return 'col-span-3';
+      default:
+        return 'col-span-2';
     }
   };
 
   // Separate widgets by type for layout organization
-  const summaryWidgets = widgets.filter(w => w.type === 'progress-summary' && w.size === 'small');
-  const otherWidgets = widgets.filter(w => !(w.type === 'progress-summary' && w.size === 'small'));
+  const summaryWidgets = widgets.filter((w) => w.type === 'progress-summary' && w.size === 'small');
+  const otherWidgets = widgets.filter(
+    (w) => !(w.type === 'progress-summary' && w.size === 'small'),
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -231,7 +250,9 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50">Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Customize your learning experience</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Customize your learning experience
+            </p>
           </div>
           <div className="flex items-center space-x-3">
             <button
@@ -252,9 +273,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
 
         {/* Date Range Selector */}
         <div className="mb-6 flex items-center justify-end">
-          <button
-            className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
-          >
+          <button className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
             <Calendar size={16} />
             <span>{dateRange}</span>
           </button>
@@ -267,7 +286,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
               { id: 'overview', label: 'Overview' },
               { id: 'analytics', label: 'Analytics' },
               { id: 'courses', label: 'Courses' },
-              { id: 'students', label: 'Students' }
+              { id: 'students', label: 'Students' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -294,7 +313,9 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
               className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
             >
               <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">Dashboard Settings</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">
+                  Dashboard Settings
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -350,7 +371,9 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">Add Widget</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">
+                  Add Widget
+                </h3>
                 <div className="space-y-3">
                   {[
                     { type: 'progress-summary', title: 'Progress Summary', icon: '📊' },
@@ -358,7 +381,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
                     { type: 'recent-activity', title: 'Recent Activity', icon: '📝' },
                     { type: 'upcoming-deadlines', title: 'Upcoming Schedule', icon: '⏰' },
                     { type: 'recommended-courses', title: 'Recommended Courses', icon: '🎯' },
-                    { type: 'learning-streak', title: 'Learning Streak', icon: '🔥' }
+                    { type: 'learning-streak', title: 'Learning Streak', icon: '🔥' },
                   ].map((widget) => (
                     <button
                       key={widget.type}
@@ -366,7 +389,9 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
                       className="w-full p-3 text-left border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
                     >
                       <span className="text-2xl">{widget.icon}</span>
-                      <span className="font-medium text-gray-900 dark:text-gray-50">{widget.title}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50">
+                        {widget.title}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -376,12 +401,8 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
         </AnimatePresence>
 
         {/* Widget Grid */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext items={widgets.map(w => w.id)} strategy={rectSortingStrategy}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={widgets.map((w) => w.id)} strategy={rectSortingStrategy}>
             <div className="space-y-6">
               {/* Summary Stats Row - 4 columns */}
               {summaryWidgets.length > 0 && (
@@ -404,7 +425,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
               {/* Two Column Layout for Recent Sales and Activity */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {otherWidgets
-                  .filter(w => w.type === 'recent-sales' || w.type === 'recent-activity')
+                  .filter((w) => w.type === 'recent-sales' || w.type === 'recent-activity')
                   .map((widget) => (
                     <SortableItem key={widget.id} id={widget.id}>
                       <motion.div
@@ -421,7 +442,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
 
               {/* Full Width for Upcoming Schedule */}
               {otherWidgets
-                .filter(w => w.type === 'upcoming-deadlines')
+                .filter((w) => w.type === 'upcoming-deadlines')
                 .map((widget) => (
                   <SortableItem key={widget.id} id={widget.id}>
                     <motion.div
@@ -436,12 +457,20 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
                 ))}
 
               {/* Other Widgets in Flexible Grid */}
-              {otherWidgets
-                .filter(w => w.type !== 'recent-sales' && w.type !== 'recent-activity' && w.type !== 'upcoming-deadlines')
-                .length > 0 && (
+              {otherWidgets.filter(
+                (w) =>
+                  w.type !== 'recent-sales' &&
+                  w.type !== 'recent-activity' &&
+                  w.type !== 'upcoming-deadlines',
+              ).length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {otherWidgets
-                    .filter(w => w.type !== 'recent-sales' && w.type !== 'recent-activity' && w.type !== 'upcoming-deadlines')
+                    .filter(
+                      (w) =>
+                        w.type !== 'recent-sales' &&
+                        w.type !== 'recent-activity' &&
+                        w.type !== 'upcoming-deadlines',
+                    )
                     .map((widget) => (
                       <SortableItem key={widget.id} id={widget.id}>
                         <motion.div
@@ -478,4 +507,4 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       </div>
     </div>
   );
-}; 
+};

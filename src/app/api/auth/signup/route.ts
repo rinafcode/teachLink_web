@@ -7,32 +7,23 @@ export async function POST(request: NextRequest) {
 
     // Mock validation
     if (!name || !email || !password || !confirmPassword) {
-      return NextResponse.json(
-        { message: 'All fields are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
     if (password !== confirmPassword) {
-      return NextResponse.json(
-        { message: "Passwords don't match" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Passwords don't match" }, { status: 400 });
     }
 
     if (password.length < 6) {
       return NextResponse.json(
         { message: 'Password must be at least 6 characters' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Mock: Check if email already exists (demo only)
     if (email === 'existing@teachlink.com') {
-      return NextResponse.json(
-        { message: 'Email already registered' },
-        { status: 409 }
-      );
+      return NextResponse.json({ message: 'Email already registered' }, { status: 409 });
     }
 
     // Simulate successful signup
@@ -46,13 +37,10 @@ export async function POST(request: NextRequest) {
         },
         token: 'mock-jwt-token-' + Date.now(),
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('Signup error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

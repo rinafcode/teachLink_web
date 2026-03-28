@@ -18,18 +18,13 @@ function normalizeOutput(value: unknown) {
   }
 }
 
-export default function CodeChallengeQuestion({
-  question,
-  quizState,
-}: CodeChallengeQuestionProps) {
+export default function CodeChallengeQuestion({ question, quizState }: CodeChallengeQuestionProps) {
   const { answers, isReviewMode, isCompleted, actions } = quizState;
   const existing = answers[question.id];
 
-  const [code, setCode] = useState<string>(
-    existing?.value ?? question.codeTemplate ?? ''
-  );
+  const [code, setCode] = useState<string>(existing?.value ?? question.codeTemplate ?? '');
   const [testResults, setTestResults] = useState<boolean[]>(
-    (existing?.meta?.testResults as boolean[] | undefined) ?? []
+    (existing?.meta?.testResults as boolean[] | undefined) ?? [],
   );
   const [isRunning, setIsRunning] = useState(false);
 
@@ -37,7 +32,7 @@ export default function CodeChallengeQuestion({
 
   const overallPassed = useMemo(
     () => (testResults.length ? testResults.every(Boolean) : false),
-    [testResults]
+    [testResults],
   );
 
   const runTests = () => {
@@ -107,17 +102,19 @@ export default function CodeChallengeQuestion({
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="font-medium text-[#0F172A] dark:text-white">Test Case {index + 1}</div>
-                  <div className="text-sm text-[#64748B] dark:text-[#94A3B8]">Input: {testCase.input}</div>
+                  <div className="font-medium text-[#0F172A] dark:text-white">
+                    Test Case {index + 1}
+                  </div>
+                  <div className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                    Input: {testCase.input}
+                  </div>
                   <div className="text-sm text-[#64748B] dark:text-[#94A3B8]">
                     Expected: {testCase.expectedOutput}
                   </div>
                 </div>
                 <div
                   className={`text-sm font-medium ${
-                    testResults[index]
-                      ? 'text-[#0066FF] dark:text-[#00C2FF]'
-                      : 'text-red-700'
+                    testResults[index] ? 'text-[#0066FF] dark:text-[#00C2FF]' : 'text-red-700'
                   }`}
                 >
                   {testResults[index] ? 'Pass' : 'Fail'}

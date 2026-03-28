@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useSearchFilters } from "../../../hooks/useSearchFilters";
-import { SearchFilters } from "../../../components/search/SearchFilters";
+import React from 'react';
+import { useSearchFilters } from '../../../hooks/useSearchFilters';
+import { SearchFilters } from '../../../components/search/SearchFilters';
 import {
   Search,
   ChevronDown,
@@ -13,266 +13,266 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-} from "lucide-react";
+} from 'lucide-react';
 
 // Extended Mock Data (18 items)
 const MOCK_RESULTS = [
   {
-    id: "CS-101",
-    title: "Advanced UI/UX Masterclass for Digital Products",
-    instructor: "Dr. Sarah Connor",
-    duration: "12h 45m",
+    id: 'CS-101',
+    title: 'Advanced UI/UX Masterclass for Digital Products',
+    instructor: 'Dr. Sarah Connor',
+    duration: '12h 45m',
     rating: 4.9,
     price: 84.99,
     originalPrice: 129.99,
-    category: "Design",
-    level: "advanced",
+    category: 'Design',
+    level: 'advanced',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCil99ZvcYdOTX2ikzfmezXpX8PM1gdqvlH9POOIWtf_oLnLUykcTbi_AmwTRyHd91SesbJSqYVeMRowIU8LwxAMfmlo6f_Pz1u8SrLX6MRh78Y4jM36RyPsfr3f6KzeGWxm4kZXTGblOlSET-GxfYpd_Nzdu1P0AVyTV6bpa_jwzSu1ZfKYb7SrSNphUJwOZowmvViRp-dqkbRQYrkWbuITbMKEf_FdUEefC39x97j6p9fuc1eF7A1Z3QFUZVecRUTOyGnzRBp9_Q",
-    tag: "Bestseller",
-    color: "primary",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCil99ZvcYdOTX2ikzfmezXpX8PM1gdqvlH9POOIWtf_oLnLUykcTbi_AmwTRyHd91SesbJSqYVeMRowIU8LwxAMfmlo6f_Pz1u8SrLX6MRh78Y4jM36RyPsfr3f6KzeGWxm4kZXTGblOlSET-GxfYpd_Nzdu1P0AVyTV6bpa_jwzSu1ZfKYb7SrSNphUJwOZowmvViRp-dqkbRQYrkWbuITbMKEf_FdUEefC39x97j6p9fuc1eF7A1Z3QFUZVecRUTOyGnzRBp9_Q',
+    tag: 'Bestseller',
+    color: 'primary',
   },
   {
-    id: "MK-204",
-    title: "Data-Driven Growth Strategies for Startups",
-    instructor: "James Wilson",
-    duration: "8h 20m",
+    id: 'MK-204',
+    title: 'Data-Driven Growth Strategies for Startups',
+    instructor: 'James Wilson',
+    duration: '8h 20m',
     rating: 4.7,
     price: 49.99,
     originalPrice: null,
-    category: "Marketing",
-    level: "intermediate",
+    category: 'Marketing',
+    level: 'intermediate',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAvzbzuSjw86VeI3OOXElSHJGSEvvzouGyeAW34jd3Px-Io4QsMww1pfJW7UOrjmNJJJ_DaLMU81Np88h_XCXTqDiDlcl9mNDYwjXXpxgNJJDTWfwEiAukRqT_aWTm9KNnK-6hjRAZZ1EPYs-Sz8NXTSel_BwuZekfnzd5n0JxMSoI2ke-DWJeJv42Df58VwTZCOadgRyZ6ktv0syTD-xYuIuPk4fe0vYDgPEqVPNAigyQsq3AxWqvfnpntYxcLt3ABxf7aaTSb1cQ",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAvzbzuSjw86VeI3OOXElSHJGSEvvzouGyeAW34jd3Px-Io4QsMww1pfJW7UOrjmNJJJ_DaLMU81Np88h_XCXTqDiDlcl9mNDYwjXXpxgNJJDTWfwEiAukRqT_aWTm9KNnK-6hjRAZZ1EPYs-Sz8NXTSel_BwuZekfnzd5n0JxMSoI2ke-DWJeJv42Df58VwTZCOadgRyZ6ktv0syTD-xYuIuPk4fe0vYDgPEqVPNAigyQsq3AxWqvfnpntYxcLt3ABxf7aaTSb1cQ',
     tag: null,
-    color: "purple",
+    color: 'purple',
   },
   {
-    id: "GD-009",
-    title: "Professional Branding: From Concept to Launch",
-    instructor: "Dr. Sarah Connor",
-    duration: "15h 10m",
+    id: 'GD-009',
+    title: 'Professional Branding: From Concept to Launch',
+    instructor: 'Dr. Sarah Connor',
+    duration: '15h 10m',
     rating: 4.5,
     price: 119.0,
     originalPrice: null,
-    category: "Design",
-    level: "beginner",
+    category: 'Design',
+    level: 'beginner',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDCreAkOdseX9ZVH36oFGC3i0Q7D-DQz4x3zJL5NDtMSwfta8Qw886FBxG-IqaeUipdJkrptvGNhoKABpUsxpWM3mdOIUqxuJd_fIs7rU40m72S62pZ5kpdbKsqlJVJyqsi2WWJEkXEWJbKJwxP8BauVhNPiCvvFftKmHNbg7YM1sd5mq65ce7SyfNYQF70fI6FtiiqDZsVImVhLv0vn7St75HI9mz129PyeaPssxNqC7teU9A8by_hsz-wROUBDqIZLBErccnO0oQ",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDCreAkOdseX9ZVH36oFGC3i0Q7D-DQz4x3zJL5NDtMSwfta8Qw886FBxG-IqaeUipdJkrptvGNhoKABpUsxpWM3mdOIUqxuJd_fIs7rU40m72S62pZ5kpdbKsqlJVJyqsi2WWJEkXEWJbKJwxP8BauVhNPiCvvFftKmHNbg7YM1sd5mq65ce7SyfNYQF70fI6FtiiqDZsVImVhLv0vn7St75HI9mz129PyeaPssxNqC7teU9A8by_hsz-wROUBDqIZLBErccnO0oQ',
     tag: null,
-    color: "primary",
+    color: 'primary',
   },
   // ... Duplicates to reach 18 items mocked logic
   {
-    id: "AN-552",
-    title: "Google Ads Mastery for E-commerce",
-    instructor: "James Wilson",
-    duration: "5h 50m",
+    id: 'AN-552',
+    title: 'Google Ads Mastery for E-commerce',
+    instructor: 'James Wilson',
+    duration: '5h 50m',
     rating: 4.8,
     price: 34.99,
     originalPrice: 89.99,
-    category: "Marketing",
-    level: "intermediate",
-    color: "purple",
+    category: 'Marketing',
+    level: 'intermediate',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBoFDaPZkb_a_9wKkiFmCfSsK_WQ9z22NduZ7EKN_4251P8pEXbVY1531dpxQVx52NJ5HGozzDTKgEcUgfjqeCHZYC9wZsUeXO7Ee4-Zvzk8E2pJjmkve2DG-6KhkGrmwF7GsZ1YTWlj9qoI5jeChgImeCyHLxEhaJjNVLZTMy4A1JcQ8JAi4xjo5VA7MDCR4hNvf6MEwONIfq_vs2oTZo7piHhIi9QIBecNZJFmD8xyJnVdZ-EK2q6m1ijabQq00clOT_hVkv2mU8",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBoFDaPZkb_a_9wKkiFmCfSsK_WQ9z22NduZ7EKN_4251P8pEXbVY1531dpxQVx52NJ5HGozzDTKgEcUgfjqeCHZYC9wZsUeXO7Ee4-Zvzk8E2pJjmkve2DG-6KhkGrmwF7GsZ1YTWlj9qoI5jeChgImeCyHLxEhaJjNVLZTMy4A1JcQ8JAi4xjo5VA7MDCR4hNvf6MEwONIfq_vs2oTZo7piHhIi9QIBecNZJFmD8xyJnVdZ-EK2q6m1ijabQq00clOT_hVkv2mU8',
   },
   {
-    id: "WD-300",
-    title: "Modern Web Design with Figma and Webflow",
-    instructor: "Dr. Sarah Connor",
-    duration: "22h 30m",
+    id: 'WD-300',
+    title: 'Modern Web Design with Figma and Webflow',
+    instructor: 'Dr. Sarah Connor',
+    duration: '22h 30m',
     rating: 4.6,
     price: 99.0,
     originalPrice: null,
-    category: "Design",
-    level: "advanced",
-    color: "primary",
+    category: 'Design',
+    level: 'advanced',
+    color: 'primary',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAC6NhUUHDRqyDaSzJlgNygr56BoDO_8fQcX3et2Wnp8VDx35N3nXgqbR-Xt6LuiN8hBJJaqe85edLCUHF5Bfgu7Px9PPIjEpbNqBu_b_BBAFHrqEGmReNkqR478aid53gP2dmZgNyG55_bI7DNrVWMgb85BYuA7qVKC-a25Qn5MboAwsL8FmgvO-VnOtPKgxx-yRNmHY4bAzrF8d9nAusUx1x_WpNRHMsGsuZkOktb-WhkFhppcyDN489FP793xIA_CTxtWMSe0r4",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAC6NhUUHDRqyDaSzJlgNygr56BoDO_8fQcX3et2Wnp8VDx35N3nXgqbR-Xt6LuiN8hBJJaqe85edLCUHF5Bfgu7Px9PPIjEpbNqBu_b_BBAFHrqEGmReNkqR478aid53gP2dmZgNyG55_bI7DNrVWMgb85BYuA7qVKC-a25Qn5MboAwsL8FmgvO-VnOtPKgxx-yRNmHY4bAzrF8d9nAusUx1x_WpNRHMsGsuZkOktb-WhkFhppcyDN489FP793xIA_CTxtWMSe0r4',
   },
   {
-    id: "SM-881",
-    title: "Social Media Marketing: Zero to Hero",
-    instructor: "James Wilson",
-    duration: "10h 00m",
+    id: 'SM-881',
+    title: 'Social Media Marketing: Zero to Hero',
+    instructor: 'James Wilson',
+    duration: '10h 00m',
     rating: 4.9,
     price: 24.99,
     originalPrice: 74.99,
-    category: "Marketing",
-    level: "beginner",
-    color: "purple",
+    category: 'Marketing',
+    level: 'beginner',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAUd6QuR7Rp0azAg6bhUKGrn8eqsVDX9Ry8ezok66U35Rnc39EGF8e_4RTwbxJKMv-73ahqf8f5ZB9b93NmWiNPSK8EnFcIr6DteWxx7yWzlyXRTn5Ti-5vmkE6VCeszMwgLEntCvZqhhTZrqr2Jn9RHsXJsFVCynv4RsUCpiG3B-L_NPzkyO3IFkYBfoMOmsHnLUsFI4SXKQGRME81AAq--3NMDs_chLm5cXIc-AdEeXiMFUIGBH9GllgnintdJWon-xXTl_1BWos",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAUd6QuR7Rp0azAg6bhUKGrn8eqsVDX9Ry8ezok66U35Rnc39EGF8e_4RTwbxJKMv-73ahqf8f5ZB9b93NmWiNPSK8EnFcIr6DteWxx7yWzlyXRTn5Ti-5vmkE6VCeszMwgLEntCvZqhhTZrqr2Jn9RHsXJsFVCynv4RsUCpiG3B-L_NPzkyO3IFkYBfoMOmsHnLUsFI4SXKQGRME81AAq--3NMDs_chLm5cXIc-AdEeXiMFUIGBH9GllgnintdJWon-xXTl_1BWos',
   },
   // Repeat to simulate more results
   {
-    id: "CS-102",
-    title: "Prototyping High Fidelity Interfaces",
-    instructor: "Dr. Sarah Connor",
-    duration: "08h 15m",
+    id: 'CS-102',
+    title: 'Prototyping High Fidelity Interfaces',
+    instructor: 'Dr. Sarah Connor',
+    duration: '08h 15m',
     rating: 4.7,
     price: 55.0,
     originalPrice: null,
-    category: "Design",
-    level: "intermediate",
-    color: "primary",
+    category: 'Design',
+    level: 'intermediate',
+    color: 'primary',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCil99ZvcYdOTX2ikzfmezXpX8PM1gdqvlH9POOIWtf_oLnLUykcTbi_AmwTRyHd91SesbJSqYVeMRowIU8LwxAMfmlo6f_Pz1u8SrLX6MRh78Y4jM36RyPsfr3f6KzeGWxm4kZXTGblOlSET-GxfYpd_Nzdu1P0AVyTV6bpa_jwzSu1ZfKYb7SrSNphUJwOZowmvViRp-dqkbRQYrkWbuITbMKEf_FdUEefC39x97j6p9fuc1eF7A1Z3QFUZVecRUTOyGnzRBp9_Q",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCil99ZvcYdOTX2ikzfmezXpX8PM1gdqvlH9POOIWtf_oLnLUykcTbi_AmwTRyHd91SesbJSqYVeMRowIU8LwxAMfmlo6f_Pz1u8SrLX6MRh78Y4jM36RyPsfr3f6KzeGWxm4kZXTGblOlSET-GxfYpd_Nzdu1P0AVyTV6bpa_jwzSu1ZfKYb7SrSNphUJwOZowmvViRp-dqkbRQYrkWbuITbMKEf_FdUEefC39x97j6p9fuc1eF7A1Z3QFUZVecRUTOyGnzRBp9_Q',
   },
   {
-    id: "MK-205",
-    title: "SEO Fundamentals 2024",
-    instructor: "James Wilson",
-    duration: "6h 45m",
+    id: 'MK-205',
+    title: 'SEO Fundamentals 2024',
+    instructor: 'James Wilson',
+    duration: '6h 45m',
     rating: 4.6,
     price: 39.99,
     originalPrice: 79.99,
-    category: "Marketing",
-    level: "beginner",
-    color: "purple",
+    category: 'Marketing',
+    level: 'beginner',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAvzbzuSjw86VeI3OOXElSHJGSEvvzouGyeAW34jd3Px-Io4QsMww1pfJW7UOrjmNJJJ_DaLMU81Np88h_XCXTqDiDlcl9mNDYwjXXpxgNJJDTWfwEiAukRqT_aWTm9KNnK-6hjRAZZ1EPYs-Sz8NXTSel_BwuZekfnzd5n0JxMSoI2ke-DWJeJv42Df58VwTZCOadgRyZ6ktv0syTD-xYuIuPk4fe0vYDgPEqVPNAigyQsq3AxWqvfnpntYxcLt3ABxf7aaTSb1cQ",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAvzbzuSjw86VeI3OOXElSHJGSEvvzouGyeAW34jd3Px-Io4QsMww1pfJW7UOrjmNJJJ_DaLMU81Np88h_XCXTqDiDlcl9mNDYwjXXpxgNJJDTWfwEiAukRqT_aWTm9KNnK-6hjRAZZ1EPYs-Sz8NXTSel_BwuZekfnzd5n0JxMSoI2ke-DWJeJv42Df58VwTZCOadgRyZ6ktv0syTD-xYuIuPk4fe0vYDgPEqVPNAigyQsq3AxWqvfnpntYxcLt3ABxf7aaTSb1cQ',
   },
   {
-    id: "GD-010",
-    title: "Typography in Modern Web",
-    instructor: "Dr. Sarah Connor",
-    duration: "4h 30m",
+    id: 'GD-010',
+    title: 'Typography in Modern Web',
+    instructor: 'Dr. Sarah Connor',
+    duration: '4h 30m',
     rating: 4.8,
     price: 29.99,
     originalPrice: null,
-    category: "Design",
-    level: "intermediate",
-    color: "primary",
+    category: 'Design',
+    level: 'intermediate',
+    color: 'primary',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDCreAkOdseX9ZVH36oFGC3i0Q7D-DQz4x3zJL5NDtMSwfta8Qw886FBxG-IqaeUipdJkrptvGNhoKABpUsxpWM3mdOIUqxuJd_fIs7rU40m72S62pZ5kpdbKsqlJVJyqsi2WWJEkXEWJbKJwxP8BauVhNPiCvvFftKmHNbg7YM1sd5mq65ce7SyfNYQF70fI6FtiiqDZsVImVhLv0vn7St75HI9mz129PyeaPssxNqC7teU9A8by_hsz-wROUBDqIZLBErccnO0oQ",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDCreAkOdseX9ZVH36oFGC3i0Q7D-DQz4x3zJL5NDtMSwfta8Qw886FBxG-IqaeUipdJkrptvGNhoKABpUsxpWM3mdOIUqxuJd_fIs7rU40m72S62pZ5kpdbKsqlJVJyqsi2WWJEkXEWJbKJwxP8BauVhNPiCvvFftKmHNbg7YM1sd5mq65ce7SyfNYQF70fI6FtiiqDZsVImVhLv0vn7St75HI9mz129PyeaPssxNqC7teU9A8by_hsz-wROUBDqIZLBErccnO0oQ',
   },
   {
-    id: "AN-553",
-    title: "Conversion Rate Optimization",
-    instructor: "James Wilson",
-    duration: "12h 00m",
+    id: 'AN-553',
+    title: 'Conversion Rate Optimization',
+    instructor: 'James Wilson',
+    duration: '12h 00m',
     rating: 4.9,
     price: 95.0,
     originalPrice: null,
-    category: "Marketing",
-    level: "advanced",
-    color: "purple",
+    category: 'Marketing',
+    level: 'advanced',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBoFDaPZkb_a_9wKkiFmCfSsK_WQ9z22NduZ7EKN_4251P8pEXbVY1531dpxQVx52NJ5HGozzDTKgEcUgfjqeCHZYC9wZsUeXO7Ee4-Zvzk8E2pJjmkve2DG-6KhkGrmwF7GsZ1YTWlj9qoI5jeChgImeCyHLxEhaJjNVLZTMy4A1JcQ8JAi4xjo5VA7MDCR4hNvf6MEwONIfq_vs2oTZo7piHhIi9QIBecNZJFmD8xyJnVdZ-EK2q6m1ijabQq00clOT_hVkv2mU8",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBoFDaPZkb_a_9wKkiFmCfSsK_WQ9z22NduZ7EKN_4251P8pEXbVY1531dpxQVx52NJ5HGozzDTKgEcUgfjqeCHZYC9wZsUeXO7Ee4-Zvzk8E2pJjmkve2DG-6KhkGrmwF7GsZ1YTWlj9qoI5jeChgImeCyHLxEhaJjNVLZTMy4A1JcQ8JAi4xjo5VA7MDCR4hNvf6MEwONIfq_vs2oTZo7piHhIi9QIBecNZJFmD8xyJnVdZ-EK2q6m1ijabQq00clOT_hVkv2mU8',
   },
   {
-    id: "WD-301",
-    title: "CSS Grid & Flexbox Mastery",
-    instructor: "Dr. Sarah Connor",
-    duration: "7h 15m",
+    id: 'WD-301',
+    title: 'CSS Grid & Flexbox Mastery',
+    instructor: 'Dr. Sarah Connor',
+    duration: '7h 15m',
     rating: 4.9,
     price: 44.99,
     originalPrice: 60.0,
-    category: "Design",
-    level: "intermediate",
-    color: "primary",
+    category: 'Design',
+    level: 'intermediate',
+    color: 'primary',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAC6NhUUHDRqyDaSzJlgNygr56BoDO_8fQcX3et2Wnp8VDx35N3nXgqbR-Xt6LuiN8hBJJaqe85edLCUHF5Bfgu7Px9PPIjEpbNqBu_b_BBAFHrqEGmReNkqR478aid53gP2dmZgNyG55_bI7DNrVWMgb85BYuA7qVKC-a25Qn5MboAwsL8FmgvO-VnOtPKgxx-yRNmHY4bAzrF8d9nAusUx1x_WpNRHMsGsuZkOktb-WhkFhppcyDN489FP793xIA_CTxtWMSe0r4",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAC6NhUUHDRqyDaSzJlgNygr56BoDO_8fQcX3et2Wnp8VDx35N3nXgqbR-Xt6LuiN8hBJJaqe85edLCUHF5Bfgu7Px9PPIjEpbNqBu_b_BBAFHrqEGmReNkqR478aid53gP2dmZgNyG55_bI7DNrVWMgb85BYuA7qVKC-a25Qn5MboAwsL8FmgvO-VnOtPKgxx-yRNmHY4bAzrF8d9nAusUx1x_WpNRHMsGsuZkOktb-WhkFhppcyDN489FP793xIA_CTxtWMSe0r4',
   },
   {
-    id: "SM-882",
-    title: "Instagram Content Strategy",
-    instructor: "James Wilson",
-    duration: "3h 45m",
+    id: 'SM-882',
+    title: 'Instagram Content Strategy',
+    instructor: 'James Wilson',
+    duration: '3h 45m',
     rating: 4.5,
     price: 19.99,
     originalPrice: null,
-    category: "Marketing",
-    level: "beginner",
-    color: "purple",
+    category: 'Marketing',
+    level: 'beginner',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAUd6QuR7Rp0azAg6bhUKGrn8eqsVDX9Ry8ezok66U35Rnc39EGF8e_4RTwbxJKMv-73ahqf8f5ZB9b93NmWiNPSK8EnFcIr6DteWxx7yWzlyXRTn5Ti-5vmkE6VCeszMwgLEntCvZqhhTZrqr2Jn9RHsXJsFVCynv4RsUCpiG3B-L_NPzkyO3IFkYBfoMOmsHnLUsFI4SXKQGRME81AAq--3NMDs_chLm5cXIc-AdEeXiMFUIGBH9GllgnintdJWon-xXTl_1BWos",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAUd6QuR7Rp0azAg6bhUKGrn8eqsVDX9Ry8ezok66U35Rnc39EGF8e_4RTwbxJKMv-73ahqf8f5ZB9b93NmWiNPSK8EnFcIr6DteWxx7yWzlyXRTn5Ti-5vmkE6VCeszMwgLEntCvZqhhTZrqr2Jn9RHsXJsFVCynv4RsUCpiG3B-L_NPzkyO3IFkYBfoMOmsHnLUsFI4SXKQGRME81AAq--3NMDs_chLm5cXIc-AdEeXiMFUIGBH9GllgnintdJWon-xXTl_1BWos',
   },
   {
-    id: "CS-103",
-    title: "Advanced UI/UX 3",
-    instructor: "Sarah Connor",
-    duration: "10h",
+    id: 'CS-103',
+    title: 'Advanced UI/UX 3',
+    instructor: 'Sarah Connor',
+    duration: '10h',
     rating: 4.9,
     price: 80,
     originalPrice: 100,
-    category: "Design",
-    level: "advanced",
-    color: "primary",
+    category: 'Design',
+    level: 'advanced',
+    color: 'primary',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCil99ZvcYdOTX2ikzfmezXpX8PM1gdqvlH9POOIWtf_oLnLUykcTbi_AmwTRyHd91SesbJSqYVeMRowIU8LwxAMfmlo6f_Pz1u8SrLX6MRh78Y4jM36RyPsfr3f6KzeGWxm4kZXTGblOlSET-GxfYpd_Nzdu1P0AVyTV6bpa_jwzSu1ZfKYb7SrSNphUJwOZowmvViRp-dqkbRQYrkWbuITbMKEf_FdUEefC39x97j6p9fuc1eF7A1Z3QFUZVecRUTOyGnzRBp9_Q",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCil99ZvcYdOTX2ikzfmezXpX8PM1gdqvlH9POOIWtf_oLnLUykcTbi_AmwTRyHd91SesbJSqYVeMRowIU8LwxAMfmlo6f_Pz1u8SrLX6MRh78Y4jM36RyPsfr3f6KzeGWxm4kZXTGblOlSET-GxfYpd_Nzdu1P0AVyTV6bpa_jwzSu1ZfKYb7SrSNphUJwOZowmvViRp-dqkbRQYrkWbuITbMKEf_FdUEefC39x97j6p9fuc1eF7A1Z3QFUZVecRUTOyGnzRBp9_Q',
   },
   {
-    id: "MK-206",
-    title: "Marketing 3",
-    instructor: "James Wilson",
-    duration: "8h",
+    id: 'MK-206',
+    title: 'Marketing 3',
+    instructor: 'James Wilson',
+    duration: '8h',
     rating: 4.7,
     price: 40,
     originalPrice: null,
-    category: "Marketing",
-    level: "intermediate",
-    color: "purple",
+    category: 'Marketing',
+    level: 'intermediate',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAvzbzuSjw86VeI3OOXElSHJGSEvvzouGyeAW34jd3Px-Io4QsMww1pfJW7UOrjmNJJJ_DaLMU81Np88h_XCXTqDiDlcl9mNDYwjXXpxgNJJDTWfwEiAukRqT_aWTm9KNnK-6hjRAZZ1EPYs-Sz8NXTSel_BwuZekfnzd5n0JxMSoI2ke-DWJeJv42Df58VwTZCOadgRyZ6ktv0syTD-xYuIuPk4fe0vYDgPEqVPNAigyQsq3AxWqvfnpntYxcLt3ABxf7aaTSb1cQ",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAvzbzuSjw86VeI3OOXElSHJGSEvvzouGyeAW34jd3Px-Io4QsMww1pfJW7UOrjmNJJJ_DaLMU81Np88h_XCXTqDiDlcl9mNDYwjXXpxgNJJDTWfwEiAukRqT_aWTm9KNnK-6hjRAZZ1EPYs-Sz8NXTSel_BwuZekfnzd5n0JxMSoI2ke-DWJeJv42Df58VwTZCOadgRyZ6ktv0syTD-xYuIuPk4fe0vYDgPEqVPNAigyQsq3AxWqvfnpntYxcLt3ABxf7aaTSb1cQ',
   },
   {
-    id: "GD-011",
-    title: "Design 3",
-    instructor: "Sarah Connor",
-    duration: "15h",
+    id: 'GD-011',
+    title: 'Design 3',
+    instructor: 'Sarah Connor',
+    duration: '15h',
     rating: 4.5,
     price: 110,
     originalPrice: null,
-    category: "Design",
-    level: "beginner",
-    color: "primary",
+    category: 'Design',
+    level: 'beginner',
+    color: 'primary',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDCreAkOdseX9ZVH36oFGC3i0Q7D-DQz4x3zJL5NDtMSwfta8Qw886FBxG-IqaeUipdJkrptvGNhoKABpUsxpWM3mdOIUqxuJd_fIs7rU40m72S62pZ5kpdbKsqlJVJyqsi2WWJEkXEWJbKJwxP8BauVhNPiCvvFftKmHNbg7YM1sd5mq65ce7SyfNYQF70fI6FtiiqDZsVImVhLv0vn7St75HI9mz129PyeaPssxNqC7teU9A8by_hsz-wROUBDqIZLBErccnO0oQ",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDCreAkOdseX9ZVH36oFGC3i0Q7D-DQz4x3zJL5NDtMSwfta8Qw886FBxG-IqaeUipdJkrptvGNhoKABpUsxpWM3mdOIUqxuJd_fIs7rU40m72S62pZ5kpdbKsqlJVJyqsi2WWJEkXEWJbKJwxP8BauVhNPiCvvFftKmHNbg7YM1sd5mq65ce7SyfNYQF70fI6FtiiqDZsVImVhLv0vn7St75HI9mz129PyeaPssxNqC7teU9A8by_hsz-wROUBDqIZLBErccnO0oQ',
   },
   {
-    id: "AN-554",
-    title: "Analytics 3",
-    instructor: "James Wilson",
-    duration: "5h",
+    id: 'AN-554',
+    title: 'Analytics 3',
+    instructor: 'James Wilson',
+    duration: '5h',
     rating: 4.8,
     price: 30,
     originalPrice: 80,
-    category: "Marketing",
-    level: "advanced",
-    color: "purple",
+    category: 'Marketing',
+    level: 'advanced',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBoFDaPZkb_a_9wKkiFmCfSsK_WQ9z22NduZ7EKN_4251P8pEXbVY1531dpxQVx52NJ5HGozzDTKgEcUgfjqeCHZYC9wZsUeXO7Ee4-Zvzk8E2pJjmkve2DG-6KhkGrmwF7GsZ1YTWlj9qoI5jeChgImeCyHLxEhaJjNVLZTMy4A1JcQ8JAi4xjo5VA7MDCR4hNvf6MEwONIfq_vs2oTZo7piHhIi9QIBecNZJFmD8xyJnVdZ-EK2q6m1ijabQq00clOT_hVkv2mU8",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBoFDaPZkb_a_9wKkiFmCfSsK_WQ9z22NduZ7EKN_4251P8pEXbVY1531dpxQVx52NJ5HGozzDTKgEcUgfjqeCHZYC9wZsUeXO7Ee4-Zvzk8E2pJjmkve2DG-6KhkGrmwF7GsZ1YTWlj9qoI5jeChgImeCyHLxEhaJjNVLZTMy4A1JcQ8JAi4xjo5VA7MDCR4hNvf6MEwONIfq_vs2oTZo7piHhIi9QIBecNZJFmD8xyJnVdZ-EK2q6m1ijabQq00clOT_hVkv2mU8',
   },
   {
-    id: "WD-302",
-    title: "Web Design 3",
-    instructor: "Sarah Connor",
-    duration: "22h",
+    id: 'WD-302',
+    title: 'Web Design 3',
+    instructor: 'Sarah Connor',
+    duration: '22h',
     rating: 4.6,
     price: 90,
     originalPrice: null,
-    category: "Design",
-    level: "intermediate",
-    color: "primary",
+    category: 'Design',
+    level: 'intermediate',
+    color: 'primary',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAC6NhUUHDRqyDaSzJlgNygr56BoDO_8fQcX3et2Wnp8VDx35N3nXgqbR-Xt6LuiN8hBJJaqe85edLCUHF5Bfgu7Px9PPIjEpbNqBu_b_BBAFHrqEGmReNkqR478aid53gP2dmZgNyG55_bI7DNrVWMgb85BYuA7qVKC-a25Qn5MboAwsL8FmgvO-VnOtPKgxx-yRNmHY4bAzrF8d9nAusUx1x_WpNRHMsGsuZkOktb-WhkFhppcyDN489FP793xIA_CTxtWMSe0r4",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAC6NhUUHDRqyDaSzJlgNygr56BoDO_8fQcX3et2Wnp8VDx35N3nXgqbR-Xt6LuiN8hBJJaqe85edLCUHF5Bfgu7Px9PPIjEpbNqBu_b_BBAFHrqEGmReNkqR478aid53gP2dmZgNyG55_bI7DNrVWMgb85BYuA7qVKC-a25Qn5MboAwsL8FmgvO-VnOtPKgxx-yRNmHY4bAzrF8d9nAusUx1x_WpNRHMsGsuZkOktb-WhkFhppcyDN489FP793xIA_CTxtWMSe0r4',
   },
   {
-    id: "SM-883",
-    title: "Social Media 3",
-    instructor: "James Wilson",
-    duration: "10h",
+    id: 'SM-883',
+    title: 'Social Media 3',
+    instructor: 'James Wilson',
+    duration: '10h',
     rating: 4.9,
     price: 20,
     originalPrice: 70,
-    category: "Marketing",
-    level: "beginner",
-    color: "purple",
+    category: 'Marketing',
+    level: 'beginner',
+    color: 'purple',
     image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAUd6QuR7Rp0azAg6bhUKGrn8eqsVDX9Ry8ezok66U35Rnc39EGF8e_4RTwbxJKMv-73ahqf8f5ZB9b93NmWiNPSK8EnFcIr6DteWxx7yWzlyXRTn5Ti-5vmkE6VCeszMwgLEntCvZqhhTZrqr2Jn9RHsXJsFVCynv4RsUCpiG3B-L_NPzkyO3IFkYBfoMOmsHnLUsFI4SXKQGRME81AAq--3NMDs_chLm5cXIc-AdEeXiMFUIGBH9GllgnintdJWon-xXTl_1BWos",
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAUd6QuR7Rp0azAg6bhUKGrn8eqsVDX9Ry8ezok66U35Rnc39EGF8e_4RTwbxJKMv-73ahqf8f5ZB9b93NmWiNPSK8EnFcIr6DteWxx7yWzlyXRTn5Ti-5vmkE6VCeszMwgLEntCvZqhhTZrqr2Jn9RHsXJsFVCynv4RsUCpiG3B-L_NPzkyO3IFkYBfoMOmsHnLUsFI4SXKQGRME81AAq--3NMDs_chLm5cXIc-AdEeXiMFUIGBH9GllgnintdJWon-xXTl_1BWos',
   },
 ];
 
@@ -304,14 +304,14 @@ export default function SearchPage() {
     if (hours > filters.duration) return false;
 
     // 3. Instructor (Search by name)
-    if (filters.instructor && filters.instructor.trim() !== "") {
+    if (filters.instructor && filters.instructor.trim() !== '') {
       const searchTerm = filters.instructor.toLowerCase();
       const instructorName = course.instructor.toLowerCase();
       if (!instructorName.includes(searchTerm)) return false;
     }
 
     // 4. Search term (title or category)
-    if (filters.searchTerm && filters.searchTerm.trim() !== "") {
+    if (filters.searchTerm && filters.searchTerm.trim() !== '') {
       const term = filters.searchTerm.toLowerCase();
       const inTitle = course.title.toLowerCase().includes(term);
       const inCategory = course.category.toLowerCase().includes(term);
@@ -325,9 +325,7 @@ export default function SearchPage() {
         const topicLower = topic.toLowerCase();
         const categoryLower = course.category.toLowerCase();
         const titleLower = course.title.toLowerCase();
-        return (
-          categoryLower.includes(topicLower) || titleLower.includes(topicLower)
-        );
+        return categoryLower.includes(topicLower) || titleLower.includes(topicLower);
       });
       if (!hasTopic) return false;
     }
@@ -342,11 +340,11 @@ export default function SearchPage() {
   const sortedResults = React.useMemo(() => {
     const copy = [...filteredResults];
     switch (filters.sort) {
-      case "price_asc":
+      case 'price_asc':
         return copy.sort((a, b) => a.price - b.price);
-      case "rating":
+      case 'rating':
         return copy.sort((a, b) => b.rating - a.rating);
-      case "newest":
+      case 'newest':
         return copy; // no date field, keep original order
       default:
         return copy; // relevance: keep filtered order
@@ -360,13 +358,13 @@ export default function SearchPage() {
   const filterKey = React.useMemo(
     () =>
       [
-        filters.difficulty.join(","),
-        filters.topics.join(","),
+        filters.difficulty.join(','),
+        filters.topics.join(','),
         filters.instructor,
         filters.duration,
         filters.priceRange,
         filters.searchTerm,
-      ].join("|"),
+      ].join('|'),
     [
       filters.difficulty,
       filters.topics,
@@ -395,11 +393,7 @@ export default function SearchPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar desktop */}
           <div className="hidden lg:block">
-            <SearchFilters
-              filters={filters}
-              setFilters={setFilters}
-              resetFilters={resetFilters}
-            />
+            <SearchFilters filters={filters} setFilters={setFilters} resetFilters={resetFilters} />
           </div>
 
           <div className="flex-1">
@@ -409,15 +403,11 @@ export default function SearchPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <h1 className="text-2xl font-display font-bold text-slate-900">
-                      Results
-                    </h1>
+                    <h1 className="text-2xl font-display font-bold text-slate-900">Results</h1>
                   </div>
                   <p className="font-mono text-xs text-slate-400 tracking-wide">
-                    <span className="text-primary font-bold">
-                      {sortedResults.length}
-                    </span>{" "}
-                    MATCHES FOUND
+                    <span className="text-primary font-bold">{sortedResults.length}</span> MATCHES
+                    FOUND
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -469,7 +459,9 @@ export default function SearchPage() {
                   onClick={() => setIsFilterOpen(false)}
                 ></div>
                 <div
-                  className={`absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl border-l border-slate-200 p-4 overflow-y-auto transform transition-all duration-300 ease-out ${drawerVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`}
+                  className={`absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl border-l border-slate-200 p-4 overflow-y-auto transform transition-all duration-300 ease-out ${
+                    drawerVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+                  }`}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-mono font-bold uppercase tracking-widest text-slate-700">
@@ -531,17 +523,19 @@ export default function SearchPage() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${course.color === "purple" ? "bg-purple-500" : "bg-primary"}`}
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            course.color === 'purple' ? 'bg-purple-500' : 'bg-primary'
+                          }`}
                         ></span>
                         <span
-                          className={`text-[10px] font-mono font-bold uppercase tracking-widest ${course.color === "purple" ? "text-purple-600" : "text-primary"}`}
+                          className={`text-[10px] font-mono font-bold uppercase tracking-widest ${
+                            course.color === 'purple' ? 'text-purple-600' : 'text-primary'
+                          }`}
                         >
                           {course.category}
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400">
-                        ID: {course.id}
-                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">ID: {course.id}</span>
                     </div>
                     <h3 className="text-lg font-display font-bold text-slate-900 mb-2 leading-tight group-hover:text-primary transition-colors">
                       {course.title}
@@ -587,35 +581,29 @@ export default function SearchPage() {
               <div className="flex justify-center mt-12 pb-8">
                 <nav className="flex items-center gap-2 p-2 bg-white/50 border border-slate-200 rounded-lg backdrop-blur-sm">
                   <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(1, prev - 1))
-                    }
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
                     className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 text-slate-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 flex items-center justify-center rounded font-mono text-sm transition-colors ${
-                          currentPage === pageNum
-                            ? "bg-primary text-white font-bold shadow-md shadow-primary/30"
-                            : "hover:bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    ),
-                  )}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 flex items-center justify-center rounded font-mono text-sm transition-colors ${
+                        currentPage === pageNum
+                          ? 'bg-primary text-white font-bold shadow-md shadow-primary/30'
+                          : 'hover:bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
 
                   <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                    }
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
                     className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 text-slate-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >

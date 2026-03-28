@@ -14,7 +14,8 @@ const demoQuiz: Quiz = {
       type: 'multiple-choice',
       text: 'Which of the following is a JavaScript primitive type?',
       points: 2,
-      explanation: 'JavaScript primitives include string, number, boolean, null, undefined, symbol, and bigint.',
+      explanation:
+        'JavaScript primitives include string, number, boolean, null, undefined, symbol, and bigint.',
       options: [
         { id: 'a', text: 'Array', isCorrect: false },
         { id: 'b', text: 'string', isCorrect: true },
@@ -35,8 +36,8 @@ const demoQuiz: Quiz = {
       type: 'code-challenge',
       text: "Write code that returns the input string uppercased. The function receives 'input' as a string.",
       points: 3,
-      explanation: "One solution: return input.toUpperCase();",
-      codeTemplate: "return input.toUpperCase();",
+      explanation: 'One solution: return input.toUpperCase();',
+      codeTemplate: 'return input.toUpperCase();',
       language: 'javascript',
       testCases: [
         { input: 'hello', expectedOutput: 'HELLO' },

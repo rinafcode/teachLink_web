@@ -6,7 +6,12 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { ErrorType, getUserFriendlyMessage, getActionSuggestion, classifyError } from '@/utils/errorUtils';
+import {
+  ErrorType,
+  getUserFriendlyMessage,
+  getActionSuggestion,
+  classifyError,
+} from '@/utils/errorUtils';
 
 export interface ErrorDisplayProps {
   error?: any;
@@ -18,7 +23,10 @@ export interface ErrorDisplayProps {
   autoHideDuration?: number;
 }
 
-const severityStyles: Record<'error' | 'warning' | 'info', { bg: string; border: string; text: string; icon: string }> = {
+const severityStyles: Record<
+  'error' | 'warning' | 'info',
+  { bg: string; border: string; text: string; icon: string }
+> = {
   error: {
     bg: 'bg-red-50',
     border: 'border-red-200',
@@ -96,9 +104,7 @@ export const UserFriendlyErrorDisplay: React.FC<ErrorDisplayProps> = ({
           <p className="text-sm leading-relaxed mb-2">{userMessage}</p>
 
           {/* Action Suggestion */}
-          {actionSuggestion && (
-            <p className="text-xs opacity-75 mb-3">💡 {actionSuggestion}</p>
-          )}
+          {actionSuggestion && <p className="text-xs opacity-75 mb-3">💡 {actionSuggestion}</p>}
 
           {/* Details Section */}
           {showDetails && (
@@ -123,7 +129,7 @@ export const UserFriendlyErrorDisplay: React.FC<ErrorDisplayProps> = ({
                         retryable: errorInfo.retryable,
                       },
                       null,
-                      2
+                      2,
                     )}
                   </pre>
                 </details>
@@ -218,7 +224,10 @@ export interface InlineErrorProps {
   className?: string;
 }
 
-export const InlineError: React.FC<InlineErrorProps> = ({ error, className = '' }: InlineErrorProps) => {
+export const InlineError: React.FC<InlineErrorProps> = ({
+  error,
+  className = '',
+}: InlineErrorProps) => {
   if (!error) return null;
 
   const userMessage = getUserFriendlyMessage(error);

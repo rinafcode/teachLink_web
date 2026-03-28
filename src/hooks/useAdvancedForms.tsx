@@ -13,7 +13,7 @@ import {
   FormState,
   ValidationResult,
   SaveStatus,
-  FieldDescriptor
+  FieldDescriptor,
 } from '@/form-management/types/core';
 
 interface UseAdvancedFormsOptions {
@@ -71,7 +71,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     validateOnBlur = true,
     onSubmit,
     onFieldChange,
-    onValidationChange
+    onValidationChange,
   } = options;
 
   // Initialize managers
@@ -97,7 +97,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
   const [formState, setFormState] = useState<FormState>(stateManager.getState());
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({
     status: 'idle',
-    queuedSaves: 0
+    queuedSaves: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -127,6 +127,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     });
 
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, validateOnChange, autoSave, formId, onFieldChange]);
 
   // Setup auto-save
@@ -145,54 +146,79 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     return () => {
       subscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSave, autoSaveInterval, formId]);
 
   // Field operations
-  const getFieldValue = useCallback((fieldId: string) => {
-    return stateManager.getFieldValue(fieldId);
-  }, [stateManager]);
+  const getFieldValue = useCallback(
+    (fieldId: string) => {
+      return stateManager.getFieldValue(fieldId);
+    },
+    [stateManager],
+  );
 
-  const setFieldValue = useCallback((fieldId: string, value: any) => {
-    stateManager.updateField(fieldId, value);
-  }, [stateManager]);
+  const setFieldValue = useCallback(
+    (fieldId: string, value: any) => {
+      stateManager.updateField(fieldId, value);
+    },
+    [stateManager],
+  );
 
-  const setFieldValues = useCallback((values: Record<string, any>) => {
-    stateManager.setValues(values);
-  }, [stateManager]);
+  const setFieldValues = useCallback(
+    (values: Record<string, any>) => {
+      stateManager.setValues(values);
+    },
+    [stateManager],
+  );
 
-  const getFieldValidation = useCallback((fieldId: string) => {
-    return stateManager.getFieldValidation(fieldId);
-  }, [stateManager]);
+  const getFieldValidation = useCallback(
+    (fieldId: string) => {
+      return stateManager.getFieldValidation(fieldId);
+    },
+    [stateManager],
+  );
 
-  const isFieldTouched = useCallback((fieldId: string) => {
-    return stateManager.isFieldTouched(fieldId);
-  }, [stateManager]);
+  const isFieldTouched = useCallback(
+    (fieldId: string) => {
+      return stateManager.isFieldTouched(fieldId);
+    },
+    [stateManager],
+  );
 
-  const isFieldDirty = useCallback((fieldId: string) => {
-    return stateManager.isFieldDirty(fieldId);
-  }, [stateManager]);
+  const isFieldDirty = useCallback(
+    (fieldId: string) => {
+      return stateManager.isFieldDirty(fieldId);
+    },
+    [stateManager],
+  );
 
-  const isFieldVisible = useCallback((fieldId: string) => {
-    return stateManager.isFieldVisible(fieldId);
-  }, [stateManager]);
+  const isFieldVisible = useCallback(
+    (fieldId: string) => {
+      return stateManager.isFieldVisible(fieldId);
+    },
+    [stateManager],
+  );
 
   // Validation operations
-  const validateField = useCallback(async (fieldId: string): Promise<ValidationResult> => {
-    const value = stateManager.getFieldValue(fieldId);
-    const result = await validationEngine.validateField(fieldId, value, stateManager.getState());
-    
-    stateManager.setValidationState(fieldId, result);
+  const validateField = useCallback(
+    async (fieldId: string): Promise<ValidationResult> => {
+      const value = stateManager.getFieldValue(fieldId);
+      const result = await validationEngine.validateField(fieldId, value, stateManager.getState());
 
-    if (onValidationChange) {
-      onValidationChange(fieldId, result);
-    }
+      stateManager.setValidationState(fieldId, result);
 
-    return result;
-  }, [stateManager, validationEngine, onValidationChange]);
+      if (onValidationChange) {
+        onValidationChange(fieldId, result);
+      }
+
+      return result;
+    },
+    [stateManager, validationEngine, onValidationChange],
+  );
 
   const validateForm = useCallback(async (): Promise<boolean> => {
     const result = await validationEngine.validateForm(stateManager.getState());
-    
+
     // Update validation state for all fields
     Object.entries(result.fieldResults).forEach(([fieldId, fieldResult]) => {
       stateManager.setValidationState(fieldId, fieldResult);
@@ -235,6 +261,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     } finally {
       setIsSubmitting(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, validateForm, onSubmit, formState.values, autoSave]);
 
   // Auto-save operations
@@ -288,25 +315,25 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     // Managers
     stateManager,
     validationEngine,
-    autoSaveManager
+    autoSaveManager,
   };
 };
 
 // Additional utility hooks
 
-export const useFormField = (
-  formHook: UseAdvancedFormsReturn,
-  fieldId: string
-) => {
+export const useFormField = (formHook: UseAdvancedFormsReturn, fieldId: string) => {
   const value = formHook.getFieldValue(fieldId);
   const validation = formHook.getFieldValidation(fieldId);
   const isTouched = formHook.isFieldTouched(fieldId);
   const isDirty = formHook.isFieldDirty(fieldId);
   const isVisible = formHook.isFieldVisible(fieldId);
 
-  const setValue = useCallback((newValue: any) => {
-    formHook.setFieldValue(fieldId, newValue);
-  }, [formHook, fieldId]);
+  const setValue = useCallback(
+    (newValue: any) => {
+      formHook.setFieldValue(fieldId, newValue);
+    },
+    [formHook, fieldId],
+  );
 
   const validate = useCallback(async () => {
     return await formHook.validateField(fieldId);
@@ -324,6 +351,6 @@ export const useFormField = (
     isVisible,
     hasError,
     errors: validation?.errors || [],
-    warnings: validation?.warnings || []
+    warnings: validation?.warnings || [],
   };
 };

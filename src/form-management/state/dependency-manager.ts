@@ -8,7 +8,7 @@ import {
   ConditionalRule,
   ConditionalAction,
   FieldDescriptor,
-  ValidationResult
+  ValidationResult,
 } from '../types/core';
 
 export interface DependencyGraph {
@@ -44,7 +44,7 @@ export class DependencyManager {
     this.conditionalRules = conditionalRules;
 
     // Build field descriptor map
-    fields.forEach(field => {
+    fields.forEach((field) => {
       this.fieldDescriptors.set(field.id, field);
     });
 
@@ -55,20 +55,23 @@ export class DependencyManager {
   /**
    * Build the dependency graph from field descriptors and conditional rules
    */
-  private buildDependencyGraph(fields: FieldDescriptor[], conditionalRules: ConditionalRule[]): void {
+  private buildDependencyGraph(
+    fields: FieldDescriptor[],
+    conditionalRules: ConditionalRule[],
+  ): void {
     // Initialize graph nodes
-    fields.forEach(field => {
+    fields.forEach((field) => {
       this.dependencyGraph[field.id] = {
         dependsOn: field.dependencies || [],
         dependents: [],
-        conditionalRules: []
+        conditionalRules: [],
       };
     });
 
     // Build reverse dependencies (dependents)
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (field.dependencies) {
-        field.dependencies.forEach(depFieldId => {
+        field.dependencies.forEach((depFieldId) => {
           if (this.dependencyGraph[depFieldId]) {
             this.dependencyGraph[depFieldId].dependents.push(field.id);
           }
@@ -77,8 +80,8 @@ export class DependencyManager {
     });
 
     // Add conditional rules to affected fields
-    conditionalRules.forEach(rule => {
-      rule.actions.forEach(action => {
+    conditionalRules.forEach((rule) => {
+      rule.actions.forEach((action) => {
         if (this.dependencyGraph[action.targetFieldId]) {
           this.dependencyGraph[action.targetFieldId].conditionalRules.push(rule);
         }
@@ -92,13 +95,13 @@ export class DependencyManager {
   calculateCascadingUpdates(
     changedFieldId: string,
     newValue: any,
-    currentState: FormState
+    currentState: FormState,
   ): CascadeUpdateResult {
     const result: CascadeUpdateResult = {
       visibilityChanges: {},
       valueChanges: {},
       validationChanges: {},
-      fieldsToRevalidate: []
+      fieldsToRevalidate: [],
     };
 
     // Create updated state for evaluation
@@ -106,15 +109,15 @@ export class DependencyManager {
       ...currentState,
       values: {
         ...currentState.values,
-        [changedFieldId]: newValue
-      }
+        [changedFieldId]: newValue,
+      },
     };
 
     // Get all fields that might be affected by this change
     const affectedFields = this.getAffectedFields(changedFieldId);
 
     // Process each affected field
-    affectedFields.forEach(fieldId => {
+    affectedFields.forEach((fieldId) => {
       this.processFieldDependencies(fieldId, updatedState, result);
     });
 
@@ -132,13 +135,13 @@ export class DependencyManager {
     while (toProcess.length > 0) {
       const fieldId = toProcess.pop()!;
       if (processed.has(fieldId)) continue;
-      
+
       processed.add(fieldId);
-      
+
       // Add direct dependents
       const fieldDeps = this.dependencyGraph[fieldId];
       if (fieldDeps) {
-        fieldDeps.dependents.forEach(dependent => {
+        fieldDeps.dependents.forEach((dependent) => {
           affected.add(dependent);
           if (!processed.has(dependent)) {
             toProcess.push(dependent);
@@ -147,8 +150,8 @@ export class DependencyManager {
       }
 
       // Add fields affected by conditional rules
-      this.conditionalRules.forEach(rule => {
-        rule.actions.forEach(action => {
+      this.conditionalRules.forEach((rule) => {
+        rule.actions.forEach((action) => {
           if (!processed.has(action.targetFieldId)) {
             affected.add(action.targetFieldId);
             toProcess.push(action.targetFieldId);
@@ -166,15 +169,15 @@ export class DependencyManager {
   private processFieldDependencies(
     fieldId: string,
     state: FormState,
-    result: CascadeUpdateResult
+    result: CascadeUpdateResult,
   ): void {
     const fieldDeps = this.dependencyGraph[fieldId];
     if (!fieldDeps) return;
 
     // Process conditional rules that affect this field
-    fieldDeps.conditionalRules.forEach(rule => {
+    fieldDeps.conditionalRules.forEach((rule) => {
       if (this.evaluateCondition(rule.condition, state)) {
-        rule.actions.forEach(action => {
+        rule.actions.forEach((action) => {
           if (action.targetFieldId === fieldId) {
             this.applyConditionalAction(action, state, result);
           }
@@ -185,10 +188,10 @@ export class DependencyManager {
     // Check if field should be revalidated due to dependency changes
     const fieldDescriptor = this.fieldDescriptors.get(fieldId);
     if (fieldDescriptor && fieldDescriptor.dependencies) {
-      const shouldRevalidate = fieldDescriptor.dependencies.some(depId => 
-        state.values[depId] !== undefined
+      const shouldRevalidate = fieldDescriptor.dependencies.some(
+        (depId) => state.values[depId] !== undefined,
       );
-      
+
       if (shouldRevalidate && !result.fieldsToRevalidate.includes(fieldId)) {
         result.fieldsToRevalidate.push(fieldId);
       }
@@ -198,7 +201,10 @@ export class DependencyManager {
   /**
    * Evaluate a conditional rule condition
    */
-  private evaluateCondition(condition: (formState: FormState) => boolean, state: FormState): boolean {
+  private evaluateCondition(
+    condition: (formState: FormState) => boolean,
+    state: FormState,
+  ): boolean {
     try {
       return condition(state);
     } catch (error) {
@@ -213,23 +219,23 @@ export class DependencyManager {
   private applyConditionalAction(
     action: ConditionalAction,
     state: FormState,
-    result: CascadeUpdateResult
+    result: CascadeUpdateResult,
   ): void {
     switch (action.type) {
       case 'show':
         result.visibilityChanges[action.targetFieldId] = true;
         break;
-      
+
       case 'hide':
         result.visibilityChanges[action.targetFieldId] = false;
         break;
-      
+
       case 'setValue':
         if (action.value !== undefined) {
           result.valueChanges[action.targetFieldId] = action.value;
         }
         break;
-      
+
       case 'enable':
         // Enable/disable would be handled by the form builder
         // For now, we just track that the field needs attention
@@ -237,7 +243,7 @@ export class DependencyManager {
           result.fieldsToRevalidate.push(action.targetFieldId);
         }
         break;
-      
+
       case 'disable':
         // Similar to enable
         if (!result.fieldsToRevalidate.includes(action.targetFieldId)) {
@@ -255,17 +261,17 @@ export class DependencyManager {
     errors: Array<{ fieldId: string; error: string; dependencyId?: string }>;
   } {
     const errors: Array<{ fieldId: string; error: string; dependencyId?: string }> = [];
-    const fieldIds = new Set(fields.map(f => f.id));
+    const fieldIds = new Set(fields.map((f) => f.id));
 
     // Check for missing dependencies
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (field.dependencies) {
-        field.dependencies.forEach(depId => {
+        field.dependencies.forEach((depId) => {
           if (!fieldIds.has(depId)) {
             errors.push({
               fieldId: field.id,
               error: `Field depends on non-existent field: ${depId}`,
-              dependencyId: depId
+              dependencyId: depId,
             });
           }
         });
@@ -274,16 +280,16 @@ export class DependencyManager {
 
     // Check for circular dependencies
     const circularDeps = this.detectCircularDependencies(fields);
-    circularDeps.forEach(cycle => {
+    circularDeps.forEach((cycle) => {
       errors.push({
         fieldId: cycle[0],
-        error: `Circular dependency detected: ${cycle.join(' -> ')}`
+        error: `Circular dependency detected: ${cycle.join(' -> ')}`,
       });
     });
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -314,7 +320,7 @@ export class DependencyManager {
       recursionStack.add(fieldId);
       path.push(fieldId);
 
-      const field = fields.find(f => f.id === fieldId);
+      const field = fields.find((f) => f.id === fieldId);
       if (field && field.dependencies) {
         for (const depId of field.dependencies) {
           if (dfs(depId)) {
@@ -328,7 +334,7 @@ export class DependencyManager {
       return false;
     };
 
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (!visited.has(field.id)) {
         dfs(field.id);
       }
@@ -381,22 +387,22 @@ export class DependencyManager {
 
     const dfs = (fieldId: string) => {
       if (visited.has(fieldId)) return;
-      
+
       visited.add(fieldId);
-      
+
       const deps = this.dependencyGraph[fieldId];
       if (deps) {
-        deps.dependsOn.forEach(depId => {
+        deps.dependsOn.forEach((depId) => {
           if (this.dependencyGraph[depId]) {
             dfs(depId);
           }
         });
       }
-      
+
       result.push(fieldId);
     };
 
-    Object.keys(this.dependencyGraph).forEach(fieldId => {
+    Object.keys(this.dependencyGraph).forEach((fieldId) => {
       if (!visited.has(fieldId)) {
         dfs(fieldId);
       }

@@ -26,31 +26,35 @@ const dateFnsLocales: Record<LanguageCode, Locale> = {
 /**
  * Get cultural preferences for a locale
  */
-export function getCulturalPreferences(language: LanguageCode, region?: string): CulturalPreferences {
+export function getCulturalPreferences(
+  language: LanguageCode,
+  region?: string,
+): CulturalPreferences {
   const config = getLocaleConfig(language);
-  
+
   // Create Intl formatters to detect cultural preferences
   const numberFormatter = new Intl.NumberFormat(config.numberFormat);
   const parts = numberFormatter.formatToParts(1234.56);
-  
-  const decimalSeparator = parts.find(p => p.type === 'decimal')?.value || '.';
-  const thousandsSeparator = parts.find(p => p.type === 'group')?.value || ',';
-  
+
+  const decimalSeparator = parts.find((p) => p.type === 'decimal')?.value || '.';
+  const thousandsSeparator = parts.find((p) => p.type === 'group')?.value || ',';
+
   const currencyFormatter = new Intl.NumberFormat(config.numberFormat, {
     style: 'currency',
     currency: config.currency || 'USD',
   });
-  
-  const currencySymbol = currencyFormatter.formatToParts(0).find(p => 
-    p.type === 'currency'
-  )?.value || '$';
-  
+
+  const currencySymbol =
+    currencyFormatter.formatToParts(0).find((p) => p.type === 'currency')?.value || '$';
+
   // Determine first day of week (0 = Sunday, 1 = Monday)
   // Most European countries use Monday, US/Canada use Sunday
-  const firstDayOfWeek = ['US', 'CA', 'MX', 'BR', 'JP', 'KR', 'TW', 'HK'].includes(region || config.region || '') 
-    ? 0 
+  const firstDayOfWeek = ['US', 'CA', 'MX', 'BR', 'JP', 'KR', 'TW', 'HK'].includes(
+    region || config.region || '',
+  )
+    ? 0
     : 1;
-  
+
   return {
     dateFormat: config.dateFormat || 'MM/dd/yyyy',
     timeFormat: 'HH:mm', // 24-hour format
@@ -70,16 +74,14 @@ export function getCulturalPreferences(language: LanguageCode, region?: string):
 export function formatDate(
   date: Date | string | number,
   language: LanguageCode,
-  formatStr?: string
+  formatStr?: string,
 ): string {
-  const dateObj = typeof date === 'string' || typeof date === 'number' 
-    ? new Date(date) 
-    : date;
-  
+  const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+
   const config = getLocaleConfig(language);
   const locale = dateFnsLocales[language] || dateFnsLocales.en;
   const formatPattern = formatStr || config.dateFormat || 'PP';
-  
+
   try {
     return format(dateObj, formatPattern, { locale });
   } catch (error) {
@@ -91,16 +93,11 @@ export function formatDate(
 /**
  * Format a date as relative time (e.g., "2 hours ago")
  */
-export function formatRelativeTime(
-  date: Date | string | number,
-  language: LanguageCode
-): string {
-  const dateObj = typeof date === 'string' || typeof date === 'number' 
-    ? new Date(date) 
-    : date;
-  
+export function formatRelativeTime(date: Date | string | number, language: LanguageCode): string {
+  const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+
   const locale = dateFnsLocales[language] || dateFnsLocales.en;
-  
+
   try {
     return formatDistanceToNow(dateObj, { addSuffix: true, locale });
   } catch (error) {
@@ -115,10 +112,10 @@ export function formatRelativeTime(
 export function formatNumber(
   value: number,
   language: LanguageCode,
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string {
   const config = getLocaleConfig(language);
-  
+
   try {
     return new Intl.NumberFormat(config.numberFormat, options).format(value);
   } catch (error) {
@@ -130,14 +127,10 @@ export function formatNumber(
 /**
  * Format a currency amount according to locale preferences
  */
-export function formatCurrency(
-  amount: number,
-  language: LanguageCode,
-  currency?: string
-): string {
+export function formatCurrency(amount: number, language: LanguageCode, currency?: string): string {
   const config = getLocaleConfig(language);
   const currencyCode = currency || config.currency || 'USD';
-  
+
   try {
     return new Intl.NumberFormat(config.numberFormat, {
       style: 'currency',
@@ -152,13 +145,9 @@ export function formatCurrency(
 /**
  * Format a percentage according to locale preferences
  */
-export function formatPercentage(
-  value: number,
-  language: LanguageCode,
-  decimals = 0
-): string {
+export function formatPercentage(value: number, language: LanguageCode, decimals = 0): string {
   const config = getLocaleConfig(language);
-  
+
   try {
     return new Intl.NumberFormat(config.numberFormat, {
       style: 'percent',
@@ -174,17 +163,14 @@ export function formatPercentage(
 /**
  * Parse a localized number string back to a number
  */
-export function parseNumber(
-  value: string,
-  language: LanguageCode
-): number {
+export function parseNumber(value: string, language: LanguageCode): number {
   const prefs = getCulturalPreferences(language);
-  
+
   // Replace localized separators with standard ones
   const normalized = value
     .replace(new RegExp(`\\${prefs.thousandsSeparator}`, 'g'), '')
     .replace(new RegExp(`\\${prefs.decimalSeparator}`, 'g'), '.');
-  
+
   const parsed = parseFloat(normalized);
   return isNaN(parsed) ? 0 : parsed;
 }
@@ -207,42 +193,36 @@ export function isRTL(language: LanguageCode): boolean {
 /**
  * Format file size according to locale
  */
-export function formatFileSize(
-  bytes: number,
-  language: LanguageCode
-): string {
+export function formatFileSize(bytes: number, language: LanguageCode): string {
   const config = getLocaleConfig(language);
   const formatter = new Intl.NumberFormat(config.numberFormat, {
     maximumFractionDigits: 2,
   });
-  
+
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = bytes;
   let unitIndex = 0;
-  
+
   while (size >= 1024 && unitIndex < units.length - 1) {
     size /= 1024;
     unitIndex++;
   }
-  
+
   return `${formatter.format(size)} ${units[unitIndex]}`;
 }
 
 /**
  * Format duration in a human-readable format
  */
-export function formatDuration(
-  seconds: number,
-  language: LanguageCode
-): string {
+export function formatDuration(seconds: number, language: LanguageCode): string {
   getLocaleConfig(language);
-  
+
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  
+
   const parts: string[] = [];
-  
+
   if (hours > 0) {
     parts.push(`${hours}h`);
   }
@@ -252,6 +232,6 @@ export function formatDuration(
   if (secs > 0 || parts.length === 0) {
     parts.push(`${secs}s`);
   }
-  
+
   return parts.join(' ');
 }

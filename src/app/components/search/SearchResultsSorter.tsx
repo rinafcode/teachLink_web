@@ -13,7 +13,7 @@ export const SearchResultsSorter: React.FC<SearchResultsSorterProps> = ({ value,
     <div className="flex items-center gap-3">
       <span className="text-xs font-mono text-slate-500 uppercase">Sort_Sequence:</span>
       <div className="relative">
-        <select 
+        <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="bg-[#0a1120] border border-primary/30 text-primary text-sm pl-4 pr-10 py-2 focus:ring-1 focus:ring-primary focus:border-primary clip-corner appearance-none font-mono cursor-pointer hover:bg-primary/5 transition-colors"

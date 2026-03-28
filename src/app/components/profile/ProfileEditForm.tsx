@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import ImageUploader from '@/components/shared/ImageUploader';
 import PreferencesSection from '@/components/profile/PreferencesSection';
 import { useProfileUpdate } from '@/app/hooks/useProfileUpdate';
+import { FieldError } from '@/components/forms/FormError';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -24,7 +25,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfileEditForm() {
   const { updateProfile, isLoading } = useProfileUpdate();
-  
+
   const {
     register,
     handleSubmit,
@@ -57,7 +58,7 @@ export default function ProfileEditForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
-        
+
         <div className="mb-6">
           <ImageUploader
             onImageSelect={(file) => {
@@ -69,66 +70,48 @@ export default function ProfileEditForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              First Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
             <input
               type="text"
               {...register('firstName')}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.firstName && (
-              <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
-            )}
+            <FieldError error={errors.firstName?.message} id="firstName-error" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
             <input
               type="text"
               {...register('lastName')}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.lastName && (
-              <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
-            )}
+            <FieldError error={errors.lastName?.message} id="lastName-error" />
           </div>
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
             type="email"
             {...register('email')}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
+          <FieldError error={errors.email?.message} id="profile-email-error" />
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Bio
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
           <textarea
             {...register('bio')}
             rows={4}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {errors.bio && (
-            <p className="mt-1 text-sm text-red-600">{errors.bio.message}</p>
-          )}
+          <FieldError error={errors.bio?.message} id="profile-bio-error" />
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Location
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
           <input
             type="text"
             {...register('location')}
@@ -139,26 +122,20 @@ export default function ProfileEditForm() {
 
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-6">Social Links</h2>
-        
+
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Website
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
             <input
               type="url"
               {...register('website')}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.website && (
-              <p className="mt-1 text-sm text-red-600">{errors.website.message}</p>
-            )}
+            <FieldError error={errors.website?.message} id="website-error" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Twitter
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
             <input
               type="text"
               {...register('twitter')}
@@ -167,9 +144,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              GitHub
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
             <input
               type="text"
               {...register('github')}
@@ -178,9 +153,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
             <input
               type="text"
               {...register('linkedin')}
@@ -203,4 +176,4 @@ export default function ProfileEditForm() {
       </div>
     </form>
   );
-} 
+}

@@ -16,7 +16,8 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   // In a real app, you would fetch course data here
   return {
     title: 'Course Details | TeachLink',
-    description: 'View detailed information about this course, including syllabus, instructor details, and enrollment options.',
+    description:
+      'View detailed information about this course, including syllabus, instructor details, and enrollment options.',
   };
 }
 
@@ -38,7 +39,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
             />
 
             <div className="bg-white dark:bg-[#1E293B] rounded-xl shadow-sm border border-[#E2E8F0] dark:border-[#334155] p-6 lg:p-8">
-              <h3 className="text-xl font-semibold mb-4 text-[#0F172A] dark:text-white">Course Preview</h3>
+              <h3 className="text-xl font-semibold mb-4 text-[#0F172A] dark:text-white">
+                Course Preview
+              </h3>
               <VideoPreview />
             </div>
 
@@ -53,4 +56,4 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </div>
     </div>
   );
-} 
+}

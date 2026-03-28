@@ -15,10 +15,7 @@ interface NotesTakerProps {
   onNote?: (note: { time: number; text: string }) => void;
 }
 
-export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
-  currentTime,
-  onNote
-}) => {
+export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({ currentTime, onNote }) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
   const [editingNote, setEditingNote] = useState<string | null>(null);
@@ -29,12 +26,20 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
     const saved = localStorage.getItem('video-notes');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved) as Array<{ id: string; time: number; text: string; createdAt: string; updatedAt: string }>;
-        setNotes(parsed.map((n) => ({
-          ...n,
-          createdAt: new Date(n.createdAt),
-          updatedAt: new Date(n.updatedAt)
-        })));
+        const parsed = JSON.parse(saved) as Array<{
+          id: string;
+          time: number;
+          text: string;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+        setNotes(
+          parsed.map((n) => ({
+            ...n,
+            createdAt: new Date(n.createdAt),
+            updatedAt: new Date(n.updatedAt),
+          })),
+        );
       } catch (error) {
         console.error('Failed to load notes:', error);
       }
@@ -54,16 +59,16 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
       time: currentTime,
       text: newNote.trim(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
-    setNotes(prev => [note, ...prev]);
+    setNotes((prev) => [note, ...prev]);
     setNewNote('');
 
     if (onNote) {
       onNote({
         time: note.time,
-        text: note.text
+        text: note.text,
       });
     }
   };
@@ -71,17 +76,15 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
   const updateNote = (id: string) => {
     if (!editText.trim()) return;
 
-    setNotes(prev => prev.map(n => 
-      n.id === id 
-        ? { ...n, text: editText.trim(), updatedAt: new Date() }
-        : n
-    ));
+    setNotes((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, text: editText.trim(), updatedAt: new Date() } : n)),
+    );
     setEditingNote(null);
     setEditText('');
   };
 
   const deleteNote = (id: string) => {
-    setNotes(prev => prev.filter(n => n.id !== id));
+    setNotes((prev) => prev.filter((n) => n.id !== id));
   };
 
   const formatTime = (seconds: number): string => {
@@ -95,7 +98,7 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -110,18 +113,14 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">Notes</h3>
-        <p className="text-sm text-gray-600 mt-1">
-          Current time: {formatTime(currentTime)}
-        </p>
+        <p className="text-sm text-gray-600 mt-1">Current time: {formatTime(currentTime)}</p>
       </div>
 
       {/* Add Note Form */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Add Note
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Add Note</label>
             <textarea
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
@@ -132,9 +131,7 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
             />
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-xs text-gray-500">
-              {newNote.length} characters
-            </span>
+            <span className="text-xs text-gray-500">{newNote.length} characters</span>
             <button
               onClick={addNote}
               disabled={!newNote.trim()}
@@ -244,4 +241,4 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({
     </div>
   );
 });
-NotesTaker.displayName = 'NotesTaker'; 
+NotesTaker.displayName = 'NotesTaker';

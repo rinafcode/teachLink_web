@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import { Bold, Italic, List, ListOrdered, Code, Strikethrough } from "lucide-react";
-import { useEffect } from "react";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import { Bold, Italic, List, ListOrdered, Code, Strikethrough } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface RichTextEditorProps {
   content: string;
@@ -15,14 +15,15 @@ interface RichTextEditorProps {
 export default function RichTextEditor({
   content,
   onChange,
-  placeholder = "Type your message...",
+  placeholder = 'Type your message...',
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
         placeholder,
-        emptyEditorClass: 'before:content-[attr(data-placeholder)] before:text-gray-400 before:dark:text-gray-500 before:float-left before:h-0 before:pointer-events-none',
+        emptyEditorClass:
+          'before:content-[attr(data-placeholder)] before:text-gray-400 before:dark:text-gray-500 before:float-left before:h-0 before:pointer-events-none',
       }),
     ],
     content,
@@ -32,7 +33,7 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[44px] text-sm",
+          'prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[44px] text-sm',
       },
     },
   });
@@ -61,10 +62,11 @@ export default function RichTextEditor({
   }) => (
     <button
       onClick={onClick}
-      className={`p-1.5 rounded-lg transition-all duration-200 ${isActive
-          ? "bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 shadow-sm"
-          : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-        }`}
+      className={`p-1.5 rounded-lg transition-all duration-200 ${
+        isActive
+          ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 shadow-sm'
+          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+      }`}
       aria-label={label}
       type="button"
     >
@@ -77,21 +79,21 @@ export default function RichTextEditor({
       {/* Toolbar */}
       <div className="border-b border-gray-100 dark:border-gray-700 px-2 py-1.5 flex items-center gap-0.5 bg-gray-50/50 dark:bg-gray-800/50">
         <ToolbarButton
-          isActive={editor.isActive("bold")}
+          isActive={editor.isActive('bold')}
           onClick={() => editor.chain().focus().toggleBold().run()}
           label="Bold"
         >
           <Bold size={14} />
         </ToolbarButton>
         <ToolbarButton
-          isActive={editor.isActive("italic")}
+          isActive={editor.isActive('italic')}
           onClick={() => editor.chain().focus().toggleItalic().run()}
           label="Italic"
         >
           <Italic size={14} />
         </ToolbarButton>
         <ToolbarButton
-          isActive={editor.isActive("strike")}
+          isActive={editor.isActive('strike')}
           onClick={() => editor.chain().focus().toggleStrike().run()}
           label="Strikethrough"
         >
@@ -101,14 +103,14 @@ export default function RichTextEditor({
         <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
 
         <ToolbarButton
-          isActive={editor.isActive("bulletList")}
+          isActive={editor.isActive('bulletList')}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           label="Bullet List"
         >
           <List size={14} />
         </ToolbarButton>
         <ToolbarButton
-          isActive={editor.isActive("orderedList")}
+          isActive={editor.isActive('orderedList')}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           label="Ordered List"
         >
@@ -118,7 +120,7 @@ export default function RichTextEditor({
         <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
 
         <ToolbarButton
-          isActive={editor.isActive("code")}
+          isActive={editor.isActive('code')}
           onClick={() => editor.chain().focus().toggleCode().run()}
           label="Inline Code"
         >

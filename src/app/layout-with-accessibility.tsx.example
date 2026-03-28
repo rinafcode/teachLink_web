@@ -1,0 +1,102 @@
+/**
+ * Example: How to integrate accessibility features into your root layout
+ * 
+ * To use this:
+ * 1. Copy this content to your actual layout.tsx file
+ * 2. Adjust the imports based on your project structure
+ * 3. Customize the AccessibilityProvider props as needed
+ */
+
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AccessibilityProvider } from '@/app/components/accessibility/AccessibilityProvider';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Accessible Learning Platform',
+  description: 'WCAG 2.1 AA Compliant Learning Platform',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <AccessibilityProvider
+          enableNavigator={true}
+          enableScreenReader={true}
+          enableContrastChecker={true}
+          enableTester={true}
+          autoCheckContrast={false}
+          autoCheckAccessibility={false}
+        >
+          {/* Skip Link - Always first in DOM */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded focus:shadow-lg"
+          >
+            Skip to main content
+          </a>
+
+          {/* Your app content */}
+          {children}
+        </AccessibilityProvider>
+      </body>
+    </html>
+  );
+}
+
+/**
+ * PRODUCTION CONFIGURATION:
+ * 
+ * For production, you might want to disable the visual widgets
+ * and only enable them in development or for specific user roles:
+ */
+
+// Example: Development only
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+export function ProductionLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AccessibilityProvider
+          enableNavigator={isDevelopment}
+          enableScreenReader={true}  // Always enable
+          enableContrastChecker={isDevelopment}
+          enableTester={isDevelopment}
+        >
+          {children}
+        </AccessibilityProvider>
+      </body>
+    </html>
+  );
+}
+
+/**
+ * MINIMAL CONFIGURATION:
+ * 
+ * If you only want screen reader support without the visual widgets:
+ */
+
+export function MinimalAccessibilityLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AccessibilityProvider
+          enableNavigator={false}
+          enableScreenReader={true}
+          enableContrastChecker={false}
+          enableTester={false}
+        >
+          {children}
+        </AccessibilityProvider>
+      </body>
+    </html>
+  );
+}

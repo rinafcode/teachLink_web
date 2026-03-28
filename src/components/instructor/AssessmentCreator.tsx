@@ -9,15 +9,10 @@ interface AssessmentCreatorProps {
   initialData?: Assessment;
 }
 
-export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
-  onSave,
-  initialData
-}) => {
+export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({ onSave, initialData }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [type, setType] = useState<'quiz' | 'assignment'>(initialData?.type || 'quiz');
-  const [questions, setQuestions] = useState(
-    initialData?.questions || []
-  );
+  const [questions, setQuestions] = useState(initialData?.questions || []);
 
   const addQuestion = () => {
     setQuestions([
@@ -28,8 +23,8 @@ export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
         type: 'multiple-choice',
         options: ['', '', '', ''],
         correctAnswer: 0,
-        points: 1
-      }
+        points: 1,
+      },
     ]);
   };
 
@@ -100,12 +95,17 @@ export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
 
         {questions.length === 0 ? (
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No questions yet. Click &quot;Add Question&quot; to start.</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              No questions yet. Click &quot;Add Question&quot; to start.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {questions.map((q, index) => (
-              <div key={q.id} className="border dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
+              <div
+                key={q.id}
+                className="border dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
+              >
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Question {index + 1}
@@ -123,9 +123,7 @@ export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
                     <input
                       type="text"
                       value={q.question}
-                      onChange={(e) =>
-                        updateQuestion(index, { question: e.target.value })
-                      }
+                      onChange={(e) => updateQuestion(index, { question: e.target.value })}
                       placeholder="Enter your question"
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
                     />
@@ -141,7 +139,8 @@ export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
                         onChange={(e) =>
                           updateQuestion(index, {
                             type: e.target.value,
-                            options: e.target.value === 'true-false' ? ['True', 'False'] : q.options
+                            options:
+                              e.target.value === 'true-false' ? ['True', 'False'] : q.options,
                           })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm"
@@ -153,13 +152,13 @@ export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Points</label>
+                      <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                        Points
+                      </label>
                       <input
                         type="number"
                         value={q.points}
-                        onChange={(e) =>
-                          updateQuestion(index, { points: Number(e.target.value) })
-                        }
+                        onChange={(e) => updateQuestion(index, { points: Number(e.target.value) })}
                         min="1"
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm"
                       />
@@ -178,9 +177,7 @@ export const AssessmentCreator: React.FC<AssessmentCreatorProps> = ({
                               type="radio"
                               name={`correct-${index}`}
                               checked={q.correctAnswer === optIndex}
-                              onChange={() =>
-                                updateQuestion(index, { correctAnswer: optIndex })
-                              }
+                              onChange={() => updateQuestion(index, { correctAnswer: optIndex })}
                               className="h-4 w-4 text-blue-600"
                             />
                             <input

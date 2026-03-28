@@ -1,6 +1,6 @@
 /**
  * Auto-Save Manager Usage Example
- * 
+ *
  * This example demonstrates how to use the Auto-Save Manager to automatically
  * save form data, recover drafts, and handle offline scenarios.
  */
@@ -45,7 +45,7 @@ export async function manualSaveExample() {
     values: {
       name: 'John Doe',
       email: 'john@example.com',
-      message: 'Hello, this is a test message.'
+      message: 'Hello, this is a test message.',
     },
     validation: {},
     touched: { name: true, email: true },
@@ -57,8 +57,8 @@ export async function manualSaveExample() {
       sessionId: 'session-123',
       createdAt: new Date(),
       lastModified: new Date(),
-      version: '1.0'
-    }
+      version: '1.0',
+    },
   };
 
   // Save immediately
@@ -84,7 +84,7 @@ export async function draftRecoveryExample() {
     console.log('Draft found! Restoring form data...');
     console.log('Restored values:', draftState.values);
     console.log('Last modified:', draftState.metadata.lastModified);
-    
+
     // Use the restored state to populate the form
     return draftState;
   } else {
@@ -106,8 +106,10 @@ export async function draftCleanupExample() {
   };
 
   // After successful submission, clear the draft
-  const result = await submitForm({ /* form data */ });
-  
+  const result = await submitForm({
+    /* form data */
+  });
+
   if (result.success) {
     await autoSaveManager.clearDraft(formId);
     console.log('Draft cleared after successful submission');
@@ -157,8 +159,8 @@ export async function offlineSaveExample() {
       sessionId: 'session-456',
       createdAt: new Date(),
       lastModified: new Date(),
-      version: '1.0'
-    }
+      version: '1.0',
+    },
   };
 
   try {
@@ -219,8 +221,8 @@ export function completeFormExample() {
         sessionId: 'session-789',
         createdAt: new Date(),
         lastModified: new Date(),
-        version: '1.0'
-      }
+        version: '1.0',
+      },
     };
 
     await autoSaveManager.saveNow(formId, currentState);
@@ -230,7 +232,7 @@ export function completeFormExample() {
   const handleSubmit = async (formData: any) => {
     // Submit form...
     const success = true;
-    
+
     if (success) {
       await autoSaveManager.clearDraft(formId);
       subscription.unsubscribe();
@@ -242,7 +244,7 @@ export function completeFormExample() {
     autoSaveManager,
     subscription,
     handleFieldBlur,
-    handleSubmit
+    handleSubmit,
   };
 }
 
@@ -257,7 +259,7 @@ export function statusIndicatorExample() {
       update: (status: string, message: string) => {
         console.log(`[${status}] ${message}`);
         // In a real app, update DOM element
-      }
+      },
     };
 
     autoSaveManager.onSaveStatusChange((status) => {

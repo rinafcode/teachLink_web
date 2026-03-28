@@ -11,13 +11,13 @@ interface RangeSliderProps {
   step?: number;
 }
 
-export const RangeSlider: React.FC<RangeSliderProps> = ({ 
-  min, 
-  max, 
-  value, 
-  onChange, 
-  className = "",
-  step = 1
+export const RangeSlider: React.FC<RangeSliderProps> = ({
+  min,
+  max,
+  value,
+  onChange,
+  className = '',
+  step = 1,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(Number(e.target.value));
@@ -25,10 +25,10 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
 
   return (
     <div className={`relative py-2 ${className}`}>
-      <input 
-        type="range" 
-        min={min} 
-        max={max} 
+      <input
+        type="range"
+        min={min}
+        max={max}
         value={value}
         step={step}
         onChange={handleChange}

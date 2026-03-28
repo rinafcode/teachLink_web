@@ -88,10 +88,7 @@ export default function PreferencesSection() {
                 />
               </div>
               <div className="ml-3">
-                <label
-                  htmlFor={preference.id}
-                  className="text-sm font-medium text-gray-700"
-                >
+                <label htmlFor={preference.id} className="text-sm font-medium text-gray-700">
                   {preference.label}
                 </label>
                 <p className="text-sm text-gray-500">{preference.description}</p>
@@ -116,10 +113,7 @@ export default function PreferencesSection() {
                 />
               </div>
               <div className="ml-3">
-                <label
-                  htmlFor={preference.id}
-                  className="text-sm font-medium text-gray-700"
-                >
+                <label htmlFor={preference.id} className="text-sm font-medium text-gray-700">
                   {preference.label}
                 </label>
                 <p className="text-sm text-gray-500">{preference.description}</p>
@@ -130,4 +124,4 @@ export default function PreferencesSection() {
       </div>
     </div>
   );
-} 
+}

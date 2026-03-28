@@ -14,15 +14,18 @@ interface PrefetchingEngineProps {
 const PrefetchingEngine: React.FC<PrefetchingEngineProps> = ({ strategies = ['hover'] }) => {
   const router = useRouter();
 
-  const handleIntent = useCallback((href: string) => {
-    if (isSlowConnection()) {
-      console.log(`[Prefetching] Slow connection detected. Skipping prefetch for: ${href}`);
-      return;
-    }
+  const handleIntent = useCallback(
+    (href: string) => {
+      if (isSlowConnection()) {
+        console.log(`[Prefetching] Slow connection detected. Skipping prefetch for: ${href}`);
+        return;
+      }
 
-    console.log(`[Prefetching] Predictive prefetch started for: ${href}`);
-    router.prefetch(href);
-  }, [router]);
+      console.log(`[Prefetching] Predictive prefetch started for: ${href}`);
+      router.prefetch(href);
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (!strategies.includes('hover')) return;
@@ -30,7 +33,7 @@ const PrefetchingEngine: React.FC<PrefetchingEngineProps> = ({ strategies = ['ho
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest('a');
-      
+
       if (link && link.href && link.origin === window.location.origin) {
         const href = link.pathname;
         handleIntent(href);
@@ -42,7 +45,7 @@ const PrefetchingEngine: React.FC<PrefetchingEngineProps> = ({ strategies = ['ho
   }, [strategies, handleIntent]);
 
   // Proximity strategy could be implemented with Intersection Observer on all links
-  
+
   return null; // Background component
 };
 

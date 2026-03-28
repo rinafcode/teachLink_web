@@ -9,7 +9,7 @@ import {
   FieldDescriptor,
   ValidationRule,
   FormState,
-  FieldType
+  FieldType,
 } from '@/form-management/types/core';
 
 /**
@@ -18,7 +18,7 @@ import {
 export function createFormConfig(
   id: string,
   title: string,
-  fields: FieldDescriptor[]
+  fields: FieldDescriptor[],
 ): FormConfiguration {
   return {
     id,
@@ -30,16 +30,16 @@ export function createFormConfig(
       spacing: 'normal',
       responsive: {
         breakpoints: { mobile: 768, tablet: 1024 },
-        layouts: {}
-      }
+        layouts: {},
+      },
     },
     validation: {
       validateOnChange: false,
       validateOnBlur: true,
       showErrorsOnSubmit: true,
       debounceMs: 300,
-      customRules: {}
-    }
+      customRules: {},
+    },
   };
 }
 
@@ -50,7 +50,7 @@ export function createField(
   id: string,
   type: FieldType,
   label: string,
-  options: Partial<FieldDescriptor> = {}
+  options: Partial<FieldDescriptor> = {},
 ): FieldDescriptor {
   return {
     id,
@@ -58,7 +58,7 @@ export function createField(
     label,
     required: false,
     validation: [],
-    ...options
+    ...options,
   };
 }
 
@@ -68,40 +68,40 @@ export function createField(
 export const ValidationRules = {
   required: (message = 'This field is required'): ValidationRule => ({
     type: 'required',
-    message
+    message,
   }),
 
   email: (message = 'Please enter a valid email address'): ValidationRule => ({
     type: 'email',
-    message
+    message,
   }),
 
   minLength: (min: number, message?: string): ValidationRule => ({
     type: 'minLength',
     message: message || `Minimum ${min} characters required`,
-    params: { min }
+    params: { min },
   }),
 
   maxLength: (max: number, message?: string): ValidationRule => ({
     type: 'maxLength',
     message: message || `Maximum ${max} characters allowed`,
-    params: { max }
+    params: { max },
   }),
 
   pattern: (pattern: string, message = 'Invalid format'): ValidationRule => ({
     type: 'pattern',
     message,
-    params: { pattern }
+    params: { pattern },
   }),
 
   custom: (
     validator: (value: any, formState: FormState) => boolean,
-    message = 'Validation failed'
+    message = 'Validation failed',
   ): ValidationRule => ({
     type: 'custom',
     message,
-    condition: (formState) => validator(formState.values, formState)
-  })
+    condition: (formState) => validator(formState.values, formState),
+  }),
 };
 
 /**
@@ -115,7 +115,7 @@ export function getFormValues(formState: FormState): Record<string, any> {
  * Check if form has any errors
  */
 export function hasFormErrors(formState: FormState): boolean {
-  return Object.values(formState.validation).some(result => !result.isValid);
+  return Object.values(formState.validation).some((result) => !result.isValid);
 }
 
 /**
@@ -126,7 +126,7 @@ export function getFormErrors(formState: FormState): Record<string, string[]> {
 
   Object.entries(formState.validation).forEach(([fieldId, result]) => {
     if (!result.isValid) {
-      errors[fieldId] = result.errors.map(e => e.message);
+      errors[fieldId] = result.errors.map((e) => e.message);
     }
   });
 
@@ -137,7 +137,7 @@ export function getFormErrors(formState: FormState): Record<string, string[]> {
  * Check if form is dirty (has unsaved changes)
  */
 export function isFormDirty(formState: FormState): boolean {
-  return Object.values(formState.dirty).some(isDirty => isDirty);
+  return Object.values(formState.dirty).some((isDirty) => isDirty);
 }
 
 /**
@@ -266,7 +266,7 @@ export function mergeFormStates(state1: FormState, state2: Partial<FormState>): 
     validation: { ...state1.validation, ...state2.validation },
     touched: { ...state1.touched, ...state2.touched },
     dirty: { ...state1.dirty, ...state2.dirty },
-    metadata: { ...state1.metadata, ...state2.metadata }
+    metadata: { ...state1.metadata, ...state2.metadata },
   };
 }
 
@@ -275,11 +275,11 @@ export function mergeFormStates(state1: FormState, state2: Partial<FormState>): 
  */
 export function getFormCompletionPercentage(
   formState: FormState,
-  requiredFields: string[]
+  requiredFields: string[],
 ): number {
   if (requiredFields.length === 0) return 100;
 
-  const completedFields = requiredFields.filter(fieldId => {
+  const completedFields = requiredFields.filter((fieldId) => {
     const value = formState.values[fieldId];
     return value !== null && value !== undefined && value !== '';
   });
@@ -290,33 +290,24 @@ export function getFormCompletionPercentage(
 /**
  * Get field label from configuration
  */
-export function getFieldLabel(
-  fieldId: string,
-  config: FormConfiguration
-): string | undefined {
-  const field = config.fields.find(f => f.id === fieldId);
+export function getFieldLabel(fieldId: string, config: FormConfiguration): string | undefined {
+  const field = config.fields.find((f) => f.id === fieldId);
   return field?.label;
 }
 
 /**
  * Check if field is required
  */
-export function isFieldRequired(
-  fieldId: string,
-  config: FormConfiguration
-): boolean {
-  const field = config.fields.find(f => f.id === fieldId);
+export function isFieldRequired(fieldId: string, config: FormConfiguration): boolean {
+  const field = config.fields.find((f) => f.id === fieldId);
   return field?.required || false;
 }
 
 /**
  * Get field type
  */
-export function getFieldType(
-  fieldId: string,
-  config: FormConfiguration
-): FieldType | undefined {
-  const field = config.fields.find(f => f.id === fieldId);
+export function getFieldType(fieldId: string, config: FormConfiguration): FieldType | undefined {
+  const field = config.fields.find((f) => f.id === fieldId);
   return field?.type;
 }
 
@@ -330,7 +321,7 @@ export function createFormData(values: Record<string, any>): FormData {
     if (value instanceof File) {
       formData.append(key, value);
     } else if (Array.isArray(value)) {
-      value.forEach(item => formData.append(key, item));
+      value.forEach((item) => formData.append(key, item));
     } else if (value !== null && value !== undefined) {
       formData.append(key, String(value));
     }
@@ -365,7 +356,7 @@ export function formDataToObject(formData: FormData): Record<string, any> {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -387,7 +378,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
 

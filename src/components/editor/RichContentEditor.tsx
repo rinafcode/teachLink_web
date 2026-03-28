@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { EditorContent } from '@tiptap/react';
 import {
@@ -13,7 +12,7 @@ import {
   Redo,
   Heading1,
   Heading2,
-  Heading3
+  Heading3,
 } from 'lucide-react';
 import { useContentEditor } from '@/hooks/useContentEditor';
 import { MediaEmbedder } from './MediaEmbedder';
@@ -43,7 +42,7 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
     isActive = false,
     disabled = false,
     children,
-    title
+    title,
   }: {
     onClick: () => void;
     isActive?: boolean;
@@ -98,7 +97,7 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
             >
               <Heading1 className="w-4 h-4" />
             </ToolbarButton>
-             <ToolbarButton
+            <ToolbarButton
               onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
               isActive={editor.isActive('heading', { level: 2 })}
               title="Heading 2"
@@ -145,7 +144,7 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
             >
               <Undo className="w-4 h-4" />
             </ToolbarButton>
-             <ToolbarButton
+            <ToolbarButton
               onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().redo()}
               title="Redo"
@@ -153,15 +152,15 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
               <Redo className="w-4 h-4" />
             </ToolbarButton>
           </div>
-          
+
           <div className="ml-4">
-             <CollaborativeEditingTools />
+            <CollaborativeEditingTools />
           </div>
         </div>
 
         {/* Editor Content */}
         <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-800">
-           <EditorContent editor={editor} className="h-full p-8" />
+          <EditorContent editor={editor} className="h-full p-8" />
         </div>
       </div>
 

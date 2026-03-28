@@ -29,7 +29,11 @@ export const measureWebVitals = (onReport: (metric: PerformanceMetric) => void) 
       // Use type assertion for properties not in base PerformanceEntry
       const firstInputEntry = entry as PerformanceEntry & { processingStart?: number };
       if (firstInputEntry.processingStart) {
-        onReport({ name: 'FID', value: firstInputEntry.processingStart - entry.startTime, label: 'ms' });
+        onReport({
+          name: 'FID',
+          value: firstInputEntry.processingStart - entry.startTime,
+          label: 'ms',
+        });
       }
     });
   });
@@ -67,21 +71,21 @@ interface NetworkInformation extends EventTarget {
  */
 export const isSlowConnection = (): boolean => {
   if (typeof navigator === 'undefined') return false;
-  
-  const nav = navigator as Navigator & { 
+
+  const nav = navigator as Navigator & {
     connection?: NetworkInformation;
     mozConnection?: NetworkInformation;
     webkitConnection?: NetworkInformation;
   };
-  
+
   const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
-  
+
   if (connection) {
     if (connection.saveData) return true;
     const effectiveType = connection.effectiveType;
     return ['slow-2g', '2g', '3g'].includes(effectiveType);
   }
-  
+
   return false;
 };
 

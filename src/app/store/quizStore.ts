@@ -69,7 +69,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     set((state) => ({
       currentQuestionIndex: Math.min(
         state.currentQuestionIndex + 1,
-        (state.currentQuiz?.questions.length || 1) - 1
+        (state.currentQuiz?.questions.length || 1) - 1,
       ),
     })),
 
@@ -82,8 +82,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   endQuiz: () => set({ endTime: new Date() }),
 
-  toggleReviewMode: () =>
-    set((state) => ({ isReviewMode: !state.isReviewMode })),
+  toggleReviewMode: () => set((state) => ({ isReviewMode: !state.isReviewMode })),
 
   resetQuiz: () => set(initialState),
-})); 
+}));

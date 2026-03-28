@@ -11,9 +11,9 @@ import { StateCreator } from 'zustand';
 /**
  * Middleware or utility to log state transitions in development.
  */
-export const stateLogger = <T extends object>(
-  config: StateCreator<T, any, any>
-): StateCreator<T, any, any> => (set, get, api) =>
+export const stateLogger =
+  <T extends object>(config: StateCreator<T, any, any>): StateCreator<T, any, any> =>
+  (set, get, api) =>
     config(
       (args) => {
         if (process.env.NODE_ENV === 'development') {
@@ -28,7 +28,7 @@ export const stateLogger = <T extends object>(
         }
       },
       get,
-      api
+      api,
     );
 
 /**

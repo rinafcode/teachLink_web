@@ -30,10 +30,10 @@ export class SynchronizationEngine {
       if (type === 'STATE_UPDATE') {
         console.log('[SyncEngine] Received state update from another tab');
         this.isProcessingSync = true;
-        
+
         // Update the local store with the external state
         useStore.getState().rehydrate(payload);
-        
+
         this.isProcessingSync = false;
       }
     };

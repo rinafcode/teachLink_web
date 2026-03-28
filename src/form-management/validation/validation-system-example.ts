@@ -8,7 +8,7 @@ import {
   AsyncValidationManager,
   CustomValidationRegistry,
   ValidationFeedbackDisplay,
-  ValidationRuleBuilders
+  ValidationRuleBuilders,
 } from './index.js';
 import { FieldDescriptor, FormState } from '../types/core.js';
 
@@ -43,21 +43,18 @@ export class IntegratedValidationSystem {
   async validateField(fieldId: string, value: any, formState: FormState): Promise<void> {
     // Synchronous validation
     const syncResult = this.validationEngine.validateField(fieldId, value, formState);
-    
+
     // Display immediate feedback
     this.feedbackDisplay.displayFeedback(fieldId, syncResult);
 
     // Asynchronous validation (if needed)
     const asyncResult = await this.validationEngine.executeAsyncValidation(fieldId, value);
-    
+
     // Combine results and update display
     const combinedResult = {
       isValid: syncResult.isValid && asyncResult.isValid,
       errors: [...syncResult.errors, ...asyncResult.errors],
-      warnings: [
-        ...(syncResult.warnings || []),
-        ...(asyncResult.warnings || [])
-      ]
+      warnings: [...(syncResult.warnings || []), ...(asyncResult.warnings || [])],
     };
 
     this.feedbackDisplay.displayFeedback(fieldId, combinedResult);
@@ -68,7 +65,7 @@ export class IntegratedValidationSystem {
    */
   async validateForm(formState: FormState): Promise<boolean> {
     const result = await this.validationEngine.validateForm(formState);
-    
+
     // Display feedback for each field
     Object.entries(result.fieldResults).forEach(([fieldId, fieldResult]) => {
       this.feedbackDisplay.displayFeedback(fieldId, fieldResult);
@@ -107,7 +104,7 @@ export class IntegratedValidationSystem {
       'password-match',
       'password',
       'equals',
-      'Passwords must match'
+      'Passwords must match',
     );
     this.customRegistry.registerRule(passwordMatchRule);
 
@@ -116,10 +113,10 @@ export class IntegratedValidationSystem {
       'email-availability',
       async (email: string) => {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
         return !email.includes('taken');
       },
-      'This email address is already taken'
+      'This email address is already taken',
     );
     this.customRegistry.registerRule(emailAvailabilityRule);
 
@@ -131,15 +128,20 @@ export class IntegratedValidationSystem {
       validationFunction: (value, formState, context) => {
         const age = parseInt(String(value));
         const minAge = 18;
-        
+
         return {
           isValid: age >= minAge,
-          errors: age < minAge ? [{
-            code: 'minimum_age',
-            message: `You must be at least ${minAge} years old`
-          }] : []
+          errors:
+            age < minAge
+              ? [
+                  {
+                    code: 'minimum_age',
+                    message: `You must be at least ${minAge} years old`,
+                  },
+                ]
+              : [],
         };
-      }
+      },
     });
 
     // Phone number format rule
@@ -150,15 +152,19 @@ export class IntegratedValidationSystem {
       validationFunction: (value) => {
         const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
         const isValid = phoneRegex.test(String(value));
-        
+
         return {
           isValid,
-          errors: isValid ? [] : [{
-            code: 'phone_format',
-            message: 'Please enter a valid phone number'
-          }]
+          errors: isValid
+            ? []
+            : [
+                {
+                  code: 'phone_format',
+                  message: 'Please enter a valid phone number',
+                },
+              ],
         };
-      }
+      },
     });
   }
 
@@ -169,7 +175,7 @@ export class IntegratedValidationSystem {
     return {
       customRules: this.customRegistry.getStatistics(),
       asyncValidation: this.asyncManager.getValidationStats(),
-      feedback: this.feedbackDisplay.getStatistics()
+      feedback: this.feedbackDisplay.getStatistics(),
     };
   }
 
@@ -197,19 +203,19 @@ export function createExampleValidationSystem(): IntegratedValidationSystem {
         {
           type: 'required',
           message: 'Email is required',
-          params: {}
+          params: {},
         },
         {
           type: 'email',
           message: 'Please enter a valid email address',
-          params: {}
+          params: {},
         },
         {
           type: 'async',
           message: 'Checking email availability...',
-          params: {}
-        }
-      ]
+          params: {},
+        },
+      ],
     },
     {
       id: 'password',
@@ -220,14 +226,14 @@ export function createExampleValidationSystem(): IntegratedValidationSystem {
         {
           type: 'required',
           message: 'Password is required',
-          params: {}
+          params: {},
         },
         {
           type: 'minLength',
           message: 'Password must be at least 8 characters',
-          params: { minLength: 8 }
-        }
-      ]
+          params: { minLength: 8 },
+        },
+      ],
     },
     {
       id: 'confirmPassword',
@@ -238,14 +244,14 @@ export function createExampleValidationSystem(): IntegratedValidationSystem {
         {
           type: 'required',
           message: 'Please confirm your password',
-          params: {}
+          params: {},
         },
         {
           type: 'custom',
           message: 'Passwords do not match',
-          params: {}
-        }
-      ]
+          params: {},
+        },
+      ],
     },
     {
       id: 'age',
@@ -256,14 +262,14 @@ export function createExampleValidationSystem(): IntegratedValidationSystem {
         {
           type: 'required',
           message: 'Age is required',
-          params: {}
+          params: {},
         },
         {
           type: 'custom',
           message: 'You must be at least 18 years old',
-          params: {}
-        }
-      ]
+          params: {},
+        },
+      ],
     },
     {
       id: 'phone',
@@ -274,10 +280,10 @@ export function createExampleValidationSystem(): IntegratedValidationSystem {
         {
           type: 'custom',
           message: 'Please enter a valid phone number',
-          params: {}
-        }
-      ]
-    }
+          params: {},
+        },
+      ],
+    },
   ];
 
   return new IntegratedValidationSystem(fieldDescriptors);

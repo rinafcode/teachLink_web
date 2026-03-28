@@ -1,8 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
-  --foreground: #0F172A;
+  --foreground: #0f172a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -10,7 +10,7 @@
     /* Keeping light mode defaults as per provided design for now, 
        but setup for dark mode override if needed later */
     --background: #ffffff;
-    --foreground: #0F172A;
+    --foreground: #0f172a;
   }
 }
 
@@ -32,6 +32,33 @@ body {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Not screen reader only - visible when focused */
+.sr-only.focus\:not-sr-only:focus,
+.focus-within\:not-sr-only:focus-within {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Focus visible styles for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip to content link styles */
+a[data-skip-link]:focus {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9999;
+}
 @layer utilities {
   .grid-bg {
     background-size: 40px 40px;
@@ -47,36 +74,36 @@ body {
   }
 
   /* RTL Support */
-  [dir="rtl"] {
+  [dir='rtl'] {
     direction: rtl;
   }
 
-  [dir="ltr"] {
+  [dir='ltr'] {
     direction: ltr;
   }
 
   /* RTL-aware spacing utilities */
-  [dir="rtl"] .ml-auto {
+  [dir='rtl'] .ml-auto {
     margin-left: 0;
     margin-right: auto;
   }
 
-  [dir="rtl"] .mr-auto {
+  [dir='rtl'] .mr-auto {
     margin-right: 0;
     margin-left: auto;
   }
 
   /* RTL-aware text alignment */
-  [dir="rtl"] .text-left {
+  [dir='rtl'] .text-left {
     text-align: right;
   }
 
-  [dir="rtl"] .text-right {
+  [dir='rtl'] .text-right {
     text-align: left;
   }
 
   /* Updated Range Input Styling specific to design */
-  input[type=range] {
+  input[type='range'] {
     -webkit-appearance: none;
     appearance: none;
     height: 2px;
@@ -85,7 +112,7 @@ body {
     outline: none;
   }
 
-  input[type=range]::-webkit-slider-thumb {
+  input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     height: 16px;
@@ -100,7 +127,7 @@ body {
   }
 
   /* Firefox */
-  input[type=range]::-moz-range-thumb {
+  input[type='range']::-moz-range-thumb {
     height: 16px;
     width: 16px;
     border-radius: 50%;
@@ -110,7 +137,7 @@ body {
     box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
   }
 
-  input[type=range]::-webkit-slider-runnable-track {
+  input[type='range']::-webkit-slider-runnable-track {
     width: 100%;
     height: 4px;
     cursor: pointer;
@@ -118,7 +145,7 @@ body {
     border-radius: 0;
   }
 
-  input[type=range]::-moz-range-track {
+  input[type='range']::-moz-range-track {
     width: 100%;
     height: 4px;
     cursor: pointer;

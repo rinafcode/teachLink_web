@@ -20,23 +20,23 @@ export function useMobileOptimization() {
   const checkDevice = useCallback(() => {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    
+
     const deviceType = width < 768 ? 'mobile' : width < 1024 ? 'tablet' : 'desktop';
     const isMobile = deviceType === 'mobile';
     const orientation = height > width ? 'portrait' : 'landscape';
     const touchSupported = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isMobile,
       deviceType,
       orientation,
-      touchSupported
+      touchSupported,
     }));
   }, []);
 
   const updateOnlineStatus = useCallback(() => {
-    setState(prev => ({ ...prev, isOnline: navigator.onLine }));
+    setState((prev) => ({ ...prev, isOnline: navigator.onLine }));
   }, []);
 
   useEffect(() => {

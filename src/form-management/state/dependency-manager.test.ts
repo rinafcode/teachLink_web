@@ -21,7 +21,7 @@ describe('DependencyManager', () => {
           type: 'text',
           label: 'Field 1',
           required: false,
-          validation: []
+          validation: [],
         },
         {
           id: 'field2',
@@ -29,8 +29,8 @@ describe('DependencyManager', () => {
           label: 'Field 2',
           required: false,
           validation: [],
-          dependencies: ['field1']
-        }
+          dependencies: ['field1'],
+        },
       ];
 
       dependencyManager.initialize(fields);
@@ -47,25 +47,23 @@ describe('DependencyManager', () => {
           type: 'text',
           label: 'Field 1',
           required: false,
-          validation: []
+          validation: [],
         },
         {
           id: 'field2',
           type: 'text',
           label: 'Field 2',
           required: false,
-          validation: []
-        }
+          validation: [],
+        },
       ];
 
       const conditionalRules: ConditionalRule[] = [
         {
           id: 'rule1',
           condition: (state) => state.values.field1 === 'show',
-          actions: [
-            { type: 'show', targetFieldId: 'field2' }
-          ]
-        }
+          actions: [{ type: 'show', targetFieldId: 'field2' }],
+        },
       ];
 
       dependencyManager.initialize(fields, conditionalRules);
@@ -84,8 +82,8 @@ describe('DependencyManager', () => {
           label: 'Field 1',
           required: false,
           validation: [],
-          dependencies: ['nonexistent']
-        }
+          dependencies: ['nonexistent'],
+        },
       ];
 
       dependencyManager.initialize(fields);
@@ -104,7 +102,7 @@ describe('DependencyManager', () => {
           label: 'Field 1',
           required: false,
           validation: [],
-          dependencies: ['field2']
+          dependencies: ['field2'],
         },
         {
           id: 'field2',
@@ -112,15 +110,15 @@ describe('DependencyManager', () => {
           label: 'Field 2',
           required: false,
           validation: [],
-          dependencies: ['field1']
-        }
+          dependencies: ['field1'],
+        },
       ];
 
       dependencyManager.initialize(fields);
       const validation = dependencyManager.validateDependencies(fields);
 
       expect(validation.isValid).toBe(false);
-      expect(validation.errors.some(e => e.error.includes('Circular dependency'))).toBe(true);
+      expect(validation.errors.some((e) => e.error.includes('Circular dependency'))).toBe(true);
     });
 
     it('should validate correct dependencies', () => {
@@ -130,7 +128,7 @@ describe('DependencyManager', () => {
           type: 'text',
           label: 'Field 1',
           required: false,
-          validation: []
+          validation: [],
         },
         {
           id: 'field2',
@@ -138,8 +136,8 @@ describe('DependencyManager', () => {
           label: 'Field 2',
           required: false,
           validation: [],
-          dependencies: ['field1']
-        }
+          dependencies: ['field1'],
+        },
       ];
 
       dependencyManager.initialize(fields);
@@ -158,7 +156,7 @@ describe('DependencyManager', () => {
           type: 'select',
           label: 'Trigger Field',
           required: false,
-          validation: []
+          validation: [],
         },
         {
           id: 'dependent',
@@ -166,32 +164,26 @@ describe('DependencyManager', () => {
           label: 'Dependent Field',
           required: false,
           validation: [],
-          dependencies: ['trigger']
-        }
+          dependencies: ['trigger'],
+        },
       ];
 
       const conditionalRules: ConditionalRule[] = [
         {
           id: 'showRule',
           condition: (state) => state.values.trigger === 'show',
-          actions: [
-            { type: 'show', targetFieldId: 'dependent' }
-          ]
+          actions: [{ type: 'show', targetFieldId: 'dependent' }],
         },
         {
           id: 'hideRule',
           condition: (state) => state.values.trigger === 'hide',
-          actions: [
-            { type: 'hide', targetFieldId: 'dependent' }
-          ]
+          actions: [{ type: 'hide', targetFieldId: 'dependent' }],
         },
         {
           id: 'setValueRule',
           condition: (state) => state.values.trigger === 'auto',
-          actions: [
-            { type: 'setValue', targetFieldId: 'dependent', value: 'auto-value' }
-          ]
-        }
+          actions: [{ type: 'setValue', targetFieldId: 'dependent', value: 'auto-value' }],
+        },
       ];
 
       dependencyManager.initialize(fields, conditionalRules);
@@ -210,8 +202,8 @@ describe('DependencyManager', () => {
           sessionId: 'session',
           createdAt: new Date(),
           lastModified: new Date(),
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
 
       const result = dependencyManager.calculateCascadingUpdates('trigger', 'show', state);
@@ -232,8 +224,8 @@ describe('DependencyManager', () => {
           sessionId: 'session',
           createdAt: new Date(),
           lastModified: new Date(),
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
 
       const result = dependencyManager.calculateCascadingUpdates('trigger', 'auto', state);
@@ -254,8 +246,8 @@ describe('DependencyManager', () => {
           sessionId: 'session',
           createdAt: new Date(),
           lastModified: new Date(),
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
 
       const result = dependencyManager.calculateCascadingUpdates('trigger', 'new-value', state);
@@ -273,14 +265,14 @@ describe('DependencyManager', () => {
           label: 'Field 3',
           required: false,
           validation: [],
-          dependencies: ['field1', 'field2']
+          dependencies: ['field1', 'field2'],
         },
         {
           id: 'field1',
           type: 'text',
           label: 'Field 1',
           required: false,
-          validation: []
+          validation: [],
         },
         {
           id: 'field2',
@@ -288,8 +280,8 @@ describe('DependencyManager', () => {
           label: 'Field 2',
           required: false,
           validation: [],
-          dependencies: ['field1']
-        }
+          dependencies: ['field1'],
+        },
       ];
 
       dependencyManager.initialize(fields);
@@ -312,7 +304,7 @@ describe('DependencyManager', () => {
           type: 'text',
           label: 'Independent Field',
           required: false,
-          validation: []
+          validation: [],
         },
         {
           id: 'dependent',
@@ -320,8 +312,8 @@ describe('DependencyManager', () => {
           label: 'Dependent Field',
           required: false,
           validation: [],
-          dependencies: ['independent']
-        }
+          dependencies: ['independent'],
+        },
       ];
 
       dependencyManager.initialize(fields);
@@ -356,18 +348,18 @@ describe('DependencyManager', () => {
           type: 'text',
           label: 'Field 1',
           required: false,
-          validation: []
-        }
+          validation: [],
+        },
       ];
 
       const conditionalRules: ConditionalRule[] = [
         {
           id: 'errorRule',
-          condition: () => { throw new Error('Test error'); },
-          actions: [
-            { type: 'show', targetFieldId: 'field1' }
-          ]
-        }
+          condition: () => {
+            throw new Error('Test error');
+          },
+          actions: [{ type: 'show', targetFieldId: 'field1' }],
+        },
       ];
 
       dependencyManager.initialize(fields, conditionalRules);
@@ -384,8 +376,8 @@ describe('DependencyManager', () => {
           sessionId: 'session',
           createdAt: new Date(),
           lastModified: new Date(),
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
 
       // Should not throw error
@@ -403,8 +395,8 @@ describe('DependencyManager', () => {
           type: 'text',
           label: 'Field 1',
           required: false,
-          validation: []
-        }
+          validation: [],
+        },
       ];
 
       dependencyManager.initialize(fields);

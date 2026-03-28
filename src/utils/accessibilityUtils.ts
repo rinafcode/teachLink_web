@@ -1,0 +1,413 @@
+/**
+ * Accessibility utility functions for WCAG 2.1 AA compliance
+ */
+
+export interface ColorContrastResult {
+  ratio: number;
+  passes: {
+    aa: boolean;
+    aaa: boolean;
+    aaLarge: boolean;
+    aaaLarge: boolean;
+  };
+}
+
+export interface AccessibilityIssue {
+  id: string;
+  severity: 'critical' | 'serious' | 'moderate' | 'minor';
+  type: string;
+  element: string;
+  message: string;
+  wcagCriteria: string[];
+  suggestion: string;
+}
+
+/**
+ * Calculate relative luminance of a color
+ */
+function getLuminance(r: number, g: number, b: number): number {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    const val = c / 255;
+    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+/**
+ * Parse hex color to RGB
+ */
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+}
+
+/**
+ * Calculate contrast ratio between two colors
+ */
+export function calculateContrastRatio(
+  foreground: string,
+  background: string,
+): ColorContrastResult {
+  const fg = hexToRgb(foreground);
+  const bg = hexToRgb(background);
+
+  if (!fg || !bg) {
+    return {
+      ratio: 0,
+      passes: { aa: false, aaa: false, aaLarge: false, aaaLarge: false },
+    };
+  }
+
+  const l1 = getLuminance(fg.r, fg.g, fg.b);
+  const l2 = getLuminance(bg.r, bg.g, bg.b);
+  const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+
+  return {
+    ratio: Math.round(ratio * 100) / 100,
+    passes: {
+      aa: ratio >= 4.5,
+      aaa: ratio >= 7,
+      aaLarge: ratio >= 3,
+      aaaLarge: ratio >= 4.5,
+    },
+  };
+}
+
+/**
+ * Get computed color from element
+ */
+export function getComputedColor(element: HTMLElement, property: string): string {
+  const color = window.getComputedStyle(element).getPropertyValue(property);
+  return rgbToHex(color);
+}
+
+/**
+ * Convert RGB to hex
+ */
+function rgbToHex(rgb: string): string {
+  const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+  if (!match) return '#000000';
+
+  const hex = (x: string) => {
+    const val = parseInt(x).toString(16);
+    return val.length === 1 ? '0' + val : val;
+  };
+
+  return '#' + hex(match[1]) + hex(match[2]) + hex(match[3]);
+}
+
+/**
+ * Check if element is focusable
+ */
+export function isFocusable(element: HTMLElement): boolean {
+  const focusableTags = ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'];
+  const tabIndex = element.getAttribute('tabindex');
+
+  return (
+    focusableTags.includes(element.tagName) ||
+    (tabIndex !== null && parseInt(tabIndex) >= 0) ||
+    element.hasAttribute('contenteditable')
+  );
+}
+
+/**
+ * Get all focusable elements within a container
+ */
+export function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const selector =
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]';
+  return Array.from(container.querySelectorAll(selector)).filter(
+    (el): el is HTMLElement => el instanceof HTMLElement && !isSubtreeAriaHidden(el),
+  );
+}
+
+function isSubtreeAriaHidden(element: HTMLElement): boolean {
+  let current: HTMLElement | null = element;
+  while (current) {
+    if (current.getAttribute('aria-hidden') === 'true') return true;
+    if (current.hasAttribute('hidden')) return true;
+    current = current.parentElement;
+  }
+  return false;
+}
+
+function inputHasAccessibleLabel(input: Element, container: HTMLElement): boolean {
+  if (input.hasAttribute('aria-label') || input.hasAttribute('aria-labelledby')) return true;
+  if (input.closest('label')) return true;
+  const id = input.getAttribute('id');
+  if (id) {
+    const safeFor =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(id)
+        : /^[a-zA-Z][\w:.-]*$/.test(id)
+        ? id
+        : null;
+    if (safeFor && container.querySelector(`label[for="${safeFor}"]`)) return true;
+  }
+  return false;
+}
+
+/**
+ * Focus targets for arrow-key roving inside `[data-roving-root]` (includes `tabindex="-1"` items).
+ */
+export function getRovingFocusCandidates(container: HTMLElement): HTMLElement[] {
+  const selector = [
+    'button:not([disabled])',
+    'a[href]',
+    'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[role="menuitem"]:not([aria-disabled="true"])',
+    '[role="menuitemradio"]:not([aria-disabled="true"])',
+    '[role="menuitemcheckbox"]:not([aria-disabled="true"])',
+    '[role="tab"]:not([aria-disabled="true"])',
+    '[role="radio"]:not([aria-disabled="true"])',
+    '[data-roving-item]:not([disabled])',
+  ].join(', ');
+  return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter(
+    (el) =>
+      !el.hasAttribute('hidden') &&
+      el.getAttribute('aria-hidden') !== 'true' &&
+      !isSubtreeAriaHidden(el),
+  );
+}
+
+/**
+ * Trap focus within a container
+ */
+export function trapFocus(container: HTMLElement, event: KeyboardEvent): void {
+  if (event.key !== 'Tab') return;
+
+  const focusableElements = getFocusableElements(container);
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  if (event.shiftKey && document.activeElement === firstElement) {
+    event.preventDefault();
+    lastElement?.focus();
+  } else if (!event.shiftKey && document.activeElement === lastElement) {
+    event.preventDefault();
+    firstElement?.focus();
+  }
+}
+
+/**
+ * Check if element has accessible name
+ */
+export function hasAccessibleName(element: HTMLElement): boolean {
+  return !!(
+    element.getAttribute('aria-label') ||
+    element.getAttribute('aria-labelledby') ||
+    element.textContent?.trim() ||
+    element.getAttribute('title')
+  );
+}
+
+/**
+ * Generate unique ID for ARIA attributes
+ */
+export function generateAriaId(prefix: string = 'aria'): string {
+  return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Announce message to screen readers
+ */
+export function announceToScreenReader(
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite',
+): void {
+  const announcement = document.createElement('div');
+  announcement.setAttribute('role', priority === 'assertive' ? 'alert' : 'status');
+  announcement.setAttribute('aria-live', priority);
+  announcement.setAttribute('aria-atomic', 'true');
+  announcement.className = 'sr-only';
+  announcement.textContent = message;
+
+  document.body.appendChild(announcement);
+
+  setTimeout(() => {
+    document.body.removeChild(announcement);
+  }, 1000);
+}
+
+/**
+ * Check for common accessibility issues
+ */
+export function checkAccessibilityIssues(container: HTMLElement): AccessibilityIssue[] {
+  const issues: AccessibilityIssue[] = [];
+
+  // Check images for alt text
+  const images = container.querySelectorAll('img');
+  images.forEach((img, index) => {
+    if (isSubtreeAriaHidden(img)) return;
+    if (!img.hasAttribute('alt')) {
+      issues.push({
+        id: `img-alt-${index}`,
+        severity: 'critical',
+        type: 'missing-alt',
+        element: 'img',
+        message: 'Image missing alt attribute',
+        wcagCriteria: ['1.1.1'],
+        suggestion: 'Add descriptive alt text or alt="" for decorative images',
+      });
+    }
+  });
+
+  // Check form inputs for labels
+  const inputs = container.querySelectorAll('input, select, textarea');
+  inputs.forEach((input, index) => {
+    if (input instanceof HTMLInputElement && input.type === 'hidden') return;
+    if (isSubtreeAriaHidden(input as HTMLElement)) return;
+
+    if (!inputHasAccessibleLabel(input, container)) {
+      issues.push({
+        id: `input-label-${index}`,
+        severity: 'critical',
+        type: 'missing-label',
+        element: input.tagName.toLowerCase(),
+        message: 'Form input missing accessible label',
+        wcagCriteria: ['1.3.1', '4.1.2'],
+        suggestion: 'Use a wrapping <label>, label[for], aria-label, or aria-labelledby',
+      });
+    }
+  });
+
+  // Check buttons for accessible names
+  const buttons = container.querySelectorAll('button');
+  buttons.forEach((button, index) => {
+    if (isSubtreeAriaHidden(button as HTMLElement)) return;
+    if (!hasAccessibleName(button as HTMLElement)) {
+      issues.push({
+        id: `button-name-${index}`,
+        severity: 'critical',
+        type: 'missing-accessible-name',
+        element: 'button',
+        message: 'Button missing accessible name',
+        wcagCriteria: ['4.1.2'],
+        suggestion: 'Add text content or aria-label to button',
+      });
+    }
+  });
+
+  // Check for heading hierarchy
+  const headings = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+  let previousLevel = 0;
+  headings.forEach((heading, index) => {
+    const level = parseInt(heading.tagName[1]);
+    if (previousLevel > 0 && level > previousLevel + 1) {
+      issues.push({
+        id: `heading-hierarchy-${index}`,
+        severity: 'moderate',
+        type: 'heading-hierarchy',
+        element: heading.tagName.toLowerCase(),
+        message: `Heading level skipped from h${previousLevel} to h${level}`,
+        wcagCriteria: ['1.3.1'],
+        suggestion: 'Use sequential heading levels without skipping',
+      });
+    }
+    previousLevel = level;
+  });
+
+  // Check links for accessible names
+  const links = container.querySelectorAll('a');
+  links.forEach((link, index) => {
+    if (isSubtreeAriaHidden(link as HTMLElement)) return;
+    if (!hasAccessibleName(link as HTMLElement)) {
+      issues.push({
+        id: `link-name-${index}`,
+        severity: 'serious',
+        type: 'missing-accessible-name',
+        element: 'a',
+        message: 'Link missing accessible name',
+        wcagCriteria: ['2.4.4', '4.1.2'],
+        suggestion: 'Add descriptive text or aria-label to link',
+      });
+    }
+  });
+
+  if (typeof document !== 'undefined' && container === document.body) {
+    if (!document.documentElement.lang?.trim()) {
+      issues.push({
+        id: 'missing-html-lang',
+        severity: 'serious',
+        type: 'missing-lang',
+        element: 'html',
+        message: 'Document root should declare a language',
+        wcagCriteria: ['3.1.1'],
+        suggestion: 'Set <html lang="..."> to the primary page language',
+      });
+    }
+    const mains = container.querySelectorAll('main, [role="main"]');
+    if (mains.length === 0) {
+      issues.push({
+        id: 'missing-main-landmark',
+        severity: 'moderate',
+        type: 'missing-main',
+        element: 'main',
+        message: 'No main landmark (<main> or role="main")',
+        wcagCriteria: ['2.4.1'],
+        suggestion: 'Wrap primary content in <main id="main-content">',
+      });
+    } else if (mains.length > 1) {
+      issues.push({
+        id: 'multiple-main-landmarks',
+        severity: 'moderate',
+        type: 'multiple-main',
+        element: 'main',
+        message: 'More than one main landmark',
+        wcagCriteria: ['2.4.1'],
+        suggestion: 'Use a single <main> (or role="main") per page',
+      });
+    }
+  }
+
+  // Duplicate id attributes break aria-labelledby / labels (4.1.1)
+  const seenIds = new Map<string, number>();
+  container.querySelectorAll('[id]').forEach((el, index) => {
+    const id = el.getAttribute('id');
+    if (!id?.trim()) return;
+    const count = (seenIds.get(id) ?? 0) + 1;
+    seenIds.set(id, count);
+    if (count === 2) {
+      issues.push({
+        id: `dup-id-${id}-${index}`,
+        severity: 'serious',
+        type: 'duplicate-id',
+        element: `#${id}`,
+        message: `Duplicate id "${id}"`,
+        wcagCriteria: ['4.1.1'],
+        suggestion: 'Ensure each id is unique in the document',
+      });
+    }
+  });
+
+  return issues;
+}
+
+/** Full-document audit using the same heuristics as {@link checkAccessibilityIssues}. */
+export function runAccessibilityAudit(root?: HTMLElement): AccessibilityIssue[] {
+  if (typeof document === 'undefined') return [];
+  const scope = root ?? document.body;
+  if (!scope) return [];
+  return checkAccessibilityIssues(scope);
+}
+
+/**
+ * Get WCAG compliance level
+ */
+export function getWCAGLevel(issues: AccessibilityIssue[]): 'AAA' | 'AA' | 'A' | 'Fail' {
+  const criticalCount = issues.filter((i) => i.severity === 'critical').length;
+  const seriousCount = issues.filter((i) => i.severity === 'serious').length;
+
+  if (criticalCount > 0) return 'Fail';
+  if (seriousCount > 0) return 'A';
+  if (issues.length > 5) return 'AA';
+  return 'AAA';
+}

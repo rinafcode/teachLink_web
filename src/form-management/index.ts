@@ -1,10 +1,10 @@
 /**
  * Form Management System
- * 
+ *
  * A comprehensive solution for creating, managing, and processing complex forms
  * with dynamic field generation, advanced validation, auto-save functionality,
  * and multi-step navigation.
- * 
+ *
  * Features:
  * - Dynamic form generation from JSON configurations
  * - Advanced validation with synchronous and asynchronous rules
@@ -13,7 +13,7 @@
  * - Form analytics and completion tracking
  * - Full accessibility support
  * - Performance optimizations for large forms
- * 
+ *
  * @version 1.0.0
  */
 

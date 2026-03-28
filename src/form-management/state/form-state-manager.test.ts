@@ -2,7 +2,7 @@
  * Unit tests for Form State Manager
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FormStateManager } from './form-state-manager';
 import { ValidationResult, StateChangeEvent } from '../types/core';
 
@@ -18,7 +18,7 @@ describe('FormStateManager', () => {
   describe('initialization', () => {
     it('should create initial state with correct metadata', () => {
       const state = stateManager.getState();
-      
+
       expect(state.metadata.formId).toBe(formId);
       expect(state.metadata.userId).toBe(userId);
       expect(state.metadata.version).toBe('1.0.0');
@@ -34,7 +34,7 @@ describe('FormStateManager', () => {
     it('should create initial state without userId', () => {
       const manager = new FormStateManager(formId);
       const state = manager.getState();
-      
+
       expect(state.metadata.formId).toBe(formId);
       expect(state.metadata.userId).toBeUndefined();
     });
@@ -58,7 +58,7 @@ describe('FormStateManager', () => {
 
       // Set initial value
       stateManager.updateField(fieldId, value);
-      
+
       // Reset dirty state for testing
       const state = stateManager.getState();
       state.dirty[fieldId] = false;
@@ -76,7 +76,7 @@ describe('FormStateManager', () => {
       const values = stateManager.getAllValues();
       expect(values).toEqual({
         email: 'test@example.com',
-        name: 'John Doe'
+        name: 'John Doe',
       });
     });
 
@@ -84,7 +84,7 @@ describe('FormStateManager', () => {
       const values = {
         email: 'test@example.com',
         name: 'John Doe',
-        age: 30
+        age: 30,
       };
 
       stateManager.setValues(values);
@@ -101,7 +101,7 @@ describe('FormStateManager', () => {
       const fieldId = 'email';
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'INVALID_EMAIL', message: 'Invalid email format' }]
+        errors: [{ code: 'INVALID_EMAIL', message: 'Invalid email format' }],
       };
 
       stateManager.setValidationState(fieldId, validationResult);
@@ -117,14 +117,14 @@ describe('FormStateManager', () => {
       // Add valid field
       stateManager.setValidationState('email', {
         isValid: true,
-        errors: []
+        errors: [],
       });
       expect(stateManager.isFormValid()).toBe(true);
 
       // Add invalid field
       stateManager.setValidationState('name', {
         isValid: false,
-        errors: [{ code: 'REQUIRED', message: 'Name is required' }]
+        errors: [{ code: 'REQUIRED', message: 'Name is required' }],
       });
       expect(stateManager.isFormValid()).toBe(false);
     });
@@ -133,7 +133,7 @@ describe('FormStateManager', () => {
       const fieldId = 'email';
       stateManager.setValidationState(fieldId, {
         isValid: false,
-        errors: [{ code: 'INVALID', message: 'Invalid' }]
+        errors: [{ code: 'INVALID', message: 'Invalid' }],
       });
 
       stateManager.clearFieldValidation(fieldId);
@@ -148,7 +148,7 @@ describe('FormStateManager', () => {
       stateManager.updateField('email', 'test@example.com');
       stateManager.setValidationState('email', {
         isValid: true,
-        errors: []
+        errors: [],
       });
       stateManager.setSubmitting(true);
 
@@ -188,33 +188,33 @@ describe('FormStateManager', () => {
   describe('field state helpers', () => {
     it('should mark field as touched', () => {
       const fieldId = 'email';
-      
+
       expect(stateManager.isFieldTouched(fieldId)).toBe(false);
-      
+
       stateManager.markFieldTouched(fieldId);
-      
+
       expect(stateManager.isFieldTouched(fieldId)).toBe(true);
     });
 
     it('should not update lastModified if field already touched', async () => {
       const fieldId = 'email';
-      
+
       stateManager.markFieldTouched(fieldId);
       const firstModified = stateManager.getState().metadata.lastModified;
-      
+
       // Wait a bit to ensure different timestamp
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       stateManager.markFieldTouched(fieldId);
       const secondModified = stateManager.getState().metadata.lastModified;
-      
+
       expect(secondModified).toEqual(firstModified);
     });
   });
 
   describe('state change subscriptions', () => {
     it('should notify subscribers of field changes', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       const subscription = stateManager.subscribeToChanges(callback);
 
       stateManager.updateField('email', 'test@example.com');
@@ -224,20 +224,20 @@ describe('FormStateManager', () => {
           type: 'field-change',
           fieldId: 'email',
           oldValue: undefined,
-          newValue: 'test@example.com'
-        })
+          newValue: 'test@example.com',
+        }),
       );
 
       subscription.unsubscribe();
     });
 
     it('should notify subscribers of validation changes', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       stateManager.subscribeToChanges(callback);
 
       const validationResult: ValidationResult = {
         isValid: false,
-        errors: [{ code: 'INVALID', message: 'Invalid' }]
+        errors: [{ code: 'INVALID', message: 'Invalid' }],
       };
 
       stateManager.setValidationState('email', validationResult);
@@ -246,16 +246,16 @@ describe('FormStateManager', () => {
         expect.objectContaining({
           type: 'validation-change',
           fieldId: 'email',
-          newValue: validationResult
-        })
+          newValue: validationResult,
+        }),
       );
     });
 
     it('should handle subscription errors gracefully', () => {
-      const errorCallback = jest.fn(() => {
-        throw new Error('Callback error');
+      const errorCallback = vi.fn(() => {
+        throw new Error('subscription error');
       });
-      const normalCallback = jest.fn();
+      const normalCallback = vi.fn();
 
       stateManager.subscribeToChanges(errorCallback);
       stateManager.subscribeToChanges(normalCallback);
@@ -269,7 +269,7 @@ describe('FormStateManager', () => {
     });
 
     it('should unsubscribe correctly', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       const subscription = stateManager.subscribeToChanges(callback);
 
       stateManager.updateField('email', 'test1@example.com');
@@ -285,10 +285,10 @@ describe('FormStateManager', () => {
   describe('metadata management', () => {
     it('should return metadata copy', () => {
       const metadata = stateManager.getMetadata();
-      
+
       expect(metadata.formId).toBe(formId);
       expect(metadata.userId).toBe(userId);
-      
+
       // Ensure it's a copy, not reference
       metadata.formId = 'modified';
       expect(stateManager.getMetadata().formId).toBe(formId);
@@ -296,13 +296,13 @@ describe('FormStateManager', () => {
 
     it('should update lastModified when field changes', async () => {
       const initialModified = stateManager.getState().metadata.lastModified;
-      
+
       // Wait a bit to ensure different timestamp
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       stateManager.updateField('email', 'test@example.com');
       const updatedModified = stateManager.getState().metadata.lastModified;
-      
+
       expect(updatedModified.getTime()).toBeGreaterThan(initialModified.getTime());
     });
   });
@@ -333,7 +333,7 @@ describe('FormStateManager', () => {
   describe('programmatic state control methods', () => {
     describe('silent field updates', () => {
       it('should set field value without triggering change events', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.subscribeToChanges(callback);
 
         stateManager.setFieldValueSilently('email', 'test@example.com');
@@ -345,12 +345,12 @@ describe('FormStateManager', () => {
 
     describe('batch operations', () => {
       it('should set multiple validation states at once', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.subscribeToChanges(callback);
 
         const validationStates = {
           email: { isValid: false, errors: [{ code: 'INVALID', message: 'Invalid email' }] },
-          name: { isValid: true, errors: [] }
+          name: { isValid: true, errors: [] },
         };
 
         stateManager.setValidationStates(validationStates);
@@ -359,18 +359,18 @@ describe('FormStateManager', () => {
         expect(stateManager.getFieldValidation('name')).toEqual(validationStates.name);
         expect(callback).toHaveBeenCalledTimes(1);
         expect(callback).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'validation-change' })
+          expect.objectContaining({ type: 'validation-change' }),
         );
       });
 
       it('should set multiple field values in batch', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.subscribeToChanges(callback);
 
         const values = {
           email: 'test@example.com',
           name: 'John Doe',
-          age: 30
+          age: 30,
         };
 
         stateManager.setFieldValuesBatch(values);
@@ -418,15 +418,15 @@ describe('FormStateManager', () => {
           isValid: false,
           errors: [
             { code: 'REQUIRED', message: 'Email is required' },
-            { code: 'INVALID', message: 'Invalid email format' }
+            { code: 'INVALID', message: 'Invalid email format' },
           ],
-          warnings: [{ code: 'SUGGESTION', message: 'Consider using a work email' }]
+          warnings: [{ code: 'SUGGESTION', message: 'Consider using a work email' }],
         });
 
         stateManager.setValidationState('name', {
           isValid: true,
           errors: [],
-          warnings: [{ code: 'INFO', message: 'Name looks good' }]
+          warnings: [{ code: 'INFO', message: 'Name looks good' }],
         });
 
         const summary = stateManager.getValidationSummary();
@@ -471,7 +471,7 @@ describe('FormStateManager', () => {
 
     describe('submission control', () => {
       it('should start submission with callback', () => {
-        const callback = jest.fn();
+        const callback = vi.fn();
         stateManager.startSubmission(callback);
 
         expect(stateManager.getState().isSubmitting).toBe(true);
@@ -479,8 +479,8 @@ describe('FormStateManager', () => {
       });
 
       it('should complete submission successfully', () => {
-        const callback = jest.fn();
-        
+        const callback = vi.fn();
+
         // Set up dirty state
         stateManager.updateField('email', 'test@example.com');
         expect(stateManager.isFormDirty()).toBe(true);
@@ -493,8 +493,8 @@ describe('FormStateManager', () => {
       });
 
       it('should complete submission with failure', () => {
-        const callback = jest.fn();
-        
+        const callback = vi.fn();
+
         // Set up dirty state
         stateManager.updateField('email', 'test@example.com');
         expect(stateManager.isFormDirty()).toBe(true);
@@ -542,7 +542,7 @@ describe('FormStateManager', () => {
       it('should validate specific fields', () => {
         const validationResults = {
           email: { isValid: false, errors: [{ code: 'INVALID', message: 'Invalid email' }] },
-          name: { isValid: true, errors: [] }
+          name: { isValid: true, errors: [] },
         };
 
         stateManager.validateFields(['email', 'name'], validationResults);
@@ -553,7 +553,10 @@ describe('FormStateManager', () => {
 
       it('should clear all validation', () => {
         // Set up validation
-        stateManager.setValidationState('email', { isValid: false, errors: [{ code: 'INVALID', message: 'Invalid' }] });
+        stateManager.setValidationState('email', {
+          isValid: false,
+          errors: [{ code: 'INVALID', message: 'Invalid' }],
+        });
         stateManager.setValidationState('name', { isValid: true, errors: [] });
 
         stateManager.clearAllValidation();
@@ -576,12 +579,12 @@ describe('FormStateManager', () => {
       it('should mark multiple fields as pristine', () => {
         stateManager.updateField('email', 'test@example.com');
         stateManager.updateField('name', 'John Doe');
-        
+
         expect(stateManager.isFieldDirty('email')).toBe(true);
         expect(stateManager.isFieldDirty('name')).toBe(true);
 
         stateManager.markFieldsPristine(['email', 'name']);
-        
+
         expect(stateManager.isFieldDirty('email')).toBe(false);
         expect(stateManager.isFieldDirty('name')).toBe(false);
       });
@@ -624,7 +627,7 @@ describe('FormStateManager', () => {
         type: 'select' as const,
         label: 'Trigger Field',
         required: false,
-        validation: []
+        validation: [],
       },
       {
         id: 'dependent',
@@ -632,25 +635,21 @@ describe('FormStateManager', () => {
         label: 'Dependent Field',
         required: false,
         validation: [],
-        dependencies: ['trigger']
-      }
+        dependencies: ['trigger'],
+      },
     ];
 
     const conditionalRules = [
       {
         id: 'showRule',
         condition: (state: any) => state.values.trigger === 'show',
-        actions: [
-          { type: 'show' as const, targetFieldId: 'dependent' }
-        ]
+        actions: [{ type: 'show' as const, targetFieldId: 'dependent' }],
       },
       {
         id: 'hideRule',
         condition: (state: any) => state.values.trigger === 'hide',
-        actions: [
-          { type: 'hide' as const, targetFieldId: 'dependent' }
-        ]
-      }
+        actions: [{ type: 'hide' as const, targetFieldId: 'dependent' }],
+      },
     ];
 
     beforeEach(() => {
@@ -680,13 +679,13 @@ describe('FormStateManager', () => {
     it('should get all field visibility states', () => {
       stateManager.setFieldVisibility('dependent', false);
       const visibility = stateManager.getFieldVisibility();
-      
+
       expect(visibility.trigger).toBe(true);
       expect(visibility.dependent).toBe(false);
     });
 
     it('should trigger cascading updates manually', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       stateManager.subscribeToChanges(callback);
 
       stateManager.updateField('trigger', 'show');
@@ -698,28 +697,28 @@ describe('FormStateManager', () => {
 
     it('should preview cascading updates without applying them', () => {
       const preview = stateManager.previewCascadingUpdates('trigger', 'show');
-      
+
       // Should show what would happen without actually changing state
       expect(preview.visibilityChanges.dependent).toBe(true);
-      
+
       // But actual visibility should be unchanged
       expect(stateManager.isFieldVisible('dependent')).toBe(true);
     });
 
     it('should get field processing order', () => {
       const order = stateManager.getFieldProcessingOrder();
-      
+
       // Trigger should come before dependent due to dependency
       const triggerIndex = order.indexOf('trigger');
       const dependentIndex = order.indexOf('dependent');
-      
+
       expect(triggerIndex).toBeLessThan(dependentIndex);
     });
 
     it('should evaluate all conditional logic', () => {
       stateManager.updateField('trigger', 'show');
       stateManager.evaluateAllConditionalLogic();
-      
+
       // This should process all fields and apply conditional logic
       expect(stateManager.isFieldVisible('dependent')).toBe(true);
     });
@@ -741,7 +740,7 @@ describe('FormStateManager', () => {
           type: 'text' as const,
           label: 'Field 1',
           required: false,
-          validation: []
+          validation: [],
         },
         {
           id: 'field2',
@@ -749,7 +748,7 @@ describe('FormStateManager', () => {
           label: 'Field 2',
           required: false,
           validation: [],
-          dependencies: ['field1']
+          dependencies: ['field1'],
         },
         {
           id: 'field3',
@@ -757,20 +756,20 @@ describe('FormStateManager', () => {
           label: 'Field 3',
           required: false,
           validation: [],
-          dependencies: ['field2']
-        }
+          dependencies: ['field2'],
+        },
       ];
 
       stateManager.initializeDependencies(complexFields);
 
       expect(stateManager.getDependentFields('field1')).toContain('field2');
       expect(stateManager.getDependentFields('field2')).toContain('field3');
-      
+
       const order = stateManager.getFieldProcessingOrder();
       const field1Index = order.indexOf('field1');
       const field2Index = order.indexOf('field2');
       const field3Index = order.indexOf('field3');
-      
+
       expect(field1Index).toBeLessThan(field2Index);
       expect(field2Index).toBeLessThan(field3Index);
     });

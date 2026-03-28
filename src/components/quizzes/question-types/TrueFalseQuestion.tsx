@@ -18,7 +18,9 @@ export default function TrueFalseQuestion({ question, quizState }: TrueFalseQues
       <div className="flex gap-4">
         {(['true', 'false'] as const).map((option) => {
           const isSelected = selected === option;
-          const shouldReveal = (hasAnswered || isReviewMode || isCompleted) && (isSelected || option === question.correctAnswer);
+          const shouldReveal =
+            (hasAnswered || isReviewMode || isCompleted) &&
+            (isSelected || option === question.correctAnswer);
           const isCorrect = option === question.correctAnswer;
 
           const colorClasses = shouldReveal
@@ -42,7 +44,9 @@ export default function TrueFalseQuestion({ question, quizState }: TrueFalseQues
                 <span className="capitalize text-[#0F172A] dark:text-white">{option}</span>
                 {shouldReveal ? (
                   isCorrect ? (
-                    <span className="text-[#0066FF] dark:text-[#00C2FF] text-sm font-medium">Correct</span>
+                    <span className="text-[#0066FF] dark:text-[#00C2FF] text-sm font-medium">
+                      Correct
+                    </span>
                   ) : isSelected ? (
                     <span className="text-red-700 text-sm font-medium">Your answer</span>
                   ) : null
