@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useContext, useMemo } from 'react';
+import { AccessibilityContext } from '@/components/accessibility/AccessibilityContext';
 import {
   getFocusableElements,
   trapFocus,
@@ -6,6 +7,28 @@ import {
   checkAccessibilityIssues,
   AccessibilityIssue,
 } from '@/utils/accessibilityUtils';
+import type { AccessibilityContextValue } from '@/components/accessibility/AccessibilityContext';
+
+/**
+ * Global accessibility context with a safe fallback outside `AccessibilityProvider`.
+ */
+export function useAccessibility(): AccessibilityContextValue {
+  const ctx = useContext(AccessibilityContext);
+  return useMemo(() => {
+    if (ctx) return ctx;
+    return {
+      announce: (message: string, priority: 'polite' | 'assertive' = 'polite') =>
+        announceToScreenReader(message, priority),
+      prefersReducedMotion:
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      isKeyboardUser: true,
+      runPageAudit: () =>
+        typeof document !== 'undefined' ? checkAccessibilityIssues(document.body) : [],
+      verboseLiveRegions: false,
+    };
+  }, [ctx]);
+}
 
 /**
  * Hook for managing keyboard navigation

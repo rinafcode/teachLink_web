@@ -278,7 +278,35 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
     }
   });
 
+  // Duplicate id attributes break aria-labelledby / labels (4.1.1)
+  const seenIds = new Map<string, number>();
+  container.querySelectorAll('[id]').forEach((el, index) => {
+    const id = el.getAttribute('id');
+    if (!id?.trim()) return;
+    const count = (seenIds.get(id) ?? 0) + 1;
+    seenIds.set(id, count);
+    if (count === 2) {
+      issues.push({
+        id: `dup-id-${id}-${index}`,
+        severity: 'serious',
+        type: 'duplicate-id',
+        element: `#${id}`,
+        message: `Duplicate id "${id}"`,
+        wcagCriteria: ['4.1.1'],
+        suggestion: 'Ensure each id is unique in the document',
+      });
+    }
+  });
+
   return issues;
+}
+
+/** Full-document audit using the same heuristics as {@link checkAccessibilityIssues}. */
+export function runAccessibilityAudit(root?: HTMLElement): AccessibilityIssue[] {
+  if (typeof document === 'undefined') return [];
+  const scope = root ?? document.body;
+  if (!scope) return [];
+  return checkAccessibilityIssues(scope);
 }
 
 /**

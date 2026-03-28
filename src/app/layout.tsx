@@ -10,6 +10,7 @@ import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
 import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 import { PWAManager } from '@/components/pwa/PWAManager';
+import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 
 const geistSans = Geist({
   // ...
@@ -42,13 +43,15 @@ export default function RootLayout({
           <InternationalizationEngine>
             <CulturalAdaptationManager>
               <ThemeProvider>
-                <OfflineModeProvider>
-                  <PWAManager />
-                  <StateManagerIntegration />
-                  <PerformanceMonitor />
-                  <PrefetchingEngine />
-                  {children}
-                </OfflineModeProvider>
+                <AccessibilityProvider pageLabel="TeachLink — main application">
+                  <OfflineModeProvider>
+                    <PWAManager />
+                    <StateManagerIntegration />
+                    <PerformanceMonitor />
+                    <PrefetchingEngine />
+                    {children}
+                  </OfflineModeProvider>
+                </AccessibilityProvider>
               </ThemeProvider>
             </CulturalAdaptationManager>
           </InternationalizationEngine>
