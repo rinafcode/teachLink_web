@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
+import DynamicTheming from '@/components/theme/DynamicTheming';
 import { OfflineModeProvider } from './context/OfflineModeContext';
 import { I18nProvider } from '@/hooks/useInternationalization';
 import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
@@ -44,6 +45,7 @@ export default function RootLayout({
           <InternationalizationEngine>
             <CulturalAdaptationManager>
               <ThemeProvider>
+                <DynamicTheming />
                 <AccessibilityProvider pageLabel="TeachLink — main application">
                   <PerformanceMonitoringProvider>
                     <OfflineModeProvider>
