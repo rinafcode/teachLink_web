@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject, useEffect, useId } from 'react';
+import React, { RefObject, useEffect, useId } from 'react';
 
 interface ScreenReaderSupportProps {
   politeRef: RefObject<HTMLDivElement | null>;
@@ -42,7 +42,7 @@ export function ScreenReaderSupport({
         </span>
       ) : null}
       <div
-        ref={politeRef}
+        ref={politeRef as React.Ref<HTMLDivElement>}
         role="status"
         aria-live="polite"
         aria-relevant="additions text"
@@ -50,7 +50,7 @@ export function ScreenReaderSupport({
         className="sr-only"
       />
       <div
-        ref={assertiveRef}
+        ref={assertiveRef as React.Ref<HTMLDivElement>}
         role="alert"
         aria-live="assertive"
         aria-relevant="additions text"

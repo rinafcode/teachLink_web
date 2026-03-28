@@ -16,12 +16,12 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
   ...props
 }) => {
   const [isTouched, setIsTouched] = useState(false);
-  
+
   const baseClasses =
     'relative overflow-hidden rounded-xl font-medium transition-all duration-200 active:scale-95 flex items-center justify-center';
   const sizeClasses = 'min-h-[48px] px-6 py-3 text-base'; // Minimum 48px height for touch targets
   const widthClasses = fullWidth ? 'w-full' : '';
-  
+
   const variantClasses = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
     secondary:
@@ -34,7 +34,9 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
 
   return (
     <button
-      className={`${baseClasses} ${sizeClasses} ${widthClasses} ${variantClasses[variant]} ${isTouched ? 'opacity-80' : 'opacity-100'} ${className}`}
+      className={`${baseClasses} ${sizeClasses} ${widthClasses} ${variantClasses[variant]} ${
+        isTouched ? 'opacity-80' : 'opacity-100'
+      } ${className}`}
       onTouchStart={() => setIsTouched(true)}
       onTouchEnd={() => setIsTouched(false)}
       onTouchCancel={() => setIsTouched(false)}
@@ -84,12 +86,7 @@ interface BottomSheetProps {
   title?: string;
 }
 
-export const BottomSheet: React.FC<BottomSheetProps> = ({
-  isOpen,
-  onClose,
-  children,
-  title,
-}) => {
+export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null;
 
   return (
@@ -99,23 +96,19 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      
+
       {/* Sheet Content */}
       <div className="relative bg-white dark:bg-gray-900 w-full rounded-t-3xl p-6 shadow-xl animate-in slide-in-from-bottom-full duration-300 pb-safe">
         <GestureHandler onSwipeDown={onClose} swipeThreshold={40}>
           {/* Handle bar for swiping */}
           <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-6 cursor-pointer" />
         </GestureHandler>
-        
+
         {title && (
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-            {title}
-          </h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">{title}</h2>
         )}
-        
-        <div className="max-h-[70vh] overflow-y-auto">
-          {children}
-        </div>
+
+        <div className="max-h-[70vh] overflow-y-auto">{children}</div>
       </div>
     </div>
   );

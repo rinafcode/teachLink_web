@@ -46,7 +46,7 @@ export const CustomVisualizationBuilder: React.FC<CustomVisualizationBuilderProp
         datasets.map((dataset) => ({
           ...dataset,
           data: [...dataset.data, 0],
-        }))
+        })),
       );
       setNewLabel('');
     }
@@ -58,7 +58,7 @@ export const CustomVisualizationBuilder: React.FC<CustomVisualizationBuilderProp
       datasets.map((dataset) => ({
         ...dataset,
         data: dataset.data.filter((_, i) => i !== index),
-      }))
+      })),
     );
   };
 
@@ -91,8 +91,8 @@ export const CustomVisualizationBuilder: React.FC<CustomVisualizationBuilderProp
               ...dataset,
               data: dataset.data.map((d, j) => (j === labelIndex ? numValue : d)),
             }
-          : dataset
-      )
+          : dataset,
+      ),
     );
   };
 

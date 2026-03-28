@@ -27,14 +27,22 @@ export const DragDropContainer = ({
   autoSaveDelay,
   onAutoSave,
 }: DragDropContainerProps) => {
-  const { state, isSaving, lastSavedAt, saveError, reorderInZone, moveToZone, saveNow, resetState } =
-    useDragDrop({
-      zones,
-      items,
-      storageKey,
-      autoSaveDelay,
-      onAutoSave,
-    });
+  const {
+    state,
+    isSaving,
+    lastSavedAt,
+    saveError,
+    reorderInZone,
+    moveToZone,
+    saveNow,
+    resetState,
+  } = useDragDrop({
+    zones,
+    items,
+    storageKey,
+    autoSaveDelay,
+    onAutoSave,
+  });
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -51,17 +59,17 @@ export const DragDropContainer = ({
                 saveError
                   ? 'bg-red-100 text-red-700'
                   : isSaving
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-emerald-100 text-emerald-700'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-emerald-100 text-emerald-700'
               }`}
             >
               {saveError
                 ? `Save error: ${saveError}`
                 : isSaving
-                  ? 'Saving...'
-                  : lastSavedAt
-                    ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}`
-                    : 'Ready'}
+                ? 'Saving...'
+                : lastSavedAt
+                ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}`
+                : 'Ready'}
             </span>
             <button
               type="button"
@@ -80,7 +88,12 @@ export const DragDropContainer = ({
           </div>
         </div>
 
-        <DropZones zones={zones} state={state} onReorder={reorderInZone} onMoveToZone={moveToZone} />
+        <DropZones
+          zones={zones}
+          state={state}
+          onReorder={reorderInZone}
+          onMoveToZone={moveToZone}
+        />
       </div>
       <DragPreview />
     </DndProvider>

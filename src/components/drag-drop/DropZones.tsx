@@ -52,7 +52,9 @@ const ZonePanel = ({
 
   return (
     <section
-      ref={drop}
+      ref={(node) => {
+        drop(node);
+      }}
       className={`rounded-xl border p-4 transition ${
         isOver && canDrop ? 'border-sky-400 bg-sky-50' : 'border-slate-200 bg-white'
       }`}

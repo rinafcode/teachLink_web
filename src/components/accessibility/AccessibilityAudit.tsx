@@ -108,8 +108,8 @@ export function AccessibilityAudit() {
                     level === 'Fail'
                       ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
                       : level === 'AAA'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'
-                        : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200'
+                      : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100'
                   }`}
                 >
                   {level}

@@ -5,10 +5,7 @@ import { AccessibilityContext, type AnnouncePriority } from './AccessibilityCont
 import { AccessibilityAudit } from './AccessibilityAudit';
 import { ScreenReaderSupport } from './ScreenReaderSupport';
 import { KeyboardNavigation, type KeyboardShortcutHelpItem } from './KeyboardNavigation';
-import {
-  announceToScreenReader,
-  checkAccessibilityIssues,
-} from '@/utils/accessibilityUtils';
+import { announceToScreenReader, checkAccessibilityIssues } from '@/utils/accessibilityUtils';
 import { useFocusVisible } from '@/hooks/useAccessibility';
 
 export type { KeyboardShortcutHelpItem };

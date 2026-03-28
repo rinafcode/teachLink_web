@@ -51,10 +51,7 @@ interface KeyboardNavigationProps {
 /**
  * Global keyboard affordances: skip to main, shortcuts help dialog with focus trap.
  */
-export function KeyboardNavigation({
-  extraShortcuts = [],
-  onSkipToMain,
-}: KeyboardNavigationProps) {
+export function KeyboardNavigation({ extraShortcuts = [], onSkipToMain }: KeyboardNavigationProps) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
   const trapRef = useFocusTrap(open);

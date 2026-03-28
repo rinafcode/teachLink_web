@@ -146,8 +146,8 @@ function inputHasAccessibleLabel(input: Element, container: HTMLElement): boolea
       typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
         ? CSS.escape(id)
         : /^[a-zA-Z][\w:.-]*$/.test(id)
-          ? id
-          : null;
+        ? id
+        : null;
     if (safeFor && container.querySelector(`label[for="${safeFor}"]`)) return true;
   }
   return false;
@@ -171,7 +171,10 @@ export function getRovingFocusCandidates(container: HTMLElement): HTMLElement[] 
     '[data-roving-item]:not([disabled])',
   ].join(', ');
   return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter(
-    (el) => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true' && !isSubtreeAriaHidden(el),
+    (el) =>
+      !el.hasAttribute('hidden') &&
+      el.getAttribute('aria-hidden') !== 'true' &&
+      !isSubtreeAriaHidden(el),
   );
 }
 
@@ -271,8 +274,7 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
         element: input.tagName.toLowerCase(),
         message: 'Form input missing accessible label',
         wcagCriteria: ['1.3.1', '4.1.2'],
-        suggestion:
-          'Use a wrapping <label>, label[for], aria-label, or aria-labelledby',
+        suggestion: 'Use a wrapping <label>, label[for], aria-label, or aria-labelledby',
       });
     }
   });

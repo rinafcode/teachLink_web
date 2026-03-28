@@ -197,7 +197,10 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <span className="text-xs font-mono w-7 text-center" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
+            <span
+              className="text-xs font-mono w-7 text-center"
+              style={{ color: isDark ? '#94a3b8' : '#64748b' }}
+            >
               {fontSize}
             </span>
             <button
@@ -228,10 +231,7 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
             onToggle={toggleAutoComplete}
             onSelect={handleSuggestionSelect}
           />
-          <CollaborativeEditing
-            collaborators={collaborators}
-            roomId={roomId}
-          />
+          <CollaborativeEditing collaborators={collaborators} roomId={roomId} />
         </div>
       </div>
 
@@ -325,9 +325,7 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
           >
             <div className="flex items-center gap-2">
               <Terminal className="w-3.5 h-3.5 text-indigo-400" />
-              <span style={{ color: isDark ? '#a5b4fc' : '#4f46e5' }}>
-                Output
-              </span>
+              <span style={{ color: isDark ? '#a5b4fc' : '#4f46e5' }}>Output</span>
               {/* Exit code badge */}
               <span
                 className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${

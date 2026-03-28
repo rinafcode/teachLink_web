@@ -168,11 +168,7 @@ export const RealTimeDataVisualizer: React.FC<RealTimeDataVisualizerProps> = ({
           </div>
         </div>
 
-        {error && (
-          <div className="mt-3 text-sm text-red-600 dark:text-red-400">
-            Error: {error}
-          </div>
-        )}
+        {error && <div className="mt-3 text-sm text-red-600 dark:text-red-400">Error: {error}</div>}
       </div>
 
       {/* Statistics */}
@@ -204,7 +200,11 @@ export const RealTimeDataVisualizer: React.FC<RealTimeDataVisualizerProps> = ({
                     : 'text-gray-600'
                 }`}
               >
-                {stats.trend.direction === 'up' ? '↑' : stats.trend.direction === 'down' ? '↓' : '→'}
+                {stats.trend.direction === 'up'
+                  ? '↑'
+                  : stats.trend.direction === 'down'
+                  ? '↓'
+                  : '→'}
                 {stats.trend.percentage.toFixed(1)}%
               </div>
             </div>

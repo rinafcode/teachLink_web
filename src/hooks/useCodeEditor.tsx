@@ -112,13 +112,13 @@ export const useCodeEditor = ({
   const [fontSize, setFontSize] = useState<number>(14);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [output, setOutput] = useState<ExecutionResult | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Array<{ line: number; message: string }>>([]);
+  const [validationErrors, setValidationErrors] = useState<
+    Array<{ line: number; message: string }>
+  >([]);
   const [collaborators] = useState<Collaborator[]>(MOCK_COLLABORATORS);
   const [autoCompleteEnabled, setAutoCompleteEnabled] = useState<boolean>(true);
   const [currentWord, setCurrentWord] = useState<string>('');
-  const [code, setCodeState] = useState<string>(
-    initialCode ?? langConfig.defaultCode,
-  );
+  const [code, setCodeState] = useState<string>(initialCode ?? langConfig.defaultCode);
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -205,22 +205,19 @@ export const useCodeEditor = ({
   // Monaco mount handler
   // -------------------------------------------------------------------------
 
-  const handleEditorMount = useCallback(
-    (editorInstance: editor.IStandaloneCodeEditor) => {
-      editorRef.current = editorInstance;
+  const handleEditorMount = useCallback((editorInstance: editor.IStandaloneCodeEditor) => {
+    editorRef.current = editorInstance;
 
-      // Track cursor word for auto-completion panel
-      editorInstance.onDidChangeCursorPosition(() => {
-        const position = editorInstance.getPosition();
-        if (!position) return;
-        const model = editorInstance.getModel();
-        if (!model) return;
-        const word = model.getWordAtPosition(position);
-        setCurrentWord(word?.word ?? '');
-      });
-    },
-    [],
-  );
+    // Track cursor word for auto-completion panel
+    editorInstance.onDidChangeCursorPosition(() => {
+      const position = editorInstance.getPosition();
+      if (!position) return;
+      const model = editorInstance.getModel();
+      if (!model) return;
+      const word = model.getWordAtPosition(position);
+      setCurrentWord(word?.word ?? '');
+    });
+  }, []);
 
   return {
     // State
