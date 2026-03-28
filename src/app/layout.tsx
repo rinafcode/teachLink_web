@@ -7,6 +7,7 @@ import { I18nProvider } from '@/hooks/useInternationalization';
 import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
 import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
 import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import { PerformanceMonitoringProvider } from '@/hooks/usePerformanceMonitoring';
 import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 import { PWAManager } from '@/components/pwa/PWAManager';
@@ -42,13 +43,15 @@ export default function RootLayout({
           <InternationalizationEngine>
             <CulturalAdaptationManager>
               <ThemeProvider>
-                <OfflineModeProvider>
-                  <PWAManager />
-                  <StateManagerIntegration />
-                  <PerformanceMonitor />
-                  <PrefetchingEngine />
-                  {children}
-                </OfflineModeProvider>
+                <PerformanceMonitoringProvider>
+                  <OfflineModeProvider>
+                    <PWAManager />
+                    <StateManagerIntegration />
+                    <PerformanceMonitor />
+                    <PrefetchingEngine />
+                    {children}
+                  </OfflineModeProvider>
+                </PerformanceMonitoringProvider>
               </ThemeProvider>
             </CulturalAdaptationManager>
           </InternationalizationEngine>
