@@ -65,12 +65,20 @@ export function useFocusTrap(isActive: boolean = false) {
   useEffect(() => {
     if (!isActive || !containerRef.current) return;
 
-    // Store previous focus
+    const container = containerRef.current;
     previousFocusRef.current = document.activeElement as HTMLElement;
 
-    // Focus first focusable element
-    const focusableElements = getFocusableElements(containerRef.current);
-    focusableElements[0]?.focus();
+    const focusableElements = getFocusableElements(container);
+    let removedTabIndex = false;
+    if (focusableElements.length > 0) {
+      focusableElements[0]?.focus();
+    } else {
+      if (!container.hasAttribute('tabindex')) {
+        container.setAttribute('tabindex', '-1');
+        removedTabIndex = true;
+      }
+      container.focus();
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (containerRef.current) {
@@ -82,7 +90,9 @@ export function useFocusTrap(isActive: boolean = false) {
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      // Restore previous focus
+      if (removedTabIndex) {
+        container.removeAttribute('tabindex');
+      }
       previousFocusRef.current?.focus();
     };
   }, [isActive]);

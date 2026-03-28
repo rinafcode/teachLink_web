@@ -36,13 +36,19 @@ Use **assertive** only for urgent errors or time-sensitive status.
 
 ## Keyboard and landmarks
 
-- Give the primary `<main>` a stable id such as `main-content` so skip links and **Alt+M** work everywhere.
-- For horizontal toolbars, wrap controls in a container with `data-roving-root` and use arrow keys to move between focusable children.
+- Give the primary `<main>` a stable id such as `main-content` so skip links and **Alt+M** work everywhere. There should be **exactly one** `<main>` (or `role="main"`) per view.
+- For horizontal toolbars, add `data-roving-root` on the toolbar container. **Left/Right arrow** moves among buttons, links, tabs, and elements marked with `data-roving-item` (including those using `tabindex="-1"` for roving patterns).
+
+## What automation does *not* prove
+
+- **WCAG 2.1 AA** for the whole product requires page-by-page review (contrast in context, timing, reflow, errors, etc.).
+- The audit panel and `checkAccessibilityIssues` only flag **some** DOM patterns. They miss false positives/negatives and cannot judge screen reader UX.
+- **All keyboard paths** and **all screen reader announcements** still need manual QA on real flows.
 
 ## ARIA checklist (authoring)
 
 1. Every interactive control has a computed **accessible name** (visible text, `aria-label`, or `aria-labelledby`).
-2. Form fields are labeled with `<label htmlFor>` or `aria-label` / `aria-labelledby`.
+2. Form fields are labeled with a wrapping `<label>`, `<label htmlFor>`, or `aria-label` / `aria-labelledby`.
 3. Images convey meaning with `alt`; decorative images use `alt=""`.
 4. Headings describe structure without skipped levels.
 5. Expandable regions use `aria-expanded`; dialogs use `role="dialog"`, `aria-modal="true"`, and initial focus management.
@@ -50,8 +56,8 @@ Use **assertive** only for urgent errors or time-sensitive status.
 
 ## Testing
 
-- Navigate the primary tasks **without a mouse**.
-- Run **VoiceOver** (macOS) or **NVDA** (Windows) on critical flows.
-- Use the in-app **Accessibility audit** (development) and fix reported issues, then re-test manually.
+- Navigate the primary tasks **without a mouse** (including modals, forms, and media).
+- Run **VoiceOver** (macOS) or **NVDA** (Windows) on critical flows; verify focus order and live region behavior.
+- Use the in-app **Accessibility audit** (development) to catch missing `alt`, labels, names, landmarks, `lang`, and duplicate `id`s—then fix and re-test manually.
 
 For more examples, see `src/app/components/accessibility/README.md` and `ACCESSIBILITY_IMPLEMENTATION_GUIDE.md` in the repo root.

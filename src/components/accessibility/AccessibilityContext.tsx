@@ -8,7 +8,7 @@ export type AnnouncePriority = 'polite' | 'assertive';
 export interface AccessibilityContextValue {
   announce: (message: string, priority?: AnnouncePriority) => void;
   prefersReducedMotion: boolean;
-  /** True when user has navigated with keyboard (Tab) recently */
+  /** Keyboard modality for focus visibility (Tab vs pointer); use for :focus-visible styling */
   isKeyboardUser: boolean;
   /** Run heuristic WCAG-oriented checks on the document body */
   runPageAudit: () => AccessibilityIssue[];

@@ -1,11 +1,11 @@
 'use client';
 
-import { RefObject, useEffect } from 'react';
+import { RefObject, useEffect, useId } from 'react';
 
 interface ScreenReaderSupportProps {
   politeRef: RefObject<HTMLDivElement | null>;
   assertiveRef: RefObject<HTMLDivElement | null>;
-  /** Visually hidden page summary for first paint (optional) */
+  /** Visually hidden app name / scope; linked from `<main>` when it has no other label */
   pageLabel?: string;
 }
 
@@ -18,20 +18,28 @@ export function ScreenReaderSupport({
   assertiveRef,
   pageLabel,
 }: ScreenReaderSupportProps) {
+  const mainLabelId = useId();
+
   useEffect(() => {
     if (!pageLabel || typeof document === 'undefined') return;
     const main = document.querySelector('main');
-    if (main && !main.getAttribute('aria-label') && !main.getAttribute('aria-labelledby')) {
-      main.setAttribute('aria-label', pageLabel);
-    }
-  }, [pageLabel]);
+    if (!main) return;
+    if (main.getAttribute('aria-label') || main.getAttribute('aria-labelledby')) return;
+
+    main.setAttribute('aria-labelledby', mainLabelId);
+    return () => {
+      if (main.getAttribute('aria-labelledby') === mainLabelId) {
+        main.removeAttribute('aria-labelledby');
+      }
+    };
+  }, [pageLabel, mainLabelId]);
 
   return (
     <>
       {pageLabel ? (
-        <p id="app-page-summary" className="sr-only">
+        <span id={mainLabelId} className="sr-only">
           {pageLabel}
-        </p>
+        </span>
       ) : null}
       <div
         ref={politeRef}

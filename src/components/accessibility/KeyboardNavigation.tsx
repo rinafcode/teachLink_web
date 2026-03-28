@@ -2,10 +2,7 @@
 
 import { useEffect, useId, useState, type RefObject } from 'react';
 import { useFocusTrap } from '@/hooks/useAccessibility';
-import { getFocusableElements } from '@/utils/accessibilityUtils';
-
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled]), [contenteditable="true"]';
+import { getRovingFocusCandidates } from '@/utils/accessibilityUtils';
 
 function isTypingTarget(el: EventTarget | null): boolean {
   if (!el || !(el instanceof HTMLElement)) return false;
@@ -23,8 +20,11 @@ function focusMainContent(): void {
     if (!main.hasAttribute('tabindex')) {
       main.setAttribute('tabindex', '-1');
     }
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     main.focus({ preventScroll: false });
-    main.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    main.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
   }
 }
 
@@ -164,9 +164,7 @@ function RovingTabIndexCoordinator() {
       const root = target.closest('[data-roving-root]');
       if (!root) return;
 
-      const items = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-        (el) => !el.hasAttribute('disabled') && el.tabIndex !== -1,
-      );
+      const items = getRovingFocusCandidates(root as HTMLElement);
       if (items.length === 0) return;
 
       const idx = items.indexOf(target);

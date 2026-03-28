@@ -6,3 +6,5 @@ export {
 export { AccessibilityAudit } from './AccessibilityAudit';
 export { KeyboardNavigation } from './KeyboardNavigation';
 export { ScreenReaderSupport } from './ScreenReaderSupport';
+
+export { getRovingFocusCandidates } from '@/utils/accessibilityUtils';

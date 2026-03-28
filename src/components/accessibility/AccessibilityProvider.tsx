@@ -35,7 +35,7 @@ function subscribeReducedMotion(callback: (matches: boolean) => void): () => voi
 }
 
 /**
- * Global accessibility context: announcements, motion preference, keyboard mode, audit entry points.
+ * Global accessibility context: announcements, motion preference, keyboard focus modality, audit entry points.
  */
 export function AccessibilityProvider({
   children,

@@ -122,7 +122,57 @@ export function isFocusable(element: HTMLElement): boolean {
 export function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const selector =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]';
-  return Array.from(container.querySelectorAll(selector)) as HTMLElement[];
+  return Array.from(container.querySelectorAll(selector)).filter(
+    (el): el is HTMLElement => el instanceof HTMLElement && !isSubtreeAriaHidden(el),
+  );
+}
+
+function isSubtreeAriaHidden(element: HTMLElement): boolean {
+  let current: HTMLElement | null = element;
+  while (current) {
+    if (current.getAttribute('aria-hidden') === 'true') return true;
+    if (current.hasAttribute('hidden')) return true;
+    current = current.parentElement;
+  }
+  return false;
+}
+
+function inputHasAccessibleLabel(input: Element, container: HTMLElement): boolean {
+  if (input.hasAttribute('aria-label') || input.hasAttribute('aria-labelledby')) return true;
+  if (input.closest('label')) return true;
+  const id = input.getAttribute('id');
+  if (id) {
+    const safeFor =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(id)
+        : /^[a-zA-Z][\w:.-]*$/.test(id)
+          ? id
+          : null;
+    if (safeFor && container.querySelector(`label[for="${safeFor}"]`)) return true;
+  }
+  return false;
+}
+
+/**
+ * Focus targets for arrow-key roving inside `[data-roving-root]` (includes `tabindex="-1"` items).
+ */
+export function getRovingFocusCandidates(container: HTMLElement): HTMLElement[] {
+  const selector = [
+    'button:not([disabled])',
+    'a[href]',
+    'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[role="menuitem"]:not([aria-disabled="true"])',
+    '[role="menuitemradio"]:not([aria-disabled="true"])',
+    '[role="menuitemcheckbox"]:not([aria-disabled="true"])',
+    '[role="tab"]:not([aria-disabled="true"])',
+    '[role="radio"]:not([aria-disabled="true"])',
+    '[data-roving-item]:not([disabled])',
+  ].join(', ');
+  return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter(
+    (el) => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true' && !isSubtreeAriaHidden(el),
+  );
 }
 
 /**
@@ -171,7 +221,7 @@ export function announceToScreenReader(
   priority: 'polite' | 'assertive' = 'polite',
 ): void {
   const announcement = document.createElement('div');
-  announcement.setAttribute('role', 'status');
+  announcement.setAttribute('role', priority === 'assertive' ? 'alert' : 'status');
   announcement.setAttribute('aria-live', priority);
   announcement.setAttribute('aria-atomic', 'true');
   announcement.className = 'sr-only';
@@ -193,6 +243,7 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
   // Check images for alt text
   const images = container.querySelectorAll('img');
   images.forEach((img, index) => {
+    if (isSubtreeAriaHidden(img)) return;
     if (!img.hasAttribute('alt')) {
       issues.push({
         id: `img-alt-${index}`,
@@ -209,12 +260,10 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
   // Check form inputs for labels
   const inputs = container.querySelectorAll('input, select, textarea');
   inputs.forEach((input, index) => {
-    const hasLabel =
-      input.hasAttribute('aria-label') ||
-      input.hasAttribute('aria-labelledby') ||
-      container.querySelector(`label[for="${input.id}"]`);
+    if (input instanceof HTMLInputElement && input.type === 'hidden') return;
+    if (isSubtreeAriaHidden(input as HTMLElement)) return;
 
-    if (!hasLabel) {
+    if (!inputHasAccessibleLabel(input, container)) {
       issues.push({
         id: `input-label-${index}`,
         severity: 'critical',
@@ -222,7 +271,8 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
         element: input.tagName.toLowerCase(),
         message: 'Form input missing accessible label',
         wcagCriteria: ['1.3.1', '4.1.2'],
-        suggestion: 'Add aria-label or associate with a <label> element',
+        suggestion:
+          'Use a wrapping <label>, label[for], aria-label, or aria-labelledby',
       });
     }
   });
@@ -230,6 +280,7 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
   // Check buttons for accessible names
   const buttons = container.querySelectorAll('button');
   buttons.forEach((button, index) => {
+    if (isSubtreeAriaHidden(button as HTMLElement)) return;
     if (!hasAccessibleName(button as HTMLElement)) {
       issues.push({
         id: `button-name-${index}`,
@@ -265,6 +316,7 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
   // Check links for accessible names
   const links = container.querySelectorAll('a');
   links.forEach((link, index) => {
+    if (isSubtreeAriaHidden(link as HTMLElement)) return;
     if (!hasAccessibleName(link as HTMLElement)) {
       issues.push({
         id: `link-name-${index}`,
@@ -277,6 +329,42 @@ export function checkAccessibilityIssues(container: HTMLElement): AccessibilityI
       });
     }
   });
+
+  if (typeof document !== 'undefined' && container === document.body) {
+    if (!document.documentElement.lang?.trim()) {
+      issues.push({
+        id: 'missing-html-lang',
+        severity: 'serious',
+        type: 'missing-lang',
+        element: 'html',
+        message: 'Document root should declare a language',
+        wcagCriteria: ['3.1.1'],
+        suggestion: 'Set <html lang="..."> to the primary page language',
+      });
+    }
+    const mains = container.querySelectorAll('main, [role="main"]');
+    if (mains.length === 0) {
+      issues.push({
+        id: 'missing-main-landmark',
+        severity: 'moderate',
+        type: 'missing-main',
+        element: 'main',
+        message: 'No main landmark (<main> or role="main")',
+        wcagCriteria: ['2.4.1'],
+        suggestion: 'Wrap primary content in <main id="main-content">',
+      });
+    } else if (mains.length > 1) {
+      issues.push({
+        id: 'multiple-main-landmarks',
+        severity: 'moderate',
+        type: 'multiple-main',
+        element: 'main',
+        message: 'More than one main landmark',
+        wcagCriteria: ['2.4.1'],
+        suggestion: 'Use a single <main> (or role="main") per page',
+      });
+    }
+  }
 
   // Duplicate id attributes break aria-labelledby / labels (4.1.1)
   const seenIds = new Map<string, number>();

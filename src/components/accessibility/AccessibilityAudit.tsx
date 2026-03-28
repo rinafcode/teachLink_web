@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useAccessibility } from '@/hooks/useAccessibility';
+import { useCallback, useEffect, useId, useState, type RefObject } from 'react';
+import { useAccessibility, useFocusTrap } from '@/hooks/useAccessibility';
 import { getWCAGLevel, type AccessibilityIssue } from '@/utils/accessibilityUtils';
 import { AlertCircle, CheckCircle2, ClipboardList, X } from 'lucide-react';
 
@@ -14,6 +14,9 @@ export function AccessibilityAudit() {
   const [open, setOpen] = useState(false);
   const [issues, setIssues] = useState<AccessibilityIssue[]>([]);
   const [busy, setBusy] = useState(false);
+  const titleId = useId();
+  const descId = useId();
+  const trapRef = useFocusTrap(open);
 
   const run = useCallback(() => {
     setBusy(true);
@@ -22,9 +25,10 @@ export function AccessibilityAudit() {
       setIssues(found);
       setBusy(false);
       const level = getWCAGLevel(found);
+      const critical = found.filter((i) => i.severity === 'critical').length;
       announce(
         `Audit complete. ${found.length} findings. WCAG estimate ${level}.`,
-        found.length ? 'assertive' : 'polite',
+        critical > 0 ? 'assertive' : 'polite',
       );
     });
   }, [runPageAudit, announce]);
@@ -33,6 +37,18 @@ export function AccessibilityAudit() {
     if (!open) return;
     run();
   }, [open, run]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open]);
 
   const level = getWCAGLevel(issues);
 
@@ -43,9 +59,10 @@ export function AccessibilityAudit() {
         className="fixed bottom-4 left-4 z-[9998] flex h-12 w-12 items-center justify-center rounded-full border border-amber-300 bg-amber-500 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:border-amber-600 dark:bg-amber-600 dark:focus:ring-offset-gray-950"
         aria-label="Open accessibility audit (development only)"
         aria-expanded={open}
+        aria-controls="a11y-audit-dialog"
         onClick={() => setOpen((o) => !o)}
       >
-        <ClipboardList size={22} aria-hidden />
+        <ClipboardList size={22} aria-hidden="true" />
       </button>
 
       {open ? (
@@ -56,13 +73,21 @@ export function AccessibilityAudit() {
             onClick={() => setOpen(false)}
           />
           <section
+            id="a11y-audit-dialog"
+            ref={trapRef as RefObject<HTMLElement>}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="a11y-audit-title"
-            className="fixed bottom-20 left-4 z-[9998] flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),22rem)] flex-col rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+            aria-labelledby={titleId}
+            aria-describedby={descId}
+            aria-busy={busy}
+            className="fixed bottom-20 left-4 z-[9998] flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),22rem)] flex-col rounded-xl border border-gray-200 bg-white shadow-2xl outline-none dark:border-gray-700 dark:bg-gray-900"
           >
+            <p id={descId} className="sr-only">
+              Automated accessibility scan of the page. Results are heuristic and must be verified
+              manually with keyboard and screen reader testing.
+            </p>
             <header className="flex items-center justify-between gap-2 border-b border-gray-100 px-3 py-2 dark:border-gray-800">
-              <h2 id="a11y-audit-title" className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+              <h2 id={titleId} className="text-sm font-semibold text-gray-900 dark:text-gray-50">
                 A11y audit
               </h2>
               <button
@@ -71,7 +96,7 @@ export function AccessibilityAudit() {
                 aria-label="Close audit panel"
                 onClick={() => setOpen(false)}
               >
-                <X size={18} aria-hidden />
+                <X size={18} aria-hidden="true" />
               </button>
             </header>
 
@@ -100,12 +125,17 @@ export function AccessibilityAudit() {
                 {busy ? 'Scanning…' : 'Run again'}
               </button>
 
-              <div className="min-h-0 flex-1 overflow-y-auto text-sm">
+              <div
+                className="min-h-0 flex-1 overflow-y-auto text-sm"
+                role="region"
+                aria-label="Scan results"
+                tabIndex={0}
+              >
                 {busy ? (
                   <p className="text-gray-500 dark:text-gray-400">Scanning DOM…</p>
                 ) : issues.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-6 text-center text-gray-600 dark:text-gray-400">
-                    <CheckCircle2 className="text-green-600" size={36} aria-hidden />
+                    <CheckCircle2 className="text-green-600" size={36} aria-hidden="true" />
                     <p>No issues flagged by automated checks.</p>
                   </div>
                 ) : (
@@ -119,7 +149,7 @@ export function AccessibilityAudit() {
                           <AlertCircle
                             className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
                             size={16}
-                            aria-hidden
+                            aria-hidden="true"
                           />
                           <div>
                             <p className="font-medium text-gray-900 dark:text-gray-100">
