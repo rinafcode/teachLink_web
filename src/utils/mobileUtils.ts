@@ -1,6 +1,9 @@
 export const isMobileDevice = (): boolean => {
   if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.innerWidth <= 768
+  );
 };
 
 export const calculateSwipeDirection = (
@@ -8,7 +11,7 @@ export const calculateSwipeDirection = (
   startY: number,
   endX: number,
   endY: number,
-  threshold = 50
+  threshold = 50,
 ): 'LEFT' | 'RIGHT' | 'UP' | 'DOWN' | null => {
   const diffX = endX - startX;
   const diffY = endY - startY;

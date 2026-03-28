@@ -100,8 +100,10 @@ export const CollaborativeEditing: React.FC<CollaborativeEditingProps> = ({
         </div>
 
         {/* Count badge */}
-        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
-                        bg-indigo-900/50 text-indigo-300 border border-indigo-700/40">
+        <div
+          className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                        bg-indigo-900/50 text-indigo-300 border border-indigo-700/40"
+        >
           <Users className="w-3 h-3" />
           {activeCount} live
         </div>

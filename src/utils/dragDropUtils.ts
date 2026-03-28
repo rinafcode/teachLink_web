@@ -94,10 +94,7 @@ export const moveItemBetweenZones = (
   };
 };
 
-export const createInitialState = (
-  zones: DragDropZone[],
-  items: DragDropItem[],
-): DragDropState => {
+export const createInitialState = (zones: DragDropZone[], items: DragDropItem[]): DragDropState => {
   const state: DragDropState = {};
 
   zones.forEach((zone) => {

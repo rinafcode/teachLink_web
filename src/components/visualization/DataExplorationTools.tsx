@@ -260,9 +260,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
 
       {/* Data Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 overflow-x-auto">
-        <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-          Data Table
-        </h4>
+        <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Data Table</h4>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700">

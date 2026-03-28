@@ -32,6 +32,15 @@ import {
 } from 'recharts';
 import { ChartData, ChartType, CHART_COLOR_PALETTE } from '@/utils/visualizationUtils';
 
+function pickColor(value: string | string[] | undefined, index: number): string {
+  if (value === undefined) {
+    return CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length];
+  }
+  return Array.isArray(value)
+    ? value[0] ?? CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]
+    : value;
+}
+
 export interface InteractiveChartLibraryProps {
   data: ChartData;
   chartType: ChartType;
@@ -67,12 +76,13 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
   });
 
   // Transform data for pie/doughnut charts
-  const pieData = data.datasets[0]?.data.map((value, index) => ({
-    name: data.labels[index],
-    value,
-  })) || [];
+  const pieData =
+    data.datasets[0]?.data.map((value, index) => ({
+      name: data.labels[index],
+      value,
+    })) || [];
 
-  const handleClick = (data: any, index: number) => {
+  const handleAdaptedClick = (data: unknown, index: number) => {
     setActiveIndex(index);
     onDataPointClick?.(data);
   };
@@ -92,10 +102,10 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
                 key={dataset.label}
                 type="monotone"
                 dataKey={dataset.label}
-                stroke={dataset.borderColor || CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]}
+                stroke={pickColor(dataset.borderColor, index)}
                 strokeWidth={2}
                 dot={{ r: 4 }}
-                activeDot={{ r: 6, onClick: handleClick }}
+                activeDot={{ r: 6 }}
                 isAnimationActive={animated}
               />
             ))}
@@ -114,8 +124,8 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
               <Bar
                 key={dataset.label}
                 dataKey={dataset.label}
-                fill={dataset.backgroundColor || CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]}
-                onClick={handleClick}
+                fill={pickColor(dataset.backgroundColor, index)}
+                onClick={handleAdaptedClick}
                 isAnimationActive={animated}
               />
             ))}
@@ -135,8 +145,8 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
                 key={dataset.label}
                 type="monotone"
                 dataKey={dataset.label}
-                stroke={dataset.borderColor || CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]}
-                fill={dataset.backgroundColor || CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]}
+                stroke={pickColor(dataset.borderColor, index)}
+                fill={pickColor(dataset.backgroundColor, index)}
                 fillOpacity={0.6}
                 isAnimationActive={animated}
               />
@@ -158,7 +168,7 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
               innerRadius={chartType === 'doughnut' ? 60 : 0}
               fill="#8884d8"
               dataKey="value"
-              onClick={handleClick}
+              onClick={handleAdaptedClick}
               isAnimationActive={animated}
             >
               {pieData.map((entry, index) => (
@@ -186,7 +196,7 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
                 key={dataset.label}
                 name={dataset.label}
                 data={transformedData}
-                fill={dataset.backgroundColor || CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]}
+                fill={pickColor(dataset.backgroundColor, index)}
                 isAnimationActive={animated}
               />
             ))}
@@ -206,8 +216,8 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
                 key={dataset.label}
                 name={dataset.label}
                 dataKey={dataset.label}
-                stroke={dataset.borderColor || CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]}
-                fill={dataset.backgroundColor || CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]}
+                stroke={pickColor(dataset.borderColor, index)}
+                fill={pickColor(dataset.backgroundColor, index)}
                 fillOpacity={0.6}
                 isAnimationActive={animated}
               />
@@ -223,9 +233,7 @@ export const InteractiveChartLibrary: React.FC<InteractiveChartLibraryProps> = (
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 ${className}`}>
       {title && (
-        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-          {title}
-        </h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">{title}</h3>
       )}
       <ResponsiveContainer width="100%" height={height}>
         {renderChart()}

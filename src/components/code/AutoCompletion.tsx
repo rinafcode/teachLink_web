@@ -31,9 +31,7 @@ export const AutoCompletion: React.FC<AutoCompletionProps> = ({
   onToggle,
   onSelect,
 }) => {
-  const suggestions = enabled && word
-    ? getAutoCompletionSuggestions(language, word)
-    : [];
+  const suggestions = enabled && word ? getAutoCompletionSuggestions(language, word) : [];
 
   return (
     <div className="relative flex items-center gap-2">
@@ -72,7 +70,9 @@ export const AutoCompletion: React.FC<AutoCompletionProps> = ({
                              hover:bg-white/5 transition-colors group"
                 >
                   <span
-                    className={`text-[10px] font-mono font-bold w-6 text-center flex-shrink-0 ${KIND_COLORS[s.kind]}`}
+                    className={`text-[10px] font-mono font-bold w-6 text-center flex-shrink-0 ${
+                      KIND_COLORS[s.kind]
+                    }`}
                   >
                     {KIND_LABELS[s.kind]}
                   </span>

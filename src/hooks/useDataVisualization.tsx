@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import io from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 import {
   ChartData,
   ChartType,
@@ -66,7 +67,7 @@ const defaultConfig: VisualizationConfig = {
 };
 
 export const useDataVisualization = (
-  options: UseDataVisualizationOptions = {}
+  options: UseDataVisualizationOptions = {},
 ): UseDataVisualizationReturn => {
   const {
     initialData = null,
@@ -93,11 +94,12 @@ export const useDataVisualization = (
    */
   useEffect(() => {
     if (!websocketUrl || !config.realTimeEnabled) {
-      return;
+      return undefined;
     }
 
+    let socket: Socket | null = null;
     try {
-      const socket = io(websocketUrl, {
+      socket = io(websocketUrl, {
         transports: ['websocket'],
         reconnection: true,
         reconnectionDelay: 1000,
@@ -142,49 +144,16 @@ export const useDataVisualization = (
       });
 
       socketRef.current = socket;
-
-      return () => {
-        socket.disconnect();
-        socketRef.current = null;
-      };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'WebSocket connection failed');
+      return undefined;
     }
-  }, [websocketUrl, config.realTimeEnabled]);
-
-  /**
-   * Auto-refresh data at specified interval
-   */
-  useEffect(() => {
-    if (!autoRefresh) {
-      return;
-    }
-
-    refreshTimerRef.current = setInterval(() => {
-      refreshData();
-    }, refreshInterval);
 
     return () => {
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
+      socket?.disconnect();
+      socketRef.current = null;
     };
-  }, [autoRefresh, refreshInterval]);
-
-  /**
-   * Update chart data
-   */
-  const updateData = useCallback((newData: ChartData) => {
-    setData(newData);
-    setError(null);
-  }, []);
-
-  /**
-   * Update visualization configuration
-   */
-  const updateConfig = useCallback((newConfig: Partial<VisualizationConfig>) => {
-    setConfig((prev) => ({ ...prev, ...newConfig }));
-  }, []);
+  }, [websocketUrl, config.realTimeEnabled]);
 
   /**
    * Refresh data (placeholder for API call)
@@ -209,6 +178,40 @@ export const useDataVisualization = (
   }, []);
 
   /**
+   * Auto-refresh data at specified interval
+   */
+  useEffect(() => {
+    if (!autoRefresh) {
+      return;
+    }
+
+    refreshTimerRef.current = setInterval(() => {
+      refreshData();
+    }, refreshInterval);
+
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, [autoRefresh, refreshInterval, refreshData]);
+
+  /**
+   * Update chart data
+   */
+  const updateData = useCallback((newData: ChartData) => {
+    setData(newData);
+    setError(null);
+  }, []);
+
+  /**
+   * Update visualization configuration
+   */
+  const updateConfig = useCallback((newConfig: Partial<VisualizationConfig>) => {
+    setConfig((prev) => ({ ...prev, ...newConfig }));
+  }, []);
+
+  /**
    * Export data to file
    */
   const exportData = useCallback(
@@ -228,32 +231,29 @@ export const useDataVisualization = (
         setError(err instanceof Error ? err.message : 'Export failed');
       }
     },
-    [data]
+    [data],
   );
 
   /**
    * Add a new data point
    */
-  const addDataPoint = useCallback(
-    (datasetIndex: number, value: number, label?: string) => {
-      setData((prevData) => {
-        if (!prevData) return prevData;
+  const addDataPoint = useCallback((datasetIndex: number, value: number, label?: string) => {
+    setData((prevData) => {
+      if (!prevData) return prevData;
 
-        const newData = { ...prevData };
+      const newData = { ...prevData };
 
-        if (label && !newData.labels.includes(label)) {
-          newData.labels.push(label);
-        }
+      if (label && !newData.labels.includes(label)) {
+        newData.labels.push(label);
+      }
 
-        if (newData.datasets[datasetIndex]) {
-          newData.datasets[datasetIndex].data.push(value);
-        }
+      if (newData.datasets[datasetIndex]) {
+        newData.datasets[datasetIndex].data.push(value);
+      }
 
-        return newData;
-      });
-    },
-    []
-  );
+      return newData;
+    });
+  }, []);
 
   /**
    * Remove a data point

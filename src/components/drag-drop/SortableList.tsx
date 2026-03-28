@@ -36,18 +36,21 @@ const SortableRow = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: DRAG_ITEM_TYPE,
-    item: {
-      id: item.id,
-      fromZoneId: zoneId,
-      index,
-      title: item.title,
-    } satisfies DragPayload,
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
+  const [{ isDragging }, drag] = useDrag(
+    () => ({
+      type: DRAG_ITEM_TYPE,
+      item: {
+        id: item.id,
+        fromZoneId: zoneId,
+        index,
+        title: item.title,
+      } satisfies DragPayload,
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
     }),
-  }), [index, item.id, item.title, zoneId]);
+    [index, item.id, item.title, zoneId],
+  );
 
   const [, drop] = useDrop(
     () => ({

@@ -94,7 +94,7 @@ export const formatPercentage = (value: number, decimals = 1): string => {
  */
 export const generateDateLabels = (
   range: TimeRange,
-  format: 'short' | 'long' = 'short'
+  format: 'short' | 'long' = 'short',
 ): string[] => {
   const now = new Date();
   const labels: string[] = [];
@@ -122,9 +122,7 @@ export const generateDateLabels = (
     date.setDate(date.getDate() - i);
 
     if (format === 'short') {
-      labels.push(
-        date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      );
+      labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
     } else {
       labels.push(date.toLocaleDateString('en-US'));
     }
@@ -139,7 +137,7 @@ export const generateDateLabels = (
 export const aggregateByTimePeriod = (
   data: DataPoint[],
   period: 'day' | 'week' | 'month',
-  aggregation: AggregationType = 'sum'
+  aggregation: AggregationType = 'sum',
 ): DataPoint[] => {
   const grouped = new Map<string, number[]>();
 
@@ -198,10 +196,7 @@ export const aggregateByTimePeriod = (
 /**
  * Calculate moving average
  */
-export const calculateMovingAverage = (
-  data: number[],
-  windowSize: number
-): number[] => {
+export const calculateMovingAverage = (data: number[], windowSize: number): number[] => {
   const result: number[] = [];
 
   for (let i = 0; i < data.length; i++) {
@@ -231,7 +226,7 @@ export const normalizeData = (data: number[]): number[] => {
  * Calculate trend (positive, negative, or neutral)
  */
 export const calculateTrend = (
-  data: number[]
+  data: number[],
 ): { direction: 'up' | 'down' | 'neutral'; percentage: number } => {
   if (data.length < 2) {
     return { direction: 'neutral', percentage: 0 };
@@ -293,21 +288,15 @@ export const exportToJSON = (data: ChartData, filename: string): void => {
 /**
  * Generate sample data for testing
  */
-export const generateSampleData = (
-  points: number,
-  min = 0,
-  max = 100
-): number[] => {
-  return Array.from({ length: points }, () =>
-    Math.floor(Math.random() * (max - min + 1) + min)
-  );
+export const generateSampleData = (points: number, min = 0, max = 100): number[] => {
+  return Array.from({ length: points }, () => Math.floor(Math.random() * (max - min + 1) + min));
 };
 
 /**
  * Calculate statistics for a dataset
  */
 export const calculateStatistics = (
-  data: number[]
+  data: number[],
 ): {
   mean: number;
   median: number;
@@ -328,13 +317,9 @@ export const calculateStatistics = (
   data.forEach((value) => {
     frequency.set(value, (frequency.get(value) || 0) + 1);
   });
-  const mode = Array.from(frequency.entries()).reduce((a, b) =>
-    b[1] > a[1] ? b : a
-  )[0];
+  const mode = Array.from(frequency.entries()).reduce((a, b) => (b[1] > a[1] ? b : a))[0];
 
-  const variance =
-    data.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
-    data.length;
+  const variance = data.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / data.length;
   const stdDev = Math.sqrt(variance);
 
   return {

@@ -24,8 +24,7 @@ const LANGUAGE_REGISTRY: LanguageConfig[] = [
     extension: 'js',
     monacoLanguage: 'javascript',
     color: '#f7df1e',
-    defaultCode:
-      '// JavaScript\nconsole.log("Hello, World!");\n',
+    defaultCode: '// JavaScript\nconsole.log("Hello, World!");\n',
   },
   {
     id: 'typescript',
@@ -68,8 +67,7 @@ const LANGUAGE_REGISTRY: LanguageConfig[] = [
     extension: 'rs',
     monacoLanguage: 'rust',
     color: '#dea584',
-    defaultCode:
-      '// Rust\nfn main() {\n    println!("Hello, World!");\n}\n',
+    defaultCode: '// Rust\nfn main() {\n    println!("Hello, World!");\n}\n',
   },
   {
     id: 'go',
@@ -95,8 +93,7 @@ const LANGUAGE_REGISTRY: LanguageConfig[] = [
     extension: 'css',
     monacoLanguage: 'css',
     color: '#563d7c',
-    defaultCode:
-      '/* CSS */\nbody {\n  font-family: sans-serif;\n  color: #333;\n}\n',
+    defaultCode: '/* CSS */\nbody {\n  font-family: sans-serif;\n  color: #333;\n}\n',
   },
   {
     id: 'sql',
@@ -104,17 +101,14 @@ const LANGUAGE_REGISTRY: LanguageConfig[] = [
     extension: 'sql',
     monacoLanguage: 'sql',
     color: '#e38c00',
-    defaultCode:
-      '-- SQL\nSELECT * FROM users WHERE active = 1;\n',
+    defaultCode: '-- SQL\nSELECT * FROM users WHERE active = 1;\n',
   },
 ];
 
 export const getAllLanguages = (): LanguageConfig[] => LANGUAGE_REGISTRY;
 
 export const getLanguageConfig = (languageId: string): LanguageConfig => {
-  return (
-    LANGUAGE_REGISTRY.find((l) => l.id === languageId) ?? LANGUAGE_REGISTRY[0]
-  );
+  return LANGUAGE_REGISTRY.find((l) => l.id === languageId) ?? LANGUAGE_REGISTRY[0];
 };
 
 // ---------------------------------------------------------------------------
@@ -130,58 +124,208 @@ export interface CompletionSuggestion {
 
 const SUGGESTIONS_MAP: Record<string, CompletionSuggestion[]> = {
   javascript: [
-    { label: 'console.log', kind: 'function', detail: 'Log to console', insertText: 'console.log($1)' },
+    {
+      label: 'console.log',
+      kind: 'function',
+      detail: 'Log to console',
+      insertText: 'console.log($1)',
+    },
     { label: 'const', kind: 'keyword', detail: 'Declare constant', insertText: 'const $1 = $2;' },
     { label: 'let', kind: 'keyword', detail: 'Declare variable', insertText: 'let $1 = $2;' },
-    { label: 'function', kind: 'snippet', detail: 'Function declaration', insertText: 'function $1($2) {\n  $3\n}' },
-    { label: 'arrow function', kind: 'snippet', detail: 'Arrow function', insertText: 'const $1 = ($2) => {\n  $3\n};' },
+    {
+      label: 'function',
+      kind: 'snippet',
+      detail: 'Function declaration',
+      insertText: 'function $1($2) {\n  $3\n}',
+    },
+    {
+      label: 'arrow function',
+      kind: 'snippet',
+      detail: 'Arrow function',
+      insertText: 'const $1 = ($2) => {\n  $3\n};',
+    },
     { label: 'if', kind: 'keyword', detail: 'If statement', insertText: 'if ($1) {\n  $2\n}' },
-    { label: 'for', kind: 'keyword', detail: 'For loop', insertText: 'for (let $1 = 0; $1 < $2; $1++) {\n  $3\n}' },
-    { label: 'forEach', kind: 'function', detail: 'Array forEach', insertText: '$1.forEach(($2) => {\n  $3\n});' },
-    { label: 'Promise', kind: 'snippet', detail: 'Promise constructor', insertText: 'new Promise((resolve, reject) => {\n  $1\n})' },
-    { label: 'async/await', kind: 'snippet', detail: 'Async function', insertText: 'async function $1($2) {\n  const $3 = await $4;\n}' },
+    {
+      label: 'for',
+      kind: 'keyword',
+      detail: 'For loop',
+      insertText: 'for (let $1 = 0; $1 < $2; $1++) {\n  $3\n}',
+    },
+    {
+      label: 'forEach',
+      kind: 'function',
+      detail: 'Array forEach',
+      insertText: '$1.forEach(($2) => {\n  $3\n});',
+    },
+    {
+      label: 'Promise',
+      kind: 'snippet',
+      detail: 'Promise constructor',
+      insertText: 'new Promise((resolve, reject) => {\n  $1\n})',
+    },
+    {
+      label: 'async/await',
+      kind: 'snippet',
+      detail: 'Async function',
+      insertText: 'async function $1($2) {\n  const $3 = await $4;\n}',
+    },
   ],
   typescript: [
-    { label: 'interface', kind: 'keyword', detail: 'Interface declaration', insertText: 'interface $1 {\n  $2\n}' },
+    {
+      label: 'interface',
+      kind: 'keyword',
+      detail: 'Interface declaration',
+      insertText: 'interface $1 {\n  $2\n}',
+    },
     { label: 'type', kind: 'keyword', detail: 'Type alias', insertText: 'type $1 = $2;' },
-    { label: 'enum', kind: 'keyword', detail: 'Enum declaration', insertText: 'enum $1 {\n  $2\n}' },
-    { label: 'console.log', kind: 'function', detail: 'Log to console', insertText: 'console.log($1)' },
-    { label: 'const', kind: 'keyword', detail: 'Declare constant', insertText: 'const $1: $2 = $3;' },
-    { label: 'function', kind: 'snippet', detail: 'Function', insertText: 'function $1($2: $3): $4 {\n  $5\n}' },
-    { label: 'React.FC', kind: 'snippet', detail: 'React function component', insertText: 'const $1: React.FC<$2> = ($3) => {\n  return (\n    $4\n  );\n};' },
-    { label: 'useState', kind: 'function', detail: 'React useState hook', insertText: 'const [$1, set$1] = useState<$2>($3);' },
+    {
+      label: 'enum',
+      kind: 'keyword',
+      detail: 'Enum declaration',
+      insertText: 'enum $1 {\n  $2\n}',
+    },
+    {
+      label: 'console.log',
+      kind: 'function',
+      detail: 'Log to console',
+      insertText: 'console.log($1)',
+    },
+    {
+      label: 'const',
+      kind: 'keyword',
+      detail: 'Declare constant',
+      insertText: 'const $1: $2 = $3;',
+    },
+    {
+      label: 'function',
+      kind: 'snippet',
+      detail: 'Function',
+      insertText: 'function $1($2: $3): $4 {\n  $5\n}',
+    },
+    {
+      label: 'React.FC',
+      kind: 'snippet',
+      detail: 'React function component',
+      insertText: 'const $1: React.FC<$2> = ($3) => {\n  return (\n    $4\n  );\n};',
+    },
+    {
+      label: 'useState',
+      kind: 'function',
+      detail: 'React useState hook',
+      insertText: 'const [$1, set$1] = useState<$2>($3);',
+    },
   ],
   python: [
     { label: 'print', kind: 'function', detail: 'Print to stdout', insertText: 'print($1)' },
-    { label: 'def', kind: 'keyword', detail: 'Function definition', insertText: 'def $1($2):\n    $3' },
-    { label: 'class', kind: 'keyword', detail: 'Class definition', insertText: 'class $1:\n    def __init__(self):\n        $2' },
+    {
+      label: 'def',
+      kind: 'keyword',
+      detail: 'Function definition',
+      insertText: 'def $1($2):\n    $3',
+    },
+    {
+      label: 'class',
+      kind: 'keyword',
+      detail: 'Class definition',
+      insertText: 'class $1:\n    def __init__(self):\n        $2',
+    },
     { label: 'if', kind: 'keyword', detail: 'If statement', insertText: 'if $1:\n    $2' },
     { label: 'for', kind: 'keyword', detail: 'For loop', insertText: 'for $1 in $2:\n    $3' },
     { label: 'import', kind: 'keyword', detail: 'Import module', insertText: 'import $1' },
-    { label: 'list comprehension', kind: 'snippet', detail: 'List comprehension', insertText: '[$1 for $2 in $3]' },
+    {
+      label: 'list comprehension',
+      kind: 'snippet',
+      detail: 'List comprehension',
+      insertText: '[$1 for $2 in $3]',
+    },
     { label: 'lambda', kind: 'keyword', detail: 'Lambda function', insertText: 'lambda $1: $2' },
   ],
   java: [
-    { label: 'System.out.println', kind: 'function', detail: 'Print line', insertText: 'System.out.println($1);' },
-    { label: 'public class', kind: 'snippet', detail: 'Class declaration', insertText: 'public class $1 {\n    $2\n}' },
-    { label: 'public static void main', kind: 'snippet', detail: 'Main method', insertText: 'public static void main(String[] args) {\n    $1\n}' },
-    { label: 'for', kind: 'keyword', detail: 'For loop', insertText: 'for (int $1 = 0; $1 < $2; $1++) {\n    $3\n}' },
-    { label: 'ArrayList', kind: 'snippet', detail: 'ArrayList declaration', insertText: 'ArrayList<$1> $2 = new ArrayList<>();' },
+    {
+      label: 'System.out.println',
+      kind: 'function',
+      detail: 'Print line',
+      insertText: 'System.out.println($1);',
+    },
+    {
+      label: 'public class',
+      kind: 'snippet',
+      detail: 'Class declaration',
+      insertText: 'public class $1 {\n    $2\n}',
+    },
+    {
+      label: 'public static void main',
+      kind: 'snippet',
+      detail: 'Main method',
+      insertText: 'public static void main(String[] args) {\n    $1\n}',
+    },
+    {
+      label: 'for',
+      kind: 'keyword',
+      detail: 'For loop',
+      insertText: 'for (int $1 = 0; $1 < $2; $1++) {\n    $3\n}',
+    },
+    {
+      label: 'ArrayList',
+      kind: 'snippet',
+      detail: 'ArrayList declaration',
+      insertText: 'ArrayList<$1> $2 = new ArrayList<>();',
+    },
   ],
   rust: [
-    { label: 'println!', kind: 'function', detail: 'Print macro', insertText: 'println!("{}", $1);' },
-    { label: 'fn', kind: 'keyword', detail: 'Function', insertText: 'fn $1($2) -> $3 {\n    $4\n}' },
+    {
+      label: 'println!',
+      kind: 'function',
+      detail: 'Print macro',
+      insertText: 'println!("{}", $1);',
+    },
+    {
+      label: 'fn',
+      kind: 'keyword',
+      detail: 'Function',
+      insertText: 'fn $1($2) -> $3 {\n    $4\n}',
+    },
     { label: 'let', kind: 'keyword', detail: 'Variable binding', insertText: 'let $1 = $2;' },
-    { label: 'let mut', kind: 'keyword', detail: 'Mutable binding', insertText: 'let mut $1 = $2;' },
-    { label: 'match', kind: 'keyword', detail: 'Match expression', insertText: 'match $1 {\n    $2 => $3,\n    _ => $4,\n}' },
-    { label: 'struct', kind: 'keyword', detail: 'Struct definition', insertText: 'struct $1 {\n    $2: $3,\n}' },
+    {
+      label: 'let mut',
+      kind: 'keyword',
+      detail: 'Mutable binding',
+      insertText: 'let mut $1 = $2;',
+    },
+    {
+      label: 'match',
+      kind: 'keyword',
+      detail: 'Match expression',
+      insertText: 'match $1 {\n    $2 => $3,\n    _ => $4,\n}',
+    },
+    {
+      label: 'struct',
+      kind: 'keyword',
+      detail: 'Struct definition',
+      insertText: 'struct $1 {\n    $2: $3,\n}',
+    },
   ],
   go: [
     { label: 'fmt.Println', kind: 'function', detail: 'Print line', insertText: 'fmt.Println($1)' },
-    { label: 'func', kind: 'keyword', detail: 'Function', insertText: 'func $1($2) $3 {\n    $4\n}' },
+    {
+      label: 'func',
+      kind: 'keyword',
+      detail: 'Function',
+      insertText: 'func $1($2) $3 {\n    $4\n}',
+    },
     { label: 'var', kind: 'keyword', detail: 'Variable declaration', insertText: 'var $1 $2 = $3' },
-    { label: 'for', kind: 'keyword', detail: 'For loop', insertText: 'for $1 := 0; $1 < $2; $1++ {\n    $3\n}' },
-    { label: 'goroutine', kind: 'snippet', detail: 'Goroutine', insertText: 'go func() {\n    $1\n}()' },
+    {
+      label: 'for',
+      kind: 'keyword',
+      detail: 'For loop',
+      insertText: 'for $1 := 0; $1 < $2; $1++ {\n    $3\n}',
+    },
+    {
+      label: 'goroutine',
+      kind: 'snippet',
+      detail: 'Goroutine',
+      insertText: 'go func() {\n    $1\n}()',
+    },
   ],
 };
 
@@ -250,7 +394,11 @@ export const validateCode = (languageId: string, code: string): ValidationResult
   if (languageId === 'javascript' || languageId === 'typescript') {
     lines.forEach((line, i) => {
       // Very lightweight checks
-      if (/\bconsole\.log\s*\(/.test(line) && !line.trimEnd().endsWith(';') && !line.trimEnd().endsWith(',')) {
+      if (
+        /\bconsole\.log\s*\(/.test(line) &&
+        !line.trimEnd().endsWith(';') &&
+        !line.trimEnd().endsWith(',')
+      ) {
         // not enforced as error — just a style note, skip
       }
       if (/^\s*eval\s*\(/.test(line)) {
@@ -308,10 +456,7 @@ const EXECUTION_TEMPLATES: Record<string, (code: string) => ExecutionResult> = {
   },
 };
 
-export const simulateCodeExecution = (
-  languageId: string,
-  code: string,
-): ExecutionResult => {
+export const simulateCodeExecution = (languageId: string, code: string): ExecutionResult => {
   const validation = validateCode(languageId, code);
 
   if (!validation.isValid && validation.errors[0]?.message === 'Code is empty') {
@@ -328,7 +473,9 @@ export const simulateCodeExecution = (
 
   // Generic fallback for compiled languages (simulated)
   return {
-    stdout: `[Simulated] ${getLanguageConfig(languageId).label} program ran successfully.\nHello, World!`,
+    stdout: `[Simulated] ${
+      getLanguageConfig(languageId).label
+    } program ran successfully.\nHello, World!`,
     stderr: '',
     exitCode: 0,
     executionTimeMs: Math.floor(Math.random() * 200) + 50,
