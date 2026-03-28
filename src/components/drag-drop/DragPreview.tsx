@@ -21,8 +21,8 @@ export const DragPreview = ({ getItemTitle }: DragPreviewProps) => {
   const title = getItemTitle
     ? getItemTitle(item)
     : typeof item === 'object' && item !== null && 'title' in item
-      ? String((item as { title: string }).title)
-      : 'Moving item';
+    ? String((item as { title: string }).title)
+    : 'Moving item';
 
   return (
     <div className="pointer-events-none fixed inset-0 z-50">
