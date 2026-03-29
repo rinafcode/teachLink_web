@@ -2,7 +2,12 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useOfflineMode } from '../hooks/useOfflineMode';
-import { OfflineCourseRecord, OfflineProgressRecord, SyncConflict, SyncResult } from '../services/offlineSync';
+import {
+  OfflineCourseRecord,
+  OfflineProgressRecord,
+  SyncConflict,
+  SyncResult,
+} from '../services/offlineSync';
 
 interface OfflineModeContextType {
   isOnline: boolean;
@@ -18,11 +23,19 @@ interface OfflineModeContextType {
   };
   enableOfflineMode: () => Promise<void>;
   disableOfflineMode: () => Promise<void>;
-  downloadCourse: (course: Parameters<ReturnType<typeof useOfflineMode>['downloadCourse']>[0], options?: Parameters<ReturnType<typeof useOfflineMode>['downloadCourse']>[1]) => Promise<OfflineCourseRecord>;
+  downloadCourse: (
+    course: Parameters<ReturnType<typeof useOfflineMode>['downloadCourse']>[0],
+    options?: Parameters<ReturnType<typeof useOfflineMode>['downloadCourse']>[1],
+  ) => Promise<OfflineCourseRecord>;
   removeCourse: (courseId: string) => Promise<void>;
   getOfflineCourses: () => Promise<OfflineCourseRecord[]>;
   isCourseAvailableOffline: (courseId: string) => Promise<boolean>;
-  saveProgress: (courseId: string, moduleId: string, progress: number, completed?: boolean) => Promise<OfflineProgressRecord>;
+  saveProgress: (
+    courseId: string,
+    moduleId: string,
+    progress: number,
+    completed?: boolean,
+  ) => Promise<OfflineProgressRecord>;
   syncOfflineData: () => Promise<SyncResult>;
   clearOfflineData: () => Promise<void>;
   refreshStorageUsage: () => Promise<void>;
@@ -60,7 +73,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     getPendingSyncCount,
     getPendingConflicts,
     resolveAllConflicts,
-    getCachedAssetUrl
+    getCachedAssetUrl,
   } = useOfflineMode();
 
   useEffect(() => {
@@ -86,10 +99,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
 
   const refreshSyncStatus = useCallback(async () => {
     if (!isOfflineModeEnabled) return;
-    const [count, conflicts] = await Promise.all([
-      getPendingSyncCount(),
-      getPendingConflicts()
-    ]);
+    const [count, conflicts] = await Promise.all([getPendingSyncCount(), getPendingConflicts()]);
 
     setPendingSyncCount(count);
     setPendingConflicts(conflicts);
@@ -113,6 +123,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     if (isOnline && isOfflineModeEnabled && pendingSyncCount > 0) {
       syncOfflineData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline, isOfflineModeEnabled, pendingSyncCount]);
 
   const enableOfflineMode = useCallback(async () => {
@@ -146,7 +157,13 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
   const syncOfflineData = useCallback(async () => {
     if (!isOnline || !isInitialized) {
       setSyncStatus('error');
-      return { success: false, syncedItems: 0, conflicts: [], errors: ['Offline'], lastSyncTime: new Date().toISOString() } as SyncResult;
+      return {
+        success: false,
+        syncedItems: 0,
+        conflicts: [],
+        errors: ['Offline'],
+        lastSyncTime: new Date().toISOString(),
+      } as SyncResult;
     }
 
     try {
@@ -159,7 +176,13 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     } catch (error) {
       console.error('Failed to sync offline data:', error);
       setSyncStatus('error');
-      return { success: false, syncedItems: 0, conflicts: [], errors: [String(error)], lastSyncTime: new Date().toISOString() } as SyncResult;
+      return {
+        success: false,
+        syncedItems: 0,
+        conflicts: [],
+        errors: [String(error)],
+        lastSyncTime: new Date().toISOString(),
+      } as SyncResult;
     }
   }, [isOnline, isInitialized, syncData, refreshSyncStatus]);
 
@@ -175,55 +198,54 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     }
   }, [cleanupOfflineMode, initializeOfflineMode]);
 
-  const value = useMemo(() => ({
-    isOnline,
-    isOfflineModeEnabled,
-    syncStatus,
-    lastSyncTime,
-    pendingSyncCount,
-    pendingConflicts,
-    storageUsage,
-    enableOfflineMode,
-    disableOfflineMode,
-    downloadCourse,
-    removeCourse,
-    getOfflineCourses,
-    isCourseAvailableOffline,
-    saveProgress,
-    syncOfflineData,
-    clearOfflineData,
-    refreshStorageUsage,
-    refreshSyncStatus,
-    resolveAllConflicts,
-    getCachedAssetUrl
-  }), [
-    isOnline,
-    isOfflineModeEnabled,
-    syncStatus,
-    lastSyncTime,
-    pendingSyncCount,
-    pendingConflicts,
-    storageUsage,
-    enableOfflineMode,
-    disableOfflineMode,
-    downloadCourse,
-    removeCourse,
-    getOfflineCourses,
-    isCourseAvailableOffline,
-    saveProgress,
-    syncOfflineData,
-    clearOfflineData,
-    refreshStorageUsage,
-    refreshSyncStatus,
-    resolveAllConflicts,
-    getCachedAssetUrl
-  ]);
-
-  return (
-    <OfflineModeContext.Provider value={value}>
-      {children}
-    </OfflineModeContext.Provider>
+  const value = useMemo(
+    () => ({
+      isOnline,
+      isOfflineModeEnabled,
+      syncStatus,
+      lastSyncTime,
+      pendingSyncCount,
+      pendingConflicts,
+      storageUsage,
+      enableOfflineMode,
+      disableOfflineMode,
+      downloadCourse,
+      removeCourse,
+      getOfflineCourses,
+      isCourseAvailableOffline,
+      saveProgress,
+      syncOfflineData,
+      clearOfflineData,
+      refreshStorageUsage,
+      refreshSyncStatus,
+      resolveAllConflicts,
+      getCachedAssetUrl,
+    }),
+    [
+      isOnline,
+      isOfflineModeEnabled,
+      syncStatus,
+      lastSyncTime,
+      pendingSyncCount,
+      pendingConflicts,
+      storageUsage,
+      enableOfflineMode,
+      disableOfflineMode,
+      downloadCourse,
+      removeCourse,
+      getOfflineCourses,
+      isCourseAvailableOffline,
+      saveProgress,
+      syncOfflineData,
+      clearOfflineData,
+      refreshStorageUsage,
+      refreshSyncStatus,
+      resolveAllConflicts,
+      getCachedAssetUrl,
+    ],
   );
+
+  return <OfflineModeContext.Provider value={value}>{children}</OfflineModeContext.Provider>;
 };
 
 export const useOfflineModeContext = () => {

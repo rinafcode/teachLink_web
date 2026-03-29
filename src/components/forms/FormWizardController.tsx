@@ -31,7 +31,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
   allowNonLinearNavigation = false,
   validateBeforeNext = true,
   className = '',
-  children
+  children,
 }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -45,7 +45,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
     totalSteps: steps.length,
     completedSteps,
     canGoNext: currentStepIndex < steps.length - 1,
-    canGoPrevious: currentStepIndex > 0
+    canGoPrevious: currentStepIndex > 0,
   };
 
   useEffect(() => {
@@ -154,9 +154,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
         isStepAccessible={isStepAccessible}
       />
 
-      <div className="wizard-content">
-        {children(currentStep, progress)}
-      </div>
+      <div className="wizard-content">{children(currentStep, progress)}</div>
 
       <WizardNavigation
         progress={progress}
@@ -183,7 +181,7 @@ const WizardProgressBar: React.FC<WizardProgressBarProps> = ({
   currentStep,
   completedSteps,
   onStepClick,
-  isStepAccessible
+  isStepAccessible,
 }) => {
   return (
     <div className="wizard-progress-bar">
@@ -195,12 +193,12 @@ const WizardProgressBar: React.FC<WizardProgressBarProps> = ({
         return (
           <div
             key={step.id}
-            className={`progress-step ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''} ${isAccessible ? 'accessible' : 'locked'}`}
+            className={`progress-step ${isCurrent ? 'current' : ''} ${
+              isCompleted ? 'completed' : ''
+            } ${isAccessible ? 'accessible' : 'locked'}`}
             onClick={() => isAccessible && onStepClick(index)}
           >
-            <div className="step-indicator">
-              {isCompleted ? '✓' : index + 1}
-            </div>
+            <div className="step-indicator">{isCompleted ? '✓' : index + 1}</div>
             <div className="step-label">{step.title}</div>
           </div>
         );
@@ -224,15 +222,11 @@ const WizardNavigation: React.FC<WizardNavigationProps> = ({
   onPrevious,
   onComplete,
   isValidating,
-  isLastStep
+  isLastStep,
 }) => {
   return (
     <div className="wizard-navigation">
-      <button
-        onClick={onPrevious}
-        disabled={!progress.canGoPrevious}
-        className="btn-previous"
-      >
+      <button onClick={onPrevious} disabled={!progress.canGoPrevious} className="btn-previous">
         ← Previous
       </button>
 
@@ -241,11 +235,7 @@ const WizardNavigation: React.FC<WizardNavigationProps> = ({
       </div>
 
       {isLastStep ? (
-        <button
-          onClick={onComplete}
-          disabled={isValidating}
-          className="btn-complete"
-        >
+        <button onClick={onComplete} disabled={isValidating} className="btn-complete">
           {isValidating ? 'Validating...' : 'Complete'}
         </button>
       ) : (
@@ -270,7 +260,7 @@ interface WizardStepContentProps {
 export const WizardStepContent: React.FC<WizardStepContentProps> = ({
   step,
   children,
-  className = ''
+  className = '',
 }) => {
   return (
     <div className={`wizard-step-content ${className}`}>

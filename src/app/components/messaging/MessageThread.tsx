@@ -73,6 +73,7 @@ function AttachmentPreview({ attachment }: { attachment: Attachment }) {
     <div className="mt-2 rounded-lg overflow-hidden">
       {isImage ? (
         <div className="relative group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={attachment.url}
             alt={attachment.name}
@@ -180,7 +181,7 @@ export default function MessageThread({
         }
       });
     },
-    [onMarkAsRead]
+    [onMarkAsRead],
   );
 
   useEffect(() => {
@@ -216,7 +217,8 @@ export default function MessageThread({
             Welcome to Messages
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Select a conversation from the sidebar to start messaging with your instructors and peers.
+            Select a conversation from the sidebar to start messaging with your instructors and
+            peers.
           </p>
         </div>
       </div>
@@ -241,9 +243,7 @@ export default function MessageThread({
           )}
         </div>
         <div className="flex-1">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
-            {participantName}
-          </h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{participantName}</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             {participantOnline ? (
               <span className="text-emerald-500 font-medium">Online</span>
@@ -279,13 +279,13 @@ export default function MessageThread({
         {isLoadingMessages && messages.length === 0 && (
           <div className="space-y-4 py-4">
             {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}
-              >
+              <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
                 <div
-                  className={`rounded-2xl animate-pulse ${i % 2 === 0 ? 'bg-gray-200 dark:bg-gray-700' : 'bg-violet-200 dark:bg-violet-800/50'
-                    }`}
+                  className={`rounded-2xl animate-pulse ${
+                    i % 2 === 0
+                      ? 'bg-gray-200 dark:bg-gray-700'
+                      : 'bg-violet-200 dark:bg-violet-800/50'
+                  }`}
                   style={{
                     width: `${150 + Math.random() * 200}px`,
                     height: `${40 + Math.random() * 30}px`,
@@ -301,23 +301,18 @@ export default function MessageThread({
           const isOwn = message.senderId === 'current-user';
           const showDateDivider =
             index === 0 ||
-            !isSameDay(
-              new Date(message.timestamp),
-              new Date(messages[index - 1].timestamp)
-            );
+            !isSameDay(new Date(message.timestamp), new Date(messages[index - 1].timestamp));
           const showAvatar =
             !isOwn &&
-            (index === messages.length - 1 ||
-              messages[index + 1]?.senderId !== message.senderId);
+            (index === messages.length - 1 || messages[index + 1]?.senderId !== message.senderId);
 
           return (
             <div key={message.id} data-message-id={message.id}>
-              {showDateDivider && (
-                <DateDivider date={new Date(message.timestamp)} />
-              )}
+              {showDateDivider && <DateDivider date={new Date(message.timestamp)} />}
               <div
-                className={`flex items-end gap-2 mb-1 ${isOwn ? 'justify-end' : 'justify-start'
-                  } animate-fadeIn`}
+                className={`flex items-end gap-2 mb-1 ${
+                  isOwn ? 'justify-end' : 'justify-start'
+                } animate-fadeIn`}
               >
                 {/* Avatar Space */}
                 {!isOwn && (
@@ -337,18 +332,20 @@ export default function MessageThread({
 
                 {/* Message Bubble */}
                 <div
-                  className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 hover:shadow-md ${isOwn
+                  className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 hover:shadow-md ${
+                    isOwn
                       ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-br-md'
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-md'
-                    }`}
+                  }`}
                 >
                   {/* Message Content */}
                   {message.content && (
                     <div
-                      className={`text-sm leading-relaxed break-words ${isOwn
+                      className={`text-sm leading-relaxed break-words ${
+                        isOwn
                           ? '[&_p]:text-white [&_strong]:text-white [&_li]:text-white/90 [&_a]:text-violet-200 [&_a]:underline'
                           : '[&_a]:text-violet-600 [&_a]:underline'
-                        }`}
+                      }`}
                       dangerouslySetInnerHTML={{
                         __html: message.content,
                       }}
@@ -362,12 +359,14 @@ export default function MessageThread({
 
                   {/* Timestamp & Read Receipt */}
                   <div
-                    className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'
-                      }`}
+                    className={`flex items-center gap-1 mt-1 ${
+                      isOwn ? 'justify-end' : 'justify-start'
+                    }`}
                   >
                     <span
-                      className={`text-[10px] ${isOwn ? 'text-white/60' : 'text-gray-400 dark:text-gray-500'
-                        }`}
+                      className={`text-[10px] ${
+                        isOwn ? 'text-white/60' : 'text-gray-400 dark:text-gray-500'
+                      }`}
                     >
                       {format(new Date(message.timestamp), 'h:mm a')}
                     </span>

@@ -34,9 +34,7 @@ export function I18nExample() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <h2 className="font-semibold mb-2">{t('common.loading')}</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Current Language: {language}
-          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Current Language: {language}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Direction: {direction} {isRTL ? '(RTL)' : '(LTR)'}
           </p>
@@ -44,29 +42,19 @@ export function I18nExample() {
 
         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <h2 className="font-semibold mb-2">{t('common.edit')}</h2>
-          <p className="text-sm">
-            Date: {formatDate(sampleDate)}
-          </p>
-          <p className="text-sm">
-            Relative: {formatRelativeTime(sampleDate)}
-          </p>
+          <p className="text-sm">Date: {formatDate(sampleDate)}</p>
+          <p className="text-sm">Relative: {formatRelativeTime(sampleDate)}</p>
         </div>
 
         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <h2 className="font-semibold mb-2">{t('common.save')}</h2>
-          <p className="text-sm">
-            Currency: {formatCurrency(sampleAmount)}
-          </p>
-          <p className="text-sm">
-            Number: {formatNumber(sampleNumber)}
-          </p>
+          <p className="text-sm">Currency: {formatCurrency(sampleAmount)}</p>
+          <p className="text-sm">Number: {formatNumber(sampleNumber)}</p>
         </div>
 
         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <h2 className="font-semibold mb-2">{t('navigation.home')}</h2>
-          <p className="text-sm">
-            {t('validation.minLength', { min: 8 })}
-          </p>
+          <p className="text-sm">{t('validation.minLength', { min: 8 })}</p>
         </div>
       </div>
     </div>

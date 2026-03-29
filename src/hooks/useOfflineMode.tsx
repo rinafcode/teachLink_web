@@ -7,7 +7,7 @@ import {
   OfflineCourseRecord,
   OfflineProgressRecord,
   SyncResult,
-  SyncConflict
+  SyncConflict,
 } from '../services/offlineSync';
 
 export interface DownloadCourseInput {
@@ -66,62 +66,67 @@ export const useOfflineMode = () => {
     setIsInitialized(false);
   }, []);
 
-  const downloadCourse = useCallback(async (course: DownloadCourseInput, options: DownloadOptions = {}) => {
-    if (!storageRef.current) throw new Error('Offline mode not initialized');
+  const downloadCourse = useCallback(
+    async (course: DownloadCourseInput, options: DownloadOptions = {}) => {
+      if (!storageRef.current) throw new Error('Offline mode not initialized');
 
-    const assets = course.assets ?? [];
-    const downloadedAssets: OfflineCourseRecord['assets'] = [];
+      const assets = course.assets ?? [];
+      const downloadedAssets: OfflineCourseRecord['assets'] = [];
 
-    if (assets.length > 0) {
-      let completed = 0;
-      for (const asset of assets) {
-        const response = await fetch(asset.url);
-        const blob = await response.blob();
-        const mimeType = asset.mimeType || blob.type || 'application/octet-stream';
-        const assetRecord = {
-          id: `${course.id}-${completed}-${Math.random().toString(36).slice(2)}`,
-          courseId: course.id,
-          url: asset.url,
-          mimeType,
-          sizeBytes: blob.size,
-          data: blob,
-          downloadedAt: new Date().toISOString()
-        };
+      if (assets.length > 0) {
+        let completed = 0;
+        for (const asset of assets) {
+          const response = await fetch(asset.url);
+          const blob = await response.blob();
+          const mimeType = asset.mimeType || blob.type || 'application/octet-stream';
+          const assetRecord = {
+            id: `${course.id}-${completed}-${Math.random().toString(36).slice(2)}`,
+            courseId: course.id,
+            url: asset.url,
+            mimeType,
+            sizeBytes: blob.size,
+            data: blob,
+            downloadedAt: new Date().toISOString(),
+          };
 
-        await storageRef.current.saveAsset(assetRecord);
-        downloadedAssets.push({
-          id: assetRecord.id,
-          url: assetRecord.url,
-          mimeType: assetRecord.mimeType,
-          sizeBytes: assetRecord.sizeBytes
-        });
+          await storageRef.current.saveAsset(assetRecord);
+          downloadedAssets.push({
+            id: assetRecord.id,
+            url: assetRecord.url,
+            mimeType: assetRecord.mimeType,
+            sizeBytes: assetRecord.sizeBytes,
+          });
 
-        completed += 1;
-        const progress = Math.round((completed / assets.length) * 100);
-        options.onProgress?.(progress);
+          completed += 1;
+          const progress = Math.round((completed / assets.length) * 100);
+          options.onProgress?.(progress);
+        }
+      } else {
+        options.onProgress?.(100);
       }
-    } else {
-      options.onProgress?.(100);
-    }
 
-    const sizeBytes = downloadedAssets.reduce((acc, asset) => acc + asset.sizeBytes, 0) || estimateCourseSize(course);
+      const sizeBytes =
+        downloadedAssets.reduce((acc, asset) => acc + asset.sizeBytes, 0) ||
+        estimateCourseSize(course);
 
-    const record: OfflineCourseRecord = {
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      thumbnailUrl: course.thumbnailUrl,
-      durationSeconds: course.durationSeconds,
-      modules: course.modules,
-      assets: downloadedAssets,
-      downloadedAt: new Date().toISOString(),
-      lastAccessedAt: new Date().toISOString(),
-      sizeBytes
-    };
+      const record: OfflineCourseRecord = {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        thumbnailUrl: course.thumbnailUrl,
+        durationSeconds: course.durationSeconds,
+        modules: course.modules,
+        assets: downloadedAssets,
+        downloadedAt: new Date().toISOString(),
+        lastAccessedAt: new Date().toISOString(),
+        sizeBytes,
+      };
 
-    await storageRef.current.saveCourse(record);
-    return record;
-  }, []);
+      await storageRef.current.saveCourse(record);
+      return record;
+    },
+    [],
+  );
 
   const removeCourse = useCallback(async (courseId: string) => {
     if (!storageRef.current) return;
@@ -139,29 +144,32 @@ export const useOfflineMode = () => {
     return Boolean(course);
   }, []);
 
-  const saveProgress = useCallback(async (
-    courseId: string,
-    moduleId: string,
-    progress: number,
-    completed = false
-  ): Promise<OfflineProgressRecord> => {
-    if (!storageRef.current || !syncRef.current) {
-      throw new Error('Offline mode not initialized');
-    }
+  const saveProgress = useCallback(
+    async (
+      courseId: string,
+      moduleId: string,
+      progress: number,
+      completed = false,
+    ): Promise<OfflineProgressRecord> => {
+      if (!storageRef.current || !syncRef.current) {
+        throw new Error('Offline mode not initialized');
+      }
 
-    const record: OfflineProgressRecord = {
-      courseId,
-      moduleId,
-      progress,
-      completed,
-      updatedAt: new Date().toISOString(),
-      synced: false
-    };
+      const record: OfflineProgressRecord = {
+        courseId,
+        moduleId,
+        progress,
+        completed,
+        updatedAt: new Date().toISOString(),
+        synced: false,
+      };
 
-    await storageRef.current.saveProgress(record);
-    await syncRef.current.enqueue('course_progress', record);
-    return record;
-  }, []);
+      await storageRef.current.saveProgress(record);
+      await syncRef.current.enqueue('course_progress', record);
+      return record;
+    },
+    [],
+  );
 
   const getProgress = useCallback(async (courseId: string, moduleId: string) => {
     if (!storageRef.current) return undefined;
@@ -193,16 +201,24 @@ export const useOfflineMode = () => {
     return await syncRef.current.getPendingConflicts();
   }, []);
 
-  const resolveConflict = useCallback(async (conflictId: string, resolution: 'local' | 'remote' | 'merge') => {
-    if (!syncRef.current) return;
-    await syncRef.current.resolveConflict(conflictId, resolution);
-  }, []);
+  const resolveConflict = useCallback(
+    async (conflictId: string, resolution: 'local' | 'remote' | 'merge') => {
+      if (!syncRef.current) return;
+      await syncRef.current.resolveConflict(conflictId, resolution);
+    },
+    [],
+  );
 
-  const resolveAllConflicts = useCallback(async (resolution: 'local' | 'remote' | 'merge' = 'local') => {
-    if (!syncRef.current) return;
-    const conflicts = await syncRef.current.getPendingConflicts();
-    await Promise.all(conflicts.map(conflict => syncRef.current?.resolveConflict(conflict.id, resolution)));
-  }, []);
+  const resolveAllConflicts = useCallback(
+    async (resolution: 'local' | 'remote' | 'merge' = 'local') => {
+      if (!syncRef.current) return;
+      const conflicts = await syncRef.current.getPendingConflicts();
+      await Promise.all(
+        conflicts.map((conflict) => syncRef.current?.resolveConflict(conflict.id, resolution)),
+      );
+    },
+    [],
+  );
 
   const getCachedAssetUrl = useCallback(async (url: string): Promise<string | null> => {
     if (!storageRef.current) return null;
@@ -211,41 +227,44 @@ export const useOfflineMode = () => {
     return URL.createObjectURL(asset.data);
   }, []);
 
-  return useMemo(() => ({
-    isInitialized,
-    initializeOfflineMode,
-    cleanupOfflineMode,
-    downloadCourse,
-    removeCourse,
-    getOfflineCourses,
-    isCourseAvailableOffline,
-    saveProgress,
-    getProgress,
-    getCourseProgress,
-    syncData,
-    getStorageInfo,
-    getPendingSyncCount,
-    getPendingConflicts,
-    resolveConflict,
-    resolveAllConflicts,
-    getCachedAssetUrl
-  }), [
-    isInitialized,
-    initializeOfflineMode,
-    cleanupOfflineMode,
-    downloadCourse,
-    removeCourse,
-    getOfflineCourses,
-    isCourseAvailableOffline,
-    saveProgress,
-    getProgress,
-    getCourseProgress,
-    syncData,
-    getStorageInfo,
-    getPendingSyncCount,
-    getPendingConflicts,
-    resolveConflict,
-    resolveAllConflicts,
-    getCachedAssetUrl
-  ]);
+  return useMemo(
+    () => ({
+      isInitialized,
+      initializeOfflineMode,
+      cleanupOfflineMode,
+      downloadCourse,
+      removeCourse,
+      getOfflineCourses,
+      isCourseAvailableOffline,
+      saveProgress,
+      getProgress,
+      getCourseProgress,
+      syncData,
+      getStorageInfo,
+      getPendingSyncCount,
+      getPendingConflicts,
+      resolveConflict,
+      resolveAllConflicts,
+      getCachedAssetUrl,
+    }),
+    [
+      isInitialized,
+      initializeOfflineMode,
+      cleanupOfflineMode,
+      downloadCourse,
+      removeCourse,
+      getOfflineCourses,
+      isCourseAvailableOffline,
+      saveProgress,
+      getProgress,
+      getCourseProgress,
+      syncData,
+      getStorageInfo,
+      getPendingSyncCount,
+      getPendingConflicts,
+      resolveConflict,
+      resolveAllConflicts,
+      getCachedAssetUrl,
+    ],
+  );
 };

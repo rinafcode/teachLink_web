@@ -34,7 +34,9 @@ export interface WaitForOptions {
  */
 export function renderWithProviders(
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'> & { wrapper?: (props: { children: ReactNode }) => ReactElement }
+  options?: Omit<RenderOptions, 'wrapper'> & {
+    wrapper?: (props: { children: ReactNode }) => ReactElement;
+  },
 ): RenderResult & { user: ReturnType<typeof userEvent.setup> } {
   const user = userEvent.setup();
   const result = render(ui, { ...options });
@@ -81,7 +83,7 @@ export function createTestUser(overrides?: Partial<TestUser>): TestUser {
   };
 }
 
-// Performance Helpers 
+// Performance Helpers
 
 /**
  * Measures how long a synchronous or async callback takes.
@@ -97,12 +99,12 @@ export async function measureExecutionTime(fn: () => void | Promise<void>): Prom
  */
 export async function expectWithinBudget(
   fn: () => void | Promise<void>,
-  budgetMs: number
+  budgetMs: number,
 ): Promise<void> {
   const elapsed = await measureExecutionTime(fn);
   if (elapsed > budgetMs) {
     throw new Error(
-      `Performance budget exceeded: expected ≤${budgetMs}ms but got ${elapsed.toFixed(2)}ms`
+      `Performance budget exceeded: expected ≤${budgetMs}ms but got ${elapsed.toFixed(2)}ms`,
     );
   }
 }
@@ -114,7 +116,7 @@ export async function expectWithinBudget(
  */
 export async function waitForCondition(
   predicate: () => boolean | Promise<boolean>,
-  { timeout = 3000, interval = 50 }: WaitForOptions = {}
+  { timeout = 3000, interval = 50 }: WaitForOptions = {},
 ): Promise<void> {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
@@ -137,10 +139,18 @@ export const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: vi.fn((key: string) => { delete store[key]; }),
-    clear: vi.fn(() => { store = {}; }),
-    get length() { return Object.keys(store).length; },
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    get length() {
+      return Object.keys(store).length;
+    },
     key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
   };
 })();
@@ -166,6 +176,10 @@ export function createMockFile(name = 'test.txt', content = 'hello', type = 'tex
  */
 export function simulateResize(width: number, height: number): void {
   Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: width });
-  Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: height });
+  Object.defineProperty(window, 'innerHeight', {
+    writable: true,
+    configurable: true,
+    value: height,
+  });
   window.dispatchEvent(new Event('resize'));
 }

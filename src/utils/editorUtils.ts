@@ -1,4 +1,3 @@
-
 import { Editor } from '@tiptap/react';
 
 export interface EditorTemplate {
@@ -28,11 +27,11 @@ export const TEMPLATES: EditorTemplate[] = [
     content: '<h3>Quiz</h3><ul><li>[ ] Option A</li><li>[ ] Option B</li></ul>',
   },
   {
-      id: 'video-placeholder',
-      name: 'Video Placeholder',
-      description: 'Placeholder text for a video link to be embedded',
-      content: '<p><em>[Insert Video Link Here]</em></p>'
-  }
+    id: 'video-placeholder',
+    name: 'Video Placeholder',
+    description: 'Placeholder text for a video link to be embedded',
+    content: '<p><em>[Insert Video Link Here]</em></p>',
+  },
 ];
 
 export const insertTemplate = (editor: Editor, templateId: string) => {

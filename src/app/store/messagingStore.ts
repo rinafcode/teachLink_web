@@ -266,7 +266,8 @@ const MOCK_MESSAGES: Record<string, Message[]> = {
     {
       id: 'msg-1-3',
       conversationId: 'conv-1',
-      content: 'I\'m confused about the difference between supervised and unsupervised learning in the context of our project. The instructions mention using both approaches but I\'m not sure when to apply each one.',
+      content:
+        "I'm confused about the difference between supervised and unsupervised learning in the context of our project. The instructions mention using both approaches but I'm not sure when to apply each one.",
       senderId: 'current-user',
       senderName: 'You',
       senderAvatar: '',
@@ -278,7 +279,8 @@ const MOCK_MESSAGES: Record<string, Message[]> = {
     {
       id: 'msg-1-4',
       conversationId: 'conv-1',
-      content: '<p>Great question! Here\'s a quick breakdown:</p><ul><li><strong>Supervised learning</strong>: Use this when you have labeled data. For our project, this applies to the classification task.</li><li><strong>Unsupervised learning</strong>: Use this for the clustering portion where we don\'t have predefined categories.</li></ul><p>Does that help clarify things?</p>',
+      content:
+        "<p>Great question! Here's a quick breakdown:</p><ul><li><strong>Supervised learning</strong>: Use this when you have labeled data. For our project, this applies to the classification task.</li><li><strong>Unsupervised learning</strong>: Use this for the clustering portion where we don't have predefined categories.</li></ul><p>Does that help clarify things?</p>",
       senderId: 'instructor-1',
       senderName: 'Dr. Sarah Chen',
       senderAvatar: '',
@@ -290,7 +292,8 @@ const MOCK_MESSAGES: Record<string, Message[]> = {
     {
       id: 'msg-1-5',
       conversationId: 'conv-1',
-      content: 'Yes! That makes much more sense now. One more thing - for the evaluation metrics, should we use accuracy or F1 score?',
+      content:
+        'Yes! That makes much more sense now. One more thing - for the evaluation metrics, should we use accuracy or F1 score?',
       senderId: 'current-user',
       senderName: 'You',
       senderAvatar: '',
@@ -316,7 +319,8 @@ const MOCK_MESSAGES: Record<string, Message[]> = {
     {
       id: 'msg-2-1',
       conversationId: 'conv-2',
-      content: 'Prof. Wilson, I\'ve submitted my assignment. Could you take a look when you have time?',
+      content:
+        "Prof. Wilson, I've submitted my assignment. Could you take a look when you have time?",
       senderId: 'current-user',
       senderName: 'You',
       senderAvatar: '',
@@ -328,7 +332,8 @@ const MOCK_MESSAGES: Record<string, Message[]> = {
     {
       id: 'msg-2-2',
       conversationId: 'conv-2',
-      content: 'Your assignment submission looks good. I have a few suggestions for improvement in the methodology section.',
+      content:
+        'Your assignment submission looks good. I have a few suggestions for improvement in the methodology section.',
       senderId: 'instructor-2',
       senderName: 'Prof. James Wilson',
       senderAvatar: '',
@@ -356,7 +361,7 @@ const MOCK_MESSAGES: Record<string, Message[]> = {
     {
       id: 'msg-4-1',
       conversationId: 'conv-4',
-      content: 'Hi Maria! Do you have the notes from last week\'s lecture?',
+      content: "Hi Maria! Do you have the notes from last week's lecture?",
       senderId: 'current-user',
       senderName: 'You',
       senderAvatar: '',
@@ -470,7 +475,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
                   : conv.unreadCount,
               updatedAt: new Date(),
             }
-          : conv
+          : conv,
       ),
     }));
   },
@@ -480,7 +485,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     if (!state.currentConversation) return;
 
     const otherParticipant = state.currentConversation.participants.find(
-      (p) => p.id !== 'current-user'
+      (p) => p.id !== 'current-user',
     );
 
     const newMessage: Message = {
@@ -508,7 +513,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     setTimeout(() => {
       set((state) => ({
         messages: state.messages.map((msg) =>
-          msg.id === newMessage.id ? { ...msg, delivered: true } : msg
+          msg.id === newMessage.id ? { ...msg, delivered: true } : msg,
         ),
       }));
     }, 500);
@@ -517,7 +522,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     setTimeout(() => {
       set((state) => ({
         messages: state.messages.map((msg) =>
-          msg.id === newMessage.id ? { ...msg, read: true } : msg
+          msg.id === newMessage.id ? { ...msg, read: true } : msg,
         ),
       }));
     }, 3000);
@@ -531,11 +536,11 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       setTimeout(() => {
         get().removeTypingUser(otherParticipant.id);
         const replies = [
-          'That\'s a great point! Let me think about that.',
-          'Thanks for sharing. I\'ll get back to you shortly.',
+          "That's a great point! Let me think about that.",
+          "Thanks for sharing. I'll get back to you shortly.",
           'Interesting! Would you like to discuss this further?',
-          'Got it, I\'ll review this and respond soon.',
-          'Great question! Here\'s what I think...',
+          "Got it, I'll review this and respond soon.",
+          "Great question! Here's what I think...",
         ];
         const replyMessage: Message = {
           id: `msg-${Date.now()}-reply`,
@@ -559,9 +564,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
 
   markMessageAsRead: (messageId) => {
     set((state) => ({
-      messages: state.messages.map((msg) =>
-        msg.id === messageId ? { ...msg, read: true } : msg
-      ),
+      messages: state.messages.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg)),
     }));
 
     const socket = get().socket;
@@ -573,12 +576,12 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   markConversationAsRead: (conversationId) => {
     set((state) => ({
       conversations: state.conversations.map((conv) =>
-        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv,
       ),
       messages: state.messages.map((msg) =>
         msg.conversationId === conversationId && msg.senderId !== 'current-user'
           ? { ...msg, read: true }
-          : msg
+          : msg,
       ),
     }));
   },
@@ -613,12 +616,9 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     get().loadConversations();
 
     try {
-      const socket = io(
-        process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001',
-        {
-          autoConnect: false, // Don't auto-connect for demo
-        }
-      );
+      const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001', {
+        autoConnect: false, // Don't auto-connect for demo
+      });
 
       socket.on('connect', () => {
         set({ isConnected: true });
@@ -681,10 +681,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       const pageMessages = allMessages.slice(start, end);
 
       set((state) => ({
-        messages:
-          page === 1
-            ? pageMessages
-            : [...pageMessages, ...state.messages],
+        messages: page === 1 ? pageMessages : [...pageMessages, ...state.messages],
         isLoadingMessages: false,
         hasMoreMessages: start > 0,
         currentPage: page,

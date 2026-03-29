@@ -38,7 +38,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   onRemove,
   size,
   onChangeSize,
-  onUpdateTitle
+  onUpdateTitle,
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [tempTitle, setTempTitle] = useState(title);
@@ -63,7 +63,9 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
         if (!cancelled) setIsLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   // Mock activity data matching Figma design
@@ -75,7 +77,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
       description: '',
       timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       color: 'text-green-600 dark:text-green-400',
-      dotColor: 'bg-green-500'
+      dotColor: 'bg-green-500',
     },
     {
       id: '2',
@@ -84,7 +86,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
       description: '',
       timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
       color: 'text-blue-600 dark:text-blue-400',
-      dotColor: 'bg-blue-500'
+      dotColor: 'bg-blue-500',
     },
     {
       id: '3',
@@ -93,7 +95,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
       description: '',
       timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
       color: 'text-yellow-600 dark:text-yellow-400',
-      dotColor: 'bg-yellow-500'
+      dotColor: 'bg-yellow-500',
     },
     {
       id: '4',
@@ -102,7 +104,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
       description: '',
       timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
       color: 'text-purple-600 dark:text-purple-400',
-      dotColor: 'bg-purple-500'
+      dotColor: 'bg-purple-500',
     },
     {
       id: '5',
@@ -111,8 +113,8 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
       description: '',
       timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       color: 'text-red-600 dark:text-red-400',
-      dotColor: 'bg-red-500'
-    }
+      dotColor: 'bg-red-500',
+    },
   ];
 
   const formatTimeAgo = (date: Date) => {
@@ -138,7 +140,9 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">{activities.length} activities</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {activities.length} activities
+            </span>
             <button
               onClick={onToggleCollapse}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -239,9 +243,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
         {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
         {/* Subtitle */}
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Your recent platform activity.
-        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Your recent platform activity.</p>
 
         {/* Activities List */}
         <div className="space-y-4">
@@ -258,9 +260,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
 
               {/* Activity Content */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900 dark:text-gray-50">
-                  {activity.title}
-                </p>
+                <p className="text-sm text-gray-900 dark:text-gray-50">{activity.title}</p>
                 <div className="flex items-center space-x-1 mt-1">
                   <Clock size={12} className="text-gray-400" />
                   <span className="text-xs text-gray-500 dark:text-gray-400">

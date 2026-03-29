@@ -69,7 +69,7 @@ export function I18nProvider({
 
       try {
         const loadedTranslations = await loadTranslations(language);
-        
+
         if (!cancelled) {
           setTranslations(loadedTranslations);
           setIsLoading(false);
@@ -95,13 +95,14 @@ export function I18nProvider({
     if (savedLanguage && savedLanguage !== language) {
       setLanguage(savedLanguage);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Save language preference to localStorage
   const changeLanguage = useCallback(async (newLanguage: LanguageCode) => {
     setLanguage(newLanguage);
     localStorage.setItem('i18n:language', newLanguage);
-    
+
     // Update HTML lang attribute
     if (typeof document !== 'undefined') {
       document.documentElement.lang = newLanguage;
@@ -109,17 +110,14 @@ export function I18nProvider({
   }, []);
 
   // Get cultural preferences
-  const preferences = useMemo(
-    () => getCulturalPreferences(language),
-    [language]
-  );
+  const preferences = useMemo(() => getCulturalPreferences(language), [language]);
 
   // Translation function
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) => {
       return getTranslation(translations, key, params);
     },
-    [translations]
+    [translations],
   );
 
   // Formatting functions
@@ -127,56 +125,56 @@ export function I18nProvider({
     (date: Date | string | number, formatStr?: string) => {
       return formatDateUtil(date, language, formatStr);
     },
-    [language]
+    [language],
   );
 
   const formatRelativeTimeFn = useCallback(
     (date: Date | string | number) => {
       return formatRelativeTime(date, language);
     },
-    [language]
+    [language],
   );
 
   const formatNumber = useCallback(
     (value: number, options?: Intl.NumberFormatOptions) => {
       return formatNumberUtil(value, language, options);
     },
-    [language]
+    [language],
   );
 
   const formatCurrency = useCallback(
     (amount: number, currency?: string) => {
       return formatCurrencyUtil(amount, language, currency);
     },
-    [language]
+    [language],
   );
 
   const formatPercentageFn = useCallback(
     (value: number, decimals = 0) => {
       return formatPercentage(value, language, decimals);
     },
-    [language]
+    [language],
   );
 
   const parseNumberFn = useCallback(
     (value: string) => {
       return parseNumber(value, language);
     },
-    [language]
+    [language],
   );
 
   const formatFileSizeFn = useCallback(
     (bytes: number) => {
       return formatFileSize(bytes, language);
     },
-    [language]
+    [language],
   );
 
   const formatDurationFn = useCallback(
     (seconds: number) => {
       return formatDuration(seconds, language);
     },
-    [language]
+    [language],
   );
 
   const direction = useMemo(() => getTextDirection(language), [language]);

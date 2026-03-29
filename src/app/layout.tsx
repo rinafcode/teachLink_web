@@ -1,29 +1,34 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/lib/theme-provider";
-import { OfflineModeProvider } from "./context/OfflineModeContext";
-import { I18nProvider } from "@/hooks/useInternationalization";
-import { InternationalizationEngine } from "@/components/i18n/InternationalizationEngine";
-import { CulturalAdaptationManager } from "@/components/i18n/CulturalAdaptationManager";
-import PerformanceMonitor from "@/components/performance/PerformanceMonitor";
-import PrefetchingEngine from "@/components/performance/PrefetchingEngine";
-import StateManagerIntegration from "@/components/state/StateManagerIntegration";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '@/lib/theme-provider';
+import DynamicTheming from '@/components/theme/DynamicTheming';
+import { OfflineModeProvider } from './context/OfflineModeContext';
+import { I18nProvider } from '@/hooks/useInternationalization';
+import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
+import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
+import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
+import { PerformanceMonitoringProvider } from '@/hooks/usePerformanceMonitoring';
+import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
+import StateManagerIntegration from '@/components/state/StateManagerIntegration';
+import { PWAManager } from '@/components/pwa/PWAManager';
+import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 
 const geistSans = Geist({
-// ...
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  // ...
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "TeachLink - Offline Learning Platform",
-  description: "Learn anywhere, anytime with offline capabilities",
+  title: 'TeachLink - Offline Learning Platform',
+  description: 'Learn anywhere, anytime with offline capabilities',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -40,12 +45,18 @@ export default function RootLayout({
           <InternationalizationEngine>
             <CulturalAdaptationManager>
               <ThemeProvider>
-                <OfflineModeProvider>
-                  <StateManagerIntegration />
-                  <PerformanceMonitor />
-                  <PrefetchingEngine />
-                  {children}
-                </OfflineModeProvider>
+                <DynamicTheming />
+                <AccessibilityProvider pageLabel="TeachLink — main application">
+                  <PerformanceMonitoringProvider>
+                    <OfflineModeProvider>
+                      <PWAManager />
+                      <StateManagerIntegration />
+                      <PerformanceMonitor />
+                      <PrefetchingEngine />
+                      {children}
+                    </OfflineModeProvider>
+                  </PerformanceMonitoringProvider>
+                </AccessibilityProvider>
               </ThemeProvider>
             </CulturalAdaptationManager>
           </InternationalizationEngine>

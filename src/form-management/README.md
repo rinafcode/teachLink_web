@@ -55,11 +55,13 @@ The system employs dual testing approach:
 ## Development Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Run tests:
+
    ```bash
    npm test
    ```

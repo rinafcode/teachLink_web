@@ -13,12 +13,7 @@ import GroupDiscussionThread from '@/app/components/social/GroupDiscussionThread
 describe('GroupDiscussionThread', () => {
   it('posts content via onPost', () => {
     const onPost = vi.fn();
-    render(
-      <GroupDiscussionThread
-        messages={[]}
-        onPost={onPost}
-      />
-    );
+    render(<GroupDiscussionThread messages={[]} onPost={onPost} />);
 
     fireEvent.change(screen.getByTestId('rte'), { target: { value: '<p>Hello</p>' } });
     fireEvent.click(screen.getByText('Post'));

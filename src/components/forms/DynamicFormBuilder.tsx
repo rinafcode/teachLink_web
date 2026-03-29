@@ -27,7 +27,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   onFieldChange,
   autoSave = false,
   autoSaveInterval = 5000,
-  className = ''
+  className = '',
 }) => {
   const [formConfig, setFormConfig] = useState<FormConfiguration | null>(null);
   const [stateManager] = useState(() => new FormStateManager('dynamic-form'));
@@ -42,19 +42,16 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     try {
       const parsedConfig = typeof config === 'string' ? parser.parse(config) : config;
       const validation = parser.validate(parsedConfig);
-      
+
       if (!validation.isValid) {
         console.error('Invalid form configuration:', validation.errors);
         return;
       }
-      
+
       setFormConfig(parsedConfig);
-      
+
       // Initialize dependencies
-      stateManager.initializeDependencies(
-        parsedConfig.fields,
-        parsedConfig.conditionalLogic || []
-      );
+      stateManager.initializeDependencies(parsedConfig.fields, parsedConfig.conditionalLogic || []);
     } catch (error) {
       console.error('Error parsing form configuration:', error);
     }
@@ -65,7 +62,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     if (!autoSave || !formConfig) return;
 
     autoSaveManager.enableAutoSave(formConfig.id, autoSaveInterval);
-    
+
     const subscription = autoSaveManager.onSaveStatusChange((status) => {
       setSaveStatus(status.status);
     });
@@ -88,7 +85,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   useEffect(() => {
     const subscription = stateManager.subscribeToChanges((event) => {
       setFormState(stateManager.getState());
-      
+
       if (event.type === 'field-change' && event.fieldId && autoSave && formConfig) {
         autoSaveManager.saveNow(formConfig.id, stateManager.getState());
       }
@@ -99,7 +96,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
   const handleFieldChange = async (fieldId: string, value: any) => {
     stateManager.updateField(fieldId, value);
-    
+
     if (onFieldChange) {
       onFieldChange(fieldId, value);
     }
@@ -108,7 +105,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     const validationResult = await validationEngine.validateField(
       fieldId,
       value,
-      stateManager.getState()
+      stateManager.getState(),
     );
     stateManager.setValidationState(fieldId, validationResult);
   };
@@ -119,7 +116,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formConfig) return;
 
     stateManager.setSubmitting(true);
@@ -127,7 +124,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     try {
       // Validate entire form
       const validationResult = await validationEngine.validateForm(stateManager.getState());
-      
+
       if (!validationResult.isValid) {
         console.error('Form validation failed:', validationResult.fieldResults);
         stateManager.setSubmitting(false);
@@ -167,9 +164,9 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
           {field.label}
           {field.required && <span className="required">*</span>}
         </label>
-        
+
         {renderInput(field, value)}
-        
+
         {hasError && (
           <div className="form-error">
             {validation.errors.map((error, idx) => (
@@ -186,18 +183,19 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       id: field.id,
       name: field.id,
       value,
-      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => 
-        handleFieldChange(field.id, e.target.value),
+      onChange: (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+      ) => handleFieldChange(field.id, e.target.value),
       onBlur: () => handleFieldBlur(field.id),
       placeholder: field.placeholder,
       required: field.required,
-      className: 'form-input'
+      className: 'form-input',
     };
 
     switch (field.type) {
       case 'textarea':
         return <textarea {...commonProps} rows={4} />;
-      
+
       case 'select':
         return (
           <select {...commonProps}>
@@ -205,7 +203,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             {/* Options would come from field configuration */}
           </select>
         );
-      
+
       case 'checkbox':
         return (
           <input
@@ -215,14 +213,14 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
             onChange={(e) => handleFieldChange(field.id, e.target.checked)}
           />
         );
-      
+
       case 'radio':
         return (
           <div className="radio-group">
             {/* Radio options would come from field configuration */}
           </div>
         );
-      
+
       default:
         return <input type={field.type} {...commonProps} />;
     }

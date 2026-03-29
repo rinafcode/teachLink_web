@@ -19,4 +19,4 @@ export default function ProfileEditPage() {
       <Toaster position="top-right" />
     </div>
   );
-} 
+}

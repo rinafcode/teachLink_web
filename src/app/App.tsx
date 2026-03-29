@@ -3,19 +3,59 @@ import { VideoPlayer } from './components/video/VideoPlayer';
 
 // Sample transcript data
 const sampleTranscript = [
-  { time: 0, text: "Welcome to this comprehensive tutorial on React development.", speaker: "Instructor" },
-  { time: 5, text: "Today we'll be covering advanced concepts that will help you build better applications.", speaker: "Instructor" },
-  { time: 12, text: "Let's start with the fundamentals of component architecture.", speaker: "Instructor" },
-  { time: 18, text: "Components are the building blocks of React applications.", speaker: "Instructor" },
-  { time: 25, text: "They allow us to create reusable pieces of UI that can be composed together.", speaker: "Instructor" },
-  { time: 32, text: "Now let's look at some practical examples.", speaker: "Instructor" },
-  { time: 40, text: "Here's how you can create a functional component.", speaker: "Instructor" },
-  { time: 48, text: "Notice how we use the useState hook to manage local state.", speaker: "Instructor" },
-  { time: 55, text: "This is a powerful pattern that React provides for state management.", speaker: "Instructor" },
-  { time: 62, text: "Let's move on to more advanced topics like custom hooks.", speaker: "Instructor" },
-  { time: 70, text: "Custom hooks allow you to extract component logic into reusable functions.", speaker: "Instructor" },
-  { time: 78, text: "This makes your code more modular and easier to test.", speaker: "Instructor" },
-  { time: 85, text: "That concludes our tutorial. Thanks for watching!", speaker: "Instructor" }
+  {
+    time: 0,
+    text: 'Welcome to this comprehensive tutorial on React development.',
+    speaker: 'Instructor',
+  },
+  {
+    time: 5,
+    text: "Today we'll be covering advanced concepts that will help you build better applications.",
+    speaker: 'Instructor',
+  },
+  {
+    time: 12,
+    text: "Let's start with the fundamentals of component architecture.",
+    speaker: 'Instructor',
+  },
+  {
+    time: 18,
+    text: 'Components are the building blocks of React applications.',
+    speaker: 'Instructor',
+  },
+  {
+    time: 25,
+    text: 'They allow us to create reusable pieces of UI that can be composed together.',
+    speaker: 'Instructor',
+  },
+  { time: 32, text: "Now let's look at some practical examples.", speaker: 'Instructor' },
+  { time: 40, text: "Here's how you can create a functional component.", speaker: 'Instructor' },
+  {
+    time: 48,
+    text: 'Notice how we use the useState hook to manage local state.',
+    speaker: 'Instructor',
+  },
+  {
+    time: 55,
+    text: 'This is a powerful pattern that React provides for state management.',
+    speaker: 'Instructor',
+  },
+  {
+    time: 62,
+    text: "Let's move on to more advanced topics like custom hooks.",
+    speaker: 'Instructor',
+  },
+  {
+    time: 70,
+    text: 'Custom hooks allow you to extract component logic into reusable functions.',
+    speaker: 'Instructor',
+  },
+  {
+    time: 78,
+    text: 'This makes your code more modular and easier to test.',
+    speaker: 'Instructor',
+  },
+  { time: 85, text: 'That concludes our tutorial. Thanks for watching!', speaker: 'Instructor' },
 ];
 
 function App() {
@@ -35,11 +75,10 @@ function App() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Enhanced Video Player Demo
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Enhanced Video Player Demo</h1>
           <p className="text-gray-600">
-            A comprehensive video player with learning features including bookmarks, notes, and transcript synchronization.
+            A comprehensive video player with learning features including bookmarks, notes, and
+            transcript synchronization.
           </p>
         </div>
 
@@ -128,4 +167,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

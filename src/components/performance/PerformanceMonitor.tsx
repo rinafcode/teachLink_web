@@ -1,53 +1,82 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { measureWebVitals, PerformanceMetric } from '../../utils/performanceUtils';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
+import { formatMetricValue } from '@/utils/performanceUtils';
+import { CoreWebVitals } from './CoreWebVitals';
+
+const showMonitorUi =
+  process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_PERF_MONITOR_UI === 'true';
 
 /**
- * Component to monitor and display performance metrics in real-time.
- * In a production environment, this could be hidden or restricted to admin users.
+ * Subscribes to Core Web Vitals app-wide (via layout). Optional compact overlay in dev / when enabled.
  */
 const PerformanceMonitor: React.FC = () => {
-  const [metrics, setMetrics] = useState<Record<string, PerformanceMetric>>({});
-  const [isVisible, setIsVisible] = useState(false);
+  const { metrics } = usePerformanceMonitoring();
 
-  useEffect(() => {
-    measureWebVitals((metric) => {
-      setMetrics((prev: Record<string, PerformanceMetric>) => ({
-        ...prev,
-        [metric.name]: metric,
-      }));
+  const [expanded, setExpanded] = useState(false);
 
-      // Logic for alerts based on thresholds
-      if (metric.name === 'LCP' && metric.value > 2500) {
-        console.warn(`[Performance Alert] LCP is high: ${metric.value.toFixed(2)}ms`);
-      }
-      if (metric.name === 'FID' && metric.value > 100) {
-        console.warn(`[Performance Alert] FID is high: ${metric.value.toFixed(2)}ms`);
-      }
-    });
-  }, []);
-
-  if (process.env.NODE_ENV === 'production' && !isVisible) return null;
+  if (!showMonitorUi) {
+    return null;
+  }
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 p-4 rounded-lg bg-black/80 text-white text-xs font-mono shadow-xl transition-opacity ${isVisible ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}>
-      <div className="flex justify-between items-center mb-2 border-b border-white/20 pb-1">
-        <span className="font-bold ">🚀 Performance Monitor</span>
-        <button onClick={() => setIsVisible(!isVisible)} className="ml-2 hover:text-blue-400">
-          {isVisible ? 'Hide' : 'Show'}
-        </button>
+    <div
+      className={`fixed bottom-4 right-4 z-50 max-w-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 text-gray-900 dark:text-gray-50 text-xs shadow-xl backdrop-blur-sm transition-all ${
+        expanded ? 'w-[min(100vw-2rem,22rem)]' : 'w-auto'
+      }`}
+    >
+      <div className="flex justify-between items-center gap-2 border-b border-gray-200 dark:border-gray-700 px-3 py-2">
+        <span className="font-semibold">Performance</span>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/performance"
+            className="text-indigo-600 dark:text-indigo-400 hover:underline text-[11px]"
+          >
+            Dashboard
+          </Link>
+          <button
+            type="button"
+            onClick={() => setExpanded((e) => !e)}
+            className="text-[11px] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          >
+            {expanded ? 'Compact' : 'Expand'}
+          </button>
+        </div>
       </div>
-      <div className="space-y-1">
-        {Object.values(metrics).map((metric) => (
-          <div key={metric.name} className="flex justify-between gap-4">
-            <span>{metric.name}:</span>
-            <span className={metric.value > 2000 ? 'text-red-400' : 'text-green-400'}>
-              {metric.value.toFixed(2)}{metric.label || ''}
-            </span>
-          </div>
-        ))}
-      </div>
+
+      {expanded ? (
+        <div className="p-3 max-h-[70vh] overflow-y-auto">
+          <CoreWebVitals metrics={metrics} />
+        </div>
+      ) : (
+        <ul
+          className="p-3 space-y-1 font-mono max-h-40 overflow-y-auto"
+          aria-label="Latest performance metrics"
+        >
+          {Object.values(metrics).length === 0 ? (
+            <li className="text-gray-500 dark:text-gray-400">Collecting vitals…</li>
+          ) : (
+            Object.values(metrics).map((metric) => (
+              <li key={metric.name} className="flex justify-between gap-4">
+                <span>{metric.name}</span>
+                <span
+                  className={
+                    metric.rating === 'poor'
+                      ? 'text-red-600 dark:text-red-400'
+                      : metric.rating === 'needs-improvement'
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-emerald-600 dark:text-emerald-400'
+                  }
+                >
+                  {formatMetricValue(metric)}
+                </span>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </div>
   );
 };

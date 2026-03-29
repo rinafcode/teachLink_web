@@ -26,7 +26,7 @@ describe('StudyGroupCard', () => {
         onJoin={onJoin}
         onLeave={onLeave}
         onOpen={onOpen}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByText('Join'));
@@ -40,7 +40,7 @@ describe('StudyGroupCard', () => {
         onJoin={onJoin}
         onLeave={onLeave}
         onOpen={onOpen}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByText('Leave'));

@@ -52,7 +52,7 @@ export const useDashboardWidgets = () => {
           size: 'small',
           position: 0,
           isCollapsed: false,
-          settings: { statType: 'revenue' }
+          settings: { statType: 'revenue' },
         },
         {
           id: 'stat-students',
@@ -61,7 +61,7 @@ export const useDashboardWidgets = () => {
           size: 'small',
           position: 1,
           isCollapsed: false,
-          settings: { statType: 'students' }
+          settings: { statType: 'students' },
         },
         {
           id: 'stat-views',
@@ -70,7 +70,7 @@ export const useDashboardWidgets = () => {
           size: 'small',
           position: 2,
           isCollapsed: false,
-          settings: { statType: 'views' }
+          settings: { statType: 'views' },
         },
         {
           id: 'stat-courses',
@@ -79,7 +79,7 @@ export const useDashboardWidgets = () => {
           size: 'small',
           position: 3,
           isCollapsed: false,
-          settings: { statType: 'courses' }
+          settings: { statType: 'courses' },
         },
         // Recent Sales (medium, left column)
         {
@@ -89,7 +89,7 @@ export const useDashboardWidgets = () => {
           size: 'medium',
           position: 4,
           isCollapsed: false,
-          settings: {}
+          settings: {},
         },
         // Recent Activity (medium, right column)
         {
@@ -99,7 +99,7 @@ export const useDashboardWidgets = () => {
           size: 'medium',
           position: 5,
           isCollapsed: false,
-          settings: {}
+          settings: {},
         },
         // Upcoming Schedule (large, full width)
         {
@@ -109,8 +109,8 @@ export const useDashboardWidgets = () => {
           size: 'large',
           position: 6,
           isCollapsed: false,
-          settings: {}
-        }
+          settings: {},
+        },
       ];
       setWidgets(defaultWidgets);
       saveWidgetLayout(defaultWidgets);
@@ -119,73 +119,87 @@ export const useDashboardWidgets = () => {
   }, [loadWidgetLayout, saveWidgetLayout]);
 
   // Add a new widget
-  const addWidget = useCallback((widget: Omit<Widget, 'id' | 'position'>) => {
-    const newWidget: Widget = {
-      ...widget,
-      id: `${widget.type}-${Date.now()}`,
-      position: widgets.length
-    };
-    const updatedWidgets = [...widgets, newWidget];
-    setWidgets(updatedWidgets);
-    saveWidgetLayout(updatedWidgets);
-    return newWidget;
-  }, [widgets, saveWidgetLayout]);
+  const addWidget = useCallback(
+    (widget: Omit<Widget, 'id' | 'position'>) => {
+      const newWidget: Widget = {
+        ...widget,
+        id: `${widget.type}-${Date.now()}`,
+        position: widgets.length,
+      };
+      const updatedWidgets = [...widgets, newWidget];
+      setWidgets(updatedWidgets);
+      saveWidgetLayout(updatedWidgets);
+      return newWidget;
+    },
+    [widgets, saveWidgetLayout],
+  );
 
   // Remove a widget
-  const removeWidget = useCallback((widgetId: string) => {
-    const updatedWidgets = widgets.filter(w => w.id !== widgetId);
-    setWidgets(updatedWidgets);
-    saveWidgetLayout(updatedWidgets);
-  }, [widgets, saveWidgetLayout]);
+  const removeWidget = useCallback(
+    (widgetId: string) => {
+      const updatedWidgets = widgets.filter((w) => w.id !== widgetId);
+      setWidgets(updatedWidgets);
+      saveWidgetLayout(updatedWidgets);
+    },
+    [widgets, saveWidgetLayout],
+  );
 
   // Update widget settings
-  const updateWidgetSettings = useCallback((widgetId: string, settings: Record<string, unknown>) => {
-    const updatedWidgets = widgets.map(widget =>
-      widget.id === widgetId
-        ? { ...widget, settings: { ...widget.settings, ...settings } }
-        : widget
-    );
-    setWidgets(updatedWidgets);
-    saveWidgetLayout(updatedWidgets);
-  }, [widgets, saveWidgetLayout]);
+  const updateWidgetSettings = useCallback(
+    (widgetId: string, settings: Record<string, unknown>) => {
+      const updatedWidgets = widgets.map((widget) =>
+        widget.id === widgetId
+          ? { ...widget, settings: { ...widget.settings, ...settings } }
+          : widget,
+      );
+      setWidgets(updatedWidgets);
+      saveWidgetLayout(updatedWidgets);
+    },
+    [widgets, saveWidgetLayout],
+  );
 
   // Toggle widget collapse state
-  const toggleWidgetCollapse = useCallback((widgetId: string) => {
-    const updatedWidgets = widgets.map(widget =>
-      widget.id === widgetId
-        ? { ...widget, isCollapsed: !widget.isCollapsed }
-        : widget
-    );
-    setWidgets(updatedWidgets);
-    saveWidgetLayout(updatedWidgets);
-  }, [widgets, saveWidgetLayout]);
+  const toggleWidgetCollapse = useCallback(
+    (widgetId: string) => {
+      const updatedWidgets = widgets.map((widget) =>
+        widget.id === widgetId ? { ...widget, isCollapsed: !widget.isCollapsed } : widget,
+      );
+      setWidgets(updatedWidgets);
+      saveWidgetLayout(updatedWidgets);
+    },
+    [widgets, saveWidgetLayout],
+  );
 
   // Reorder widgets
-  const reorderWidgets = useCallback((fromIndex: number, toIndex: number) => {
-    const updatedWidgets = [...widgets];
-    const [movedWidget] = updatedWidgets.splice(fromIndex, 1);
-    updatedWidgets.splice(toIndex, 0, movedWidget);
-    
-    // Update positions
-    const reorderedWidgets = updatedWidgets.map((widget, index) => ({
-      ...widget,
-      position: index
-    }));
-    
-    setWidgets(reorderedWidgets);
-    saveWidgetLayout(reorderedWidgets);
-  }, [widgets, saveWidgetLayout]);
+  const reorderWidgets = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      const updatedWidgets = [...widgets];
+      const [movedWidget] = updatedWidgets.splice(fromIndex, 1);
+      updatedWidgets.splice(toIndex, 0, movedWidget);
+
+      // Update positions
+      const reorderedWidgets = updatedWidgets.map((widget, index) => ({
+        ...widget,
+        position: index,
+      }));
+
+      setWidgets(reorderedWidgets);
+      saveWidgetLayout(reorderedWidgets);
+    },
+    [widgets, saveWidgetLayout],
+  );
 
   // Change widget size
-  const changeWidgetSize = useCallback((widgetId: string, size: 'small' | 'medium' | 'large') => {
-    const updatedWidgets = widgets.map(widget =>
-      widget.id === widgetId
-        ? { ...widget, size }
-        : widget
-    );
-    setWidgets(updatedWidgets);
-    saveWidgetLayout(updatedWidgets);
-  }, [widgets, saveWidgetLayout]);
+  const changeWidgetSize = useCallback(
+    (widgetId: string, size: 'small' | 'medium' | 'large') => {
+      const updatedWidgets = widgets.map((widget) =>
+        widget.id === widgetId ? { ...widget, size } : widget,
+      );
+      setWidgets(updatedWidgets);
+      saveWidgetLayout(updatedWidgets);
+    },
+    [widgets, saveWidgetLayout],
+  );
 
   // Reset to default layout
   const resetToDefault = useCallback(() => {
@@ -198,7 +212,7 @@ export const useDashboardWidgets = () => {
         size: 'small',
         position: 0,
         isCollapsed: false,
-        settings: { statType: 'revenue' }
+        settings: { statType: 'revenue' },
       },
       {
         id: 'stat-students',
@@ -207,7 +221,7 @@ export const useDashboardWidgets = () => {
         size: 'small',
         position: 1,
         isCollapsed: false,
-        settings: { statType: 'students' }
+        settings: { statType: 'students' },
       },
       {
         id: 'stat-views',
@@ -216,7 +230,7 @@ export const useDashboardWidgets = () => {
         size: 'small',
         position: 2,
         isCollapsed: false,
-        settings: { statType: 'views' }
+        settings: { statType: 'views' },
       },
       {
         id: 'stat-courses',
@@ -225,7 +239,7 @@ export const useDashboardWidgets = () => {
         size: 'small',
         position: 3,
         isCollapsed: false,
-        settings: { statType: 'courses' }
+        settings: { statType: 'courses' },
       },
       // Recent Sales (medium, left column)
       {
@@ -235,7 +249,7 @@ export const useDashboardWidgets = () => {
         size: 'medium',
         position: 4,
         isCollapsed: false,
-        settings: {}
+        settings: {},
       },
       // Recent Activity (medium, right column)
       {
@@ -245,7 +259,7 @@ export const useDashboardWidgets = () => {
         size: 'medium',
         position: 5,
         isCollapsed: false,
-        settings: {}
+        settings: {},
       },
       // Upcoming Schedule (large, full width)
       {
@@ -255,8 +269,8 @@ export const useDashboardWidgets = () => {
         size: 'large',
         position: 6,
         isCollapsed: false,
-        settings: {}
-      }
+        settings: {},
+      },
     ];
     setWidgets(defaultWidgets);
     saveWidgetLayout(defaultWidgets);
@@ -267,7 +281,7 @@ export const useDashboardWidgets = () => {
     const config = {
       widgets,
       exportedAt: new Date().toISOString(),
-      version: '1.0.0'
+      version: '1.0.0',
     };
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -279,19 +293,22 @@ export const useDashboardWidgets = () => {
   }, [widgets]);
 
   // Import widget configuration
-  const importWidgetConfig = useCallback((config: { widgets?: Widget[] }) => {
-    try {
-      if (config.widgets && Array.isArray(config.widgets)) {
-        setWidgets(config.widgets);
-        saveWidgetLayout(config.widgets);
-        return true;
+  const importWidgetConfig = useCallback(
+    (config: { widgets?: Widget[] }) => {
+      try {
+        if (config.widgets && Array.isArray(config.widgets)) {
+          setWidgets(config.widgets);
+          saveWidgetLayout(config.widgets);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Failed to import widget config:', error);
+        return false;
       }
-      return false;
-    } catch (error) {
-      console.error('Failed to import widget config:', error);
-      return false;
-    }
-  }, [saveWidgetLayout]);
+    },
+    [saveWidgetLayout],
+  );
 
   return {
     widgets,
@@ -306,6 +323,6 @@ export const useDashboardWidgets = () => {
     exportWidgetConfig,
     importWidgetConfig,
     saveWidgetLayout,
-    loadWidgetLayout
+    loadWidgetLayout,
   };
-}; 
+};

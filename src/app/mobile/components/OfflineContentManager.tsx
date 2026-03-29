@@ -16,7 +16,7 @@ export default function OfflineContentManager() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [storageUsed, setStorageUsed] = useState(0);
-  const [storageTotal, setStorageTotal] = useState(5000 * 1024 * 1024); 
+  const [storageTotal, setStorageTotal] = useState(5000 * 1024 * 1024);
   const [loading, setLoading] = useState(true);
   const [downloads, setDownloads] = useState<DownloadProgress[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +40,7 @@ export default function OfflineContentManager() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -72,94 +73,96 @@ export default function OfflineContentManager() {
       return;
     }
 
-    const course = courses.find(c => c.id === courseId);
+    const course = courses.find((c) => c.id === courseId);
     if (!course) return;
 
     // Add to downloads queue
-    setDownloads(prev => [...prev, {
-      courseId,
-      progress: 0,
-      status: 'downloading'
-    }]);
+    setDownloads((prev) => [
+      ...prev,
+      {
+        courseId,
+        progress: 0,
+        status: 'downloading',
+      },
+    ]);
 
     try {
       // Get download URL from API
       const downloadResponse = await apiService.downloadCourse(courseId);
-      
+
       // Simulate download progress
       const interval = setInterval(() => {
-        setDownloads(prev => prev.map(download => {
-          if (download.courseId === courseId) {
-            const newProgress = download.progress + 10;
-            
-            if (newProgress >= 100) {
-              clearInterval(interval);
-              
-              // Update course as downloaded
-              const updatedCourse = { ...course, downloaded: true };
-              setCourses(prev => prev.map(c => 
-                c.id === courseId ? updatedCourse : c
-              ));
-              
-              // Save to offline storage
-              offlineStorage.saveCourse(updatedCourse);
-              
-              // Create offline content record
-              const offlineContent: OfflineContent = {
-                courseId,
-                chapters: [],
-                downloadedAt: new Date(),
-                size: downloadResponse.data.size,
-                lastAccessed: new Date()
-              };
-              offlineStorage.saveOfflineContent(offlineContent);
-              
-              // Update storage usage
-              setStorageUsed(prev => prev + downloadResponse.data.size);
-              
-              return { ...download, progress: 100, status: 'completed' };
+        setDownloads((prev) =>
+          prev.map((download) => {
+            if (download.courseId === courseId) {
+              const newProgress = download.progress + 10;
+
+              if (newProgress >= 100) {
+                clearInterval(interval);
+
+                // Update course as downloaded
+                const updatedCourse = { ...course, downloaded: true };
+                setCourses((prev) => prev.map((c) => (c.id === courseId ? updatedCourse : c)));
+
+                // Save to offline storage
+                offlineStorage.saveCourse(updatedCourse);
+
+                // Create offline content record
+                const offlineContent: OfflineContent = {
+                  courseId,
+                  chapters: [],
+                  downloadedAt: new Date(),
+                  size: downloadResponse.data.size,
+                  lastAccessed: new Date(),
+                };
+                offlineStorage.saveOfflineContent(offlineContent);
+
+                // Update storage usage
+                setStorageUsed((prev) => prev + downloadResponse.data.size);
+
+                return { ...download, progress: 100, status: 'completed' };
+              }
+
+              return { ...download, progress: newProgress };
             }
-            
-            return { ...download, progress: newProgress };
-          }
-          return download;
-        }));
+            return download;
+          }),
+        );
       }, 500);
 
       // Clean up downloads after completion
       setTimeout(() => {
-        setDownloads(prev => prev.filter(d => d.courseId !== courseId));
+        setDownloads((prev) => prev.filter((d) => d.courseId !== courseId));
       }, 3000);
-
     } catch (err) {
       console.error('Download error:', err);
-      setDownloads(prev => prev.map(download => 
-        download.courseId === courseId 
-          ? { ...download, status: 'error', error: 'Download failed' }
-          : download
-      ));
+      setDownloads((prev) =>
+        prev.map((download) =>
+          download.courseId === courseId
+            ? { ...download, status: 'error', error: 'Download failed' }
+            : download,
+        ),
+      );
     }
   };
 
   const deleteCourse = async (courseId: string) => {
     try {
-      const course = courses.find(c => c.id === courseId);
+      const course = courses.find((c) => c.id === courseId);
       if (!course) return;
 
       // Delete from offline storage
       await offlineStorage.deleteOfflineContent(courseId);
-      
+
       // Update course status
       const updatedCourse = { ...course, downloaded: false };
       await offlineStorage.saveCourse(updatedCourse);
-      
-      setCourses(prev => prev.map(c => 
-        c.id === courseId ? updatedCourse : c
-      ));
+
+      setCourses((prev) => prev.map((c) => (c.id === courseId ? updatedCourse : c)));
 
       // Update storage usage
-      const sizeNum = parseInt(course.size) * 1024 * 1024; 
-      setStorageUsed(prev => Math.max(0, prev - sizeNum));
+      const sizeNum = parseInt(course.size) * 1024 * 1024;
+      setStorageUsed((prev) => Math.max(0, prev - sizeNum));
 
       // Notify API if online
       if (isOnline) {
@@ -172,14 +175,14 @@ export default function OfflineContentManager() {
   };
 
   const cancelDownload = (courseId: string) => {
-    setDownloads(prev => prev.map(download => 
-      download.courseId === courseId 
-        ? { ...download, status: 'cancelled' }
-        : download
-    ));
-    
+    setDownloads((prev) =>
+      prev.map((download) =>
+        download.courseId === courseId ? { ...download, status: 'cancelled' } : download,
+      ),
+    );
+
     setTimeout(() => {
-      setDownloads(prev => prev.filter(d => d.courseId !== courseId));
+      setDownloads((prev) => prev.filter((d) => d.courseId !== courseId));
     }, 500);
   };
 
@@ -188,7 +191,7 @@ export default function OfflineContentManager() {
   const formattedStorageTotal = (storageTotal / (1024 * 1024 * 1024)).toFixed(1);
 
   const getDownloadStatus = (courseId: string) => {
-    return downloads.find(d => d.courseId === courseId);
+    return downloads.find((d) => d.courseId === courseId);
   };
 
   if (loading) {
@@ -206,10 +209,7 @@ export default function OfflineContentManager() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">Offline Content</h1>
             <div className="flex items-center gap-2">
-              <button
-                onClick={loadData}
-                className="p-2 rounded-lg hover:bg-gray-100"
-              >
+              <button onClick={loadData} className="p-2 rounded-lg hover:bg-gray-100">
                 <RefreshCw className="w-5 h-5 text-gray-600" />
               </button>
               {isOnline ? (
@@ -236,20 +236,28 @@ export default function OfflineContentManager() {
           <div className="bg-gray-100 rounded-lg p-3">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span>Storage Used</span>
-              <span className="font-medium">{formattedStorageUsed} MB / {formattedStorageTotal} GB</span>
+              <span className="font-medium">
+                {formattedStorageUsed} MB / {formattedStorageTotal} GB
+              </span>
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className={`h-full transition-all duration-300 ${
-                  storagePercent > 90 ? 'bg-red-500' : 
-                  storagePercent > 70 ? 'bg-orange-500' : 'bg-blue-500'
+                  storagePercent > 90
+                    ? 'bg-red-500'
+                    : storagePercent > 70
+                    ? 'bg-orange-500'
+                    : 'bg-blue-500'
                 }`}
                 style={{ width: `${Math.min(storagePercent, 100)}%` }}
               />
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              {storagePercent > 90 ? 'Storage almost full' : 
-               storagePercent > 70 ? 'Storage getting full' : 'Plenty of space available'}
+              {storagePercent > 90
+                ? 'Storage almost full'
+                : storagePercent > 70
+                ? 'Storage getting full'
+                : 'Plenty of space available'}
             </p>
           </div>
         </div>
@@ -259,37 +267,33 @@ export default function OfflineContentManager() {
         {courses.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-4xl mb-4">📚</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No courses available
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No courses available</h3>
             <p className="text-gray-500">
               {isOnline ? 'Connect to see downloadable courses' : 'Go online to download courses'}
             </p>
           </div>
         ) : (
-          courses.map(course => {
+          courses.map((course) => {
             const downloadStatus = getDownloadStatus(course.id);
-            
+
             return (
-              <div 
-                key={course.id}
-                className="bg-white rounded-xl shadow-sm overflow-hidden"
-              >
+              <div key={course.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="p-4">
                   <div className="flex gap-3">
                     <div className="text-4xl shrink-0">
                       {course.thumbnailUrl ? (
-                        <img 
-                          src={course.thumbnailUrl} 
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={course.thumbnailUrl}
                           alt={course.title}
                           className="w-12 h-12 rounded-lg object-cover"
                         />
-                      ) : '📚'}
+                      ) : (
+                        '📚'
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                        {course.title}
-                      </h3>
+                      <h3 className="font-semibold text-gray-900 mb-1 truncate">{course.title}</h3>
                       <div className="flex flex-wrap gap-2 text-sm text-gray-500">
                         <span>{course.totalLessons} lessons</span>
                         <span>•</span>
@@ -304,17 +308,24 @@ export default function OfflineContentManager() {
                     <div className="mt-4">
                       <div className="flex justify-between text-sm text-gray-600 mb-2">
                         <span>
-                          {downloadStatus.status === 'downloading' ? 'Downloading...' :
-                           downloadStatus.status === 'error' ? 'Download failed' :
-                           downloadStatus.status === 'cancelled' ? 'Cancelled' : 'Downloaded!'}
+                          {downloadStatus.status === 'downloading'
+                            ? 'Downloading...'
+                            : downloadStatus.status === 'error'
+                            ? 'Download failed'
+                            : downloadStatus.status === 'cancelled'
+                            ? 'Cancelled'
+                            : 'Downloaded!'}
                         </span>
                         <span>{downloadStatus.progress}%</span>
                       </div>
                       <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
-                        <div 
+                        <div
                           className={`h-full transition-all duration-300 ${
-                            downloadStatus.status === 'error' ? 'bg-red-500' :
-                            downloadStatus.status === 'cancelled' ? 'bg-gray-500' : 'bg-blue-500'
+                            downloadStatus.status === 'error'
+                              ? 'bg-red-500'
+                              : downloadStatus.status === 'cancelled'
+                              ? 'bg-gray-500'
+                              : 'bg-blue-500'
                           }`}
                           style={{ width: `${downloadStatus.progress}%` }}
                         />
@@ -345,7 +356,7 @@ export default function OfflineContentManager() {
                   ) : (
                     <button
                       onClick={() => downloadCourse(course.id)}
-                      disabled={!isOnline || downloads.some(d => d.courseId === course.id)}
+                      disabled={!isOnline || downloads.some((d) => d.courseId === course.id)}
                       className="w-full mt-4 py-2.5 px-4 bg-blue-500 text-white rounded-lg font-medium active:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       <Download className="w-5 h-5" />

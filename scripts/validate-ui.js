@@ -31,22 +31,22 @@ let warnings = [];
 
 function getAllFiles(dir, extensions = ['.tsx', '.jsx', '.ts', '.js']) {
   let files = [];
-  
+
   if (!fs.existsSync(dir)) return files;
-  
+
   const items = fs.readdirSync(dir);
-  
+
   for (const item of items) {
     const fullPath = path.join(dir, item);
     const stat = fs.statSync(fullPath);
-    
+
     if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
       files = files.concat(getAllFiles(fullPath, extensions));
-    } else if (stat.isFile() && extensions.some(ext => item.endsWith(ext))) {
+    } else if (stat.isFile() && extensions.some((ext) => item.endsWith(ext))) {
       files.push(fullPath);
     }
   }
-  
+
   return files;
 }
 
@@ -56,7 +56,7 @@ function checkIconUsage(content, filePath) {
       errors.push(`[ICON] ${filePath}: Uses ${name} - should use lucide-react`);
     }
   }
-  
+
   // Check for react-icons usage (warning, not error)
   if (/from ['"]react-icons/g.test(content)) {
     warnings.push(`[ICON] ${filePath}: Uses react-icons - prefer lucide-react for consistency`);
@@ -66,16 +66,18 @@ function checkIconUsage(content, filePath) {
 function checkResponsiveTailwind(content, filePath) {
   // Only check component files that have className
   if (!content.includes('className')) return;
-  
+
   // Check for common layout patterns without responsive variants
   const lines = content.split('\n');
-  
+
   lines.forEach((line, index) => {
     // Check for grid/flex without any responsive classes
     if (/className=["'][^"']*\b(grid|flex)\b[^"']*["']/.test(line)) {
       const hasResponsive = /\b(sm|md|lg|xl|2xl):/.test(line);
       if (!hasResponsive && line.includes('grid-cols-') && !line.includes('grid-cols-1')) {
-        warnings.push(`[RESPONSIVE] ${filePath}:${index + 1}: Grid layout may need responsive classes`);
+        warnings.push(
+          `[RESPONSIVE] ${filePath}:${index + 1}: Grid layout may need responsive classes`,
+        );
       }
     }
   });
@@ -91,15 +93,15 @@ function checkForConsoleStatements(content, filePath) {
 
 function validateFiles() {
   console.log('🔍 Running UI validation checks...\n');
-  
+
   for (const dir of COMPONENT_DIRS) {
     const fullDir = path.join(SRC_DIR, dir);
     const files = getAllFiles(fullDir);
-    
+
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf-8');
       const relativePath = path.relative(process.cwd(), file);
-      
+
       checkIconUsage(content, relativePath);
       checkResponsiveTailwind(content, relativePath);
       checkForConsoleStatements(content, relativePath);
@@ -110,18 +112,18 @@ function validateFiles() {
 function printResults() {
   if (warnings.length > 0) {
     console.log('⚠️  Warnings:\n');
-    warnings.forEach(w => console.log(`  ${w}`));
+    warnings.forEach((w) => console.log(`  ${w}`));
     console.log('');
   }
-  
+
   if (errors.length > 0) {
     console.log('❌ Errors:\n');
-    errors.forEach(e => console.log(`  ${e}`));
+    errors.forEach((e) => console.log(`  ${e}`));
     console.log('');
     console.log(`\n❌ UI validation failed with ${errors.length} error(s)`);
     process.exit(1);
   }
-  
+
   console.log(`✅ UI validation passed (${warnings.length} warning(s))`);
   process.exit(0);
 }

@@ -9,7 +9,7 @@ import {
   ValidationRule,
   FormState,
   ValidationResult,
-  ValidationFunction
+  ValidationFunction,
 } from '../types/core.js';
 
 describe('ValidationEngine', () => {
@@ -27,14 +27,14 @@ describe('ValidationEngine', () => {
           {
             type: 'required',
             message: 'Email is required',
-            params: {}
+            params: {},
           },
           {
             type: 'email',
             message: 'Please enter a valid email',
-            params: {}
-          }
-        ]
+            params: {},
+          },
+        ],
       },
       {
         id: 'password',
@@ -45,14 +45,14 @@ describe('ValidationEngine', () => {
           {
             type: 'required',
             message: 'Password is required',
-            params: {}
+            params: {},
           },
           {
             type: 'minLength',
             message: 'Password must be at least 8 characters',
-            params: { minLength: 8 }
-          }
-        ]
+            params: { minLength: 8 },
+          },
+        ],
       },
       {
         id: 'confirmPassword',
@@ -63,19 +63,19 @@ describe('ValidationEngine', () => {
           {
             type: 'required',
             message: 'Please confirm your password',
-            params: {}
+            params: {},
           },
           {
             type: 'custom',
             message: 'Passwords do not match',
-            params: {}
-          }
-        ]
-      }
+            params: {},
+          },
+        ],
+      },
     ];
 
     validationEngine = new ValidationEngineImpl(fieldDescriptors);
-    
+
     mockFormState = {
       values: {},
       validation: {},
@@ -88,8 +88,8 @@ describe('ValidationEngine', () => {
         sessionId: 'test-session',
         createdAt: new Date(),
         lastModified: new Date(),
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     };
   });
 
@@ -111,7 +111,7 @@ describe('ValidationEngine', () => {
       // Test invalid email
       let result = validationEngine.validateField('email', 'invalid-email', mockFormState);
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.code === 'email')).toBe(true);
+      expect(result.errors.some((e) => e.code === 'email')).toBe(true);
 
       // Test valid email
       result = validationEngine.validateField('email', 'user@domain.com', mockFormState);
@@ -123,7 +123,7 @@ describe('ValidationEngine', () => {
       // Test short password
       let result = validationEngine.validateField('password', '123', mockFormState);
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.code === 'minLength')).toBe(true);
+      expect(result.errors.some((e) => e.code === 'minLength')).toBe(true);
 
       // Test valid password
       result = validationEngine.validateField('password', 'password123', mockFormState);
@@ -148,9 +148,9 @@ describe('ValidationEngine', () => {
             type: 'required',
             message: 'This field is required when condition is met',
             params: {},
-            condition: (formState) => formState.values.enableConditional === true
-          }
-        ]
+            condition: (formState) => formState.values.enableConditional === true,
+          },
+        ],
       };
 
       validationEngine.updateFieldDescriptors([conditionalField]);
@@ -173,20 +173,24 @@ describe('ValidationEngine', () => {
       const passwordMatchRule: ValidationFunction = (value, formState) => {
         const password = formState.values.password;
         const isValid = value === password;
-        
+
         return {
           isValid,
-          errors: isValid ? [] : [{
-            code: 'password_mismatch',
-            message: 'Passwords do not match'
-          }]
+          errors: isValid
+            ? []
+            : [
+                {
+                  code: 'password_mismatch',
+                  message: 'Passwords do not match',
+                },
+              ],
         };
       };
 
       validationEngine.addCustomRule('custom', passwordMatchRule);
 
       mockFormState.values.password = 'password123';
-      
+
       // Test matching passwords
       let result = validationEngine.validateField('confirmPassword', 'password123', mockFormState);
       expect(result.isValid).toBe(true);
@@ -194,7 +198,7 @@ describe('ValidationEngine', () => {
       // Test non-matching passwords
       result = validationEngine.validateField('confirmPassword', 'different', mockFormState);
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.code === 'password_mismatch')).toBe(true);
+      expect(result.errors.some((e) => e.code === 'password_mismatch')).toBe(true);
     });
 
     it('should handle custom rule errors gracefully', () => {
@@ -215,21 +219,26 @@ describe('ValidationEngine', () => {
       mockFormState.values = {
         email: 'test@example.com',
         password: 'password123',
-        confirmPassword: 'password123'
+        confirmPassword: 'password123',
       };
 
       // Add password match rule
       const passwordMatchRule: ValidationFunction = (value, formState) => ({
         isValid: value === formState.values.password,
-        errors: value === formState.values.password ? [] : [{
-          code: 'password_mismatch',
-          message: 'Passwords do not match'
-        }]
+        errors:
+          value === formState.values.password
+            ? []
+            : [
+                {
+                  code: 'password_mismatch',
+                  message: 'Passwords do not match',
+                },
+              ],
       });
       validationEngine.addCustomRule('custom', passwordMatchRule);
 
       const result = await validationEngine.validateForm(mockFormState);
-      
+
       expect(result.isValid).toBe(true);
       expect(Object.keys(result.fieldResults)).toHaveLength(3);
       expect(result.globalErrors).toHaveLength(0);
@@ -239,11 +248,11 @@ describe('ValidationEngine', () => {
       mockFormState.values = {
         email: 'invalid-email',
         password: '123', // Too short
-        confirmPassword: 'different'
+        confirmPassword: 'different',
       };
 
       const result = await validationEngine.validateForm(mockFormState);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.fieldResults.email.isValid).toBe(false);
       expect(result.fieldResults.password.isValid).toBe(false);
@@ -254,14 +263,19 @@ describe('ValidationEngine', () => {
     it('should handle async validation rules', async () => {
       const asyncRule: ValidationFunction = async (value) => {
         // Simulate async validation (e.g., checking username availability)
-        await new Promise(resolve => setTimeout(resolve, 10));
-        
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
         return {
           isValid: value !== 'taken@example.com',
-          errors: value === 'taken@example.com' ? [{
-            code: 'email_taken',
-            message: 'This email is already taken'
-          }] : []
+          errors:
+            value === 'taken@example.com'
+              ? [
+                  {
+                    code: 'email_taken',
+                    message: 'This email is already taken',
+                  },
+                ]
+              : [],
         };
       };
 
@@ -276,15 +290,18 @@ describe('ValidationEngine', () => {
           {
             type: 'async',
             message: 'Email validation failed',
-            params: {}
-          }
-        ]
+            params: {},
+          },
+        ],
       };
 
       validationEngine.updateFieldDescriptors([asyncField]);
 
       // Test available email
-      let result = await validationEngine.executeAsyncValidation('asyncEmail', 'available@example.com');
+      let result = await validationEngine.executeAsyncValidation(
+        'asyncEmail',
+        'available@example.com',
+      );
       expect(result.isValid).toBe(true);
 
       // Test taken email
@@ -295,7 +312,7 @@ describe('ValidationEngine', () => {
 
     it('should handle async validation timeout', async () => {
       const slowRule: ValidationFunction = async () => {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         return { isValid: true, errors: [] };
       };
 
@@ -313,11 +330,11 @@ describe('ValidationEngine', () => {
             params: {
               asyncOptions: {
                 timeout: 50, // Shorter than the rule execution time
-                retryAttempts: 0
-              }
-            }
-          }
-        ]
+                retryAttempts: 0,
+              },
+            },
+          },
+        ],
       };
 
       validationEngine.updateFieldDescriptors([asyncField]);
@@ -339,9 +356,9 @@ describe('ValidationEngine', () => {
           {
             type: 'pattern',
             message: 'Please enter a valid phone number',
-            params: { pattern: '^\\d{3}-\\d{3}-\\d{4}$' }
-          }
-        ]
+            params: { pattern: '^\\d{3}-\\d{3}-\\d{4}$' },
+          },
+        ],
       };
 
       validationEngine.updateFieldDescriptors([patternField]);
@@ -366,15 +383,19 @@ describe('ValidationEngine', () => {
           {
             type: 'maxLength',
             message: 'Text is too long',
-            params: { maxLength: 10 }
-          }
-        ]
+            params: { maxLength: 10 },
+          },
+        ],
       };
 
       validationEngine.updateFieldDescriptors([maxLengthField]);
 
       // Test too long
-      let result = validationEngine.validateField('shortText', 'This text is too long', mockFormState);
+      let result = validationEngine.validateField(
+        'shortText',
+        'This text is too long',
+        mockFormState,
+      );
       expect(result.isValid).toBe(false);
       expect(result.errors[0].code).toBe('maxLength');
 
@@ -387,13 +408,13 @@ describe('ValidationEngine', () => {
   describe('utility methods', () => {
     it('should manage custom rules correctly', () => {
       const testRule: ValidationFunction = () => ({ isValid: true, errors: [] });
-      
+
       validationEngine.addCustomRule('testRule', testRule);
       expect(validationEngine.getCustomRules()).toContain('testRule');
-      
+
       expect(validationEngine.removeCustomRule('testRule')).toBe(true);
       expect(validationEngine.getCustomRules()).not.toContain('testRule');
-      
+
       expect(validationEngine.removeCustomRule('nonexistent')).toBe(false);
     });
 

@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  HardDrive, 
-  Trash2, 
-  Download, 
-  FileText, 
-  Video, 
+import {
+  HardDrive,
+  Trash2,
+  Download,
+  FileText,
+  Video,
   BookOpen,
-  AlertTriangle
+  AlertTriangle,
 } from 'lucide-react';
 import { useOfflineModeContext } from '../../context/OfflineModeContext';
 
@@ -34,10 +34,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
   const [filterBy, setFilterBy] = useState<'all' | 'course' | 'video' | 'document' | 'quiz'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
-  const { 
-    storageUsage, 
-    clearOfflineData 
-  } = useOfflineModeContext();
+  const { storageUsage, clearOfflineData } = useOfflineModeContext();
 
   // Sample storage items for demonstration
   const [storageItems, setStorageItems] = useState<StorageItem[]>([
@@ -48,7 +45,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       size: 250 * 1024 * 1024, // 250MB
       downloadedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
       lastAccessed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      isPinned: true
+      isPinned: true,
     },
     {
       id: 'course-2',
@@ -57,7 +54,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       size: 180 * 1024 * 1024, // 180MB
       downloadedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
       lastAccessed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      isPinned: false
+      isPinned: false,
     },
     {
       id: 'video-1',
@@ -66,7 +63,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       size: 45 * 1024 * 1024, // 45MB
       downloadedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
       lastAccessed: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      isPinned: false
+      isPinned: false,
     },
     {
       id: 'document-1',
@@ -75,8 +72,8 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       size: 2 * 1024 * 1024, // 2MB
       downloadedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
       lastAccessed: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-      isPinned: true
-    }
+      isPinned: true,
+    },
   ]);
 
   const formatFileSize = (bytes: number): string => {
@@ -129,7 +126,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
   };
 
   const sortedAndFilteredItems = storageItems
-    .filter(item => filterBy === 'all' || item.type === filterBy)
+    .filter((item) => filterBy === 'all' || item.type === filterBy)
     .sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -146,14 +143,12 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
     });
 
   const selectedSize = storageItems
-    .filter(item => selectedItems.includes(item.id))
+    .filter((item) => selectedItems.includes(item.id))
     .reduce((acc, item) => acc + item.size, 0);
 
   const toggleItemSelection = (itemId: string) => {
-    setSelectedItems(prev => 
-      prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+    setSelectedItems((prev) =>
+      prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId],
     );
   };
 
@@ -161,19 +156,19 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
     if (selectedItems.length === sortedAndFilteredItems.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(sortedAndFilteredItems.map(item => item.id));
+      setSelectedItems(sortedAndFilteredItems.map((item) => item.id));
     }
   };
 
   const deleteSelectedItems = () => {
-    setStorageItems(prev => prev.filter(item => !selectedItems.includes(item.id)));
+    setStorageItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
     setSelectedItems([]);
   };
 
   const pinItem = (itemId: string) => {
-    setStorageItems(prev => prev.map(item => 
-      item.id === itemId ? { ...item, isPinned: !item.isPinned } : item
-    ));
+    setStorageItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, isPinned: !item.isPinned } : item)),
+    );
   };
 
   const clearAllData = async () => {
@@ -237,10 +232,13 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                   <span className="font-medium">{formatFileSize(storageUsage.used)}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className={`h-2 rounded-full transition-all duration-300 ${
-                      warning?.level === 'critical' ? 'bg-red-500' : 
-                      warning?.level === 'warning' ? 'bg-yellow-500' : 'bg-green-500'
+                      warning?.level === 'critical'
+                        ? 'bg-red-500'
+                        : warning?.level === 'warning'
+                        ? 'bg-yellow-500'
+                        : 'bg-green-500'
                     }`}
                     style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                   />
@@ -260,7 +258,9 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                 <div className="flex space-x-2">
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy((e.target.value as 'name' | 'size' | 'date' | 'accessed'))}
+                    onChange={(e) =>
+                      setSortBy(e.target.value as 'name' | 'size' | 'date' | 'accessed')
+                    }
                     className="text-xs border border-gray-300 rounded px-2 py-1"
                   >
                     <option value="date">Date</option>
@@ -270,7 +270,11 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                   </select>
                   <select
                     value={filterBy}
-                    onChange={(e) => setFilterBy((e.target.value as 'all' | 'course' | 'video' | 'document' | 'quiz'))}
+                    onChange={(e) =>
+                      setFilterBy(
+                        e.target.value as 'all' | 'course' | 'video' | 'document' | 'quiz',
+                      )
+                    }
                     className="text-xs border border-gray-300 rounded px-2 py-1"
                   >
                     <option value="all">All</option>
@@ -283,13 +287,17 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                 <div className="flex space-x-1">
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-1 text-xs ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    className={`p-1 text-xs ${
+                      viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                    }`}
                   >
                     List
                   </button>
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-1 text-xs ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    className={`p-1 text-xs ${
+                      viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                    }`}
                   >
                     Grid
                   </button>
@@ -301,7 +309,10 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={selectedItems.length === sortedAndFilteredItems.length && sortedAndFilteredItems.length > 0}
+                    checked={
+                      selectedItems.length === sortedAndFilteredItems.length &&
+                      sortedAndFilteredItems.length > 0
+                    }
                     onChange={toggleSelectAll}
                     className="rounded"
                   />
@@ -355,15 +366,17 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                                 {item.title}
                               </p>
                               <div className="flex items-center space-x-2 mt-1">
-                                <span className={`text-xs px-2 py-1 rounded-full ${getTypeColor(item.type)}`}>
+                                <span
+                                  className={`text-xs px-2 py-1 rounded-full ${getTypeColor(
+                                    item.type,
+                                  )}`}
+                                >
                                   {item.type}
                                 </span>
                                 <span className="text-xs text-gray-500">
                                   {formatFileSize(item.size)}
                                 </span>
-                                {item.isPinned && (
-                                  <span className="text-xs text-blue-600">📌</span>
-                                )}
+                                {item.isPinned && <span className="text-xs text-blue-600">📌</span>}
                               </div>
                             </div>
                           </div>
@@ -377,7 +390,9 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                         <button
                           onClick={() => pinItem(item.id)}
                           className={`p-1 text-xs rounded ${
-                            item.isPinned ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                            item.isPinned
+                              ? 'bg-blue-100 text-blue-600'
+                              : 'bg-gray-100 text-gray-600'
                           }`}
                         >
                           📌

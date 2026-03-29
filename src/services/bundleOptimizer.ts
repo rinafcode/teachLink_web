@@ -36,13 +36,16 @@ class BundleOptimizer {
   /**
    * Identifies large chunks that might need further code splitting.
    */
-  analyzeChunkSizes(threshold: number = 200) { // threshold in KB
+  analyzeChunkSizes(threshold: number = 200) {
+    // threshold in KB
     const heavyChunks = Array.from(this.chunks.values()).filter(
-      (chunk) => chunk.size && chunk.size > threshold
+      (chunk) => chunk.size && chunk.size > threshold,
     );
 
     if (heavyChunks.length > 0) {
-      console.warn(`[Bundle Analysis] Found ${heavyChunks.length} heavy chunks (> ${threshold}KB). Consider further code splitting.`);
+      console.warn(
+        `[Bundle Analysis] Found ${heavyChunks.length} heavy chunks (> ${threshold}KB). Consider further code splitting.`,
+      );
       heavyChunks.forEach((chunk) => {
         console.warn(` - Chunk: ${chunk.name} (${chunk.size}KB)`);
       });
@@ -57,8 +60,10 @@ class BundleOptimizer {
   reportBundleHealth() {
     const totalChunks = this.chunks.size;
     const totalSize = Array.from(this.chunks.values()).reduce((acc, c) => acc + (c.size || 0), 0);
-    
-    console.log(`[Bundle Optimizer] Monitoring ${totalChunks} logical chunks. Total estimated size: ${totalSize}KB.`);
+
+    console.log(
+      `[Bundle Optimizer] Monitoring ${totalChunks} logical chunks. Total estimated size: ${totalSize}KB.`,
+    );
     this.analyzeChunkSizes();
   }
 }

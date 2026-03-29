@@ -7,7 +7,7 @@
  */
 export const deepMerge = (
   target: Record<string, unknown>,
-  source: Record<string, unknown>
+  source: Record<string, unknown>,
 ): Record<string, unknown> => {
   if (!source) return target;
   if (!target) return source;
@@ -17,7 +17,7 @@ export const deepMerge = (
     Object.keys(source).forEach((key) => {
       const targetVal = target[key];
       const sourceVal = source[key];
-      
+
       if (isObject(sourceVal)) {
         if (!(key in target)) {
           Object.assign(output, { [key]: sourceVal });

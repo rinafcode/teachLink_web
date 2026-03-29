@@ -97,9 +97,7 @@ export function AccessibilityNavigator({
         className="fixed bottom-4 right-4 z-[9998] p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
       >
         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        <span className="sr-only">
-          {isMenuOpen ? 'Close' : 'Open'} accessibility navigation
-        </span>
+        <span className="sr-only">{isMenuOpen ? 'Close' : 'Open'} accessibility navigation</span>
       </button>
 
       {/* Accessibility Menu */}

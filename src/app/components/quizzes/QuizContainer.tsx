@@ -148,4 +148,4 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
       {renderNavigation()}
     </div>
   );
-} 
+}

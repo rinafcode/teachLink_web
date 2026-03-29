@@ -12,8 +12,9 @@ export async function GET() {
       totalLessons: 12,
       progress: 68,
       size: '250MB',
-      thumbnailUrl: 'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
-      downloaded: false
+      thumbnailUrl:
+        'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
+      downloaded: false,
     },
     {
       id: '2',
@@ -24,13 +25,14 @@ export async function GET() {
       totalLessons: 18,
       progress: 45,
       size: '380MB',
-      thumbnailUrl: 'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
-      downloaded: false
-    }
+      thumbnailUrl:
+        'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
+      downloaded: false,
+    },
   ];
 
   return NextResponse.json({
     data: courses,
-    success: true
+    success: true,
   });
 }

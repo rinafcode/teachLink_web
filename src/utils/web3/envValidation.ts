@@ -79,7 +79,10 @@ export function validateWeb3Env(): EnvValidationResult {
 /**
  * Get explorer URL for a transaction or address
  */
-export function getExplorerUrl(hashOrAddress: string, type: 'tx' | 'contract' | 'address' = 'tx'): string {
+export function getExplorerUrl(
+  hashOrAddress: string,
+  type: 'tx' | 'contract' | 'address' = 'tx',
+): string {
   const { config } = validateWeb3Env();
   const path = type === 'tx' ? 'tx' : type === 'contract' ? 'contract' : 'contract';
   return `${config.explorerUrl}/${path}/${hashOrAddress}`;

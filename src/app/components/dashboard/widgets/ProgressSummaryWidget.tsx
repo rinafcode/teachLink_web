@@ -30,7 +30,7 @@ const getStatData = (statType: StatType) => {
         icon: DollarSign,
         iconColor: 'text-green-600 dark:text-green-400',
         bgColor: 'bg-green-50 dark:bg-green-900/20',
-        changeColor: 'text-green-600 dark:text-green-400'
+        changeColor: 'text-green-600 dark:text-green-400',
       };
     case 'students':
       return {
@@ -41,7 +41,7 @@ const getStatData = (statType: StatType) => {
         icon: Users,
         iconColor: 'text-blue-600 dark:text-blue-400',
         bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-        changeColor: 'text-green-600 dark:text-green-400'
+        changeColor: 'text-green-600 dark:text-green-400',
       };
     case 'views':
       return {
@@ -52,7 +52,7 @@ const getStatData = (statType: StatType) => {
         icon: BarChart3,
         iconColor: 'text-purple-600 dark:text-purple-400',
         bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-        changeColor: 'text-green-600 dark:text-green-400'
+        changeColor: 'text-green-600 dark:text-green-400',
       };
     case 'courses':
       return {
@@ -63,7 +63,7 @@ const getStatData = (statType: StatType) => {
         icon: BookOpen,
         iconColor: 'text-orange-600 dark:text-orange-400',
         bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-        changeColor: 'text-green-600 dark:text-green-400'
+        changeColor: 'text-green-600 dark:text-green-400',
       };
     default:
       return {
@@ -74,7 +74,7 @@ const getStatData = (statType: StatType) => {
         icon: DollarSign,
         iconColor: 'text-green-600 dark:text-green-400',
         bgColor: 'bg-green-50 dark:bg-green-900/20',
-        changeColor: 'text-green-600 dark:text-green-400'
+        changeColor: 'text-green-600 dark:text-green-400',
       };
   }
 };
@@ -89,7 +89,7 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
   onRemove,
   size,
   onChangeSize,
-  onUpdateTitle
+  onUpdateTitle,
 }) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [tempTitle, setTempTitle] = useState(title);
@@ -101,11 +101,17 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
   }, [title]);
 
   // Determine stat type from title or settings
-  const statType: StatType = (settings.statType as StatType) || 
-    (title.toLowerCase().includes('revenue') ? 'revenue' :
-     title.toLowerCase().includes('student') ? 'students' :
-     title.toLowerCase().includes('view') ? 'views' :
-     title.toLowerCase().includes('course') ? 'courses' : 'revenue');
+  const statType: StatType =
+    (settings.statType as StatType) ||
+    (title.toLowerCase().includes('revenue')
+      ? 'revenue'
+      : title.toLowerCase().includes('student')
+      ? 'students'
+      : title.toLowerCase().includes('view')
+      ? 'views'
+      : title.toLowerCase().includes('course')
+      ? 'courses'
+      : 'revenue');
 
   const statData = getStatData(statType);
   const Icon = statData.icon;
@@ -124,7 +130,9 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
         if (!cancelled) setIsLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (isCollapsed) {
@@ -155,7 +163,7 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
       >
         {isLoading && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
         {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
-        
+
         <div className="flex items-start justify-between mb-4">
           <div className={`p-3 rounded-lg ${statData.bgColor}`}>
             <Icon size={24} className={statData.iconColor} />
@@ -194,7 +202,9 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Stat Type</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                Stat Type
+              </label>
               <select
                 value={statType}
                 onChange={(e) => onUpdateSettings({ statType: e.target.value })}
@@ -211,15 +221,13 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
 
         <div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{statData.label}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-2">{statData.value}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-2">
+            {statData.value}
+          </p>
           <div className="flex items-center space-x-1">
             <TrendingUp size={14} className={statData.changeColor} />
-            <span className={`text-sm font-medium ${statData.changeColor}`}>
-              {statData.change}
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {statData.changeLabel}
-            </span>
+            <span className={`text-sm font-medium ${statData.changeColor}`}>{statData.change}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{statData.changeLabel}</span>
           </div>
         </div>
       </motion.div>
@@ -292,7 +300,9 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Stat Type</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                Stat Type
+              </label>
               <select
                 value={statType}
                 onChange={(e) => onUpdateSettings({ statType: e.target.value })}
@@ -321,15 +331,15 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
 
         <div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{statData.label}</p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-3">{statData.value}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-3">
+            {statData.value}
+          </p>
           <div className="flex items-center space-x-1">
             <TrendingUp size={16} className={statData.changeColor} />
             <span className={`text-base font-medium ${statData.changeColor}`}>
               {statData.change}
             </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {statData.changeLabel}
-            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{statData.changeLabel}</span>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
  * Type definitions for internationalization system
  */
 
-export type LanguageCode = 
+export type LanguageCode =
   | 'en' // English
   | 'es' // Spanish
   | 'fr' // French
@@ -16,16 +16,31 @@ export type LanguageCode =
   | 'it' // Italian
   | 'ko'; // Korean
 
-export type RegionCode = 
-  | 'US' | 'GB' | 'CA' | 'AU' // English regions
-  | 'ES' | 'MX' | 'AR' | 'CO' // Spanish regions
-  | 'FR' | 'BE' | 'CH' // French regions
-  | 'DE' | 'AT' | 'CH' // German regions
-  | 'SA' | 'AE' | 'EG' // Arabic regions
+export type RegionCode =
+  | 'US'
+  | 'GB'
+  | 'CA'
+  | 'AU' // English regions
+  | 'ES'
+  | 'MX'
+  | 'AR'
+  | 'CO' // Spanish regions
+  | 'FR'
+  | 'BE'
+  | 'CH' // French regions
+  | 'DE'
+  | 'AT'
+  | 'CH' // German regions
+  | 'SA'
+  | 'AE'
+  | 'EG' // Arabic regions
   | 'IL' // Hebrew region
   | 'JP' // Japanese region
-  | 'CN' | 'TW' | 'HK' // Chinese regions
-  | 'BR' | 'PT' // Portuguese regions
+  | 'CN'
+  | 'TW'
+  | 'HK' // Chinese regions
+  | 'BR'
+  | 'PT' // Portuguese regions
   | 'RU' // Russian region
   | 'IT' // Italian region
   | 'KR'; // Korean region

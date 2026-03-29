@@ -15,17 +15,17 @@ interface InternationalizationEngineProps {
    * Languages to preload on mount
    */
   preloadLanguages?: LanguageCode[];
-  
+
   /**
    * Whether to preload all available languages
    */
   preloadAll?: boolean;
-  
+
   /**
    * Callback when language changes
    */
   onLanguageChange?: (language: LanguageCode) => void;
-  
+
   /**
    * Children to render
    */
@@ -47,19 +47,17 @@ export function InternationalizationEngine({
     let cancelled = false;
 
     async function preload() {
-      const languagesToPreload = preloadAll 
-        ? getAvailableLanguages()
-        : preloadLanguages;
+      const languagesToPreload = preloadAll ? getAvailableLanguages() : preloadLanguages;
 
       if (languagesToPreload.length === 0) return;
 
       try {
         await preloadTranslations(languagesToPreload);
-        
+
         if (!cancelled) {
           const status = {} as Record<LanguageCode, boolean>;
           const status: Partial<Record<LanguageCode, boolean>> = {};
-          languagesToPreload.forEach(lang => {
+          languagesToPreload.forEach((lang) => {
             status[lang] = true;
           });
           setPreloadStatus(status);
@@ -108,12 +106,8 @@ export function InternationalizationEngine({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center p-6 bg-red-50 dark:bg-red-900/20 rounded-lg">
-          <p className="text-red-600 dark:text-red-400 font-semibold mb-2">
-            Translation Error
-          </p>
-          <p className="text-red-500 dark:text-red-500 text-sm">
-            {error.message}
-          </p>
+          <p className="text-red-600 dark:text-red-400 font-semibold mb-2">Translation Error</p>
+          <p className="text-red-500 dark:text-red-500 text-sm">{error.message}</p>
         </div>
       </div>
     );

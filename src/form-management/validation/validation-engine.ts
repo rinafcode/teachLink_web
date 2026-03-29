@@ -11,7 +11,7 @@ import {
   FormValidationResult,
   FormState,
   ValidationFunction,
-  FieldDescriptor
+  FieldDescriptor,
 } from '../types/core.js';
 
 export interface ValidationEngine {
@@ -41,7 +41,7 @@ export class ValidationEngineImpl implements ValidationEngine {
   private defaultAsyncOptions: AsyncValidationOptions = {
     timeout: 5000,
     retryAttempts: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
   };
 
   constructor(fieldDescriptors: FieldDescriptor[] = []) {
@@ -53,7 +53,7 @@ export class ValidationEngineImpl implements ValidationEngine {
    * Initialize field descriptors for validation context
    */
   private initializeFieldDescriptors(fieldDescriptors: FieldDescriptor[]): void {
-    fieldDescriptors.forEach(field => {
+    fieldDescriptors.forEach((field) => {
       this.fieldDescriptors.set(field.id, field);
     });
   }
@@ -75,7 +75,7 @@ export class ValidationEngineImpl implements ValidationEngine {
       return {
         isValid: true,
         errors: [],
-        warnings: []
+        warnings: [],
       };
     }
 
@@ -83,7 +83,7 @@ export class ValidationEngineImpl implements ValidationEngine {
       fieldId,
       value,
       formState: context,
-      fieldDescriptor
+      fieldDescriptor,
     };
 
     const errors: ValidationError[] = [];
@@ -102,11 +102,11 @@ export class ValidationEngineImpl implements ValidationEngine {
       }
 
       const ruleResult = this.executeValidationRule(rule, validationContext);
-      
+
       if (!ruleResult.isValid) {
         errors.push(...ruleResult.errors);
       }
-      
+
       if (ruleResult.warnings) {
         warnings.push(...ruleResult.warnings);
       }
@@ -115,7 +115,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings: warnings.length > 0 ? warnings : undefined
+      warnings: warnings.length > 0 ? warnings : undefined,
     };
   }
 
@@ -130,25 +130,22 @@ export class ValidationEngineImpl implements ValidationEngine {
     // Validate each field
     for (const [fieldId] of this.fieldDescriptors) {
       const fieldValue = formState.values[fieldId];
-      
+
       // Synchronous validation
       const syncResult = this.validateField(fieldId, fieldValue, formState);
-      
+
       // Asynchronous validation
       const asyncResult = await this.executeAsyncValidation(fieldId, fieldValue);
-      
+
       // Combine results
       const combinedResult: ValidationResult = {
         isValid: syncResult.isValid && asyncResult.isValid,
         errors: [...syncResult.errors, ...asyncResult.errors],
-        warnings: [
-          ...(syncResult.warnings || []),
-          ...(asyncResult.warnings || [])
-        ]
+        warnings: [...(syncResult.warnings || []), ...(asyncResult.warnings || [])],
       };
 
       fieldResults[fieldId] = combinedResult;
-      
+
       if (!combinedResult.isValid) {
         isFormValid = false;
       }
@@ -157,7 +154,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     return {
       isValid: isFormValid,
       fieldResults,
-      globalErrors
+      globalErrors,
     };
   }
 
@@ -177,13 +174,13 @@ export class ValidationEngineImpl implements ValidationEngine {
       return { isValid: true, errors: [] };
     }
 
-    const asyncRules = fieldDescriptor.validation.filter(rule => rule.type === 'async');
+    const asyncRules = fieldDescriptor.validation.filter((rule) => rule.type === 'async');
     if (asyncRules.length === 0) {
       return { isValid: true, errors: [] };
     }
 
     const cacheKey = `${fieldId}:${JSON.stringify(value)}`;
-    
+
     // Return cached result if available
     if (this.asyncValidationCache.has(cacheKey)) {
       return this.asyncValidationCache.get(cacheKey)!;
@@ -191,10 +188,10 @@ export class ValidationEngineImpl implements ValidationEngine {
 
     // Create validation promise
     const validationPromise = this.executeAsyncRules(asyncRules, fieldId, value);
-    
+
     // Cache the promise
     this.asyncValidationCache.set(cacheKey, validationPromise);
-    
+
     // Clean up cache after completion
     validationPromise.finally(() => {
       this.asyncValidationCache.delete(cacheKey);
@@ -206,7 +203,10 @@ export class ValidationEngineImpl implements ValidationEngine {
   /**
    * Execute a single validation rule
    */
-  private executeValidationRule(rule: ValidationRule, context: ValidationContext): ValidationResult {
+  private executeValidationRule(
+    rule: ValidationRule,
+    context: ValidationContext,
+  ): ValidationResult {
     try {
       switch (rule.type) {
         case 'required':
@@ -224,17 +224,21 @@ export class ValidationEngineImpl implements ValidationEngine {
         default:
           return {
             isValid: true,
-            errors: []
+            errors: [],
           };
       }
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
-          code: 'validation_error',
-          message: `Validation rule execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          field: context.fieldId
-        }]
+        errors: [
+          {
+            code: 'validation_error',
+            message: `Validation rule execution failed: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
+            field: context.fieldId,
+          },
+        ],
       };
     }
   }
@@ -243,9 +247,9 @@ export class ValidationEngineImpl implements ValidationEngine {
    * Execute async validation rules with retry logic
    */
   private async executeAsyncRules(
-    rules: ValidationRule[], 
-    fieldId: string, 
-    value: any
+    rules: ValidationRule[],
+    fieldId: string,
+    value: any,
   ): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -253,19 +257,21 @@ export class ValidationEngineImpl implements ValidationEngine {
     for (const rule of rules) {
       try {
         const result = await this.executeAsyncRule(rule, fieldId, value);
-        
+
         if (!result.isValid) {
           errors.push(...result.errors);
         }
-        
+
         if (result.warnings) {
           warnings.push(...result.warnings);
         }
       } catch (error) {
         errors.push({
           code: 'async_validation_error',
-          message: `Async validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          field: fieldId
+          message: `Async validation failed: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+          field: fieldId,
         });
       }
     }
@@ -273,7 +279,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings: warnings.length > 0 ? warnings : undefined
+      warnings: warnings.length > 0 ? warnings : undefined,
     };
   }
 
@@ -281,9 +287,9 @@ export class ValidationEngineImpl implements ValidationEngine {
    * Execute a single async validation rule with timeout and retry
    */
   private async executeAsyncRule(
-    rule: ValidationRule, 
-    fieldId: string, 
-    value: any
+    rule: ValidationRule,
+    fieldId: string,
+    value: any,
   ): Promise<ValidationResult> {
     const customRule = this.customRules.get(rule.type);
     if (!customRule) {
@@ -291,7 +297,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     }
 
     const options = { ...this.defaultAsyncOptions, ...(rule.params?.asyncOptions || {}) };
-    
+
     for (let attempt = 0; attempt <= options.retryAttempts!; attempt++) {
       try {
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -299,16 +305,16 @@ export class ValidationEngineImpl implements ValidationEngine {
         });
 
         const validationPromise = Promise.resolve(customRule(value, {} as FormState));
-        
+
         const result = await Promise.race([validationPromise, timeoutPromise]);
         return result;
       } catch (error) {
         if (attempt === options.retryAttempts) {
           throw error;
         }
-        
+
         // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, options.retryDelay));
+        await new Promise((resolve) => setTimeout(resolve, options.retryDelay));
       }
     }
 
@@ -318,18 +324,21 @@ export class ValidationEngineImpl implements ValidationEngine {
   // Built-in validation rule implementations
 
   private validateRequired(value: any, rule: ValidationRule): ValidationResult {
-    const isEmpty = value === null || 
-                   value === undefined || 
-                   value === '' || 
-                   (Array.isArray(value) && value.length === 0);
+    const isEmpty =
+      value === null ||
+      value === undefined ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0);
 
     if (isEmpty) {
       return {
         isValid: false,
-        errors: [{
-          code: 'required',
-          message: rule.message || 'This field is required'
-        }]
+        errors: [
+          {
+            code: 'required',
+            message: rule.message || 'This field is required',
+          },
+        ],
       };
     }
 
@@ -342,14 +351,16 @@ export class ValidationEngineImpl implements ValidationEngine {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     if (!emailRegex.test(String(value))) {
       return {
         isValid: false,
-        errors: [{
-          code: 'email',
-          message: rule.message || 'Please enter a valid email address'
-        }]
+        errors: [
+          {
+            code: 'email',
+            message: rule.message || 'Please enter a valid email address',
+          },
+        ],
       };
     }
 
@@ -367,10 +378,12 @@ export class ValidationEngineImpl implements ValidationEngine {
     if (valueLength < minLength) {
       return {
         isValid: false,
-        errors: [{
-          code: 'minLength',
-          message: rule.message || `Minimum length is ${minLength} characters`
-        }]
+        errors: [
+          {
+            code: 'minLength',
+            message: rule.message || `Minimum length is ${minLength} characters`,
+          },
+        ],
       };
     }
 
@@ -388,10 +401,12 @@ export class ValidationEngineImpl implements ValidationEngine {
     if (valueLength > maxLength) {
       return {
         isValid: false,
-        errors: [{
-          code: 'maxLength',
-          message: rule.message || `Maximum length is ${maxLength} characters`
-        }]
+        errors: [
+          {
+            code: 'maxLength',
+            message: rule.message || `Maximum length is ${maxLength} characters`,
+          },
+        ],
       };
     }
 
@@ -409,14 +424,16 @@ export class ValidationEngineImpl implements ValidationEngine {
     }
 
     const regex = new RegExp(pattern);
-    
+
     if (!regex.test(String(value))) {
       return {
         isValid: false,
-        errors: [{
-          code: 'pattern',
-          message: rule.message || 'Value does not match required pattern'
-        }]
+        errors: [
+          {
+            code: 'pattern',
+            message: rule.message || 'Value does not match required pattern',
+          },
+        ],
       };
     }
 
@@ -428,24 +445,28 @@ export class ValidationEngineImpl implements ValidationEngine {
     if (!customRule) {
       return {
         isValid: false,
-        errors: [{
-          code: 'unknown_rule',
-          message: `Unknown validation rule: ${rule.type}`
-        }]
+        errors: [
+          {
+            code: 'unknown_rule',
+            message: `Unknown validation rule: ${rule.type}`,
+          },
+        ],
       };
     }
 
     try {
       const result = customRule(context.value, context.formState);
-      
+
       // Handle both sync and async results (though async should not be called here)
       if (result instanceof Promise) {
         return {
           isValid: false,
-          errors: [{
-            code: 'async_in_sync',
-            message: 'Async validation rule called in synchronous context'
-          }]
+          errors: [
+            {
+              code: 'async_in_sync',
+              message: 'Async validation rule called in synchronous context',
+            },
+          ],
         };
       }
 
@@ -453,10 +474,14 @@ export class ValidationEngineImpl implements ValidationEngine {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
-          code: 'custom_rule_error',
-          message: `Custom validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
-        }]
+        errors: [
+          {
+            code: 'custom_rule_error',
+            message: `Custom validation error: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
+          },
+        ],
       };
     }
   }

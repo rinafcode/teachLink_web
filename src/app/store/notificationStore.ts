@@ -30,7 +30,9 @@ const STORAGE_KEY = 'notifications_v1';
 
 interface NotificationState {
   notifications: AppNotification[];
-  addNotification: (n: Omit<AppNotification, 'id' | 'createdAt' | 'read'> & { id?: string }) => AppNotification;
+  addNotification: (
+    n: Omit<AppNotification, 'id' | 'createdAt' | 'read'> & { id?: string },
+  ) => AppNotification;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearRead: () => void;

@@ -57,15 +57,15 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 // Environment validation for wallet config
 const validateWalletEnv = () => {
   const warnings: string[] = [];
-  
+
   if (!process.env.NEXT_PUBLIC_STARKNET_NETWORK) {
     warnings.push('NEXT_PUBLIC_STARKNET_NETWORK not set, defaulting to testnet');
   }
-  
+
   if (process.env.NODE_ENV === 'development' && warnings.length > 0) {
     console.warn('[WalletProvider] Environment warnings:', warnings);
   }
-  
+
   return {
     network: process.env.NEXT_PUBLIC_STARKNET_NETWORK || 'goerli-alpha',
     isValid: true, // Non-blocking - app works without wallet
@@ -108,8 +108,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   // Safe wallet connection with error boundary
   const connect = useCallback(async () => {
-    setState(prev => ({ ...prev, isConnecting: true, error: null }));
-    
+    setState((prev) => ({ ...prev, isConnecting: true, error: null }));
+
     try {
       // Check if wallet extension is available
       if (typeof window === 'undefined') {
@@ -117,12 +117,16 @@ export function WalletProvider({ children }: WalletProviderProps) {
       }
 
       // Starknet wallet detection
-      const starknet = (window as Window & { starknet?: { 
-        enable: () => Promise<string[]>;
-        selectedAddress?: string;
-        isConnected?: boolean;
-      }}).starknet;
-      
+      const starknet = (
+        window as Window & {
+          starknet?: {
+            enable: () => Promise<string[]>;
+            selectedAddress?: string;
+            isConnected?: boolean;
+          };
+        }
+      ).starknet;
+
       if (!starknet) {
         throw new Error('No Starknet wallet detected. Please install ArgentX or Braavos.');
       }
@@ -134,7 +138,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         throw new Error('No account available');
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         address,
         isConnected: true,
@@ -143,7 +147,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       }));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to connect wallet';
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isConnecting: false,
         error: message,
@@ -154,7 +158,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
   }, []);
 
   const disconnect = useCallback(async () => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       address: null,
       isConnected: false,
@@ -163,14 +167,14 @@ export function WalletProvider({ children }: WalletProviderProps) {
   }, []);
 
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   // Auto-reconnect on mount if previously connected
   useEffect(() => {
-    const wasConnected = typeof window !== 'undefined' && 
-      localStorage.getItem('wallet_connected') === 'true';
-    
+    const wasConnected =
+      typeof window !== 'undefined' && localStorage.getItem('wallet_connected') === 'true';
+
     if (wasConnected) {
       connect().catch(() => {
         // Silent fail on auto-reconnect
@@ -197,11 +201,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     clearError,
   };
 
-  return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
-  );
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 export function useWallet() {
@@ -213,17 +213,19 @@ export function useWallet() {
 }
 export function useWallet(): WalletContextType {
   const context = useContext(WalletContext);
-  
+
   if (!context) {
     // Return safe fallback instead of throwing - prevents build breaks
     return {
       ...initialState,
-      connect: async () => { console.warn('WalletProvider not found'); },
+      connect: async () => {
+        console.warn('WalletProvider not found');
+      },
       disconnect: async () => {},
       clearError: () => {},
     };
   }
-  
+
   return context;
 }
 

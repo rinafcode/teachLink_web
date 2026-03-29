@@ -69,6 +69,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         clearTimeout(timeoutRef.current);
       }
       if (abortControllerRef.current) {
@@ -80,32 +81,35 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
   /**
    * Set error state
    */
-  const setError = useCallback((error: any) => {
-    const userMessage = getUserFriendlyMessage(error);
-    const actionSuggestion = getActionSuggestion(error);
-    const isRetry = isRetryable(error);
+  const setError = useCallback(
+    (error: any) => {
+      const userMessage = getUserFriendlyMessage(error);
+      const actionSuggestion = getActionSuggestion(error);
+      const isRetry = isRetryable(error);
 
-    setState(prev => ({
-      ...prev,
-      error,
-      userMessage,
-      actionSuggestion,
-      isRetryable: isRetry,
-      isLoading: false,
-    }));
+      setState((prev) => ({
+        ...prev,
+        error,
+        userMessage,
+        actionSuggestion,
+        isRetryable: isRetry,
+        isLoading: false,
+      }));
 
-    if (reportErrors) {
-      errorReportingService.reportError(error).catch(console.error);
-    }
+      if (reportErrors) {
+        errorReportingService.reportError(error).catch(console.error);
+      }
 
-    onError?.(error);
-  }, [reportErrors, onError]);
+      onError?.(error);
+    },
+    [reportErrors, onError],
+  );
 
   /**
    * Clear error state
    */
   const clearError = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       error: null,
       userMessage: '',
@@ -120,7 +124,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
    */
   const execute = useCallback(
     async <T,>(fn: () => Promise<T>): Promise<T | null> => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
         attempts: 0,
@@ -129,7 +133,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
       try {
         const result = await retryWithBackoff(
           async () => {
-            setState(prev => ({
+            setState((prev) => ({
               ...prev,
               attempts: prev.attempts + 1,
               isRetrying: prev.attempts > 0,
@@ -143,10 +147,10 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
             initialDelayMs,
             maxDelayMs,
             backoffFactor,
-          }
+          },
         );
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           error: null,
@@ -161,7 +165,16 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
         return null;
       }
     },
-    [maxAttempts, initialDelayMs, maxDelayMs, backoffFactor, onRetry, onSuccess, setError, state.attempts]
+    [
+      maxAttempts,
+      initialDelayMs,
+      maxDelayMs,
+      backoffFactor,
+      onRetry,
+      onSuccess,
+      setError,
+      state.attempts,
+    ],
   );
 
   /**
@@ -175,7 +188,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
 
       abortControllerRef.current = new AbortController();
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
       }));
@@ -183,7 +196,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
       try {
         const result = await fn(abortControllerRef.current.signal);
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           error: null,
@@ -198,7 +211,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
         return null;
       }
     },
-    [onSuccess, setError]
+    [onSuccess, setError],
   );
 
   /**
@@ -209,7 +222,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
       return;
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isRetrying: true,
       attempts: prev.attempts + 1,
@@ -227,7 +240,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
       abortControllerRef.current.abort();
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isLoading: false,
       isRetrying: false,
@@ -273,14 +286,14 @@ export function useFormErrorHandling() {
 
   const setFieldError = useCallback((fieldName: string, error: any) => {
     const message = getUserFriendlyMessage(error);
-    setFieldErrors(prev => ({
+    setFieldErrors((prev) => ({
       ...prev,
       [fieldName]: message,
     }));
   }, []);
 
   const clearFieldError = useCallback((fieldName: string) => {
-    setFieldErrors(prev => {
+    setFieldErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[fieldName];
       return newErrors;
@@ -291,13 +304,19 @@ export function useFormErrorHandling() {
     setFieldErrors({});
   }, []);
 
-  const hasFieldError = useCallback((fieldName: string) => {
-    return !!fieldErrors[fieldName];
-  }, [fieldErrors]);
+  const hasFieldError = useCallback(
+    (fieldName: string) => {
+      return !!fieldErrors[fieldName];
+    },
+    [fieldErrors],
+  );
 
-  const getFieldError = useCallback((fieldName: string) => {
-    return fieldErrors[fieldName];
-  }, [fieldErrors]);
+  const getFieldError = useCallback(
+    (fieldName: string) => {
+      return fieldErrors[fieldName];
+    },
+    [fieldErrors],
+  );
 
   return {
     fieldErrors,
@@ -328,7 +347,7 @@ export function useAsyncOperations() {
   >({});
 
   const setOperationLoading = useCallback((operationId: string, isLoading: boolean) => {
-    setOperations(prev => ({
+    setOperations((prev) => ({
       ...prev,
       [operationId]: {
         ...prev[operationId],
@@ -338,7 +357,7 @@ export function useAsyncOperations() {
   }, []);
 
   const setOperationError = useCallback((operationId: string, error: any) => {
-    setOperations(prev => ({
+    setOperations((prev) => ({
       ...prev,
       [operationId]: {
         ...prev[operationId],
@@ -349,7 +368,7 @@ export function useAsyncOperations() {
   }, []);
 
   const setOperationData = useCallback((operationId: string, data: any) => {
-    setOperations(prev => ({
+    setOperations((prev) => ({
       ...prev,
       [operationId]: {
         ...prev[operationId],
@@ -373,18 +392,18 @@ export function useAsyncOperations() {
         return null;
       }
     },
-    [setOperationLoading, setOperationData, setOperationError]
+    [setOperationLoading, setOperationData, setOperationError],
   );
 
   const getOperation = useCallback(
     (operationId: string) => {
       return operations[operationId] || { isLoading: false, error: null, data: null };
     },
-    [operations]
+    [operations],
   );
 
   const clearOperation = useCallback((operationId: string) => {
-    setOperations(prev => {
+    setOperations((prev) => {
       const newOps = { ...prev };
       delete newOps[operationId];
       return newOps;

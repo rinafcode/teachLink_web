@@ -73,10 +73,16 @@ describe('useStudyGroups', () => {
   it('adds resources (link and file)', () => {
     const { result } = renderHook(() => useStudyGroups({ id: 'u1', name: 'Alice' }));
     let groupId = '';
-    act(() => { groupId = result.current.createGroup({ name: 'History' }).id; });
+    act(() => {
+      groupId = result.current.createGroup({ name: 'History' }).id;
+    });
 
     act(() => {
-      result.current.addResource(groupId, { title: 'Great article', type: 'link', url: 'https://example.com' });
+      result.current.addResource(groupId, {
+        title: 'Great article',
+        type: 'link',
+        url: 'https://example.com',
+      });
     });
     expect(result.current.groupResources(groupId).length).toBe(1);
     expect(result.current.groupResources(groupId)[0].type).toBe('link');

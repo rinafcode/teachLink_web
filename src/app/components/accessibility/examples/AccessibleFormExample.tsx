@@ -78,7 +78,10 @@ export function AccessibleFormExample() {
         {/* Name Field */}
         <div className="mb-4">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Name <span className="text-red-600" aria-label="required">*</span>
+            Name{' '}
+            <span className="text-red-600" aria-label="required">
+              *
+            </span>
           </label>
           <input
             type="text"
@@ -104,7 +107,10 @@ export function AccessibleFormExample() {
         {/* Email Field */}
         <div className="mb-4">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email <span className="text-red-600" aria-label="required">*</span>
+            Email{' '}
+            <span className="text-red-600" aria-label="required">
+              *
+            </span>
           </label>
           <input
             type="email"
@@ -121,7 +127,7 @@ export function AccessibleFormExample() {
             }`}
           />
           <div id="email-hint" className="text-xs text-gray-600 mt-1">
-            We'll never share your email with anyone else.
+            We&apos;ll never share your email with anyone else.
           </div>
           {errors.email && (
             <div id="email-error" role="alert" className="mt-1">
@@ -133,7 +139,10 @@ export function AccessibleFormExample() {
         {/* Message Field */}
         <div className="mb-4">
           <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-            Message <span className="text-red-600" aria-label="required">*</span>
+            Message{' '}
+            <span className="text-red-600" aria-label="required">
+              *
+            </span>
           </label>
           <textarea
             id="message"

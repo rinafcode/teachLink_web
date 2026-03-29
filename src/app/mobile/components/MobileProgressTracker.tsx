@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight, Trophy, Target, Flame, CheckCircle2, Calendar, TrendingUp } from 'lucide-react';
+import {
+  ChevronRight,
+  Trophy,
+  Target,
+  Flame,
+  CheckCircle2,
+  Calendar,
+  TrendingUp,
+} from 'lucide-react';
 import { apiService } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
 import { Course, Lesson, UserProgress } from '../types/mobile';
@@ -32,6 +40,7 @@ export default function MobileProgressTracker() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -43,20 +52,20 @@ export default function MobileProgressTracker() {
         // Load from API
         const [coursesResponse, progressResponse] = await Promise.all([
           apiService.getCourses(),
-          apiService.getUserProgress()
+          apiService.getUserProgress(),
         ]);
 
         const coursesWithLessons = await Promise.all(
           coursesResponse.data.slice(0, 3).map(async (course) => {
             const lessonsResponse = await apiService.getCourseLessons(course.id);
-            const completedLessons = lessonsResponse.data.filter(l => l.completed).length;
-            
+            const completedLessons = lessonsResponse.data.filter((l) => l.completed).length;
+
             return {
               ...course,
               lessons: lessonsResponse.data,
-              completedLessons
+              completedLessons,
             };
-          })
+          }),
         );
 
         setCourses(coursesWithLessons);
@@ -64,7 +73,7 @@ export default function MobileProgressTracker() {
 
         // Save to offline storage
         await offlineStorage.saveUserProgress(progressResponse.data);
-        coursesWithLessons.forEach(course => {
+        coursesWithLessons.forEach((course) => {
           offlineStorage.saveCourse(course);
           offlineStorage.saveLessons(course.lessons);
         });
@@ -74,14 +83,14 @@ export default function MobileProgressTracker() {
         const coursesWithLessons = await Promise.all(
           storedCourses.map(async (course) => {
             const lessons = await offlineStorage.getCourseLessons(course.id);
-            const completedLessons = lessons.filter(l => l.completed).length;
-            
+            const completedLessons = lessons.filter((l) => l.completed).length;
+
             return {
               ...course,
               lessons,
-              completedLessons
+              completedLessons,
             };
-          })
+          }),
         );
 
         setCourses(coursesWithLessons);
@@ -106,49 +115,51 @@ export default function MobileProgressTracker() {
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 50;
 
     if (distance > minSwipeDistance && activeIndex < courses.length - 1) {
-      setActiveIndex(prev => prev + 1);
+      setActiveIndex((prev) => prev + 1);
     }
-    
+
     if (distance < -minSwipeDistance && activeIndex > 0) {
-      setActiveIndex(prev => prev - 1);
+      setActiveIndex((prev) => prev - 1);
     }
   };
 
   const toggleLesson = async (courseId: string, lessonId: string) => {
-    const course = courses.find(c => c.id === courseId);
+    const course = courses.find((c) => c.id === courseId);
     if (!course) return;
 
-    const lesson = course.lessons.find(l => l.id === lessonId);
+    const lesson = course.lessons.find((l) => l.id === lessonId);
     if (!lesson) return;
 
     const newCompleted = !lesson.completed;
 
     // Update local state
-    setCourses(courses.map(c => {
-      if (c.id === courseId) {
-        const updatedLessons = c.lessons.map(l =>
-          l.id === lessonId ? { ...l, completed: newCompleted } : l
-        );
-        const completedCount = updatedLessons.filter(l => l.completed).length;
-        const progress = (completedCount / c.totalLessons) * 100;
-        
-        return {
-          ...c,
-          lessons: updatedLessons,
-          completedLessons: completedCount,
-          progress
-        };
-      }
-      return c;
-    }));
+    setCourses(
+      courses.map((c) => {
+        if (c.id === courseId) {
+          const updatedLessons = c.lessons.map((l) =>
+            l.id === lessonId ? { ...l, completed: newCompleted } : l,
+          );
+          const completedCount = updatedLessons.filter((l) => l.completed).length;
+          const progress = (completedCount / c.totalLessons) * 100;
+
+          return {
+            ...c,
+            lessons: updatedLessons,
+            completedLessons: completedCount,
+            progress,
+          };
+        }
+        return c;
+      }),
+    );
 
     // Update offline storage
-    const updatedCourse = courses.find(c => c.id === courseId);
+    const updatedCourse = courses.find((c) => c.id === courseId);
     if (updatedCourse) {
       await offlineStorage.saveCourse(updatedCourse);
       await offlineStorage.saveLessons(updatedCourse.lessons);
@@ -178,10 +189,7 @@ export default function MobileProgressTracker() {
         <div className="text-center">
           <div className="text-red-500 mb-2">⚠️</div>
           <p className="text-gray-700 mb-4">{error}</p>
-          <button
-            onClick={loadData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-          >
+          <button onClick={loadData} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
             Retry
           </button>
         </div>
@@ -194,12 +202,8 @@ export default function MobileProgressTracker() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="text-4xl mb-4">📊</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            No progress data
-          </h3>
-          <p className="text-gray-500">
-            Start learning to see your progress here
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No progress data</h3>
+          <p className="text-gray-500">Start learning to see your progress here</p>
         </div>
       </div>
     );
@@ -253,8 +257,12 @@ export default function MobileProgressTracker() {
 
         <div className="flex items-center gap-2 text-xs text-gray-600">
           <Calendar className="w-4 h-4" />
-          <span>Last active: {userProgress?.lastActive ? 
-            new Date(userProgress.lastActive).toLocaleDateString() : 'Never'}</span>
+          <span>
+            Last active:{' '}
+            {userProgress?.lastActive
+              ? new Date(userProgress.lastActive).toLocaleDateString()
+              : 'Never'}
+          </span>
         </div>
       </div>
 
@@ -274,13 +282,13 @@ export default function MobileProgressTracker() {
           </div>
         </div>
 
-        <div 
+        <div
           className="relative overflow-hidden rounded-2xl"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div 
+          <div
             className="flex transition-transform duration-300 ease-out"
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
@@ -302,7 +310,7 @@ export default function MobileProgressTracker() {
                       <span className="font-semibold">{Math.round(course.progress)}%</span>
                     </div>
                     <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-linear-to-r from-blue-500 to-indigo-500 transition-all duration-500 rounded-full"
                         style={{ width: `${course.progress}%` }}
                       />
@@ -319,17 +327,19 @@ export default function MobileProgressTracker() {
                           lesson.completed ? 'bg-green-50' : 'bg-gray-50'
                         }`}
                       >
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                          lesson.completed ? 'bg-green-500' : 'bg-gray-300'
-                        }`}>
-                          {lesson.completed && (
-                            <CheckCircle2 className="w-4 h-4 text-white" />
-                          )}
+                        <div
+                          className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            lesson.completed ? 'bg-green-500' : 'bg-gray-300'
+                          }`}
+                        >
+                          {lesson.completed && <CheckCircle2 className="w-4 h-4 text-white" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`font-medium text-sm truncate ${
-                            lesson.completed ? 'text-gray-600 line-through' : 'text-gray-900'
-                          }`}>
+                          <p
+                            className={`font-medium text-sm truncate ${
+                              lesson.completed ? 'text-gray-600 line-through' : 'text-gray-900'
+                            }`}
+                          >
                             {lesson.title}
                           </p>
                           <p className="text-xs text-gray-500">{lesson.duration}</p>
@@ -339,11 +349,11 @@ export default function MobileProgressTracker() {
                     ))}
                   </div>
 
-                  <button 
+                  <button
                     className="w-full mt-4 py-3 bg-linear-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold active:scale-[0.98] transition-transform"
                     onClick={() => {
                       // Navigate to course or continue learning
-                      const firstIncompleteLesson = course.lessons.find(l => !l.completed);
+                      const firstIncompleteLesson = course.lessons.find((l) => !l.completed);
                       if (firstIncompleteLesson) {
                         // Handle lesson start
                       }

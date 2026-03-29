@@ -117,7 +117,9 @@ export class OfflineStorage {
         }
 
         if (!db.objectStoreNames.contains('progress')) {
-          const progressStore = db.createObjectStore('progress', { keyPath: ['courseId', 'moduleId'] });
+          const progressStore = db.createObjectStore('progress', {
+            keyPath: ['courseId', 'moduleId'],
+          });
           progressStore.createIndex('courseId', 'courseId', { unique: false });
           progressStore.createIndex('synced', 'synced', { unique: false });
           progressStore.createIndex('updatedAt', 'updatedAt', { unique: false });
@@ -135,7 +137,7 @@ export class OfflineStorage {
           conflictStore.createIndex('resolved', 'resolved', { unique: false });
           conflictStore.createIndex('entityKey', 'entityKey', { unique: false });
         }
-      }
+      },
     });
   }
 
@@ -204,7 +206,10 @@ export class OfflineStorage {
     await db.put('progress', progress);
   }
 
-  async getProgress(courseId: string, moduleId: string): Promise<OfflineProgressRecord | undefined> {
+  async getProgress(
+    courseId: string,
+    moduleId: string,
+  ): Promise<OfflineProgressRecord | undefined> {
     const db = this.getDb();
     return await db.get('progress', [courseId, moduleId]);
   }
@@ -230,7 +235,7 @@ export class OfflineStorage {
     const updated = {
       ...existing,
       synced: true,
-      syncedAt
+      syncedAt,
     };
 
     await this.saveProgress(updated);
@@ -288,7 +293,7 @@ export class OfflineSyncService {
       entityKey: createEntityKey(type, data),
       data,
       timestamp: new Date().toISOString(),
-      version: 1
+      version: 1,
     };
 
     await this.db.put('syncQueue', item);
@@ -329,7 +334,7 @@ export class OfflineSyncService {
       ...conflict,
       resolution,
       resolved: true,
-      resolvedAt: new Date().toISOString()
+      resolvedAt: new Date().toISOString(),
     };
 
     await this.db.put('conflicts', resolvedConflict);
@@ -347,7 +352,7 @@ export class OfflineSyncService {
       syncedItems: 0,
       conflicts: [],
       errors: [],
-      lastSyncTime: new Date().toISOString()
+      lastSyncTime: new Date().toISOString(),
     };
 
     try {
@@ -382,7 +387,7 @@ export class OfflineSyncService {
 
   private async syncProgressItems(
     items: SyncQueueItem[],
-    options: SyncOptions
+    options: SyncOptions,
   ): Promise<{ syncedItems: number; conflicts: SyncConflict[]; errors: string[] }> {
     const groupedByEntity = items.reduce<Record<string, SyncQueueItem[]>>((acc, item) => {
       if (!acc[item.entityKey]) acc[item.entityKey] = [];
@@ -414,14 +419,14 @@ export class OfflineSyncService {
               ...candidate.data,
               progress: existing.progress,
               completed: existing.completed,
-              updatedAt: existing.updatedAt
+              updatedAt: existing.updatedAt,
             },
             timestamp: existing.updatedAt,
-            version: candidate.version + 1
+            version: candidate.version + 1,
           },
           resolution: 'manual',
           resolved: false,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
 
         const resolution = this.resolveConflictStrategy(conflict, options);
@@ -440,7 +445,7 @@ export class OfflineSyncService {
             completed: candidate.data.completed,
             updatedAt: candidate.data.updatedAt,
             synced: true,
-            syncedAt: new Date().toISOString()
+            syncedAt: new Date().toISOString(),
           });
         }
       } else {
@@ -451,7 +456,7 @@ export class OfflineSyncService {
           completed: candidate.data.completed,
           updatedAt: candidate.data.updatedAt,
           synced: true,
-          syncedAt: new Date().toISOString()
+          syncedAt: new Date().toISOString(),
         });
       }
 
@@ -471,14 +476,22 @@ export class OfflineSyncService {
       const bestUpdated = new Date(best.data.updatedAt).getTime();
       const currentUpdated = new Date(current.data.updatedAt).getTime();
       if (currentUpdated > bestUpdated) return current;
-      if (currentUpdated === bestUpdated && current.data.progress > best.data.progress) return current;
+      if (currentUpdated === bestUpdated && current.data.progress > best.data.progress)
+        return current;
       if (current.data.completed && !best.data.completed) return current;
       return best;
     });
   }
 
-  private resolveConflictStrategy(conflict: SyncConflict, options: SyncOptions): SyncConflict['resolution'] {
-    if (options.resolveConflicts === 'local' || options.resolveConflicts === 'remote' || options.resolveConflicts === 'merge') {
+  private resolveConflictStrategy(
+    conflict: SyncConflict,
+    options: SyncOptions,
+  ): SyncConflict['resolution'] {
+    if (
+      options.resolveConflicts === 'local' ||
+      options.resolveConflicts === 'remote' ||
+      options.resolveConflicts === 'merge'
+    ) {
       return options.resolveConflicts;
     }
 
@@ -490,11 +503,11 @@ export class OfflineSyncService {
     const remoteUpdated = new Date(conflict.remoteItem.data.updatedAt).getTime();
 
     if (localUpdated === remoteUpdated) {
-      return conflict.localItem.data.progress >= conflict.remoteItem.data.progress ? 'local' : 'remote';
+      return conflict.localItem.data.progress >= conflict.remoteItem.data.progress
+        ? 'local'
+        : 'remote';
     }
 
     return localUpdated > remoteUpdated ? 'local' : 'remote';
   }
-
-
 }

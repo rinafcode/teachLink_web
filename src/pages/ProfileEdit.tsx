@@ -1,6 +1,6 @@
-import "../app/globals.css";
-import ProfileEditForm from "../components/profile/ProfileEditForm";
-import { Toaster } from "react-hot-toast";
+import '../app/globals.css';
+import ProfileEditForm from '../components/profile/ProfileEditForm';
+import { Toaster } from 'react-hot-toast';
 
 export default function ProfileEdit() {
   return (

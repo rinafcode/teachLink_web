@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-    css: {
+  css: {
     postcss: {
       plugins: [], // empty: skip PostCSS entirely in test runs
     },

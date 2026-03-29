@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Bell, Check } from "lucide-react";
-import { useNotificationStore } from "@/app/store/notificationStore";
+import React from 'react';
+import { Bell, Check } from 'lucide-react';
+import { useNotificationStore } from '@/app/store/notificationStore';
 
 export default function NotificationCenter() {
   const { notifications, markAsRead, markAllAsRead, clearRead } = useNotificationStore();
@@ -20,8 +20,12 @@ export default function NotificationCenter() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={markAllAsRead} className="text-sm text-gray-600 hover:text-gray-900">Mark all read</button>
-          <button onClick={clearRead} className="text-sm text-gray-600 hover:text-gray-900">Clear read</button>
+          <button onClick={markAllAsRead} className="text-sm text-gray-600 hover:text-gray-900">
+            Mark all read
+          </button>
+          <button onClick={clearRead} className="text-sm text-gray-600 hover:text-gray-900">
+            Clear read
+          </button>
         </div>
       </div>
       <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -29,13 +33,21 @@ export default function NotificationCenter() {
           <div className="text-sm text-gray-500">You&apos;re all caught up!</div>
         )}
         {notifications.map((n) => (
-          <div key={n.id} className={`flex items-start gap-2 p-2 rounded border ${n.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-100'}`}>
+          <div
+            key={n.id}
+            className={`flex items-start gap-2 p-2 rounded border ${
+              n.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-100'
+            }`}
+          >
             <div className="flex-1">
               <div className="text-sm text-gray-900">{n.message}</div>
               <div className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleString()}</div>
             </div>
             {!n.read && (
-              <button onClick={() => markAsRead(n.id)} className="text-xs inline-flex items-center gap-1 text-blue-700 hover:underline">
+              <button
+                onClick={() => markAsRead(n.id)}
+                className="text-xs inline-flex items-center gap-1 text-blue-700 hover:underline"
+              >
                 <Check size={14} /> Read
               </button>
             )}

@@ -28,7 +28,7 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
   onValidationComplete,
   showValidationOn = 'blur',
   debounceMs = 300,
-  className = ''
+  className = '',
 }) => {
   const [validationEngine] = useState(() => new ValidationEngineImpl());
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -43,6 +43,7 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
     }, debounceMs);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, rules, formState]);
 
   const performValidation = async () => {
@@ -70,7 +71,8 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
   };
 
   const hasErrors = validationResult && !validationResult.isValid;
-  const hasWarnings = validationResult && validationResult.warnings && validationResult.warnings.length > 0;
+  const hasWarnings =
+    validationResult && validationResult.warnings && validationResult.warnings.length > 0;
 
   return (
     <div className={`advanced-validation ${className}`}>
@@ -120,7 +122,7 @@ interface ValidationRuleBuilderProps {
 
 export const ValidationRuleBuilder: React.FC<ValidationRuleBuilderProps> = ({
   onRuleCreate,
-  className = ''
+  className = '',
 }) => {
   const [ruleType, setRuleType] = useState<ValidationRule['type']>('required');
   const [message, setMessage] = useState('');
@@ -130,7 +132,7 @@ export const ValidationRuleBuilder: React.FC<ValidationRuleBuilderProps> = ({
     const rule: ValidationRule = {
       type: ruleType,
       message,
-      params: Object.keys(params).length > 0 ? params : undefined
+      params: Object.keys(params).length > 0 ? params : undefined,
     };
 
     onRuleCreate(rule);
@@ -146,7 +148,10 @@ export const ValidationRuleBuilder: React.FC<ValidationRuleBuilderProps> = ({
 
       <div className="form-group">
         <label>Rule Type</label>
-        <select value={ruleType} onChange={(e) => setRuleType(e.target.value as ValidationRule['type'])}>
+        <select
+          value={ruleType}
+          onChange={(e) => setRuleType(e.target.value as ValidationRule['type'])}
+        >
           <option value="required">Required</option>
           <option value="email">Email</option>
           <option value="minLength">Min Length</option>
@@ -173,9 +178,11 @@ export const ValidationRuleBuilder: React.FC<ValidationRuleBuilderProps> = ({
           <input
             type="number"
             value={params.min || params.max || ''}
-            onChange={(e) => setParams({
-              [ruleType === 'minLength' ? 'min' : 'max']: parseInt(e.target.value)
-            })}
+            onChange={(e) =>
+              setParams({
+                [ruleType === 'minLength' ? 'min' : 'max']: parseInt(e.target.value),
+              })
+            }
           />
         </div>
       )}

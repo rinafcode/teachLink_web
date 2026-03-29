@@ -28,12 +28,12 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
   saveOnBlur = true,
   onSaveSuccess,
   onSaveError,
-  className = ''
+  className = '',
 }) => {
   const [autoSaveManager] = useState(() => new AutoSaveManagerImpl());
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({
     status: 'idle',
-    queuedSaves: 0
+    queuedSaves: 0,
   });
   const [lastSavedTime, setLastSavedTime] = useState<string>('');
 
@@ -140,11 +140,9 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
       <div className={`save-status save-status-${saveStatus.status}`}>
         <span className="status-icon">{getStatusIcon()}</span>
         <span className="status-text">{getStatusText()}</span>
-        
+
         {saveStatus.queuedSaves > 0 && (
-          <span className="queued-saves">
-            ({saveStatus.queuedSaves} queued)
-          </span>
+          <span className="queued-saves">({saveStatus.queuedSaves} queued)</span>
         )}
       </div>
 
@@ -158,11 +156,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
           Save Now
         </button>
 
-        <button
-          onClick={handleClearDraft}
-          className="btn-clear"
-          title="Clear saved draft"
-        >
+        <button onClick={handleClearDraft} className="btn-clear" title="Clear saved draft">
           Clear Draft
         </button>
       </div>
@@ -186,7 +180,7 @@ interface AutoSaveIndicatorProps {
 export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
   status,
   compact = false,
-  className = ''
+  className = '',
 }) => {
   const getStatusColor = () => {
     switch (status.status) {
@@ -213,10 +207,7 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
 
   return (
     <div className={`auto-save-indicator ${className}`}>
-      <div
-        className="indicator-dot"
-        style={{ backgroundColor: getStatusColor() }}
-      />
+      <div className="indicator-dot" style={{ backgroundColor: getStatusColor() }} />
       <span className="indicator-text">
         {status.status === 'saving' && 'Saving...'}
         {status.status === 'saved' && 'All changes saved'}

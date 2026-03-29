@@ -9,17 +9,17 @@
  */
 
 import React, { FC, CSSProperties } from 'react';
-import { describe, it, expect, vi, } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { simulateResize } from '../utils/testUtils';
 
-//  Stub design-system components 
+//  Stub design-system components
 
 type ThemeMode = 'light' | 'dark';
 
 const TOKENS: Record<ThemeMode, Record<string, string>> = {
   light: { '--bg': '#ffffff', '--fg': '#111111', '--accent': '#0066cc' },
-  dark:  { '--bg': '#1a1a1a', '--fg': '#f0f0f0', '--accent': '#4dabf7' },
+  dark: { '--bg': '#1a1a1a', '--fg': '#f0f0f0', '--accent': '#4dabf7' },
 };
 
 interface ThemeWrapperProps {
@@ -46,12 +46,8 @@ interface CardProps {
 }
 
 const Card: FC<CardProps> = ({ title, description, variant = 'default', imageUrl }) => (
-  <article
-    data-testid="card"
-    className={`card card--${variant}`}
-    role="article"
-    aria-label={title}
-  >
+  <article data-testid="card" className={`card card--${variant}`} role="article" aria-label={title}>
+    {/* eslint-disable-next-line @next/next/no-img-element */}
     {imageUrl && <img src={imageUrl} alt={title} data-testid="card-image" />}
     <h2 data-testid="card-title">{title}</h2>
     <p data-testid="card-desc">{description}</p>
@@ -73,13 +69,17 @@ const Badge: FC<BadgeProps> = ({ label, color = 'blue' }) => (
   </span>
 );
 
-interface ResponsiveNavProps { links: string[]; }
+interface ResponsiveNavProps {
+  links: string[];
+}
 
 const ResponsiveNav: FC<ResponsiveNavProps> = ({ links }) => (
   <nav data-testid="nav" className="nav">
     <ul>
-      {links.map(link => (
-        <li key={link} data-testid="nav-item"><a href={`#${link}`}>{link}</a></li>
+      {links.map((link) => (
+        <li key={link} data-testid="nav-item">
+          <a href={`#${link}`}>{link}</a>
+        </li>
       ))}
     </ul>
   </nav>
@@ -89,28 +89,26 @@ const ResponsiveNav: FC<ResponsiveNavProps> = ({ links }) => (
 
 describe('VisualRegression – Snapshots', () => {
   it('Card (default variant) matches snapshot', () => {
-    const { container } = render(
-      <Card title="Hello World" description="A test card" />
-    );
+    const { container } = render(<Card title="Hello World" description="A test card" />);
     expect(container.firstChild).toMatchSnapshot();
   });
 
   it('Card (featured variant) matches snapshot', () => {
     const { container } = render(
-      <Card title="Featured" description="Featured card" variant="featured" />
+      <Card title="Featured" description="Featured card" variant="featured" />,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
   it('Card (compact variant) matches snapshot', () => {
     const { container } = render(
-      <Card title="Compact" description="Compact card" variant="compact" />
+      <Card title="Compact" description="Compact card" variant="compact" />,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
   it('Badge matches snapshot for each color', () => {
-    (['green', 'red', 'yellow', 'blue'] as const).forEach(color => {
+    (['green', 'red', 'yellow', 'blue'] as const).forEach((color) => {
       const { container } = render(<Badge label={color.toUpperCase()} color={color} />);
       expect(container.firstChild).toMatchSnapshot();
     });
@@ -118,14 +116,18 @@ describe('VisualRegression – Snapshots', () => {
 
   it('ThemeWrapper light mode matches snapshot', () => {
     const { container } = render(
-      <ThemeWrapper mode="light"><span>Content</span></ThemeWrapper>
+      <ThemeWrapper mode="light">
+        <span>Content</span>
+      </ThemeWrapper>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
   it('ThemeWrapper dark mode matches snapshot', () => {
     const { container } = render(
-      <ThemeWrapper mode="dark"><span>Content</span></ThemeWrapper>
+      <ThemeWrapper mode="dark">
+        <span>Content</span>
+      </ThemeWrapper>,
     );
     expect(container.firstChild).toMatchSnapshot();
   });
@@ -150,17 +152,25 @@ describe('VisualRegression – CSS class assertions', () => {
   });
 
   it('ThemeWrapper has correct theme class', () => {
-    render(<ThemeWrapper mode="dark"><span /></ThemeWrapper>);
+    render(
+      <ThemeWrapper mode="dark">
+        <span />
+      </ThemeWrapper>,
+    );
     expect(screen.getByTestId('theme-wrapper')).toHaveClass('theme-dark');
   });
 
   it('ThemeWrapper exposes data-theme attribute', () => {
-    render(<ThemeWrapper mode="light"><span /></ThemeWrapper>);
+    render(
+      <ThemeWrapper mode="light">
+        <span />
+      </ThemeWrapper>,
+    );
     expect(screen.getByTestId('theme-wrapper')).toHaveAttribute('data-theme', 'light');
   });
 });
 
-// Accessibility attributes 
+// Accessibility attributes
 
 describe('VisualRegression – ARIA & semantic structure', () => {
   it('Card has role="article"', () => {
@@ -189,22 +199,34 @@ describe('VisualRegression – ARIA & semantic structure', () => {
 describe('VisualRegression – Theme switching', () => {
   it('swaps CSS variable values between light and dark', () => {
     const { rerender, getByTestId } = render(
-      <ThemeWrapper mode="light"><span /></ThemeWrapper>
+      <ThemeWrapper mode="light">
+        <span />
+      </ThemeWrapper>,
     );
     const wrapper = getByTestId('theme-wrapper') as HTMLElement;
     expect(wrapper.style.getPropertyValue('--bg')).toBe('#ffffff');
 
-    rerender(<ThemeWrapper mode="dark"><span /></ThemeWrapper>);
+    rerender(
+      <ThemeWrapper mode="dark">
+        <span />
+      </ThemeWrapper>,
+    );
     expect(wrapper.style.getPropertyValue('--bg')).toBe('#1a1a1a');
   });
 
   it('accent colour differs between themes', () => {
     const { rerender, getByTestId } = render(
-      <ThemeWrapper mode="light"><span /></ThemeWrapper>
+      <ThemeWrapper mode="light">
+        <span />
+      </ThemeWrapper>,
     );
     const wrapper = getByTestId('theme-wrapper') as HTMLElement;
     const lightAccent = wrapper.style.getPropertyValue('--accent');
-    rerender(<ThemeWrapper mode="dark"><span /></ThemeWrapper>);
+    rerender(
+      <ThemeWrapper mode="dark">
+        <span />
+      </ThemeWrapper>,
+    );
     const darkAccent = wrapper.style.getPropertyValue('--accent');
     expect(lightAccent).not.toBe(darkAccent);
   });
@@ -233,7 +255,7 @@ describe('VisualRegression – Responsive layout', () => {
   });
 });
 
-//  Style-property validation 
+//  Style-property validation
 
 describe('VisualRegression – Inline style validation', () => {
   it('Badge style references a CSS variable', () => {
@@ -243,7 +265,11 @@ describe('VisualRegression – Inline style validation', () => {
   });
 
   it('ThemeWrapper sets all expected CSS variables', () => {
-    render(<ThemeWrapper mode="light"><span /></ThemeWrapper>);
+    render(
+      <ThemeWrapper mode="light">
+        <span />
+      </ThemeWrapper>,
+    );
     const el = screen.getByTestId('theme-wrapper') as HTMLElement;
     expect(el.style.getPropertyValue('--bg')).toBeTruthy();
     expect(el.style.getPropertyValue('--fg')).toBeTruthy();

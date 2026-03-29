@@ -16,15 +16,17 @@ export default function StudyGroupsPage() {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const selected = useMemo(() => sg.groups.find((g) => g.id === selectedGroupId) || null, [sg.groups, selectedGroupId]);
+  const selected = useMemo(
+    () => sg.groups.find((g) => g.id === selectedGroupId) || null,
+    [sg.groups, selectedGroupId],
+  );
   const [tab, setTab] = useState<'discussion' | 'resources' | 'challenges'>('discussion');
 
   const filteredGroups = useMemo(() => {
     if (!searchQuery.trim()) return sg.groups;
     const query = searchQuery.toLowerCase();
-    return sg.groups.filter(g => 
-      g.name.toLowerCase().includes(query) ||
-      g.description?.toLowerCase().includes(query)
+    return sg.groups.filter(
+      (g) => g.name.toLowerCase().includes(query) || g.description?.toLowerCase().includes(query),
     );
   }, [sg.groups, searchQuery]);
 
@@ -106,7 +108,9 @@ export default function StudyGroupsPage() {
               <div className="text-center py-8 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                 <Users size={48} className="mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                 <p className="text-sm">
-                  {searchQuery ? 'No groups match your search.' : 'No groups yet. Create one above!'}
+                  {searchQuery
+                    ? 'No groups match your search.'
+                    : 'No groups yet. Create one above!'}
                 </p>
               </div>
             ) : (
@@ -118,7 +122,9 @@ export default function StudyGroupsPage() {
                   isMember={!!g.members.find((m) => m.id === sg.currentUser.id)}
                   onJoin={() => sg.joinGroup(g.id)}
                   onLeave={() => sg.leaveGroup(g.id)}
-                  onOpen={() => { setSelectedGroupId(g.id); }}
+                  onOpen={() => {
+                    setSelectedGroupId(g.id);
+                  }}
                 />
               ))
             )}
@@ -155,7 +161,10 @@ export default function StudyGroupsPage() {
                         </p>
                       )}
                       <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                        <span>{selected.members.length} {selected.members.length === 1 ? 'member' : 'members'}</span>
+                        <span>
+                          {selected.members.length}{' '}
+                          {selected.members.length === 1 ? 'member' : 'members'}
+                        </span>
                         <span>•</span>
                         <span>{sg.groupChallenges(selected.id).length} challenges</span>
                         <span>•</span>
@@ -171,7 +180,7 @@ export default function StudyGroupsPage() {
                     {[
                       { id: 'discussion', label: 'Discussion' },
                       { id: 'resources', label: 'Resources' },
-                      { id: 'challenges', label: 'Challenges' }
+                      { id: 'challenges', label: 'Challenges' },
                     ].map((t) => (
                       <button
                         key={t.id}
@@ -244,16 +253,16 @@ export default function StudyGroupsPage() {
   );
 }
 
-function CreateGroupForm({ 
-  onCreate, 
-  onCancel 
-}: { 
+function CreateGroupForm({
+  onCreate,
+  onCancel,
+}: {
   onCreate: (name: string, description?: string) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
-  
+
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
       <h3 className="font-medium text-gray-900 dark:text-gray-50 mb-4">Create New Study Group</h3>

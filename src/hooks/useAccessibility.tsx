@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useContext, useMemo } from 'react';
+import { AccessibilityContext } from '@/components/accessibility/AccessibilityContext';
 import {
   getFocusableElements,
   trapFocus,
@@ -6,6 +7,28 @@ import {
   checkAccessibilityIssues,
   AccessibilityIssue,
 } from '@/utils/accessibilityUtils';
+import type { AccessibilityContextValue } from '@/components/accessibility/AccessibilityContext';
+
+/**
+ * Global accessibility context with a safe fallback outside `AccessibilityProvider`.
+ */
+export function useAccessibility(): AccessibilityContextValue {
+  const ctx = useContext(AccessibilityContext);
+  return useMemo(() => {
+    if (ctx) return ctx;
+    return {
+      announce: (message: string, priority: 'polite' | 'assertive' = 'polite') =>
+        announceToScreenReader(message, priority),
+      prefersReducedMotion:
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      isKeyboardUser: true,
+      runPageAudit: () =>
+        typeof document !== 'undefined' ? checkAccessibilityIssues(document.body) : [],
+      verboseLiveRegions: false,
+    };
+  }, [ctx]);
+}
 
 /**
  * Hook for managing keyboard navigation
@@ -42,12 +65,20 @@ export function useFocusTrap(isActive: boolean = false) {
   useEffect(() => {
     if (!isActive || !containerRef.current) return;
 
-    // Store previous focus
+    const container = containerRef.current;
     previousFocusRef.current = document.activeElement as HTMLElement;
 
-    // Focus first focusable element
-    const focusableElements = getFocusableElements(containerRef.current);
-    focusableElements[0]?.focus();
+    const focusableElements = getFocusableElements(container);
+    let removedTabIndex = false;
+    if (focusableElements.length > 0) {
+      focusableElements[0]?.focus();
+    } else {
+      if (!container.hasAttribute('tabindex')) {
+        container.setAttribute('tabindex', '-1');
+        removedTabIndex = true;
+      }
+      container.focus();
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (containerRef.current) {
@@ -59,7 +90,9 @@ export function useFocusTrap(isActive: boolean = false) {
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      // Restore previous focus
+      if (removedTabIndex) {
+        container.removeAttribute('tabindex');
+      }
       previousFocusRef.current?.focus();
     };
   }, [isActive]);
@@ -100,12 +133,9 @@ export function useFocusVisible() {
  * Hook for screen reader announcements
  */
 export function useScreenReaderAnnouncement() {
-  const announce = useCallback(
-    (message: string, priority: 'polite' | 'assertive' = 'polite') => {
-      announceToScreenReader(message, priority);
-    },
-    []
-  );
+  const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
+    announceToScreenReader(message, priority);
+  }, []);
 
   return announce;
 }
@@ -133,6 +163,7 @@ export function useAccessibilityCheck(autoCheck: boolean = false) {
       const timer = setTimeout(checkAccessibility, 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [autoCheck, checkAccessibility]);
 
   return {
@@ -173,7 +204,7 @@ export function useAriaLive() {
         className="sr-only"
       />
     ),
-    []
+    [],
   );
 
   return { announce, LiveRegion };

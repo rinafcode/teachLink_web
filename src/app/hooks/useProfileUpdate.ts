@@ -20,7 +20,7 @@ export function useProfileUpdate() {
     try {
       // TODO: Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated API delay
-      
+
       // Simulate API response
       const response = {
         success: true,
@@ -47,4 +47,4 @@ export function useProfileUpdate() {
     updateProfile,
     isLoading,
   };
-} 
+}

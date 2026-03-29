@@ -31,7 +31,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ className = '' }) => {
     pendingSyncCount,
     pendingConflicts,
     syncOfflineData,
-    resolveAllConflicts
+    resolveAllConflicts,
   } = useOfflineModeContext();
 
   const statusLabel = useMemo(() => {
@@ -52,14 +52,20 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ className = '' }) => {
     <div className={`rounded-2xl border border-gray-200 bg-white p-6 shadow-sm ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <StatusIcon className={`h-5 w-5 ${syncStatus === 'syncing' ? 'animate-spin text-blue-600' : 'text-green-600'}`} />
+          <StatusIcon
+            className={`h-5 w-5 ${
+              syncStatus === 'syncing' ? 'animate-spin text-blue-600' : 'text-green-600'
+            }`}
+          />
           <div>
             <p className="text-sm font-semibold text-gray-900">Sync manager</p>
-            <p className="text-xs text-gray-500">{statusLabel} • Last sync {formatTimeAgo(lastSyncTime)}</p>
+            <p className="text-xs text-gray-500">
+              {statusLabel} • Last sync {formatTimeAgo(lastSyncTime)}
+            </p>
           </div>
         </div>
         <button
-          onClick={() => setIsOpen(prev => !prev)}
+          onClick={() => setIsOpen((prev) => !prev)}
           className="text-xs font-semibold text-blue-600 hover:text-blue-700"
         >
           {isOpen ? 'Hide details' : 'View details'}

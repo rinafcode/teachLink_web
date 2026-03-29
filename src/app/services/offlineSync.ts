@@ -72,7 +72,7 @@ class OfflineSyncService {
       ...item,
       id: `${item.type}-${Date.now()}-${Math.random()}`,
       timestamp: new Date(),
-      version: 1
+      version: 1,
     };
 
     await this.db.put('syncQueue', syncItem);
@@ -87,7 +87,7 @@ class OfflineSyncService {
   async removeFromSyncQueue(id: string): Promise<void> {
     if (!this.db) return;
     await this.db.delete('syncQueue', id);
-    this.syncQueue = this.syncQueue.filter(item => item.id !== id);
+    this.syncQueue = this.syncQueue.filter((item) => item.id !== id);
   }
 
   async clearSyncQueue(): Promise<void> {
@@ -107,7 +107,7 @@ class OfflineSyncService {
       syncedItems: 0,
       conflicts: [],
       errors: [],
-      lastSyncTime: new Date()
+      lastSyncTime: new Date(),
     };
 
     try {
@@ -119,7 +119,7 @@ class OfflineSyncService {
 
       // Group items by type for batch processing
       const groupedItems = this.groupItemsByType(queue);
-      
+
       for (const [type, items] of Object.entries(groupedItems)) {
         try {
           const typeResult = await this.syncItemType(type, items, options);
@@ -132,7 +132,6 @@ class OfflineSyncService {
 
       result.success = result.errors.length === 0;
       await this.recordSyncHistory(result);
-
     } catch (error) {
       result.errors.push(`Sync failed: ${error}`);
     } finally {
@@ -153,9 +152,9 @@ class OfflineSyncService {
   }
 
   private async syncItemType(
-    type: string, 
-    items: SyncItem[], 
-    options: SyncOptions
+    type: string,
+    items: SyncItem[],
+    options: SyncOptions,
   ): Promise<{ syncedItems: number; conflicts: SyncConflict[] }> {
     const result = { syncedItems: 0, conflicts: [] as SyncConflict[] };
 
@@ -163,7 +162,7 @@ class OfflineSyncService {
     for (const item of items) {
       try {
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200));
+        await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 200));
 
         // Simulate potential conflicts
         const hasConflict = Math.random() < 0.1; // 10% chance of conflict
@@ -190,22 +189,19 @@ class OfflineSyncService {
     return result;
   }
 
-  private async handleConflict(
-    item: SyncItem, 
-    options: SyncOptions
-  ): Promise<SyncConflict> {
+  private async handleConflict(item: SyncItem, options: SyncOptions): Promise<SyncConflict> {
     // Simulate getting remote version
     const remoteItem: SyncItem = {
       ...item,
       id: item.id,
       timestamp: new Date(Date.now() - 1000), // Slightly older
-      version: item.version + 1
+      version: item.version + 1,
     };
 
     const conflict: SyncConflict = {
       localItem: item,
       remoteItem,
-      resolution: 'manual'
+      resolution: 'manual',
     };
 
     // Auto-resolve if specified
@@ -251,24 +247,25 @@ class OfflineSyncService {
       quiz_result: '/api/quiz-results',
       bookmark: '/api/bookmarks',
       note: '/api/notes',
-      course_progress: '/api/course-progress'
+      course_progress: '/api/course-progress',
     };
 
     const endpoint = endpoints[type as keyof typeof endpoints] || '/api/sync';
-    
+
     // Simulate API call with potential failure
-    if (Math.random() < 0.05) { // 5% failure rate
+    if (Math.random() < 0.05) {
+      // 5% failure rate
       throw new Error(`API call failed for ${endpoint}`);
     }
 
     // Simulate successful API response
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
   }
 
   private async updateLocalData(item: SyncItem): Promise<void> {
     // Update local storage with remote data
     if (!this.db) return;
-    
+
     // This would typically update the main offline database
     // For now, we'll just remove the sync queue item
     await this.removeFromSyncQueue(item.id);
@@ -281,11 +278,11 @@ class OfflineSyncService {
 
   private async recordSyncHistory(result: SyncResult): Promise<void> {
     if (!this.db) return;
-    
+
     const historyItem = {
       id: `sync-${Date.now()}`,
       timestamp: result.lastSyncTime,
-      result
+      result,
     };
 
     await this.db.put('syncHistory', historyItem);
@@ -293,17 +290,17 @@ class OfflineSyncService {
 
   async getSyncHistory(limit: number = 10): Promise<any[]> {
     if (!this.db) return [];
-    
+
     const tx = this.db.transaction('syncHistory', 'readonly');
     const store = tx.objectStore('syncHistory');
     const index = store.index('timestamp');
-    
+
     return await index.getAll(null, limit);
   }
 
   async getPendingConflicts(): Promise<SyncConflict[]> {
     if (!this.db) return [];
-    
+
     const tx = this.db.transaction('conflicts', 'readonly');
     const store = tx.objectStore('conflicts');
     const index = store.index('resolved');
@@ -313,9 +310,12 @@ class OfflineSyncService {
     return all.filter((c) => !c.resolved);
   }
 
-  async resolveConflictManually(conflictId: string, resolution: 'local' | 'remote' | 'merge'): Promise<void> {
+  async resolveConflictManually(
+    conflictId: string,
+    resolution: 'local' | 'remote' | 'merge',
+  ): Promise<void> {
     if (!this.db) return;
-    
+
     const conflict = await this.db.get('conflicts', conflictId);
     if (conflict) {
       conflict.resolution = resolution;
@@ -334,12 +334,12 @@ class OfflineSyncService {
     const queue = await this.getSyncQueue();
     const conflicts = await this.getPendingConflicts();
     const history = await this.getSyncHistory(1);
-    
+
     return {
       isSyncing: this.isSyncing,
       queueLength: queue.length,
       lastSyncTime: history.length > 0 ? history[0].timestamp : null,
-      pendingConflicts: conflicts.length
+      pendingConflicts: conflicts.length,
     };
   }
 
@@ -352,39 +352,39 @@ class OfflineSyncService {
     const queue = await this.getSyncQueue();
     const history = await this.getSyncHistory();
     const conflicts = await this.getPendingConflicts();
-    
+
     const exportData = {
       queue,
       history,
       conflicts,
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     };
-    
+
     return JSON.stringify(exportData, null, 2);
   }
 
   async importSyncData(data: string): Promise<void> {
     const importData = JSON.parse(data);
-    
+
     if (!this.db) return;
-    
+
     // Clear existing data
     await this.clearSyncQueue();
     await this.clearSyncHistory();
-    
+
     // Import new data
     if (importData.queue) {
       for (const item of importData.queue) {
         await this.db.put('syncQueue', item);
       }
     }
-    
+
     if (importData.history) {
       for (const item of importData.history) {
         await this.db.put('syncHistory', item);
       }
     }
-    
+
     if (importData.conflicts) {
       for (const item of importData.conflicts) {
         await this.db.put('conflicts', item);
