@@ -1,3 +1,4 @@
+export * from './envValidation';
 /**
  * Web3 Utilities
  * Barrel export for web3-related utilities

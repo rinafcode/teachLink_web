@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Download, Check, X, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Download, Check, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
 import { apiService } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';

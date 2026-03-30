@@ -13,6 +13,7 @@ import {
   FieldDescriptor,
   ConditionalRule,
 } from '../types/core';
+import { FormStateManager as IFormStateManager } from '../types/interfaces';
 import type { FormStateManager as IFormStateManager } from '../types/interfaces';
 import { DependencyManager, CascadeUpdateResult } from './dependency-manager';
 

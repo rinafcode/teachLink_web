@@ -66,7 +66,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             } pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white ${
               error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
-            {...props}
+            {...(props as object)}
           />
           {type === 'password' && (
             <button
