@@ -26,12 +26,7 @@
     "noImplicitReturns": true,
     "noImplicitAny": false
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "next-env.d.ts",
-    ".next/types/**/*.ts"
-  ],
+  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
   "exclude": [
     "node_modules",
     ".next",
@@ -39,7 +34,5 @@
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx"
-    "**/*.test.ts",
-    "**/*.test.tsx"
   ]
 }

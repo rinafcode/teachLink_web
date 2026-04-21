@@ -39,7 +39,6 @@ export function InternationalizationEngine({
   children,
 }: InternationalizationEngineProps) {
   const { language, isLoading, error, changeLanguage } = useInternationalization();
-  const [preloadStatus, setPreloadStatus] = useState<Record<LanguageCode, boolean>>({} as Record<LanguageCode, boolean>);
   const [preloadStatus, setPreloadStatus] = useState<Partial<Record<LanguageCode, boolean>>>({});
 
   // Preload translations on mount
@@ -55,7 +54,6 @@ export function InternationalizationEngine({
         await preloadTranslations(languagesToPreload);
 
         if (!cancelled) {
-          const status = {} as Record<LanguageCode, boolean>;
           const status: Partial<Record<LanguageCode, boolean>> = {};
           languagesToPreload.forEach((lang) => {
             status[lang] = true;
