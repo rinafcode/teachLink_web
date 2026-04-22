@@ -35,7 +35,7 @@ export default function EnrollmentCTA({
       popular: true,
     },
   ],
-  onEnroll = (optionId) => console.log('Enrolling in option:', optionId),
+  onEnroll = (optionId) => {},
 }: EnrollmentCTAProps) {
   return (
     <div className="bg-white dark:bg-[#1E293B] rounded-xl shadow-sm border border-[#E2E8F0] dark:border-[#334155] p-6 lg:sticky lg:top-6">
@@ -64,7 +64,7 @@ export default function EnrollmentCTA({
               </span>
               <span className="text-[#64748B] dark:text-[#94A3B8] text-sm ml-1">/one-time</span>
             </div>
-            <ul className="space-y-3 mb-6">
+            <ul className="mb-6 space-y-3">
               {option.features.map((feature, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
                   <svg

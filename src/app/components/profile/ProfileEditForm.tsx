@@ -56,21 +56,16 @@ export default function ProfileEditForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
+      <div className="p-6 bg-white rounded-lg shadow-md">
+        <h2 className="mb-6 text-xl font-semibold">Personal Information</h2>
 
         <div className="mb-6">
-          <ImageUploader
-            onImageSelect={(file) => {
-              // Handle image upload
-              console.log('Selected image:', file);
-            }}
-          />
+          <ImageUploader onImageSelect={(file) => {}} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">First Name</label>
             <input
               type="text"
               {...register('firstName')}
@@ -80,7 +75,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Last Name</label>
             <input
               type="text"
               {...register('lastName')}
@@ -91,7 +86,7 @@ export default function ProfileEditForm() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Email</label>
           <input
             type="email"
             {...register('email')}
@@ -101,7 +96,7 @@ export default function ProfileEditForm() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Bio</label>
           <textarea
             {...register('bio')}
             rows={4}
@@ -111,7 +106,7 @@ export default function ProfileEditForm() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Location</label>
           <input
             type="text"
             {...register('location')}
@@ -120,12 +115,12 @@ export default function ProfileEditForm() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-6">Social Links</h2>
+      <div className="p-6 bg-white rounded-lg shadow-md">
+        <h2 className="mb-6 text-xl font-semibold">Social Links</h2>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Website</label>
             <input
               type="url"
               {...register('website')}
@@ -135,7 +130,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Twitter</label>
             <input
               type="text"
               {...register('twitter')}
@@ -144,7 +139,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">GitHub</label>
             <input
               type="text"
               {...register('github')}
@@ -153,7 +148,7 @@ export default function ProfileEditForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">LinkedIn</label>
             <input
               type="text"
               {...register('linkedin')}
@@ -169,7 +164,7 @@ export default function ProfileEditForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         >
           {isLoading ? 'Saving...' : 'Save Changes'}
         </button>

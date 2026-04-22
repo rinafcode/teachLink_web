@@ -92,8 +92,6 @@ function checkForConsoleStatements(content, filePath) {
 }
 
 function validateFiles() {
-  console.log('🔍 Running UI validation checks...\n');
-
   for (const dir of COMPONENT_DIRS) {
     const fullDir = path.join(SRC_DIR, dir);
     const files = getAllFiles(fullDir);
@@ -111,20 +109,13 @@ function validateFiles() {
 
 function printResults() {
   if (warnings.length > 0) {
-    console.log('⚠️  Warnings:\n');
-    warnings.forEach((w) => console.log(`  ${w}`));
-    console.log('');
+    warnings.forEach((w) => {});
   }
 
   if (errors.length > 0) {
-    console.log('❌ Errors:\n');
-    errors.forEach((e) => console.log(`  ${e}`));
-    console.log('');
-    console.log(`\n❌ UI validation failed with ${errors.length} error(s)`);
+    errors.forEach((e) => {});
     process.exit(1);
   }
-
-  console.log(`✅ UI validation passed (${warnings.length} warning(s))`);
   process.exit(0);
 }
 

@@ -10,7 +10,7 @@ interface ProfileData {
     email: boolean;
     push: boolean;
   };
-  theme?: "light" | "dark";
+  theme?: 'light' | 'dark';
   [key: string]: unknown;
 }
 
@@ -23,7 +23,6 @@ export function useProfileUpdate() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log('Profile updated:', data);
       toast.success('Profile updated successfully!');
       return true;
     } catch (error) {

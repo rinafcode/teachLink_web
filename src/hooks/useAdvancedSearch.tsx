@@ -137,7 +137,6 @@ export const useAdvancedSearch = () => {
 
       // Parse advanced query
       const parsed = parseAdvancedQuery(query.text);
-      console.log('[Search DEBUG] Parsed Query:', parsed);
 
       setResults(mockResults);
       addToHistory(query.text);

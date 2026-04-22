@@ -16,7 +16,7 @@ interface LazyLoadingManagerProps {
  */
 const LazyLoadingManager: React.FC<LazyLoadingManagerProps> = ({
   children,
-  fallback = <div className="animate-pulse bg-gray-200 h-32 w-full rounded-md" />,
+  fallback = <div className="w-full h-32 bg-gray-200 rounded-md animate-pulse" />,
   threshold = 0.1,
   rootMargin = '200px',
   componentName = 'Component',
@@ -31,7 +31,6 @@ const LazyLoadingManager: React.FC<LazyLoadingManagerProps> = ({
   useEffect(() => {
     if (inView && !hasBeenInView) {
       setHasBeenInView(true);
-      console.log(`[LazyLoading] Triggering load for ${componentName}`);
     }
   }, [inView, hasBeenInView, componentName]);
 

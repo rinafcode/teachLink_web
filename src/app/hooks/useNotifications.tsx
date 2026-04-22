@@ -29,7 +29,7 @@ interface UseNotificationsReturn {
   preferences: UserNotificationPreferences | null;
   analytics: NotificationAnalytics | null;
   isLoading: boolean;
-  
+
   // Actions
   sendNotification: (params: {
     message: string;
@@ -39,37 +39,34 @@ interface UseNotificationsReturn {
     channels?: NotificationChannel[];
     meta?: Record<string, any>;
   }) => AppNotification;
-  
+
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearNotification: (id: string) => void;
   clearAllRead: () => void;
-  
+
   // Preferences
   loadPreferences: () => Promise<void>;
   updatePreferences: (prefs: Partial<UserNotificationPreferences>) => Promise<void>;
-  
+
   // Filtering & Sorting
   getFilteredNotifications: (filters: {
     type?: string;
     category?: NotificationCategory;
     read?: boolean;
   }) => AppNotification[];
-  
+
   getSortedNotifications: () => AppNotification[];
-  
+
   // Analytics
   refreshAnalytics: () => void;
-  
+
   // Multi-channel delivery
-  sendToChannel: (
-    notification: AppNotification,
-    channel: NotificationChannel
-  ) => Promise<boolean>;
-  
+  sendToChannel: (notification: AppNotification, channel: NotificationChannel) => Promise<boolean>;
+
   sendToAllChannels: (
     notification: AppNotification,
-    channels: NotificationChannel[]
+    channels: NotificationChannel[],
   ) => Promise<Record<NotificationChannel, boolean>>;
 }
 
@@ -77,7 +74,7 @@ const PREFERENCES_STORAGE_KEY = 'notification_preferences_v1';
 
 export function useNotifications(options: UseNotificationsOptions = {}): UseNotificationsReturn {
   const { userId = 'default', enableAnalytics = true } = options;
-  
+
   const {
     notifications,
     addNotification,
@@ -85,11 +82,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     markAllAsRead: storeMarkAllAsRead,
     clearRead: storeClearRead,
   } = useNotificationStore();
-  
+
   const [preferences, setPreferences] = useState<UserNotificationPreferences | null>(null);
   const [analytics, setAnalytics] = useState<NotificationAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Load preferences from localStorage
   useEffect(() => {
     const loadPrefs = () => {
@@ -111,10 +108,10 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         setIsLoading(false);
       }
     };
-    
+
     loadPrefs();
   }, [userId]);
-  
+
   // Calculate analytics when notifications change
   useEffect(() => {
     if (enableAnalytics && notifications.length > 0) {
@@ -124,12 +121,12 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
           clicked: n.meta?.clicked ?? false,
           channel: (n.meta?.channel as NotificationChannel) || 'in-app',
           category: (n.meta?.category as NotificationCategory) || 'system',
-        }))
+        })),
       );
       setAnalytics(analyticsData);
     }
   }, [notifications, enableAnalytics]);
-  
+
   // Send notification with preference checking
   const sendNotification = useCallback(
     (params: {
@@ -148,15 +145,14 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         channels = ['in-app'],
         meta = {},
       } = params;
-      
+
       // Check if notification should be sent based on preferences
       if (preferences) {
         const shouldSend = channels.some((channel) =>
-          shouldSendNotification(category, channel, preferences)
+          shouldSendNotification(category, channel, preferences),
         );
-        
+
         if (!shouldSend) {
-          console.log(`Notification blocked by preferences: ${category}`);
           // Return a dummy notification for consistency
           return {
             id: generateNotificationId(),
@@ -168,7 +164,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
           };
         }
       }
-      
+
       // Create the notification
       const notification = addNotification({
         type,
@@ -181,25 +177,25 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
           userId,
         },
       });
-      
+
       return notification;
     },
-    [addNotification, preferences, userId]
+    [addNotification, preferences, userId],
   );
-  
+
   // Mark as read
   const markAsRead = useCallback(
     (id: string) => {
       storeMarkAsRead(id);
     },
-    [storeMarkAsRead]
+    [storeMarkAsRead],
   );
-  
+
   // Mark all as read
   const markAllAsRead = useCallback(() => {
     storeMarkAllAsRead();
   }, [storeMarkAllAsRead]);
-  
+
   // Clear single notification
   const clearNotification = useCallback(
     (id: string) => {
@@ -207,14 +203,14 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       useNotificationStore.setState({ notifications: next });
       localStorage.setItem('notifications_v1', JSON.stringify(next));
     },
-    [notifications]
+    [notifications],
   );
-  
+
   // Clear all read notifications
   const clearAllRead = useCallback(() => {
     storeClearRead();
   }, [storeClearRead]);
-  
+
   // Load preferences
   const loadPreferences = useCallback(async () => {
     try {
@@ -227,20 +223,20 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       console.error('Failed to load preferences:', error);
     }
   }, []);
-  
+
   // Update preferences
   const updatePreferences = useCallback(
     async (prefs: Partial<UserNotificationPreferences>) => {
       if (!preferences) return;
-      
+
       const validation = validatePreferences(prefs);
       if (!validation.valid) {
         throw new Error(`Invalid preferences: ${validation.errors.join(', ')}`);
       }
-      
+
       const updated = { ...preferences, ...prefs };
       setPreferences(updated);
-      
+
       try {
         localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(updated));
       } catch (error) {
@@ -248,27 +244,27 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         throw error;
       }
     },
-    [preferences]
+    [preferences],
   );
-  
+
   // Get filtered notifications
   const getFilteredNotifications = useCallback(
     (filters: { type?: string; category?: NotificationCategory; read?: boolean }) => {
       return filterNotifications(notifications, filters);
     },
-    [notifications]
+    [notifications],
   );
-  
+
   // Get sorted notifications
   const getSortedNotifications = useCallback(() => {
     return sortNotifications(
       notifications.map((n) => ({
         ...n,
         priority: (n.meta?.priority as NotificationPriority) || 'medium',
-      }))
+      })),
     );
   }, [notifications]);
-  
+
   // Refresh analytics
   const refreshAnalytics = useCallback(() => {
     if (notifications.length > 0) {
@@ -278,12 +274,12 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
           clicked: n.meta?.clicked ?? false,
           channel: (n.meta?.channel as NotificationChannel) || 'in-app',
           category: (n.meta?.category as NotificationCategory) || 'system',
-        }))
+        })),
       );
       setAnalytics(analyticsData);
     }
   }, [notifications]);
-  
+
   // Send to specific channel (simulated)
   const sendToChannel = useCallback(
     async (notification: AppNotification, channel: NotificationChannel): Promise<boolean> => {
@@ -294,49 +290,45 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         email: 0.98,
         sms: 0.92,
       };
-      
+
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, Math.random() * 500 + 100));
-      
+
       // Simulate delivery success/failure
       const success = Math.random() < deliveryRates[channel];
-      
+
       if (success) {
-        console.log(`Notification ${notification.id} delivered via ${channel}`);
       } else {
         console.warn(`Failed to deliver notification ${notification.id} via ${channel}`);
       }
-      
+
       return success;
     },
-    []
+    [],
   );
-  
+
   // Send to all channels
   const sendToAllChannels = useCallback(
     async (
       notification: AppNotification,
-      channels: NotificationChannel[]
+      channels: NotificationChannel[],
     ): Promise<Record<NotificationChannel, boolean>> => {
       const results: Record<string, boolean> = {};
-      
+
       await Promise.all(
         channels.map(async (channel) => {
           results[channel] = await sendToChannel(notification, channel);
-        })
+        }),
       );
-      
+
       return results as Record<NotificationChannel, boolean>;
     },
-    [sendToChannel]
+    [sendToChannel],
   );
-  
+
   // Computed values
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read).length,
-    [notifications]
-  );
-  
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+
   return {
     // State
     notifications,
@@ -344,25 +336,25 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     preferences,
     analytics,
     isLoading,
-    
+
     // Actions
     sendNotification,
     markAsRead,
     markAllAsRead,
     clearNotification,
     clearAllRead,
-    
+
     // Preferences
     loadPreferences,
     updatePreferences,
-    
+
     // Filtering & Sorting
     getFilteredNotifications,
     getSortedNotifications,
-    
+
     // Analytics
     refreshAnalytics,
-    
+
     // Multi-channel delivery
     sendToChannel,
     sendToAllChannels,

@@ -20,12 +20,9 @@ export const NativeIntegrationLayer: React.FC = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       // In a real app, this would open a camera modal or start a scan
-      console.log('Camera access granted');
       // Stop stream immediately for demo
       stream.getTracks().forEach((track) => track.stop());
-    } catch (err) {
-      console.error('Camera access denied:', err);
-    }
+    } catch (err) {}
   };
 
   return (

@@ -62,7 +62,6 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
     // Load draft on mount
     autoSaveManager.loadDraft(formId).then((draft) => {
       if (draft) {
-        console.log('Draft loaded:', draft);
       }
     });
 
