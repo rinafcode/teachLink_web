@@ -10,10 +10,12 @@ interface SearchFiltersProps {
   resetFilters: () => void;
 }
 
-export const SearchFilters: React.FC<SearchFiltersProps> = ({
+export const SearchFilters = React.memo<SearchFiltersProps>(({
   filters,
   setFilters,
   resetFilters,
 }) => {
   return <FilterSidebar filters={filters} onFilterChange={setFilters} onReset={resetFilters} />;
-};
+});
+
+SearchFilters.displayName = 'SearchFilters';

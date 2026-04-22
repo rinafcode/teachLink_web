@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   BarChart,
   DollarSign,
@@ -47,12 +47,12 @@ const DIFFICULTY_LEVELS = [
   { id: 'advanced', label: 'Advanced', color: 'bg-red-500' },
 ];
 
-export const FacetedFilterSystem: React.FC<FacetedFilterSystemProps> = ({
+export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(({
   filters,
   onFilterChange,
   onReset,
 }) => {
-  const toggleContentType = (type: SearchContentType) => {
+  const toggleContentType = useCallback((type: SearchContentType) => {
     let newTypes: SearchContentType[];
     if (type === 'all') {
       newTypes = ['all'];
@@ -66,13 +66,13 @@ export const FacetedFilterSystem: React.FC<FacetedFilterSystemProps> = ({
       }
     }
     onFilterChange({ types: newTypes });
-  };
+  }, [filters.types, onFilterChange]);
 
-  const toggleDifficulty = (level: string) => {
+  const toggleDifficulty = useCallback((level: string) => {
     const current = filters.difficulty;
     const next = current.includes(level) ? current.filter((l) => l !== level) : [...current, level];
     onFilterChange({ difficulty: next });
-  };
+  }, [filters.difficulty, onFilterChange]);
 
   return (
     <div className="space-y-6">
@@ -217,4 +217,6 @@ export const FacetedFilterSystem: React.FC<FacetedFilterSystemProps> = ({
       </div>
     </div>
   );
-};
+});
+
+FacetedFilterSystem.displayName = 'FacetedFilterSystem';
