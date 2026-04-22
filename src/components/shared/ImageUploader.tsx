@@ -43,8 +43,7 @@ export default function ImageUploader({
         className="relative w-32 h-32 rounded-full overflow-hidden cursor-pointer border-4 border-gray-100 hover:border-blue-500 transition-colors group"
       >
         {previewUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={previewUrl} alt="Profile Preview" className="w-full h-full object-cover" />
+          <Image src={previewUrl} alt="Profile Preview" fill sizes="(max-width: 768px) 100vw, 33vw" unoptimized={previewUrl.startsWith('data:')} className="object-cover" />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
             <svg
