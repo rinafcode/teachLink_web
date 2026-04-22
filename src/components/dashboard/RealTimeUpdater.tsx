@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Wifi, WifiOff, Activity, Pause, Play, RefreshCw } from 'lucide-react';
 import { InteractiveChartLibrary } from '@/components/visualization/InteractiveChartLibrary';
 import { useDataVisualization } from '@/hooks/useDataVisualization';
@@ -32,7 +32,7 @@ const SPEED_OPTIONS = [
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export const RealTimeUpdater: React.FC<RealTimeUpdaterProps> = ({
+export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(({
   title = 'Live Activity',
   chartType = 'line',
   websocketUrl,
@@ -107,7 +107,7 @@ export const RealTimeUpdater: React.FC<RealTimeUpdaterProps> = ({
     ? 'text-green-600 dark:text-green-400'
     : 'text-red-600 dark:text-red-400';
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     updateData({
       labels: [],
       datasets: [
@@ -120,7 +120,7 @@ export const RealTimeUpdater: React.FC<RealTimeUpdaterProps> = ({
         },
       ],
     });
-  };
+  }, [updateData]);
 
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
@@ -249,4 +249,6 @@ export const RealTimeUpdater: React.FC<RealTimeUpdaterProps> = ({
       )}
     </div>
   );
-};
+});
+
+RealTimeUpdater.displayName = 'RealTimeUpdater';

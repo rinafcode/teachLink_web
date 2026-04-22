@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { BarChart2, Clock, Tag, Users, Search, RotateCcw } from 'lucide-react';
 import { FilterState } from '../../hooks/useSearchFilters';
 import { RangeSlider } from '../ui/RangeSlider';
@@ -14,26 +14,26 @@ interface FilterSidebarProps {
 
 const TOPIC_OPTIONS = ['Design', 'Coding', 'Business', 'Marketing', 'Health'];
 
-export const FilterSidebar: React.FC<FilterSidebarProps> = ({
+export const FilterSidebar = React.memo<FilterSidebarProps>(({
   filters,
   onFilterChange,
   onReset,
 }) => {
-  const handleDifficultyChange = (input: string) => {
+  const handleDifficultyChange = useCallback((input: string) => {
     const current = filters.difficulty || [];
     const updated = current.includes(input)
       ? current.filter((d: string) => d !== input)
       : [...current, input];
     onFilterChange({ difficulty: updated });
-  };
+  }, [filters.difficulty, onFilterChange]);
 
-  const handleInstructorChange = (name: string) => {
+  const handleInstructorChange = useCallback((name: string) => {
     if (filters.instructor === name) {
       onFilterChange({ instructor: '' });
     } else {
       onFilterChange({ instructor: name });
     }
-  };
+  }, [filters.instructor, onFilterChange]);
 
   return (
     <aside className="w-full lg:w-72 shrink-0 space-y-8 pr-2">
@@ -174,4 +174,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       </button>
     </aside>
   );
-};
+});
+
+FilterSidebar.displayName = 'FilterSidebar';

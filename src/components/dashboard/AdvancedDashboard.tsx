@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -41,7 +41,7 @@ interface SortablePanelProps {
   children: React.ReactNode;
 }
 
-const SortablePanel: React.FC<SortablePanelProps> = ({ panel, children }) => {
+const SortablePanel = React.memo<SortablePanelProps>(({ panel, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: panel.id,
   });
@@ -67,7 +67,9 @@ const SortablePanel: React.FC<SortablePanelProps> = ({ panel, children }) => {
       {children}
     </div>
   );
-};
+});
+
+SortablePanel.displayName = 'SortablePanel';
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -75,7 +77,7 @@ export interface AdvancedDashboardProps {
   className?: string;
 }
 
-export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({ className = '' }) => {
+export const AdvancedDashboard = React.memo<AdvancedDashboardProps>(({ className = '' }) => {
   const {
     panels,
     filters,
@@ -101,7 +103,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({ className 
     }),
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -110,9 +112,9 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({ className 
     if (fromIndex !== -1 && toIndex !== -1) {
       reorderPanels(fromIndex, toIndex);
     }
-  };
+  }, [panels, reorderPanels]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     const url = generateShareURL();
     try {
       await navigator.clipboard.writeText(url);
@@ -122,16 +124,16 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({ className 
     } catch {
       toast.error('Could not copy to clipboard');
     }
-  };
+  }, [generateShareURL]);
 
-  const handleExportAll = () => {
+  const handleExportAll = useCallback(() => {
     panels.forEach((panel) => {
       if (panel.id !== 'realtime') {
         exportPanel(panel.id, 'csv');
       }
     });
     toast.success('Panels exported as CSV');
-  };
+  }, [panels, exportPanel]);
 
   return (
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8 ${className}`}>
@@ -243,4 +245,6 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({ className 
       </DndContext>
     </div>
   );
-};
+});
+
+AdvancedDashboard.displayName = 'AdvancedDashboard';
