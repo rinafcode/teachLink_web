@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "type-check": "tsc --noEmit",
@@ -19,9 +19,6 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
-    "type-check": "tsc --noEmit",
-    "validate:ui": "node scripts/validate-ui.js",
-    "validate:web3": "node scripts/validate-web3.js",
     "validate": "npm run validate:ui && npm run validate:web3"
   },
   "dependencies": {

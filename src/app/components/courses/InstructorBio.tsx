@@ -31,7 +31,7 @@ export default function InstructorBio({
         About the Instructor
       </h2>
       <div className="flex flex-col sm:flex-row gap-6">
-        <div className="sm:w-1/3 w-full relative h-48 sm:h-64 flex-shrink-0">
+        <div className="sm:w-1/3 w-full relative h-48 sm:h-64 shrink-0">
           <Image src={imageUrl} alt={name} fill className="object-cover rounded-xl" />
         </div>
         <div className="sm:w-2/3 flex-1">
