@@ -279,7 +279,6 @@ export const trackDuration = <T>(name: string, fn: () => T): T => {
   const start = performance.now();
   const result = fn();
   const end = performance.now();
-  console.log(`[Performance] ${name} took ${(end - start).toFixed(2)}ms`);
   return result;
 };
 
@@ -290,7 +289,6 @@ export const trackDurationAsync = async <T>(name: string, fn: () => Promise<T>):
   const start = performance.now();
   const result = await fn();
   const end = performance.now();
-  console.log(`[Performance] ${name} took ${(end - start).toFixed(2)}ms`);
   return result;
 };
 

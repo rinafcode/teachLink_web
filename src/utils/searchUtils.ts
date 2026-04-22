@@ -108,8 +108,6 @@ export const trackSearch = (analytics: SearchAnalytics) => {
   history.unshift(analytics);
   // Keep last 100 entries for analysis
   localStorage.setItem('search_analytics', JSON.stringify(history.slice(0, 100)));
-
-  console.log('[Search Analytics Logged]', analytics);
 };
 
 /**

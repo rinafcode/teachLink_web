@@ -28,7 +28,6 @@ export class SynchronizationEngine {
       const { type, payload } = event.data;
 
       if (type === 'STATE_UPDATE') {
-        console.log('[SyncEngine] Received state update from another tab');
         this.isProcessingSync = true;
 
         // Update the local store with the external state
