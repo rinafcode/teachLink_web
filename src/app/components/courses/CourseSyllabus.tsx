@@ -78,7 +78,7 @@ export default function CourseSyllabus({
                 </p>
               </div>
               <svg
-                className={`w-5 h-5 text-[#64748B] dark:text-[#94A3B8] transition-transform duration-200 ml-4 flex-shrink-0 ${
+                className={`w-5 h-5 text-[#64748B] dark:text-[#94A3B8] transition-transform duration-200 ml-4 shrink-0 ${
                   expandedSections.has(section.id) ? 'rotate-90' : ''
                 }`}
                 fill="currentColor"
@@ -100,7 +100,7 @@ export default function CourseSyllabus({
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <svg
-                        className="w-5 h-5 text-[#0066FF] dark:text-[#00C2FF] flex-shrink-0"
+                        className="w-5 h-5 text-[#0066FF] dark:text-[#00C2FF] shrink-0"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -115,7 +115,7 @@ export default function CourseSyllabus({
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-[#64748B] dark:text-[#94A3B8] ml-4 flex-shrink-0">
+                    <span className="text-sm text-[#64748B] dark:text-[#94A3B8] ml-4 shrink-0">
                       {lesson.duration}
                     </span>
                   </div>
