@@ -7,6 +7,7 @@ import { useProfileUpdate } from '../../hooks/useProfileUpdate';
 import { User, Mail, FileText } from 'lucide-react';
 import ImageUploader from '../shared/ImageUploader';
 import PreferencesSection from './PreferencesSection';
+import { useStore } from '../../store/stateManager';
 
 // Schema definition
 const profileSchema = z.object({
@@ -19,24 +20,29 @@ const profileSchema = z.object({
     push: z.boolean(),
   }),
   theme: z.enum(['light', 'dark']),
+  prefetching: z.boolean(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfileEditForm() {
   const { updateProfile, isLoading } = useProfileUpdate();
+  const user = useStore((state) => state.user);
+  const setPreferences = useStore((state) => state.setPreferences);
+  const setUser = useStore((state) => state.setUser);
 
   const methods = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: 'John Doe',
-      email: 'john@example.com',
+      name: user.name || 'John Doe',
+      email: user.id ? 'user@example.com' : 'john@example.com', // Placeholder if no user
       bio: 'Lifelong learner and enthusiast.',
       notifications: {
-        email: true,
+        email: user.preferences.notifications,
         push: false,
       },
-      theme: 'light',
+      theme: user.preferences.theme,
+      prefetching: user.preferences.prefetching,
     },
   });
 
@@ -48,7 +54,15 @@ export default function ProfileEditForm() {
   } = methods;
 
   const onSubmit = async (data: ProfileFormData) => {
-    await updateProfile(data);
+    const success = await updateProfile(data);
+    if (success) {
+      setUser({ name: data.name });
+      setPreferences({
+        theme: data.theme,
+        notifications: data.notifications.email,
+        prefetching: data.prefetching,
+      });
+    }
   };
 
   const handleImageSelect = (file: File) => {

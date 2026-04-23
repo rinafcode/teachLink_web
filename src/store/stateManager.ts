@@ -7,11 +7,12 @@ import { stateLogger } from './devTools';
 interface UserState {
   id: string | null;
   name: string | null;
-  preferences: {
-    theme: 'light' | 'dark';
-    language: string;
-    notifications: boolean;
-  };
+    preferences: {
+      theme: 'light' | 'dark';
+      language: string;
+      notifications: boolean;
+      prefetching: boolean;
+    };
 }
 
 interface AppState {
@@ -49,6 +50,7 @@ export const useStore = create<StoreState>()(
             theme: 'light' as 'light' | 'dark',
             language: 'en',
             notifications: true,
+            prefetching: true,
           },
         },
         app: {

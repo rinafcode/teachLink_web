@@ -23,47 +23,40 @@ import { Settings, Plus, Grid3X3, Calendar } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
 
-import {
-  DashboardWidgetSkeleton,
-  SummaryWidgetSkeleton,
-  ListWidgetSkeleton,
-  ChartWidgetSkeleton,
-} from './DashboardSkeletons';
-
 const ProgressSummaryWidget = dynamic(
   () => import('./widgets/ProgressSummaryWidget').then((mod) => mod.ProgressSummaryWidget),
   {
-    loading: () => <SummaryWidgetSkeleton />,
+    loading: () => <div className="h-32 bg-gray-100 animate-pulse rounded-lg" />,
   },
 );
 const UpcomingDeadlinesWidget = dynamic(
   () => import('./widgets/UpcomingDeadlinesWidget').then((mod) => mod.UpcomingDeadlinesWidget),
   {
-    loading: () => <DashboardWidgetSkeleton height="h-64" />,
+    loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
   },
 );
 const RecommendedCoursesWidget = dynamic(
   () => import('./widgets/RecommendedCoursesWidget').then((mod) => mod.RecommendedCoursesWidget),
   {
-    loading: () => <DashboardWidgetSkeleton height="h-64" />,
+    loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
   },
 );
 const LearningStreakWidget = dynamic(
   () => import('./widgets/LearningStreakWidget').then((mod) => mod.LearningStreakWidget),
   {
-    loading: () => <DashboardWidgetSkeleton height="h-32" />,
+    loading: () => <div className="h-32 bg-gray-100 animate-pulse rounded-lg" />,
   },
 );
 const RecentActivityWidget = dynamic(
   () => import('./widgets/RecentActivityWidget').then((mod) => mod.RecentActivityWidget),
   {
-    loading: () => <ListWidgetSkeleton />,
+    loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
   },
 );
 const RecentSalesWidget = dynamic(
   () => import('./widgets/RecentSalesWidget').then((mod) => mod.RecentSalesWidget),
   {
-    loading: () => <ListWidgetSkeleton rows={5} />,
+    loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
   },
 );
 

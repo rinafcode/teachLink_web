@@ -28,41 +28,19 @@ export const SearchResultsVisualizer = React.memo<SearchResultsVisualizerProps>(
   ({ results, isSearching, sortBy, onSortChange }) => {
     if (isSearching) {
       return (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <Skeleton width={120} height={20} />
-            <Skeleton width={150} height={32} />
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="glass-panel p-6 rounded-3xl border-slate-200">
-                <div className="flex items-start gap-6">
-                  <div className="hidden sm:flex flex-col items-center gap-2">
-                    <Skeleton width={40} height={40} variant="circle" />
-                    <Skeleton width={20} height={8} />
-                  </div>
-                  <div className="flex-1 space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <Skeleton width={60} height={16} className="rounded-full" />
-                        <Skeleton width={80} height={16} className="rounded-full" />
-                      </div>
-                      <Skeleton width="60%" height={24} />
-                    </div>
-                    <div className="space-y-2">
-                      <Skeleton width="90%" height={14} />
-                      <Skeleton width="70%" height={14} />
-                    </div>
-                    <div className="flex gap-4 pt-4">
-                      <Skeleton width={100} height={16} />
-                      <Skeleton width={80} height={16} />
-                      <Skeleton width={60} height={16} />
-                    </div>
-                  </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="glass-panel p-6 rounded-2xl animate-pulse">
+              <div className="flex gap-4">
+                <div className="w-16 h-16 bg-slate-100 rounded-xl"></div>
+                <div className="flex-1 space-y-3">
+                  <div className="h-4 bg-slate-100 rounded w-3/4"></div>
+                  <div className="h-3 bg-slate-100 rounded w-full"></div>
+                  <div className="h-3 bg-slate-100 rounded w-1/2"></div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       );
     }
