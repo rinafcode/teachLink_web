@@ -1,16 +1,22 @@
 'use client';
 
 import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { errorReportingService } from '@/services/errorReporting';
+import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
 
 type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
+  errorInfo?: ErrorInfo;
+  errorCount: number;
 };
 
 type ErrorBoundaryProps = {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  isolationId?: string;
+  isolationLevel?: string;
 };
 
 export class ErrorBoundarySystem extends Component<
@@ -23,6 +29,8 @@ export class ErrorBoundarySystem extends Component<
     this.state = {
       hasError: false,
       error: null,
+      errorInfo: undefined,
+      errorCount: 0,
     };
   }
 
@@ -58,6 +66,8 @@ export class ErrorBoundarySystem extends Component<
     this.setState({
       hasError: false,
       error: null,
+      errorInfo: undefined,
+      errorCount: 0,
     });
   };
 
@@ -65,14 +75,13 @@ export class ErrorBoundarySystem extends Component<
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div style={{ padding: '20px' }}>
-            <h2>Something went wrong.</h2>
-            <p>{this.state.error?.message}</p>
-
-            <button onClick={this.resetError}>
-              Try Again
-            </button>
-          </div>
+          <UserFriendlyErrorDisplay
+            error={this.state.error}
+            title="Application Error"
+            onRetry={this.resetError}
+            showDetails={true}
+            severity="error"
+          />
         )
       );
     }

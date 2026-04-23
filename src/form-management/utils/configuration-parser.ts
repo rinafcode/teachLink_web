@@ -315,7 +315,7 @@ export class FormConfigurationParser implements ConfigurationParser {
   /**
    * Validate and transform parsed object to FormConfiguration
    */
-  private validateAndTransform(parsed: any): FormConfiguration {
+  private validateAndTransform(parsed: unknown): FormConfiguration {
     const result = FormConfigurationSchema.parse(parsed);
 
     // Additional custom validations
@@ -450,7 +450,7 @@ export class FormConfigurationParser implements ConfigurationParser {
   /**
    * Make configuration serializable by removing functions
    */
-  private makeSerializable(config: FormConfiguration): any {
+  private makeSerializable(config: FormConfiguration): unknown {
     return JSON.parse(
       JSON.stringify(config, (key, value) => {
         // Skip function properties during serialization
@@ -465,7 +465,7 @@ export class FormConfigurationParser implements ConfigurationParser {
   /**
    * Recursively sort object keys for consistent output
    */
-  private sortObjectKeys(obj: any): any {
+  private sortObjectKeys(obj: unknown): unknown {
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
@@ -475,7 +475,7 @@ export class FormConfigurationParser implements ConfigurationParser {
     }
 
     const sortedKeys = Object.keys(obj).sort();
-    const sortedObj: any = {};
+    const sortedObj: Record<string, unknown> = {};
 
     for (const key of sortedKeys) {
       sortedObj[key] = this.sortObjectKeys(obj[key]);

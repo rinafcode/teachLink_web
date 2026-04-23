@@ -4,6 +4,7 @@ import React from 'react';
 import { Star, Clock, User, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
+import Image from 'next/image';
 
 export interface CourseResult {
   id: string;
@@ -118,14 +119,17 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           >
             {/* Course Image */}
             <div className="relative h-40 bg-linear-to-br from-gray-200 dark:from-gray-700 to-gray-300 dark:to-gray-800 overflow-hidden">
-              <picture>
-                <img
+              <div className="absolute inset-0">
+                <Image
                   src={course.image}
                   alt={course.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  placeholder="blur"
+                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
                 />
-              </picture>
+              </div>
               {course.tag && (
                 <span className="absolute top-3 right-3 bg-yellow-400 dark:bg-yellow-500 text-gray-900 dark:text-gray-800 px-3 py-1 rounded-full text-xs font-bold">
                   {course.tag}

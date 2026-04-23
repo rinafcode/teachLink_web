@@ -13,7 +13,6 @@ import {
   FieldDescriptor,
   ConditionalRule,
 } from '../types/core';
-import { FormStateManager as IFormStateManager } from '../types/interfaces';
 import type { FormStateManager as IFormStateManager } from '../types/interfaces';
 import { DependencyManager, CascadeUpdateResult } from './dependency-manager';
 
@@ -38,7 +37,7 @@ export class FormStateManager implements IFormStateManager {
   /**
    * Update a field value and trigger change detection
    */
-  updateField(fieldId: string, value: any): void {
+  updateField(fieldId: string, value: unknown): void {
     const oldValue = this.state.values[fieldId];
 
     // Update the field value
@@ -114,7 +113,7 @@ export class FormStateManager implements IFormStateManager {
   /**
    * Get value of a specific field
    */
-  getFieldValue(fieldId: string): any {
+  getFieldValue(fieldId: string): unknown {
     return this.state.values[fieldId];
   }
 
@@ -264,7 +263,7 @@ export class FormStateManager implements IFormStateManager {
   /**
    * Programmatically set field value without triggering change events
    */
-  setFieldValueSilently(fieldId: string, value: any): void {
+  setFieldValueSilently(fieldId: string, value: unknown): void {
     this.state.values[fieldId] = value;
     this.state.metadata.lastModified = new Date();
   }
@@ -492,7 +491,7 @@ export class FormStateManager implements IFormStateManager {
    * Get field state summary
    */
   getFieldState(fieldId: string): {
-    value: any;
+    value: unknown;
     isValid: boolean;
     isTouched: boolean;
     isDirty: boolean;
@@ -533,7 +532,7 @@ export class FormStateManager implements IFormStateManager {
   /**
    * Process cascading updates when a field value changes
    */
-  private processCascadingUpdates(changedFieldId: string, newValue: any): void {
+  private processCascadingUpdates(changedFieldId: string, newValue: unknown): void {
     const cascadeResult = this.dependencyManager.calculateCascadingUpdates(
       changedFieldId,
       newValue,
@@ -681,7 +680,7 @@ export class FormStateManager implements IFormStateManager {
   /**
    * Get cascade update preview without applying changes
    */
-  previewCascadingUpdates(fieldId: string, value: any): CascadeUpdateResult {
+  previewCascadingUpdates(fieldId: string, value: unknown): CascadeUpdateResult {
     return this.dependencyManager.calculateCascadingUpdates(fieldId, value, this.state);
   }
 }

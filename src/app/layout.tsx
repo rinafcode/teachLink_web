@@ -14,9 +14,7 @@ import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 import { PWAManager } from '@/components/pwa/PWAManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
-import { EnvGuard } from '@/components/shared/EnvGuard';
-import { Suspense } from 'react';
-import { Loading } from '@/components/ui/Loading';
+import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 
 const geistSans = Geist({
   // ...
@@ -75,21 +73,19 @@ export default function RootLayout({
             <CulturalAdaptationManager>
               <ThemeProvider defaultTheme={defaultTheme}>
                 <DynamicTheming />
-                <EnvGuard>
-                  <AccessibilityProvider pageLabel="TeachLink — main application">
-                    <PerformanceMonitoringProvider>
-                      <OfflineModeProvider>
-                        <PWAManager />
-                        <StateManagerIntegration />
-                        <PerformanceMonitor />
-                        <PrefetchingEngine />
-                        <Suspense fallback={<Loading />}>
-                          {children}
-                        </Suspense>
-                      </OfflineModeProvider>
-                    </PerformanceMonitoringProvider>
-                  </AccessibilityProvider>
-                </EnvGuard>
+                <AccessibilityProvider pageLabel="TeachLink — main application">
+                  <PerformanceMonitoringProvider>
+                    <OfflineModeProvider>
+                      <PWAManager />
+                      <StateManagerIntegration />
+                      <PerformanceMonitor />
+                      <PrefetchingEngine />
+                      <ErrorBoundary>
+                        {children}
+                      </ErrorBoundary>
+                    </OfflineModeProvider>
+                  </PerformanceMonitoringProvider>
+                </AccessibilityProvider>
               </ThemeProvider>
             </CulturalAdaptationManager>
           </InternationalizationEngine>
