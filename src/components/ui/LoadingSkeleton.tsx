@@ -30,12 +30,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     height: height,
   };
 
-  return (
-    <div
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
-      style={style}
-    />
-  );
+  return <div className={`${baseClasses} ${variantClasses[variant]} ${className}`} style={style} />;
 };
 
 export const CardSkeleton = () => (
@@ -53,7 +48,10 @@ export const CardSkeleton = () => (
 export const ListSkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="space-y-4">
     {Array.from({ length: count }).map((_, i) => (
-      <div key={i} className="flex items-center space-x-4 p-3 border dark:border-gray-800 rounded-xl">
+      <div
+        key={i}
+        className="flex items-center space-x-4 p-3 border dark:border-gray-800 rounded-xl"
+      >
         <LoadingSkeleton variant="circular" width={48} height={48} />
         <div className="flex-1">
           <LoadingSkeleton variant="text" width="60%" />
