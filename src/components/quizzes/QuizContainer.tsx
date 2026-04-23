@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useCallback } from 'react';
 import QuestionCard from './QuestionCard';
 import { Quiz, useQuiz } from '@/hooks/useQuiz';
 
@@ -13,7 +14,7 @@ function formatTime(totalSeconds: number) {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
-export default function QuizContainer({ quiz }: QuizContainerProps) {
+const QuizContainer = React.memo(({ quiz }: QuizContainerProps) => {
   const quizState = useQuiz({ quiz, autoStart: true });
 
   const {
@@ -29,6 +30,12 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
   } = quizState;
 
   const totalQuestions = quiz.questions.length;
+
+  const handleRestart = useCallback(() => actions.restart(), [actions]);
+  const handleReviewAnswers = useCallback(() => actions.setCurrentQuestionIndex(0), [actions]);
+  const handleGoPrevious = useCallback(() => actions.goPrevious(), [actions]);
+  const handleGoNext = useCallback(() => actions.goNext(), [actions]);
+  const handleComplete = useCallback(() => actions.complete(), [actions]);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -69,13 +76,13 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
           </div>
           <div className="mt-4 flex gap-3">
             <button
-              onClick={() => actions.restart()}
+              onClick={handleRestart}
               className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all"
             >
               Try Again
             </button>
             <button
-              onClick={() => actions.setCurrentQuestionIndex(0)}
+              onClick={handleReviewAnswers}
               className="px-4 py-2 text-[#0F172A] dark:text-white hover:text-[#0066FF] dark:hover:text-[#00C2FF] transition-colors"
             >
               Review Answers
@@ -88,7 +95,7 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
 
       <div className="flex justify-between mt-6">
         <button
-          onClick={() => actions.goPrevious()}
+          onClick={handleGoPrevious}
           disabled={!quizState.canGoPrevious}
           className="px-4 py-2 text-[#475569] dark:text-[#CBD5E1] hover:text-[#0066FF] dark:hover:text-[#00C2FF] disabled:opacity-50 transition-colors"
         >
@@ -98,7 +105,7 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
         <div className="flex items-center gap-3">
           {quizState.canGoNext ? (
             <button
-              onClick={() => actions.goNext()}
+              onClick={handleGoNext}
               disabled={!quizState.canGoNext || isCompleted}
               className="px-4 py-2 text-[#475569] dark:text-[#CBD5E1] hover:text-[#0066FF] dark:hover:text-[#00C2FF] disabled:opacity-50 transition-colors"
             >
@@ -107,7 +114,7 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
           ) : null}
 
           <button
-            onClick={() => actions.complete()}
+            onClick={handleComplete}
             disabled={isCompleted}
             className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all disabled:opacity-50"
           >
@@ -117,4 +124,8 @@ export default function QuizContainer({ quiz }: QuizContainerProps) {
       </div>
     </div>
   );
-}
+});
+
+QuizContainer.displayName = 'QuizContainer';
+
+export default QuizContainer;

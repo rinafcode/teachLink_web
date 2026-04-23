@@ -122,6 +122,7 @@ class OfflineDatabase {
     const tx = this.db.transaction('progress', 'readonly');
     const store = tx.objectStore('progress');
     const index = store.index('synced');
+    return await index.getAll(false as unknown as IDBValidKey);
     const all = await index.getAll();
     return all.filter((p) => !p.synced);
   }

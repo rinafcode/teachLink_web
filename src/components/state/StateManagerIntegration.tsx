@@ -13,7 +13,6 @@ export const StateManagerIntegration = () => {
   useEffect(() => {
     // 1. Initialize Sync Engine
     // (Constructor already does it, but we ensure it's loaded in the browser)
-    console.log('[StateManager] Integration active');
 
     // 2. Attach DevTools
     inspectState(useStore);

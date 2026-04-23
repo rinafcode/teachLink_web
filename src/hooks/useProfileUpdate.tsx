@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface ProfileData {
-  name: string;
+  name?: string;
   email: string;
   bio?: string;
   avatar?: File | null;
-  notifications: {
+  notifications?: {
     email: boolean;
     push: boolean;
   };
-  theme: 'light' | 'dark';
+  theme?: 'light' | 'dark';
+  [key: string]: unknown;
 }
 
 export function useProfileUpdate() {
@@ -22,7 +23,6 @@ export function useProfileUpdate() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log('Profile updated:', data);
       toast.success('Profile updated successfully!');
       return true;
     } catch (error) {

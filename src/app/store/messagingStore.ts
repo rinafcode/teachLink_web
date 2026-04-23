@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { io } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 import io from 'socket.io-client';
 
 export interface Attachment {
@@ -645,7 +647,6 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       set({ socket });
     } catch {
       // Socket connection failed, continue in offline/demo mode
-      console.log('WebSocket connection not available, running in demo mode');
     }
   },
 

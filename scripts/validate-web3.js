@@ -76,23 +76,16 @@ function checkEnvExample() {
 }
 
 function printResults() {
-  console.log('🔍 Running Web3 validation checks...\n');
-
   checkWalletProviderExists();
   checkWeb3Utils();
   checkEnvExample();
 
   if (warnings.length > 0) {
-    console.log('⚠️  Warnings:\n');
-    warnings.forEach((w) => console.log(`  ${w}`));
-    console.log('');
+    warnings.forEach((w) => {});
   }
 
   if (errors.length > 0) {
-    console.log('❌ Errors:\n');
-    errors.forEach((e) => console.log(`  ${e}`));
-    console.log('');
-    console.log(`\n❌ Web3 validation failed with ${errors.length} error(s)`);
+    errors.forEach((e) => {});
     process.exit(1);
   }
 
