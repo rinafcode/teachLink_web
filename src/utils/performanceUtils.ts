@@ -4,14 +4,6 @@
 
 import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
 
-export {
-  CLSThresholds,
-  FCPThresholds,
-  INPThresholds,
-  LCPThresholds,
-  TTFBThresholds,
-} from 'web-vitals';
-
 export interface PerformanceMetric {
   name: string;
   value: number;

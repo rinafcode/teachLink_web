@@ -122,6 +122,7 @@ export interface ValidationExecutionContext {
   getCustomData(key: string): unknown;
   setCustomData(key: string, value: unknown): void;
 }
+
 export type ValidationFunction = (
   value: unknown,
   formState: FormState,

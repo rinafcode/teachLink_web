@@ -4,14 +4,14 @@ import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { errorReportingService } from '@/services/errorReporting';
 import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
 
-type ErrorBoundaryState = {
+export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
   errorInfo?: ErrorInfo;
   errorCount: number;
 };
 
-type ErrorBoundaryProps = {
+export type ErrorBoundaryProps = {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
@@ -19,10 +19,7 @@ type ErrorBoundaryProps = {
   isolationLevel?: string;
 };
 
-export class ErrorBoundarySystem extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
 
@@ -34,7 +31,7 @@ export class ErrorBoundarySystem extends Component<
     };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return {
       hasError: true,
       error,
@@ -56,7 +53,7 @@ export class ErrorBoundarySystem extends Component<
       componentStack: errorInfo.componentStack,
     });
 
-    // Hook for reporting system (we’ll implement next)
+    // Hook for reporting system
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }

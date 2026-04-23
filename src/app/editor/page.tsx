@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { RichContentEditor } from '@/components/editor/RichContentEditor';
+import dynamic from 'next/dynamic';
+
+const RichContentEditor = dynamic(
+  () => import('@/components/editor/RichContentEditor').then((mod) => mod.RichContentEditor),
+  {
+    loading: () => (
+      <div className="h-[500px] w-full bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />
+    ),
+    ssr: false,
+  },
+);
 
 export default function EditorPage() {
   const [content, setContent] = useState('<p>Start editing...</p>');

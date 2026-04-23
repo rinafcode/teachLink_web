@@ -6,10 +6,10 @@
  * Exit code 0 = pass, 1 = fail
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const SRC_DIR = path.join(__dirname, '../src');
+const SRC_DIR = path.join(import.meta.dirname, '../src');
 
 let errors = [];
 let warnings = [];
@@ -67,8 +67,8 @@ function checkWeb3Utils() {
 }
 
 function checkEnvExample() {
-  const envExamplePath = path.join(__dirname, '../.env.example');
-  const envLocalPath = path.join(__dirname, '../.env.local.example');
+  const envExamplePath = path.join(import.meta.dirname, '../.env.example');
+  const envLocalPath = path.join(import.meta.dirname, '../.env.local.example');
 
   if (!fs.existsSync(envExamplePath) && !fs.existsSync(envLocalPath)) {
     warnings.push('[WEB3] Consider adding .env.example with NEXT_PUBLIC_STARKNET_* variables');

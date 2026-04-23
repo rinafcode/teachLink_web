@@ -4,6 +4,14 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Settings } from 'lucide-react';
 import { format } from 'date-fns';
+import dynamic from 'next/dynamic';
+
+const RevenueChart = dynamic(() => import('./RevenueChart'), {
+  loading: () => (
+    <div className="h-[200px] w-full bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg mt-4" />
+  ),
+  ssr: false,
+});
 
 interface Sale {
   id: string;
@@ -229,6 +237,9 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
         <p className="text-sm text-gray-600 dark:text-gray-400">
           You made {totalSales} sales this month.
         </p>
+
+        {/* Revenue Chart */}
+        <RevenueChart />
 
         {/* Sales List */}
         <div className="space-y-3">

@@ -6,11 +6,11 @@
  * Exit code 0 = pass, 1 = fail
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
-const SRC_DIR = path.join(__dirname, '../src');
+const SRC_DIR = path.join(import.meta.dirname, '../src');
 const COMPONENT_DIRS = ['components', 'app', 'pages'];
 
 // Disallowed icon libraries (should use lucide-react)
@@ -108,14 +108,23 @@ function validateFiles() {
 }
 
 function printResults() {
+  console.log('UI Validation Summary:');
+  console.log(`Files checked in: ${COMPONENT_DIRS.join(', ')}`);
+  console.log(`Found ${warnings.length} warnings and ${errors.length} errors.\n`);
+
   if (warnings.length > 0) {
-    warnings.forEach((w) => {});
+    console.log('--- WARNINGS ---');
+    warnings.forEach((w) => console.warn(w));
+    console.log('');
   }
 
   if (errors.length > 0) {
-    errors.forEach((e) => {});
+    console.log('--- ERRORS ---');
+    errors.forEach((e) => console.error(e));
     process.exit(1);
   }
+
+  console.log('UI validation passed successfully! ✨');
   process.exit(0);
 }
 

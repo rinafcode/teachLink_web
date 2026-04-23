@@ -23,9 +23,11 @@ export function ThemeProvider({
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     document.cookie = `theme=${newTheme}; path=/; max-age=31536000`;
-    
+
     if (newTheme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
       document.documentElement.classList.remove('light', 'dark');
       document.documentElement.classList.add(systemTheme);
     } else {

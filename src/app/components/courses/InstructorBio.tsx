@@ -32,7 +32,14 @@ export default function InstructorBio({
       </h2>
       <div className="flex flex-col sm:flex-row gap-6">
         <div className="sm:w-1/3 w-full relative h-48 sm:h-64 flex-shrink-0">
-          <Image src={imageUrl} alt={name} fill sizes="(max-width: 640px) 100vw, 33vw" loading="lazy" className="object-cover rounded-xl" />
+          <Image
+            src={imageUrl}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 100vw, 33vw"
+            loading="lazy"
+            className="object-cover rounded-xl"
+          />
         </div>
         <div className="sm:w-2/3 flex-1">
           <h3 className="text-xl lg:text-2xl font-semibold mb-2 text-[#0F172A] dark:text-white">
