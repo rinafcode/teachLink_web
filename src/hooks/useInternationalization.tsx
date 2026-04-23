@@ -6,7 +6,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { LanguageCode, Translations, CulturalPreferences } from '@/locales/types';
-import { loadTranslations, getTranslation } from '@/locales/translationManager';
+import { loadTranslations, getTranslation, getMissingTranslations } from '@/locales/translationManager';
 import { DEFAULT_LANGUAGE } from '@/locales/config';
 import {
   getCulturalPreferences,
@@ -72,6 +72,21 @@ export function I18nProvider({
 
         if (!cancelled) {
           setTranslations(loadedTranslations);
+
+          // Runtime validation: warn if loaded translations miss keys compared to English
+          try {
+            if (language !== 'en') {
+              const enTranslations = await loadTranslations('en');
+              const missing = getMissingTranslations(enTranslations, loadedTranslations);
+              if (missing.length > 0) {
+                // Limit output to first 50 keys to avoid flooding logs
+                const sample = missing.slice(0, 50);
+                console.warn(`Translations for '${language}' missing ${missing.length} keys. Sample:`, sample);
+              }
+            }
+          } catch (e) {
+            // Non-fatal: continue silently
+          }
           setIsLoading(false);
         }
       } catch (err) {
