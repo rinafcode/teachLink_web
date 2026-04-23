@@ -81,11 +81,13 @@ function printResults() {
   checkEnvExample();
 
   if (warnings.length > 0) {
-    warnings.forEach((w) => {});
+    console.log('\n⚠️  Web3 Validation Warnings:');
+    warnings.forEach((w) => console.warn(`  - ${w}`));
   }
 
   if (errors.length > 0) {
-    errors.forEach((e) => {});
+    console.error('\n❌ Web3 Validation Errors:');
+    errors.forEach((e) => console.error(`  - ${e}`));
     process.exit(1);
   }
 

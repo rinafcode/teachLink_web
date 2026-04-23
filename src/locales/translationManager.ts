@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Translation Manager - Handles loading, caching, and managing translations
  */

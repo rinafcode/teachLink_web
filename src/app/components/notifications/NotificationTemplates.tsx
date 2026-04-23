@@ -119,8 +119,7 @@ export default function NotificationTemplates({
         template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.body.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCategory =
-        filterCategory === 'all' || template.category === filterCategory;
+      const matchesCategory = filterCategory === 'all' || template.category === filterCategory;
 
       return matchesSearch && matchesCategory;
     });
@@ -142,9 +141,7 @@ export default function NotificationTemplates({
   const handleSaveTemplate = (template: NotificationTemplate) => {
     if (editingTemplate) {
       // Update existing
-      setTemplates((prev) =>
-        prev.map((t) => (t.id === template.id ? template : t))
-      );
+      setTemplates((prev) => prev.map((t) => (t.id === template.id ? template : t)));
       onTemplateUpdate?.(template);
     } else {
       // Create new
@@ -275,10 +272,7 @@ export default function NotificationTemplates({
                 const preview = getPreviewContent(template);
 
                 return (
-                  <div
-                    key={template.id}
-                    className="border-b hover:bg-gray-50 transition-colors"
-                  >
+                  <div key={template.id} className="border-b hover:bg-gray-50 transition-colors">
                     <div className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -340,9 +334,7 @@ export default function NotificationTemplates({
                             <Trash2 size={16} />
                           </button>
                           <button
-                            onClick={() =>
-                              setExpandedTemplate(isExpanded ? null : template.id)
-                            }
+                            onClick={() => setExpandedTemplate(isExpanded ? null : template.id)}
                             className="p-1.5 rounded hover:bg-gray-200 text-gray-400"
                           >
                             {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -355,7 +347,9 @@ export default function NotificationTemplates({
                         <div className="mt-4 pt-4 border-t space-y-3">
                           <div>
                             <label className="block text-xs text-gray-500 mb-1">Template ID</label>
-                            <code className="text-xs bg-gray-100 px-2 py-1 rounded">{template.id}</code>
+                            <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                              {template.id}
+                            </code>
                           </div>
                           <div>
                             <label className="block text-xs text-gray-500 mb-1">Variables</label>
@@ -373,7 +367,9 @@ export default function NotificationTemplates({
                           <div>
                             <label className="block text-xs text-gray-500 mb-1">Preview</label>
                             <div className="bg-gray-50 p-3 rounded border">
-                              <div className="font-medium text-sm text-gray-900">{preview.title}</div>
+                              <div className="font-medium text-sm text-gray-900">
+                                {preview.title}
+                              </div>
                               <div className="text-sm text-gray-600 mt-1">{preview.body}</div>
                             </div>
                           </div>
@@ -492,7 +488,7 @@ function TemplateEditor({ template, onSave, onCancel }: TemplateEditorProps) {
       channels: ['in-app'],
       priority: 'medium',
       variables: [],
-    }
+    },
   );
   const [newVariable, setNewVariable] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
@@ -678,7 +674,9 @@ function TemplateEditor({ template, onSave, onCancel }: TemplateEditorProps) {
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {channel === 'in-app' ? 'In-App' : channel.charAt(0).toUpperCase() + channel.slice(1)}
+                  {channel === 'in-app'
+                    ? 'In-App'
+                    : channel.charAt(0).toUpperCase() + channel.slice(1)}
                 </button>
               ))}
             </div>

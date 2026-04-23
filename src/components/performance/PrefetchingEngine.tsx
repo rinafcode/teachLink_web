@@ -30,7 +30,7 @@ const PrefetchingEngine: React.FC<PrefetchingEngineProps> = ({ strategies = ['ho
     if (!prefetchingEnabled || isSlowConnection() || !strategies.includes('hover')) return;
 
     const prefetched = new Set<string>();
-    let hoverTimeout: NodeJS.Timeout;
+    let hoverTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -40,7 +40,7 @@ const PrefetchingEngine: React.FC<PrefetchingEngineProps> = ({ strategies = ['ho
         const href = link.pathname;
         if (prefetched.has(href)) return;
 
-        clearTimeout(hoverTimeout);
+        if (hoverTimeout) clearTimeout(hoverTimeout);
         hoverTimeout = setTimeout(() => {
           handleIntent(href);
           prefetched.add(href);
@@ -61,13 +61,14 @@ const PrefetchingEngine: React.FC<PrefetchingEngineProps> = ({ strategies = ['ho
       }
     };
 
-    document.addEventListener('mouseover', handleMouseOver);
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    
+    const touchOptions: AddEventListenerOptions = { passive: true };
+    document.addEventListener('mouseover', handleMouseOver as EventListener);
+    document.addEventListener('touchstart', handleTouchStart as EventListener, touchOptions);
+
     return () => {
-      document.removeEventListener('mouseover', handleMouseOver);
-      document.removeEventListener('touchstart', handleTouchStart);
-      clearTimeout(hoverTimeout);
+      document.removeEventListener('mouseover', handleMouseOver as EventListener);
+      document.removeEventListener('touchstart', handleTouchStart as EventListener);
+      if (hoverTimeout) clearTimeout(hoverTimeout);
     };
   }, [strategies, handleIntent, prefetchingEnabled]);
 
