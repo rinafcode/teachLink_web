@@ -6,11 +6,11 @@
  * Exit code 0 = pass, 1 = fail
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
-const SRC_DIR = path.join(__dirname, '../src');
+const SRC_DIR = path.join(import.meta.dirname, '../src');
 const COMPONENT_DIRS = ['components', 'app', 'pages'];
 
 // Disallowed icon libraries (should use lucide-react)
