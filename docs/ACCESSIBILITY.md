@@ -4,14 +4,14 @@ This app ships a layered accessibility toolkit aimed at **WCAG 2.1 Level AA** pa
 
 ## Architecture
 
-| Piece | Role |
-| --- | --- |
-| `AccessibilityProvider` | Global context: `announce`, motion preference, keyboard modality, `runPageAudit`. |
-| `ScreenReaderSupport` | Permanent **polite** and **assertive** live regions for reliable announcements. |
-| `KeyboardNavigation` | **Alt+M** focuses main content; **Shift+?** opens a shortcuts dialog (focus-trapped). Toolbar **roving** focus with `[data-roving-root]`. |
-| `AccessibilityAudit` | Dev-only (by default) floating panel with heuristic DOM checks. |
-| `useAccessibility()` | Reads context, or a safe fallback when used outside the provider. |
-| `accessibilityUtils` | Focus helpers, contrast math, `checkAccessibilityIssues`, `runAccessibilityAudit`. |
+| Piece                   | Role                                                                                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `AccessibilityProvider` | Global context: `announce`, motion preference, keyboard modality, `runPageAudit`.                                                         |
+| `ScreenReaderSupport`   | Permanent **polite** and **assertive** live regions for reliable announcements.                                                           |
+| `KeyboardNavigation`    | **Alt+M** focuses main content; **Shift+?** opens a shortcuts dialog (focus-trapped). Toolbar **roving** focus with `[data-roving-root]`. |
+| `AccessibilityAudit`    | Dev-only (by default) floating panel with heuristic DOM checks.                                                                           |
+| `useAccessibility()`    | Reads context, or a safe fallback when used outside the provider.                                                                         |
+| `accessibilityUtils`    | Focus helpers, contrast math, `checkAccessibilityIssues`, `runAccessibilityAudit`.                                                        |
 
 ## Using the provider
 
@@ -39,7 +39,7 @@ Use **assertive** only for urgent errors or time-sensitive status.
 - Give the primary `<main>` a stable id such as `main-content` so skip links and **Alt+M** work everywhere. There should be **exactly one** `<main>` (or `role="main"`) per view.
 - For horizontal toolbars, add `data-roving-root` on the toolbar container. **Left/Right arrow** moves among buttons, links, tabs, and elements marked with `data-roving-item` (including those using `tabindex="-1"` for roving patterns).
 
-## What automation does *not* prove
+## What automation does _not_ prove
 
 - **WCAG 2.1 AA** for the whole product requires page-by-page review (contrast in context, timing, reflow, errors, etc.).
 - The audit panel and `checkAccessibilityIssues` only flag **some** DOM patterns. They miss false positives/negatives and cannot judge screen reader UX.

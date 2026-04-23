@@ -70,7 +70,7 @@ export default function MultiChannelDelivery({
   });
 
   const [selectedChannels, setSelectedChannels] = useState<Set<NotificationChannel>>(
-    new Set(['in-app'])
+    new Set(['in-app']),
   );
   const [deliveryStatuses, setDeliveryStatuses] = useState<DeliveryStatus[]>([]);
   const [message, setMessage] = useState('');
@@ -99,9 +99,7 @@ export default function MultiChannelDelivery({
     const channels = Array.from(selectedChannels);
 
     // Initialize delivery statuses
-    setDeliveryStatuses(
-      channels.map((channel) => ({ channel, status: 'sending' }))
-    );
+    setDeliveryStatuses(channels.map((channel) => ({ channel, status: 'sending' })));
 
     try {
       // Create the notification
@@ -122,10 +120,8 @@ export default function MultiChannelDelivery({
         channels.map((channel) => ({
           channel,
           status: results[channel] ? 'success' : 'failed',
-          message: results[channel]
-            ? 'Delivered successfully'
-            : 'Delivery failed',
-        }))
+          message: results[channel] ? 'Delivered successfully' : 'Delivery failed',
+        })),
       );
 
       onDeliveryComplete?.(results);
@@ -144,12 +140,20 @@ export default function MultiChannelDelivery({
           channel,
           status: 'failed',
           message: 'An error occurred',
-        }))
+        })),
       );
     } finally {
       setIsSending(false);
     }
-  }, [message, selectedChannels, category, priority, sendNotification, sendToAllChannels, onDeliveryComplete]);
+  }, [
+    message,
+    selectedChannels,
+    category,
+    priority,
+    sendNotification,
+    sendToAllChannels,
+    onDeliveryComplete,
+  ]);
 
   // Check if channel is enabled in preferences
   const isChannelEnabled = (channel: NotificationChannel): boolean => {
@@ -191,43 +195,47 @@ export default function MultiChannelDelivery({
           Select Delivery Channels
         </label>
         <div className="grid grid-cols-2 gap-3">
-          {(Object.entries(channelConfig) as [NotificationChannel, typeof channelConfig['in-app']][]).map(
-            ([channel, config]) => {
-              const isSelected = selectedChannels.has(channel);
-              const isEnabled = isChannelEnabled(channel);
+          {(
+            Object.entries(channelConfig) as [
+              NotificationChannel,
+              (typeof channelConfig)['in-app'],
+            ][]
+          ).map(([channel, config]) => {
+            const isSelected = selectedChannels.has(channel);
+            const isEnabled = isChannelEnabled(channel);
 
-              return (
-                <button
-                  key={channel}
-                  onClick={() => toggleChannel(channel)}
-                  disabled={!isEnabled}
-                  className={`
+            return (
+              <button
+                key={channel}
+                onClick={() => toggleChannel(channel)}
+                disabled={!isEnabled}
+                className={`
                     p-3 rounded-lg border-2 text-left transition-all
-                    ${isSelected
-                      ? `${config.color} border-current`
-                      : 'bg-white border-gray-200 hover:border-gray-300'
+                    ${
+                      isSelected
+                        ? `${config.color} border-current`
+                        : 'bg-white border-gray-200 hover:border-gray-300'
                     }
                     ${!isEnabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                   `}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={isSelected ? '' : 'text-gray-400'}>{config.icon}</span>
-                    <span className={`font-medium ${isSelected ? '' : 'text-gray-700'}`}>
-                      {config.label}
-                    </span>
-                    {isSelected && <Check size={16} className="ml-auto" />}
-                  </div>
-                  <p className="text-xs mt-1 text-gray-500">{config.description}</p>
-                  {!isEnabled && (
-                    <p className="text-xs mt-1 text-orange-600 flex items-center gap-1">
-                      <AlertCircle size={12} />
-                      Disabled in preferences
-                    </p>
-                  )}
-                </button>
-              );
-            }
-          )}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={isSelected ? '' : 'text-gray-400'}>{config.icon}</span>
+                  <span className={`font-medium ${isSelected ? '' : 'text-gray-700'}`}>
+                    {config.label}
+                  </span>
+                  {isSelected && <Check size={16} className="ml-auto" />}
+                </div>
+                <p className="text-xs mt-1 text-gray-500">{config.description}</p>
+                {!isEnabled && (
+                  <p className="text-xs mt-1 text-orange-600 flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    Disabled in preferences
+                  </p>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -282,9 +290,7 @@ export default function MultiChannelDelivery({
       {/* Delivery Status */}
       {deliveryStatuses.length > 0 && (
         <div className="p-4 border-b bg-gray-50">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Delivery Status
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Delivery Status</label>
           <div className="space-y-2">
             {deliveryStatuses.map((status) => {
               const config = channelConfig[status.channel];

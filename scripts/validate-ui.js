@@ -108,14 +108,23 @@ function validateFiles() {
 }
 
 function printResults() {
+  console.log('UI Validation Summary:');
+  console.log(`Files checked in: ${COMPONENT_DIRS.join(', ')}`);
+  console.log(`Found ${warnings.length} warnings and ${errors.length} errors.\n`);
+
   if (warnings.length > 0) {
-    warnings.forEach((w) => {});
+    console.log('--- WARNINGS ---');
+    warnings.forEach((w) => console.warn(w));
+    console.log('');
   }
 
   if (errors.length > 0) {
-    errors.forEach((e) => {});
+    console.log('--- ERRORS ---');
+    errors.forEach((e) => console.error(e));
     process.exit(1);
   }
+
+  console.log('UI validation passed successfully! ✨');
   process.exit(0);
 }
 

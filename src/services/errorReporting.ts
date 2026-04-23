@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Error Reporting Service
  * Handles error logging, analytics, and debugging insights
