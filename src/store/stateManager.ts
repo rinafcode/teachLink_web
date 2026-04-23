@@ -7,12 +7,12 @@ import { stateLogger } from './devTools';
 interface UserState {
   id: string | null;
   name: string | null;
-    preferences: {
-      theme: 'light' | 'dark';
-      language: string;
-      notifications: boolean;
-      prefetching: boolean;
-    };
+  preferences: {
+    theme: 'light' | 'dark';
+    language: string;
+    notifications: boolean;
+    prefetching: boolean;
+  };
 }
 
 interface AppState {

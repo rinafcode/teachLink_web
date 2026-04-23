@@ -15,7 +15,7 @@ export type RequestInterceptor = (config: RequestConfig) => Promise<RequestConfi
 /**
  * Response interceptor function type
  */
-export type ResponseInterceptor<T = unknown> = (response: T) => Promise<T> | T;
+export type ResponseInterceptor<T = any> = (response: T) => Promise<T> | T;
 
 /**
  * Error interceptor function type
@@ -127,11 +127,11 @@ class ApiClientImpl {
    * Apply all response interceptors
    */
   private async applyResponseInterceptors<T>(response: T): Promise<T> {
-    let processedResponse = response;
+    let processedResponse: any = response;
     for (const interceptor of this.responseInterceptors) {
       processedResponse = await interceptor(processedResponse);
     }
-    return processedResponse;
+    return processedResponse as T;
   }
 
   /**
@@ -175,9 +175,7 @@ class ApiClientImpl {
         signal: controller.signal,
       });
 
-      const url = this.config.baseURL
-        ? `${this.config.baseURL}${config.url}`
-        : config.url;
+      const url = this.config.baseURL ? `${this.config.baseURL}${config.url}` : config.url;
 
       const response = await fetch(url, processedConfig);
       clearTimeout(timer);
@@ -206,7 +204,7 @@ class ApiClientImpl {
       }
 
       const data = (await response.json()) as T;
-      
+
       // Apply response interceptors
       const processedResponse = await this.applyResponseInterceptors(data);
       return processedResponse;
@@ -214,7 +212,7 @@ class ApiClientImpl {
       clearTimeout(timer);
 
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
-      
+
       // Apply error interceptors
       await this.applyErrorInterceptors(error);
 

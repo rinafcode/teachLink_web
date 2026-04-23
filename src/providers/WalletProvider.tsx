@@ -1,73 +1,34 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-interface WalletContextType {
-  address: string | null;
-  isConnected: boolean;
-  connect: () => Promise<void>;
-  disconnect: () => void;
-}
-
-const WalletContext = createContext<WalletContextType | null>(null);
-
-export function WalletProvider({ children }: { children: ReactNode }) {
-  const [address, setAddress] = useState<string | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    // Restore session on mount
-    const saved = localStorage.getItem('wallet_address');
-    if (saved) {
-      setAddress(saved);
-      setIsConnected(true);
-    }
-  }, []);
-
-  const connect = async () => {
-    try {
-      if (typeof window === 'undefined') return;
-      // Wallet connection logic placeholder
-      const mockAddress = '0x0000000000000000000000000000000000000000';
-      setAddress(mockAddress);
-      setIsConnected(true);
-      localStorage.setItem('wallet_address', mockAddress);
-    } catch (error) {
-      console.error('Wallet connection failed:', error);
-    }
-  };
-
-  const disconnect = () => {
-    try {
-      setAddress(null);
-      setIsConnected(false);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('wallet_address');
-      }
-    } catch (error) {
-      console.error('Wallet disconnect failed:', error);
-    }
-  };
-
-  return (
-    <WalletContext.Provider value={{ address, isConnected, connect, disconnect }}>
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 // Environment validation for wallet config
 const validateWalletEnv = () => {
   const warnings: string[] = [];
 
-  if (!process.env.NEXT_PUBLIC_STARKNET_NETWORK) {
+  if (typeof process !== 'undefined' && !process.env.NEXT_PUBLIC_STARKNET_NETWORK) {
     warnings.push('NEXT_PUBLIC_STARKNET_NETWORK not set, defaulting to testnet');
   }
 
-  if (process.env.NODE_ENV === 'development' && warnings.length > 0) {
+  if (
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV === 'development' &&
+    warnings.length > 0
+  ) {
     console.warn('[WalletProvider] Environment warnings:', warnings);
   }
 
   return {
-    network: process.env.NEXT_PUBLIC_STARKNET_NETWORK || 'goerli-alpha',
+    network:
+      (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_STARKNET_NETWORK : null) ||
+      'goerli-alpha',
     isValid: true, // Non-blocking - app works without wallet
   };
 };
@@ -204,13 +165,6 @@ export function WalletProvider({ children }: WalletProviderProps) {
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
-export function useWallet() {
-  const context = useContext(WalletContext);
-  if (context === null) {
-    return { address: null, isConnected: false, connect: async () => {}, disconnect: () => {} };
-  }
-  return context;
-}
 export function useWallet(): WalletContextType {
   const context = useContext(WalletContext);
 

@@ -8,9 +8,6 @@
     "build": "next build",
     "start": "next start",
     "type-check": "tsc --noEmit",
-    "lint": "next lint",
-    "validate:ui": "node scripts/validate-ui.js",
-    "validate:web3": "node scripts/validate-web3.js",
     "lint": "next lint --max-warnings=0",
     "lint:fix": "eslint --ext .ts,.tsx,.js,.jsx . --fix",
     "format": "prettier --write .",
@@ -19,9 +16,8 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
-    "type-check": "tsc --noEmit",
-    "validate:ui": "node scripts/validate-ui.js",
-    "validate:web3": "node scripts/validate-web3.js",
+    "validate:ui": "node scripts/validate-ui.cjs",
+    "validate:web3": "node scripts/validate-web3.cjs",
     "validate": "npm run validate:ui && npm run validate:web3"
   },
   "dependencies": {

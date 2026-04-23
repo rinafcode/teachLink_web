@@ -1,6 +1,12 @@
 import { apiClient, RequestInterceptor, ResponseInterceptor, ErrorInterceptor } from './api';
 import { RequestConfig } from './api';
 
+declare global {
+  interface Window {
+    __APP_VERSION__?: string;
+  }
+}
+
 /**
  * Request logging interceptor - logs outgoing requests
  */

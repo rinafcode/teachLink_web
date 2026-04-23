@@ -5,7 +5,7 @@
 
 export type NotificationChannel = 'push' | 'email' | 'sms' | 'in-app';
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type NotificationCategory = 
+export type NotificationCategory =
   | 'course_update'
   | 'message'
   | 'achievement'
@@ -83,7 +83,7 @@ export function formatNotificationTime(timestamp: string): string {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
-  
+
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -94,7 +94,11 @@ export function formatNotificationTime(timestamp: string): string {
 /**
  * Check if current time is within quiet hours
  */
-export function isWithinQuietHours(quietHours: { start: string; end: string; timezone: string }): boolean {
+export function isWithinQuietHours(quietHours: {
+  start: string;
+  end: string;
+  timezone: string;
+}): boolean {
   const now = new Date();
   const currentTime = now.toLocaleTimeString('en-US', {
     hour12: false,
@@ -110,7 +114,7 @@ export function isWithinQuietHours(quietHours: { start: string; end: string; tim
   if (start > end) {
     return currentTime >= start || currentTime <= end;
   }
-  
+
   return currentTime >= start && currentTime <= end;
 }
 
@@ -120,7 +124,7 @@ export function isWithinQuietHours(quietHours: { start: string; end: string; tim
 export function shouldSendNotification(
   category: NotificationCategory,
   channel: NotificationChannel,
-  preferences: UserNotificationPreferences
+  preferences: UserNotificationPreferences,
 ): boolean {
   // Check if channel is enabled globally
   if (!preferences.channels[channel === 'in-app' ? 'inApp' : channel]) {
@@ -153,9 +157,11 @@ export function shouldSendNotification(
       hour: '2-digit',
       minute: '2-digit',
     });
-    
-    if (currentTime >= categoryPrefs.quietHours.start && 
-        currentTime <= categoryPrefs.quietHours.end) {
+
+    if (
+      currentTime >= categoryPrefs.quietHours.start &&
+      currentTime <= categoryPrefs.quietHours.end
+    ) {
       return false;
     }
   }
@@ -172,7 +178,7 @@ export function calculateAnalytics(
     clicked?: boolean;
     channel: NotificationChannel;
     category: NotificationCategory;
-  }>
+  }>,
 ): NotificationAnalytics {
   const analytics: NotificationAnalytics = {
     totalSent: notifications.length,
@@ -212,12 +218,10 @@ export function calculateAnalytics(
     if (notification.clicked) analytics.byCategory[notification.category].clicked++;
   });
 
-  analytics.readRate = analytics.totalSent > 0 
-    ? (analytics.totalRead / analytics.totalSent) * 100 
-    : 0;
-  analytics.clickRate = analytics.totalSent > 0 
-    ? (analytics.totalClicked / analytics.totalSent) * 100 
-    : 0;
+  analytics.readRate =
+    analytics.totalSent > 0 ? (analytics.totalRead / analytics.totalSent) * 100 : 0;
+  analytics.clickRate =
+    analytics.totalSent > 0 ? (analytics.totalClicked / analytics.totalSent) * 100 : 0;
 
   return analytics;
 }
@@ -225,11 +229,13 @@ export function calculateAnalytics(
 /**
  * Sort notifications by priority and time
  */
-export function sortNotifications<T extends { 
-  priority: NotificationPriority; 
-  createdAt: string;
-  read: boolean;
-}>(notifications: T[]): T[] {
+export function sortNotifications<
+  T extends {
+    priority: NotificationPriority;
+    createdAt: string;
+    read: boolean;
+  },
+>(notifications: T[]): T[] {
   const priorityOrder: Record<NotificationPriority, number> = {
     urgent: 0,
     high: 1,
@@ -240,12 +246,12 @@ export function sortNotifications<T extends {
   return [...notifications].sort((a, b) => {
     // Unread first
     if (a.read !== b.read) return a.read ? 1 : -1;
-    
+
     // Then by priority
     if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     }
-    
+
     // Then by time (newest first)
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
@@ -254,32 +260,34 @@ export function sortNotifications<T extends {
 /**
  * Filter notifications by various criteria
  */
-export function filterNotifications<T extends {
-  type: string;
-  category?: NotificationCategory;
-  read: boolean;
-  createdAt: string;
-}>(
+export function filterNotifications<
+  T extends {
+    type: string;
+    category?: NotificationCategory;
+    read: boolean;
+    createdAt: string;
+  },
+>(
   notifications: T[],
   filters: {
     type?: string;
     category?: NotificationCategory;
     read?: boolean;
     dateRange?: { start: Date; end: Date };
-  }
+  },
 ): T[] {
   return notifications.filter((notification) => {
     if (filters.type && notification.type !== filters.type) return false;
     if (filters.category && notification.category !== filters.category) return false;
     if (filters.read !== undefined && notification.read !== filters.read) return false;
-    
+
     if (filters.dateRange) {
       const notifDate = new Date(notification.createdAt);
       if (notifDate < filters.dateRange.start || notifDate > filters.dateRange.end) {
         return false;
       }
     }
-    
+
     return true;
   });
 }
@@ -288,10 +296,10 @@ export function filterNotifications<T extends {
  * Group notifications by date
  */
 export function groupNotificationsByDate<T extends { createdAt: string }>(
-  notifications: T[]
+  notifications: T[],
 ): Map<string, T[]> {
   const groups = new Map<string, T[]>();
-  
+
   notifications.forEach((notification) => {
     const date = new Date(notification.createdAt);
     const dateKey = date.toLocaleDateString('en-US', {
@@ -299,13 +307,13 @@ export function groupNotificationsByDate<T extends { createdAt: string }>(
       month: 'long',
       day: 'numeric',
     });
-    
+
     if (!groups.has(dateKey)) {
       groups.set(dateKey, []);
     }
     groups.get(dateKey)!.push(notification);
   });
-  
+
   return groups;
 }
 

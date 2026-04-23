@@ -16,11 +16,13 @@ import { InteractiveChartLibrary } from '@/components/visualization';
 export default function MyComponent() {
   const data = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    datasets: [{
-      label: 'Students Active',
-      data: [120, 145, 167, 189, 203],
-      borderColor: '#3b82f6',
-    }],
+    datasets: [
+      {
+        label: 'Students Active',
+        data: [120, 145, 167, 189, 203],
+        borderColor: '#3b82f6',
+      },
+    ],
   };
 
   return <InteractiveChartLibrary data={data} chartType="line" />;
@@ -34,11 +36,7 @@ import { RealTimeDataVisualizer } from '@/components/visualization';
 
 export default function LiveDashboard() {
   return (
-    <RealTimeDataVisualizer
-      chartType="area"
-      title="Live User Activity"
-      updateInterval={2000}
-    />
+    <RealTimeDataVisualizer chartType="area" title="Live User Activity" updateInterval={2000} />
   );
 }
 ```
@@ -68,11 +66,13 @@ import { DataExplorationTools } from '@/components/visualization';
 export default function Analytics() {
   const analyticsData = {
     labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-    datasets: [{
-      label: 'Course Completions',
-      data: [45, 52, 68, 74],
-      backgroundColor: '#10b981',
-    }],
+    datasets: [
+      {
+        label: 'Course Completions',
+        data: [45, 52, 68, 74],
+        backgroundColor: '#10b981',
+      },
+    ],
   };
 
   return <DataExplorationTools data={analyticsData} />;
@@ -124,9 +124,7 @@ function MyChart() {
 
   return (
     <div>
-      <button onClick={() => exportData('csv', 'my-data')}>
-        Export CSV
-      </button>
+      <button onClick={() => exportData('csv', 'my-data')}>Export CSV</button>
       <InteractiveChartLibrary data={data} chartType="line" />
     </div>
   );
@@ -135,14 +133,14 @@ function MyChart() {
 
 ## Chart Types
 
-| Type | Best For | Example |
-|------|----------|---------|
-| `line` | Trends over time | Student progress |
-| `bar` | Comparisons | Course enrollments |
-| `area` | Volume over time | Active users |
-| `pie` | Proportions | Course categories |
-| `scatter` | Correlations | Grade vs. time spent |
-| `radar` | Multi-dimensional | Skill assessments |
+| Type      | Best For          | Example              |
+| --------- | ----------------- | -------------------- |
+| `line`    | Trends over time  | Student progress     |
+| `bar`     | Comparisons       | Course enrollments   |
+| `area`    | Volume over time  | Active users         |
+| `pie`     | Proportions       | Course categories    |
+| `scatter` | Correlations      | Grade vs. time spent |
+| `radar`   | Multi-dimensional | Skill assessments    |
 
 ## Styling
 
@@ -151,13 +149,15 @@ function MyChart() {
 ```tsx
 const data = {
   labels: ['A', 'B', 'C'],
-  datasets: [{
-    label: 'My Data',
-    data: [10, 20, 30],
-    backgroundColor: '#ff6384',  // Custom color
-    borderColor: '#ff6384',
-    borderWidth: 2,
-  }],
+  datasets: [
+    {
+      label: 'My Data',
+      data: [10, 20, 30],
+      backgroundColor: '#ff6384', // Custom color
+      borderColor: '#ff6384',
+      borderWidth: 2,
+    },
+  ],
 };
 ```
 
@@ -172,8 +172,8 @@ All components automatically support dark mode through Tailwind CSS.
 ```tsx
 import { formatNumber, formatPercentage } from '@/utils/visualizationUtils';
 
-formatNumber(1500);      // "1.5K"
-formatNumber(1500000);   // "1.5M"
+formatNumber(1500); // "1.5K"
+formatNumber(1500000); // "1.5M"
 formatPercentage(45.67); // "45.7%"
 ```
 

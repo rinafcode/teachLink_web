@@ -1,7 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, ChevronLeft, ChevronRight, Eye, BookOpen, Layers, Layout, Target, FileText } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  BookOpen,
+  Layers,
+  Layout,
+  Target,
+  FileText,
+} from 'lucide-react';
 import { useCourseCreation, Lesson } from '@/hooks/useCourseCreation';
 import { ContentUploader } from './ContentUploader';
 import { LessonBuilder } from './LessonBuilder';
@@ -69,15 +79,17 @@ export const CourseCreationWizard = () => {
   const { watch, trigger } = methods;
   const formValues = watch();
 
-  // Sync form values with useCourseCreation state when they change
-  // In a real app, we might just use the form values directly
   const handleStepChange = async (direction: 'next' | 'prev') => {
     if (direction === 'next' && currentStep === 0) {
       const isValid = await trigger();
       if (!isValid) return;
       updateCourseData(formValues);
     }
-    direction === 'next' ? nextStep() : previousStep();
+    if (direction === 'next') {
+      nextStep();
+    } else {
+      previousStep();
+    }
   };
 
   const handleSaveLesson = () => {
@@ -115,12 +127,7 @@ export const CourseCreationWizard = () => {
               />
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <FormInput
-                  name="category"
-                  label="Category"
-                  as="select"
-                  icon={Layers}
-                >
+                <FormInput name="category" label="Category" as="select" icon={Layers}>
                   <option value="">Select Category</option>
                   <option value="development">Development</option>
                   <option value="design">Design</option>
@@ -128,12 +135,7 @@ export const CourseCreationWizard = () => {
                   <option value="marketing">Marketing</option>
                 </FormInput>
 
-                <FormInput
-                  name="level"
-                  label="Difficulty Level"
-                  as="select"
-                  icon={Layout}
-                >
+                <FormInput name="level" label="Difficulty Level" as="select" icon={Layout}>
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
@@ -152,7 +154,9 @@ export const CourseCreationWizard = () => {
                       {...methods.register('pricing.type')}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
-                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">Free</span>
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">
+                      Free
+                    </span>
                   </label>
                   <label className="flex items-center space-x-2 cursor-pointer group">
                     <input
@@ -161,7 +165,9 @@ export const CourseCreationWizard = () => {
                       {...methods.register('pricing.type')}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
-                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">Paid</span>
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">
+                      Paid
+                    </span>
                   </label>
                 </div>
                 {formValues.pricing?.type === 'paid' && (
@@ -326,8 +332,8 @@ export const CourseCreationWizard = () => {
                       currentStep > step.id
                         ? 'bg-green-600 text-white'
                         : currentStep === step.id
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 text-gray-600'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-600'
                     }`}
                   >
                     {currentStep > step.id ? (

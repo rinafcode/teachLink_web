@@ -35,12 +35,12 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const themeCookie = cookieStore.get('theme');
   const defaultTheme = themeCookie ? themeCookie.value : 'system';
 
@@ -83,9 +83,7 @@ export default function RootLayout({
                         <StateManagerIntegration />
                         <PerformanceMonitor />
                         <PrefetchingEngine />
-                        <Suspense fallback={<Loading />}>
-                          {children}
-                        </Suspense>
+                        <Suspense fallback={<Loading />}>{children}</Suspense>
                       </OfflineModeProvider>
                     </PerformanceMonitoringProvider>
                   </AccessibilityProvider>

@@ -33,11 +33,14 @@ export const AdvancedSearchInterface = React.memo(() => {
   const [showFilters, setShowFilters] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = useCallback((text: string) => {
-    updateSearchText(text);
-    performSearch();
-    setHasSearched(true);
-  }, [updateSearchText, performSearch]);
+  const handleSearch = useCallback(
+    (text: string) => {
+      updateSearchText(text);
+      performSearch();
+      setHasSearched(true);
+    },
+    [updateSearchText, performSearch],
+  );
 
   const handleReset = useCallback(() => {
     clearFilters();
