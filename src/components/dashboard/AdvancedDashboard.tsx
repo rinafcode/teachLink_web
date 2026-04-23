@@ -48,9 +48,7 @@ const SortablePanel = React.memo<SortablePanelProps>(({ panel, children }) => {
   const transformValue = CSS.Transform.toString(transform);
 
   const style: React.CSSProperties = {
-    transform: transformValue
-      ? `${transformValue} translate3d(0,0,0)`
-      : 'translate3d(0,0,0)',
+    transform: transformValue ? `${transformValue} translate3d(0,0,0)` : 'translate3d(0,0,0)',
     transition,
     zIndex: isDragging ? 50 : undefined,
     opacity: isDragging ? 0.75 : 1,
@@ -107,16 +105,19 @@ export const AdvancedDashboard = React.memo<AdvancedDashboardProps>(({ className
     }),
   );
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    const fromIndex = panels.findIndex((p) => p.id === active.id);
-    const toIndex = panels.findIndex((p) => p.id === over.id);
-    if (fromIndex !== -1 && toIndex !== -1) {
-      reorderPanels(fromIndex, toIndex);
-    }
-  }, [panels, reorderPanels]);
+      const fromIndex = panels.findIndex((p) => p.id === active.id);
+      const toIndex = panels.findIndex((p) => p.id === over.id);
+      if (fromIndex !== -1 && toIndex !== -1) {
+        reorderPanels(fromIndex, toIndex);
+      }
+    },
+    [panels, reorderPanels],
+  );
 
   const handleShare = useCallback(async () => {
     const url = generateShareURL();
