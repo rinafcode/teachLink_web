@@ -84,7 +84,7 @@ class ApiClientImpl {
 
   constructor(config: ApiClientConfig = {}) {
     this.config = {
-      baseURL: config.baseURL || '',
+      baseURL: config.baseURL || process.env.NEXT_PUBLIC_API_URL || '',
       timeout: config.timeout || DEFAULT_TIMEOUT_MS,
       maxRetries: config.maxRetries || MAX_RETRIES,
       retryDelay: config.retryDelay || RETRY_DELAY_MS,
