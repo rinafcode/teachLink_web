@@ -111,7 +111,6 @@ export interface ValidationConfiguration {
   customRules: Record<string, ValidationFunction>;
 }
 
-export type ValidationFunction = (value: unknown, formState: FormState, context?: unknown) => ValidationResult | Promise<ValidationResult>;
 export interface ValidationExecutionContext {
   getFieldValue(fieldId: string): unknown;
   getFieldDescriptor(fieldId: string): FieldDescriptor | undefined;
@@ -123,6 +122,7 @@ export interface ValidationExecutionContext {
   getCustomData(key: string): unknown;
   setCustomData(key: string, value: unknown): void;
 }
+
 export type ValidationFunction = (
   value: unknown,
   formState: FormState,
@@ -143,7 +143,6 @@ export interface FormConfiguration {
   autoSave?: AutoSaveConfiguration;
   analytics?: AnalyticsConfiguration;
   accessibility?: AccessibilityConfiguration;
-  conditionalLogic?: ConditionalRule[];
 }
 
 // Auto-Save Configuration

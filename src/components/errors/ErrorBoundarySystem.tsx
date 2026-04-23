@@ -5,28 +5,31 @@ import React, { Component, ReactNode, ErrorInfo } from 'react';
 type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
+  errorInfo: ErrorInfo | null;
+  errorCount: number;
 };
 
-type ErrorBoundaryProps = {
+export type ErrorBoundaryProps = {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  isolationId?: string;
+  isolationLevel?: string;
 };
 
-export class ErrorBoundarySystem extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
 
     this.state = {
       hasError: false,
       error: null,
+      errorInfo: null,
+      errorCount: 0,
     };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return {
       hasError: true,
       error,
@@ -40,15 +43,7 @@ export class ErrorBoundarySystem extends Component<
       errorCount: prevState.errorCount + 1,
     }));
 
-    // Report error
-    errorReportingService.addBreadcrumb('errorBoundary', {
-      isolationId: this.props.isolationId,
-      isolationLevel: this.props.isolationLevel,
-      errorMessage: error.message,
-      componentStack: errorInfo.componentStack,
-    });
-
-    // Hook for reporting system (we’ll implement next)
+    // Hook for reporting system
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -58,6 +53,7 @@ export class ErrorBoundarySystem extends Component<
     this.setState({
       hasError: false,
       error: null,
+      errorInfo: null,
     });
   };
 
@@ -69,9 +65,7 @@ export class ErrorBoundarySystem extends Component<
             <h2>Something went wrong.</h2>
             <p>{this.state.error?.message}</p>
 
-            <button onClick={this.resetError}>
-              Try Again
-            </button>
+            <button onClick={this.resetError}>Try Again</button>
           </div>
         )
       );

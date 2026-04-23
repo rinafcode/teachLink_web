@@ -103,16 +103,19 @@ export const AdvancedDashboard = React.memo<AdvancedDashboardProps>(({ className
     }),
   );
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    const fromIndex = panels.findIndex((p) => p.id === active.id);
-    const toIndex = panels.findIndex((p) => p.id === over.id);
-    if (fromIndex !== -1 && toIndex !== -1) {
-      reorderPanels(fromIndex, toIndex);
-    }
-  }, [panels, reorderPanels]);
+      const fromIndex = panels.findIndex((p) => p.id === active.id);
+      const toIndex = panels.findIndex((p) => p.id === over.id);
+      if (fromIndex !== -1 && toIndex !== -1) {
+        reorderPanels(fromIndex, toIndex);
+      }
+    },
+    [panels, reorderPanels],
+  );
 
   const handleShare = useCallback(async () => {
     const url = generateShareURL();

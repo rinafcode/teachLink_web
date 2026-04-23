@@ -6,7 +6,9 @@ import { z } from 'zod';
  */
 
 const envSchema = z.object({
-  NEXT_PUBLIC_STARKNET_NETWORK: z.enum(['mainnet-alpha', 'goerli-alpha', 'sepolia-alpha']).default('goerli-alpha'),
+  NEXT_PUBLIC_STARKNET_NETWORK: z
+    .enum(['mainnet-alpha', 'goerli-alpha', 'sepolia-alpha'])
+    .default('goerli-alpha'),
   NEXT_PUBLIC_STARKNET_RPC_URL: z.string().url().optional(),
   NEXT_PUBLIC_API_URL: z.string().url().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -59,10 +61,10 @@ export function validateAppEnv(): { success: boolean; data?: EnvConfig; error?: 
     return { success: true, data };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingFields = error.issues.map(i => i.path.join('.')).join(', ');
-      return { 
-        success: false, 
-        error: `Invalid environment configuration. Missing or invalid fields: ${missingFields}` 
+      const missingFields = error.issues.map((i) => i.path.join('.')).join(', ');
+      return {
+        success: false,
+        error: `Invalid environment configuration. Missing or invalid fields: ${missingFields}`,
       };
     }
     return { success: false, error: 'Unknown environment validation error' };
@@ -78,7 +80,7 @@ export function validateWeb3Env(): EnvValidationResult {
   const warnings: string[] = [];
 
   const validation = validateAppEnv();
-  
+
   if (!validation.success) {
     errors.push(validation.error || 'Environment validation failed');
   }
@@ -144,4 +146,3 @@ export function isValidStarknetAddress(address: string): boolean {
 export function getStarknetNetwork(): string {
   return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? 'goerli-alpha';
 }
-

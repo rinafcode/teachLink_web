@@ -44,10 +44,11 @@ const data = {
   showGrid={true}
   animated={true}
   onDataPointClick={(data) => console.log(data)}
-/>
+/>;
 ```
 
 **Props:**
+
 - `data`: ChartData - Chart data with labels and datasets
 - `chartType`: ChartType - Type of chart ('line', 'bar', 'area', 'pie', 'doughnut', 'scatter', 'radar')
 - `title?`: string - Chart title
@@ -71,10 +72,11 @@ import { RealTimeDataVisualizer } from '@/components/visualization';
   title="Live User Activity"
   updateInterval={2000}
   maxDataPoints={20}
-/>
+/>;
 ```
 
 **Props:**
+
 - `websocketUrl?`: string - WebSocket URL for real-time data
 - `chartType?`: ChartType - Type of chart (default: 'line')
 - `title?`: string - Chart title (default: 'Real-Time Data')
@@ -83,6 +85,7 @@ import { RealTimeDataVisualizer } from '@/components/visualization';
 - `className?`: string - Additional CSS classes
 
 **Features:**
+
 - Real-time data streaming via WebSocket
 - Automatic data simulation when WebSocket is unavailable
 - Pause/resume functionality
@@ -100,14 +103,16 @@ import { CustomVisualizationBuilder } from '@/components/visualization';
   onSave={(config) => {
     console.log('Chart saved:', config);
   }}
-/>
+/>;
 ```
 
 **Props:**
+
 - `onSave?`: (config: { data: ChartData; chartType: ChartType; title: string }) => void - Save callback
 - `className?`: string - Additional CSS classes
 
 **Features:**
+
 - Add/remove labels and datasets
 - Edit data values in real-time
 - Change chart type dynamically
@@ -141,11 +146,13 @@ const data = {
 ```
 
 **Props:**
+
 - `data`: ChartData - Data to explore
 - `title?`: string - Dashboard title (default: 'Data Exploration')
 - `className?`: string - Additional CSS classes
 
 **Features:**
+
 - Time range filtering (7d, 30d, 90d, 1y, all)
 - Chart type switching
 - Dataset selection
@@ -190,6 +197,7 @@ const {
 ```
 
 **Options:**
+
 - `initialData?`: ChartData - Initial chart data
 - `config?`: Partial<VisualizationConfig> - Initial configuration
 - `websocketUrl?`: string - WebSocket URL for real-time updates
@@ -197,6 +205,7 @@ const {
 - `refreshInterval?`: number - Refresh interval in ms
 
 **Returns:**
+
 - `data`: ChartData | null - Current chart data
 - `config`: VisualizationConfig - Current configuration
 - `isLoading`: boolean - Loading state
@@ -291,18 +300,22 @@ const courseData = {
   datasets: [
     {
       label: 'Course Completions',
-      data: [/* completion data */],
+      data: [
+        /* completion data */
+      ],
       backgroundColor: '#3b82f6',
     },
     {
       label: 'Active Students',
-      data: [/* student data */],
+      data: [
+        /* student data */
+      ],
       backgroundColor: '#10b981',
     },
   ],
 };
 
-<DataExplorationTools data={courseData} title="Course Analytics" />
+<DataExplorationTools data={courseData} title="Course Analytics" />;
 ```
 
 ### Live Student Activity Monitor
@@ -316,7 +329,7 @@ import { RealTimeDataVisualizer } from '@/components/visualization';
   title="Live Student Activity"
   updateInterval={1000}
   maxDataPoints={30}
-/>
+/>;
 ```
 
 ### Custom Report Builder
@@ -329,7 +342,7 @@ import { CustomVisualizationBuilder } from '@/components/visualization';
     // Save to database or local storage
     saveReport(config);
   }}
-/>
+/>;
 ```
 
 ## Best Practices

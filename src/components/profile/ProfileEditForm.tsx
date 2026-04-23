@@ -89,12 +89,7 @@ export default function ProfileEditForm() {
             </div>
 
             <div className="grow space-y-6 w-full">
-              <FormInput
-                name="name"
-                label="Full Name"
-                icon={User}
-                placeholder="Your Name"
-              />
+              <FormInput name="name" label="Full Name" icon={User} placeholder="Your Name" />
 
               <FormInput
                 name="email"

@@ -109,13 +109,17 @@ function validateFiles() {
 
 function printResults() {
   if (warnings.length > 0) {
-    warnings.forEach((w) => {});
+    console.log('\n⚠️  UI Validation Warnings:');
+    warnings.forEach((w) => console.warn(`  - ${w}`));
   }
 
   if (errors.length > 0) {
-    errors.forEach((e) => {});
+    console.error('\n❌ UI Validation Errors:');
+    errors.forEach((e) => console.error(`  - ${e}`));
     process.exit(1);
   }
+
+  console.log('\n✅ UI validation passed');
   process.exit(0);
 }
 

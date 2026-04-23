@@ -16,11 +16,7 @@ export const useVideoLazyLoad = (
   videoRef: RefObject<HTMLVideoElement>,
   options: UseVideoLazyLoadProps = {},
 ) => {
-  const {
-    enabled = true,
-    threshold = 0.1,
-    rootMargin = '50px',
-  } = options;
+  const { enabled = true, threshold = 0.1, rootMargin = '50px' } = options;
 
   const [isInViewport, setIsInViewport] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -34,8 +30,7 @@ export const useVideoLazyLoad = (
       // Start loading by setting event listeners
       setIsLoaded(true);
     }
-
-  }, [enabled, isInViewport, isLoaded]);
+  }, [enabled, isInViewport, isLoaded, videoRef]);
 
   useEffect(() => {
     if (!enabled || !videoRef.current) return;
@@ -71,7 +66,7 @@ export const useVideoLazyLoad = (
       }
       observer.disconnect();
     };
-  }, [enabled, threshold, rootMargin, isLoaded]);
+  }, [enabled, threshold, rootMargin, isLoaded, videoRef]);
 
   const resetLazyLoad = useCallback(() => {
     setIsLoaded(false);
