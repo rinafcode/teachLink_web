@@ -6,6 +6,7 @@ export function validateStarknetEnv(): { valid: boolean; missing: string[] } {
 
 export function getStarknetNetwork(): string {
   return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? 'testnet';
+}
 /**
  * Web3 Environment Validation
  * Validates required environment variables for Starknet integration

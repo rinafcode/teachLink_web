@@ -1,22 +1,24 @@
 'use client';
 
 import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { errorReportingService } from '@/services/errorReporting';
 
-type ErrorBoundaryState = {
+export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
+  errorInfo?: ErrorInfo | null;
+  errorCount?: number;
 };
 
-type ErrorBoundaryProps = {
+export type ErrorBoundaryProps = {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  isolationId?: string;
+  isolationLevel?: string;
 };
 
-export class ErrorBoundarySystem extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
 
@@ -35,20 +37,24 @@ export class ErrorBoundarySystem extends Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Update state with error information
-    this.setState((prevState) => ({
+    this.setState({
+      hasError: true,
+      error,
       errorInfo,
-      errorCount: prevState.errorCount + 1,
-    }));
-
-    // Report error
-    errorReportingService.addBreadcrumb('errorBoundary', {
-      isolationId: this.props.isolationId,
-      isolationLevel: this.props.isolationLevel,
-      errorMessage: error.message,
-      componentStack: errorInfo.componentStack,
+      errorCount: (this.state.errorCount ?? 0) + 1,
     });
 
-    // Hook for reporting system (we’ll implement next)
+    // Report breadcrumb if service available
+    if (typeof errorReportingService?.addBreadcrumb === 'function') {
+      errorReportingService.addBreadcrumb('errorBoundary', {
+        isolationId: this.props.isolationId,
+        isolationLevel: this.props.isolationLevel,
+        errorMessage: error.message,
+        componentStack: errorInfo.componentStack,
+      });
+    }
+
+    // Hook for reporting system
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -69,9 +75,7 @@ export class ErrorBoundarySystem extends Component<
             <h2>Something went wrong.</h2>
             <p>{this.state.error?.message}</p>
 
-            <button onClick={this.resetError}>
-              Try Again
-            </button>
+            <button onClick={this.resetError}>Try Again</button>
           </div>
         )
       );

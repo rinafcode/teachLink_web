@@ -69,7 +69,9 @@ const channelIcons: Record<NotificationChannel, React.ReactNode> = {
 export default function UserPreferences({ userId, onSave }: UserPreferencesProps) {
   const { preferences, updatePreferences, isLoading } = useNotifications({ userId });
 
-  const [localPreferences, setLocalPreferences] = useState<UserNotificationPreferences | null>(null);
+  const [localPreferences, setLocalPreferences] = useState<UserNotificationPreferences | null>(
+    null,
+  );
   const [hasChanges, setHasChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [errors, setErrors] = useState<string[]>([]);
@@ -116,7 +118,7 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
   const toggleCategory = (category: NotificationCategory) => {
     updateLocalPref(
       `categories.${category}.enabled`,
-      !localPreferences?.categories[category]?.enabled
+      !localPreferences?.categories[category]?.enabled,
     );
   };
 
@@ -202,9 +204,10 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
                 onClick={() => toggleChannel(channel)}
                 className={`
                   p-3 rounded-lg border-2 text-left transition-all
-                  ${isEnabled
-                    ? 'bg-blue-50 border-blue-200'
-                    : 'bg-white border-gray-200 hover:border-gray-300'
+                  ${
+                    isEnabled
+                      ? 'bg-blue-50 border-blue-200'
+                      : 'bg-white border-gray-200 hover:border-gray-300'
                   }
                 `}
               >
@@ -212,15 +215,23 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
                   <span className={isEnabled ? 'text-blue-600' : 'text-gray-400'}>
                     {channelIcons[channel]}
                   </span>
-                  <span className={`font-medium capitalize ${isEnabled ? 'text-blue-900' : 'text-gray-700'}`}>
+                  <span
+                    className={`font-medium capitalize ${
+                      isEnabled ? 'text-blue-900' : 'text-gray-700'
+                    }`}
+                  >
                     {channel === 'in-app' ? 'In-App' : channel}
                   </span>
-                  <div className={`ml-auto w-10 h-6 rounded-full relative transition-colors ${
-                    isEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                  }`}>
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                      isEnabled ? 'left-5' : 'left-1'
-                    }`} />
+                  <div
+                    className={`ml-auto w-10 h-6 rounded-full relative transition-colors ${
+                      isEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                        isEnabled ? 'left-5' : 'left-1'
+                      }`}
+                    />
                   </div>
                 </div>
               </button>
@@ -237,14 +248,18 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
             <h3 className="text-sm font-medium text-gray-900">Quiet Hours</h3>
           </div>
           <button
-            onClick={() => updateLocalPref('quietHours.enabled', !localPreferences.quietHours.enabled)}
+            onClick={() =>
+              updateLocalPref('quietHours.enabled', !localPreferences.quietHours.enabled)
+            }
             className={`w-10 h-6 rounded-full relative transition-colors ${
               localPreferences.quietHours.enabled ? 'bg-blue-600' : 'bg-gray-300'
             }`}
           >
-            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-              localPreferences.quietHours.enabled ? 'left-5' : 'left-1'
-            }`} />
+            <div
+              className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                localPreferences.quietHours.enabled ? 'left-5' : 'left-1'
+              }`}
+            />
           </button>
         </div>
 
@@ -297,41 +312,48 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
       <div className="p-4 border-b">
         <h3 className="text-sm font-medium text-gray-900 mb-3">Notification Categories</h3>
         <div className="space-y-3">
-          {(Object.entries(categoryLabels) as [NotificationCategory, typeof categoryLabels['system']][]).map(
-            ([category, { label, description }]) => {
-              const categoryPrefs = localPreferences.categories[category];
-              const isEnabled = categoryPrefs?.enabled ?? true;
+          {(
+            Object.entries(categoryLabels) as [
+              NotificationCategory,
+              (typeof categoryLabels)['system'],
+            ][]
+          ).map(([category, { label, description }]) => {
+            const categoryPrefs = localPreferences.categories[category];
+            const isEnabled = categoryPrefs?.enabled ?? true;
 
-              return (
-                <div
-                  key={category}
-                  className={`border rounded-lg overflow-hidden transition-colors ${
-                    isEnabled ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-white'
-                  }`}
-                >
-                  <div className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-sm text-gray-900">{label}</div>
-                        <div className="text-xs text-gray-500">{description}</div>
-                      </div>
-                      <button
-                        onClick={() => toggleCategory(category)}
-                        className={`w-10 h-6 rounded-full relative transition-colors ${
-                          isEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                          isEnabled ? 'left-5' : 'left-1'
-                        }`} />
-                      </button>
+            return (
+              <div
+                key={category}
+                className={`border rounded-lg overflow-hidden transition-colors ${
+                  isEnabled ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-white'
+                }`}
+              >
+                <div className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-sm text-gray-900">{label}</div>
+                      <div className="text-xs text-gray-500">{description}</div>
                     </div>
+                    <button
+                      onClick={() => toggleCategory(category)}
+                      className={`w-10 h-6 rounded-full relative transition-colors ${
+                        isEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                          isEnabled ? 'left-5' : 'left-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
 
-                    {isEnabled && (
-                      <div className="mt-3 pt-3 border-t border-blue-200">
-                        <div className="text-xs text-gray-500 mb-2">Channels for this category:</div>
-                        <div className="flex flex-wrap gap-2">
-                          {(['in-app', 'push', 'email', 'sms'] as NotificationChannel[]).map((channel) => {
+                  {isEnabled && (
+                    <div className="mt-3 pt-3 border-t border-blue-200">
+                      <div className="text-xs text-gray-500 mb-2">Channels for this category:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {(['in-app', 'push', 'email', 'sms'] as NotificationChannel[]).map(
+                          (channel) => {
                             const isChannelEnabled = categoryPrefs?.channels?.includes(channel);
                             const isGlobalEnabled =
                               localPreferences.channels[channel === 'in-app' ? 'inApp' : channel];
@@ -344,9 +366,10 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
                                 className={`
                                   inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium
                                   transition-colors
-                                  ${isChannelEnabled
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white text-gray-600 border border-gray-300'
+                                  ${
+                                    isChannelEnabled
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-white text-gray-600 border border-gray-300'
                                   }
                                   ${!isGlobalEnabled ? 'opacity-50 cursor-not-allowed' : ''}
                                 `}
@@ -357,15 +380,15 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
                                 </span>
                               </button>
                             );
-                          })}
-                        </div>
+                          },
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              );
-            }
-          )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

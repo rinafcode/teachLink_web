@@ -304,7 +304,7 @@ class OfflineSyncService {
     const tx = this.db.transaction('conflicts', 'readonly');
     const store = tx.objectStore('conflicts');
     const index = store.index('resolved');
-    
+
     return await index.getAll(false as unknown as IDBValidKey);
     const all = await index.getAll();
     return all.filter((c) => !c.resolved);

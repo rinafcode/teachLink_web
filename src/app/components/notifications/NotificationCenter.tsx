@@ -70,9 +70,7 @@ export default function NotificationCenter({
     // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter((n) =>
-        n.message.toLowerCase().includes(query)
-      );
+      result = result.filter((n) => n.message.toLowerCase().includes(query));
     }
 
     // Apply read filter
@@ -149,7 +147,8 @@ export default function NotificationCenter({
     setSortBy('newest');
   };
 
-  const hasActiveFilters = searchQuery || filterRead !== 'all' || filterCategory !== 'all' || sortBy !== 'newest';
+  const hasActiveFilters =
+    searchQuery || filterRead !== 'all' || filterCategory !== 'all' || sortBy !== 'newest';
 
   return (
     <div className="bg-white border rounded-lg shadow-lg overflow-hidden">
@@ -224,10 +223,7 @@ export default function NotificationCenter({
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Filters</span>
             {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="text-xs text-blue-600 hover:underline"
-              >
+              <button onClick={clearFilters} className="text-xs text-blue-600 hover:underline">
                 Clear all
               </button>
             )}
@@ -321,15 +317,10 @@ export default function NotificationCenter({
           <div className="p-8 text-center">
             <Bell size={48} className="mx-auto text-gray-300 mb-3" />
             <p className="text-gray-500">
-              {hasActiveFilters
-                ? 'No notifications match your filters'
-                : "You're all caught up!"}
+              {hasActiveFilters ? 'No notifications match your filters' : "You're all caught up!"}
             </p>
             {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="mt-2 text-sm text-blue-600 hover:underline"
-              >
+              <button onClick={clearFilters} className="mt-2 text-sm text-blue-600 hover:underline">
                 Clear filters
               </button>
             )}
