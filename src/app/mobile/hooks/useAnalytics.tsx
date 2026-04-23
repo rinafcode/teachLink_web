@@ -174,7 +174,6 @@ export const useAnalytics = (role: UserRole) => {
 
   const exportData = useCallback(async (options: ExportOptions) => {
     // This would be implemented with actual export logic
-    console.log('Exporting with options:', options);
     return { success: true, message: 'Export started' };
   }, []);
 

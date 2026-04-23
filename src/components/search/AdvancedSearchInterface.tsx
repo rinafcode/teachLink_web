@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Search,
   Filter,
@@ -17,7 +17,7 @@ import { IntelligentAutoComplete } from './IntelligentAutoComplete';
 import { FacetedFilterSystem } from './FacetedFilterSystem';
 import { SearchResultsVisualizer } from './SearchResultsVisualizer';
 
-export const AdvancedSearchInterface: React.FC = () => {
+export const AdvancedSearchInterface = React.memo(() => {
   const {
     query,
     updateSearchText,
@@ -33,17 +33,17 @@ export const AdvancedSearchInterface: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = (text: string) => {
+  const handleSearch = useCallback((text: string) => {
     updateSearchText(text);
     performSearch();
     setHasSearched(true);
-  };
+  }, [updateSearchText, performSearch]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     clearFilters();
     updateSearchText('');
     setHasSearched(false);
-  };
+  }, [clearFilters, updateSearchText]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
@@ -205,6 +205,8 @@ export const AdvancedSearchInterface: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+AdvancedSearchInterface.displayName = 'AdvancedSearchInterface';
 
 export default AdvancedSearchInterface;

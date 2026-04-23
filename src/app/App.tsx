@@ -59,30 +59,24 @@ const sampleTranscript = [
 ];
 
 function App() {
-  const handleProgress = (progress: number) => {
-    console.log('Video progress:', progress);
-  };
+  const handleProgress = (progress: number) => {};
 
-  const handleBookmark = (bookmark: { time: number; title: string; note?: string }) => {
-    console.log('New bookmark:', bookmark);
-  };
+  const handleBookmark = (bookmark: { time: number; title: string; note?: string }) => {};
 
-  const handleNote = (note: { time: number; text: string }) => {
-    console.log('New note:', note);
-  };
+  const handleNote = (note: { time: number; text: string }) => {};
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen p-8 bg-gray-100">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Enhanced Video Player Demo</h1>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">Enhanced Video Player Demo</h1>
           <p className="text-gray-600">
             A comprehensive video player with learning features including bookmarks, notes, and
             transcript synchronization.
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="p-6 bg-white rounded-lg shadow-lg">
           <VideoPlayer
             src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
             poster="https://via.placeholder.com/1280x720/2563eb/ffffff?text=Video+Player+Demo"
@@ -94,9 +88,9 @@ function App() {
           />
         </div>
 
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">🎯 Features</h3>
+        <div className="grid grid-cols-1 gap-6 mt-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="p-6 bg-white rounded-lg shadow">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">🎯 Features</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>• Custom video controls</li>
               <li>• Playback speed control</li>
@@ -106,8 +100,8 @@ function App() {
             </ul>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">📝 Learning Tools</h3>
+          <div className="p-6 bg-white rounded-lg shadow">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">📝 Learning Tools</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>• Interactive bookmarks</li>
               <li>• Timestamped notes</li>
@@ -117,8 +111,8 @@ function App() {
             </ul>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">🎨 UI/UX</h3>
+          <div className="p-6 bg-white rounded-lg shadow">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">🎨 UI/UX</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>• Beautiful animations</li>
               <li>• Responsive design</li>
@@ -129,9 +123,9 @@ function App() {
           </div>
         </div>
 
-        <div className="mt-8 bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Keyboard Shortcuts</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="p-6 mt-8 bg-white rounded-lg shadow">
+          <h3 className="mb-4 text-lg font-semibold text-gray-900">Keyboard Shortcuts</h3>
+          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
             <div className="flex justify-between">
               <span className="text-gray-600">Space</span>
               <span className="font-medium">Play/Pause</span>

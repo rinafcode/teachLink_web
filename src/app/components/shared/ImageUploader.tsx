@@ -35,7 +35,7 @@ export default function ImageUploader({ onImageSelect, initialImageUrl }: ImageU
         onClick={handleClick}
       >
         {previewUrl ? (
-          <Image src={previewUrl} alt="Profile preview" fill className="object-cover" />
+          <Image src={previewUrl} alt="Profile preview" fill sizes="(max-width: 768px) 100vw, 33vw" unoptimized={previewUrl.startsWith('data:')} className="object-cover" />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
             <svg

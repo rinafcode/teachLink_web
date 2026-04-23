@@ -20,9 +20,7 @@ export function basicAutoSaveExample() {
 
   // Subscribe to save status changes
   const subscription = autoSaveManager.onSaveStatusChange((status) => {
-    console.log('Save status:', status.status);
     if (status.lastSaved) {
-      console.log('Last saved at:', status.lastSaved);
     }
     if (status.error) {
       console.error('Save error:', status.error.message);
@@ -64,7 +62,6 @@ export async function manualSaveExample() {
   // Save immediately
   try {
     await autoSaveManager.saveNow(formId, formState);
-    console.log('Form data saved successfully');
   } catch (error) {
     console.error('Failed to save form data:', error);
   }
@@ -81,14 +78,9 @@ export async function draftRecoveryExample() {
   const draftState = await autoSaveManager.loadDraft(formId);
 
   if (draftState) {
-    console.log('Draft found! Restoring form data...');
-    console.log('Restored values:', draftState.values);
-    console.log('Last modified:', draftState.metadata.lastModified);
-
     // Use the restored state to populate the form
     return draftState;
   } else {
-    console.log('No draft found. Starting with empty form.');
     return null;
   }
 }
@@ -101,7 +93,6 @@ export async function draftCleanupExample() {
   // Simulate form submission
   const submitForm = async (formData: any) => {
     // Submit to server...
-    console.log('Submitting form:', formData);
     return { success: true };
   };
 
@@ -112,7 +103,6 @@ export async function draftCleanupExample() {
 
   if (result.success) {
     await autoSaveManager.clearDraft(formId);
-    console.log('Draft cleared after successful submission');
   }
 
   return autoSaveManager;
@@ -126,9 +116,6 @@ export function storageQuotaExample() {
   const quotaInBytes = 2 * 1024 * 1024;
   autoSaveManager.setStorageQuota(quotaInBytes);
 
-  console.log('Storage quota set to 2MB');
-  console.log('Oldest drafts will be automatically removed when quota is exceeded');
-
   return autoSaveManager;
 }
 
@@ -140,9 +127,7 @@ export async function offlineSaveExample() {
   // Subscribe to status changes to monitor offline saves
   autoSaveManager.onSaveStatusChange((status) => {
     if (status.status === 'error' && status.queuedSaves > 0) {
-      console.log(`Save queued. ${status.queuedSaves} saves waiting for connectivity.`);
     } else if (status.status === 'saved' && status.queuedSaves === 0) {
-      console.log('All queued saves processed successfully!');
     }
   });
 
@@ -165,9 +150,7 @@ export async function offlineSaveExample() {
 
   try {
     await autoSaveManager.saveNow(formId, formState);
-  } catch (error) {
-    console.log('Save failed, but will retry when online');
-  }
+  } catch (error) {}
 
   return autoSaveManager;
 }
@@ -186,7 +169,6 @@ export function completeFormExample() {
   // 3. Try to recover draft on form load
   autoSaveManager.loadDraft(formId).then((draft) => {
     if (draft) {
-      console.log('Recovered draft from previous session');
       // Populate form with draft data
     }
   });
@@ -196,13 +178,10 @@ export function completeFormExample() {
     // Update UI based on status
     switch (status.status) {
       case 'saving':
-        console.log('💾 Saving...');
         break;
       case 'saved':
-        console.log('✅ Saved at', status.lastSaved?.toLocaleTimeString());
         break;
       case 'error':
-        console.log('❌ Save failed:', status.error?.message);
         break;
     }
   });
@@ -257,7 +236,6 @@ export function statusIndicatorExample() {
     const indicator = {
       element: null as HTMLElement | null,
       update: (status: string, message: string) => {
-        console.log(`[${status}] ${message}`);
         // In a real app, update DOM element
       },
     };
@@ -288,20 +266,13 @@ export function statusIndicatorExample() {
 
 // Run examples
 if (import.meta.url === `file://${process.argv[1]}`) {
-  console.log('=== Auto-Save Manager Examples ===\n');
-
-  console.log('1. Basic Auto-Save Setup');
   basicAutoSaveExample();
 
-  console.log('\n2. Manual Save');
   manualSaveExample();
 
-  console.log('\n3. Draft Recovery');
   draftRecoveryExample();
 
-  console.log('\n4. Storage Quota Management');
   storageQuotaExample();
 
-  console.log('\n5. Complete Form Example');
   completeFormExample();
 }

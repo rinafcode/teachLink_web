@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import MultipleChoiceQuestion from './question-types/MultipleChoiceQuestion';
 import TrueFalseQuestion from './question-types/TrueFalseQuestion';
 import CodeChallengeQuestion from './question-types/CodeChallengeQuestion';
@@ -10,7 +11,7 @@ interface QuestionCardProps {
   quizState: UseQuizReturn;
 }
 
-export default function QuestionCard({ question, quizState }: QuestionCardProps) {
+const QuestionCard = React.memo(({ question, quizState }: QuestionCardProps) => {
   const answer = quizState.answers[question.id];
   const showFeedback = Boolean(answer?.feedback);
 
@@ -47,4 +48,8 @@ export default function QuestionCard({ question, quizState }: QuestionCardProps)
       ) : null}
     </div>
   );
-}
+});
+
+QuestionCard.displayName = 'QuestionCard';
+
+export default QuestionCard;

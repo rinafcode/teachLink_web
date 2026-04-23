@@ -17,11 +17,8 @@ const PrefetchingEngine: React.FC<PrefetchingEngineProps> = ({ strategies = ['ho
   const handleIntent = useCallback(
     (href: string) => {
       if (isSlowConnection()) {
-        console.log(`[Prefetching] Slow connection detected. Skipping prefetch for: ${href}`);
         return;
       }
-
-      console.log(`[Prefetching] Predictive prefetch started for: ${href}`);
       router.prefetch(href);
     },
     [router],

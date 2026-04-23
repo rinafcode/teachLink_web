@@ -61,9 +61,6 @@ class BundleOptimizer {
     const totalChunks = this.chunks.size;
     const totalSize = Array.from(this.chunks.values()).reduce((acc, c) => acc + (c.size || 0), 0);
 
-    console.log(
-      `[Bundle Optimizer] Monitoring ${totalChunks} logical chunks. Total estimated size: ${totalSize}KB.`,
-    );
     this.analyzeChunkSizes();
   }
 }
