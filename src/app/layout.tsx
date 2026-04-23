@@ -14,6 +14,7 @@ import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 import { PWAManager } from '@/components/pwa/PWAManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
+import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 
 const geistSans = Geist({
   // ...
@@ -79,7 +80,9 @@ export default function RootLayout({
                       <StateManagerIntegration />
                       <PerformanceMonitor />
                       <PrefetchingEngine />
-                      {children}
+                      <ErrorBoundary>
+                        {children}
+                      </ErrorBoundary>
                     </OfflineModeProvider>
                   </PerformanceMonitoringProvider>
                 </AccessibilityProvider>
