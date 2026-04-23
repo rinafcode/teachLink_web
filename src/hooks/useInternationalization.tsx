@@ -115,9 +115,16 @@ export function I18nProvider({
   // Translation function
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) => {
-      return getTranslation(translations, key, params);
+      const result = getTranslation(translations, key, params);
+
+      // Warn in development when a key resolves to its raw path (missing translation)
+      if (process.env.NODE_ENV === 'development' && result === key) {
+        console.warn(`[i18n] Missing translation key: "${key}" for language "${language}"`);
+      }
+
+      return result;
     },
-    [translations],
+    [translations, language],
   );
 
   // Formatting functions

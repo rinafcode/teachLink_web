@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "create": "Создать",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "close": "Закрыть",
+    "back": "Назад",
+    "next": "Далее",
+    "previous": "Предыдущий",
+    "submit": "Отправить",
+    "confirm": "Подтвердить",
+    "yes": "Да",
+    "no": "Нет",
+    "welcome": "Добро пожаловать"
+  },
+  "navigation": {
+    "home": "Главная",
+    "courses": "Курсы",
+    "dashboard": "Панель управления",
+    "profile": "Профиль",
+    "settings": "Настройки",
+    "messages": "Сообщения",
+    "notifications": "Уведомления",
+    "logout": "Выйти",
+    "login": "Войти",
+    "signup": "Регистрация"
+  },
+  "course": {
+    "title": "Курс",
+    "enroll": "Записаться",
+    "enrolled": "Записан",
+    "progress": "Прогресс",
+    "lessons": "Уроки",
+    "duration": "Длительность",
+    "instructor": "Преподаватель",
+    "reviews": "Отзывы",
+    "rating": "Рейтинг",
+    "description": "Описание",
+    "syllabus": "Учебный план",
+    "resources": "Ресурсы"
+  },
+  "dashboard": {
+    "welcome": "Добро пожаловать",
+    "myCourses": "Мои Курсы",
+    "recentActivity": "Последняя Активность",
+    "upcomingDeadlines": "Ближайшие Сроки",
+    "recommendedCourses": "Рекомендуемые Курсы",
+    "learningStreak": "Серия Обучения",
+    "progressSummary": "Сводка Прогресса"
+  },
+  "profile": {
+    "editProfile": "Редактировать Профиль",
+    "preferences": "Настройки",
+    "language": "Язык",
+    "theme": "Тема",
+    "notifications": "Уведомления",
+    "privacy": "Конфиденциальность",
+    "account": "Аккаунт"
+  },
+  "i18n": {
+    "selectLanguage": "Выбрать Язык",
+    "currentLanguage": "Текущий Язык",
+    "languageChanged": "Язык успешно изменен",
+    "rtlMode": "Режим Справа Налево",
+    "ltrMode": "Режим Слева Направо"
+  },
+  "validation": {
+    "required": "Это поле обязательно для заполнения",
+    "email": "Пожалуйста, введите действительный адрес электронной почты",
+    "minLength": "Минимальная длина — {{min}} символов",
+    "maxLength": "Максимальная длина — {{max}} символов",
+    "passwordMismatch": "Пароли не совпадают"
+  },
+  "errors": {
+    "generic": "Произошла ошибка",
+    "network": "Ошибка сети. Пожалуйста, проверьте подключение",
+    "notFound": "Не найдено",
+    "unauthorized": "Не авторизован",
+    "forbidden": "Запрещено",
+    "serverError": "Ошибка сервера"
+  }
+}

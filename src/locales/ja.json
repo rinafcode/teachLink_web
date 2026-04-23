@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "作成",
+    "search": "検索",
+    "filter": "フィルター",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "submit": "送信",
+    "confirm": "確認",
+    "yes": "はい",
+    "no": "いいえ",
+    "welcome": "ようこそ"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "courses": "コース",
+    "dashboard": "ダッシュボード",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "messages": "メッセージ",
+    "notifications": "通知",
+    "logout": "ログアウト",
+    "login": "ログイン",
+    "signup": "新規登録"
+  },
+  "course": {
+    "title": "コース",
+    "enroll": "受講登録",
+    "enrolled": "登録済み",
+    "progress": "進捗",
+    "lessons": "レッスン",
+    "duration": "期間",
+    "instructor": "講師",
+    "reviews": "レビュー",
+    "rating": "評価",
+    "description": "説明",
+    "syllabus": "シラバス",
+    "resources": "リソース"
+  },
+  "dashboard": {
+    "welcome": "ようこそ",
+    "myCourses": "マイコース",
+    "recentActivity": "最近のアクティビティ",
+    "upcomingDeadlines": "今後の締め切り",
+    "recommendedCourses": "おすすめコース",
+    "learningStreak": "学習連続記録",
+    "progressSummary": "進捗の概要"
+  },
+  "profile": {
+    "editProfile": "プロフィール編集",
+    "preferences": "設定",
+    "language": "言語",
+    "theme": "テーマ",
+    "notifications": "通知",
+    "privacy": "プライバシー",
+    "account": "アカウント"
+  },
+  "i18n": {
+    "selectLanguage": "言語を選択",
+    "currentLanguage": "現在の言語",
+    "languageChanged": "言語が正常に変更されました",
+    "rtlMode": "右から左モード",
+    "ltrMode": "左から右モード"
+  },
+  "validation": {
+    "required": "この項目は必須です",
+    "email": "有効なメールアドレスを入力してください",
+    "minLength": "最小文字数は{{min}}文字です",
+    "maxLength": "最大文字数は{{max}}文字です",
+    "passwordMismatch": "パスワードが一致しません"
+  },
+  "errors": {
+    "generic": "エラーが発生しました",
+    "network": "ネットワークエラー。接続を確認してください",
+    "notFound": "見つかりません",
+    "unauthorized": "認証されていません",
+    "forbidden": "アクセスが禁止されています",
+    "serverError": "サーバーエラー"
+  }
+}

@@ -17,7 +17,8 @@
     "submit": "Enviar",
     "confirm": "Confirmar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "welcome": "Bienvenido"
   },
   "navigation": {
     "home": "Inicio",

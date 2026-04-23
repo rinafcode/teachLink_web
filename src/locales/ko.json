@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "create": "생성",
+    "search": "검색",
+    "filter": "필터",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "confirm": "확인",
+    "yes": "예",
+    "no": "아니요",
+    "welcome": "환영합니다"
+  },
+  "navigation": {
+    "home": "홈",
+    "courses": "강좌",
+    "dashboard": "대시보드",
+    "profile": "프로필",
+    "settings": "설정",
+    "messages": "메시지",
+    "notifications": "알림",
+    "logout": "로그아웃",
+    "login": "로그인",
+    "signup": "회원가입"
+  },
+  "course": {
+    "title": "강좌",
+    "enroll": "등록",
+    "enrolled": "등록됨",
+    "progress": "진행률",
+    "lessons": "수업",
+    "duration": "기간",
+    "instructor": "강사",
+    "reviews": "리뷰",
+    "rating": "평점",
+    "description": "설명",
+    "syllabus": "교과 과정",
+    "resources": "자료"
+  },
+  "dashboard": {
+    "welcome": "환영합니다",
+    "myCourses": "내 강좌",
+    "recentActivity": "최근 활동",
+    "upcomingDeadlines": "다가오는 마감일",
+    "recommendedCourses": "추천 강좌",
+    "learningStreak": "학습 연속 기록",
+    "progressSummary": "진행 요약"
+  },
+  "profile": {
+    "editProfile": "프로필 편집",
+    "preferences": "환경 설정",
+    "language": "언어",
+    "theme": "테마",
+    "notifications": "알림",
+    "privacy": "개인정보",
+    "account": "계정"
+  },
+  "i18n": {
+    "selectLanguage": "언어 선택",
+    "currentLanguage": "현재 언어",
+    "languageChanged": "언어가 성공적으로 변경되었습니다",
+    "rtlMode": "오른쪽에서 왼쪽 모드",
+    "ltrMode": "왼쪽에서 오른쪽 모드"
+  },
+  "validation": {
+    "required": "이 필드는 필수입니다",
+    "email": "유효한 이메일 주소를 입력해 주세요",
+    "minLength": "최소 {{min}}자 이상이어야 합니다",
+    "maxLength": "최대 {{max}}자까지 입력할 수 있습니다",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다"
+  },
+  "errors": {
+    "generic": "오류가 발생했습니다",
+    "network": "네트워크 오류. 연결을 확인해 주세요",
+    "notFound": "찾을 수 없습니다",
+    "unauthorized": "인증되지 않았습니다",
+    "forbidden": "접근이 금지되었습니다",
+    "serverError": "서버 오류"
+  }
+}

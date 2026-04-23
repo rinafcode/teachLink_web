@@ -22,7 +22,8 @@
     "type-check": "tsc --noEmit",
     "validate:ui": "node scripts/validate-ui.js",
     "validate:web3": "node scripts/validate-web3.js",
-    "validate": "npm run validate:ui && npm run validate:web3"
+    "validate:i18n": "node scripts/validate-i18n.js",
+    "validate": "npm run validate:ui && npm run validate:web3 && npm run validate:i18n"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

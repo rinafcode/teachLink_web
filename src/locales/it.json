@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "create": "Crea",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "next": "Avanti",
+    "previous": "Precedente",
+    "submit": "Invia",
+    "confirm": "Conferma",
+    "yes": "Sì",
+    "no": "No",
+    "welcome": "Benvenuto"
+  },
+  "navigation": {
+    "home": "Home",
+    "courses": "Corsi",
+    "dashboard": "Pannello",
+    "profile": "Profilo",
+    "settings": "Impostazioni",
+    "messages": "Messaggi",
+    "notifications": "Notifiche",
+    "logout": "Esci",
+    "login": "Accedi",
+    "signup": "Registrati"
+  },
+  "course": {
+    "title": "Corso",
+    "enroll": "Iscriviti",
+    "enrolled": "Iscritto",
+    "progress": "Progresso",
+    "lessons": "Lezioni",
+    "duration": "Durata",
+    "instructor": "Istruttore",
+    "reviews": "Recensioni",
+    "rating": "Valutazione",
+    "description": "Descrizione",
+    "syllabus": "Programma",
+    "resources": "Risorse"
+  },
+  "dashboard": {
+    "welcome": "Benvenuto",
+    "myCourses": "I Miei Corsi",
+    "recentActivity": "Attività Recente",
+    "upcomingDeadlines": "Scadenze Imminenti",
+    "recommendedCourses": "Corsi Consigliati",
+    "learningStreak": "Serie di Apprendimento",
+    "progressSummary": "Riepilogo Progressi"
+  },
+  "profile": {
+    "editProfile": "Modifica Profilo",
+    "preferences": "Preferenze",
+    "language": "Lingua",
+    "theme": "Tema",
+    "notifications": "Notifiche",
+    "privacy": "Privacy",
+    "account": "Account"
+  },
+  "i18n": {
+    "selectLanguage": "Seleziona Lingua",
+    "currentLanguage": "Lingua Corrente",
+    "languageChanged": "Lingua cambiata con successo",
+    "rtlMode": "Modalità Destra a Sinistra",
+    "ltrMode": "Modalità Sinistra a Destra"
+  },
+  "validation": {
+    "required": "Questo campo è obbligatorio",
+    "email": "Inserisci un indirizzo e-mail valido",
+    "minLength": "La lunghezza minima è di {{min}} caratteri",
+    "maxLength": "La lunghezza massima è di {{max}} caratteri",
+    "passwordMismatch": "Le password non corrispondono"
+  },
+  "errors": {
+    "generic": "Si è verificato un errore",
+    "network": "Errore di rete. Verifica la tua connessione",
+    "notFound": "Non trovato",
+    "unauthorized": "Non autorizzato",
+    "forbidden": "Vietato",
+    "serverError": "Errore del server"
+  }
+}

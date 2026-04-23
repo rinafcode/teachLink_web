@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "success": "הצלחה",
+    "cancel": "ביטול",
+    "save": "שמירה",
+    "delete": "מחיקה",
+    "edit": "עריכה",
+    "create": "יצירה",
+    "search": "חיפוש",
+    "filter": "סינון",
+    "close": "סגירה",
+    "back": "חזרה",
+    "next": "הבא",
+    "previous": "הקודם",
+    "submit": "שליחה",
+    "confirm": "אישור",
+    "yes": "כן",
+    "no": "לא",
+    "welcome": "ברוכים הבאים"
+  },
+  "navigation": {
+    "home": "דף הבית",
+    "courses": "קורסים",
+    "dashboard": "לוח בקרה",
+    "profile": "פרופיל",
+    "settings": "הגדרות",
+    "messages": "הודעות",
+    "notifications": "התראות",
+    "logout": "התנתקות",
+    "login": "התחברות",
+    "signup": "הרשמה"
+  },
+  "course": {
+    "title": "קורס",
+    "enroll": "הרשמה",
+    "enrolled": "רשום",
+    "progress": "התקדמות",
+    "lessons": "שיעורים",
+    "duration": "משך",
+    "instructor": "מרצה",
+    "reviews": "ביקורות",
+    "rating": "דירוג",
+    "description": "תיאור",
+    "syllabus": "סילבוס",
+    "resources": "משאבים"
+  },
+  "dashboard": {
+    "welcome": "ברוכים הבאים",
+    "myCourses": "הקורסים שלי",
+    "recentActivity": "פעילות אחרונה",
+    "upcomingDeadlines": "מועדים קרובים",
+    "recommendedCourses": "קורסים מומלצים",
+    "learningStreak": "רצף למידה",
+    "progressSummary": "סיכום התקדמות"
+  },
+  "profile": {
+    "editProfile": "עריכת פרופיל",
+    "preferences": "העדפות",
+    "language": "שפה",
+    "theme": "ערכת נושא",
+    "notifications": "התראות",
+    "privacy": "פרטיות",
+    "account": "חשבון"
+  },
+  "i18n": {
+    "selectLanguage": "בחר שפה",
+    "currentLanguage": "שפה נוכחית",
+    "languageChanged": "השפה שונתה בהצלחה",
+    "rtlMode": "מצב ימין לשמאל",
+    "ltrMode": "מצב שמאל לימין"
+  },
+  "validation": {
+    "required": "שדה זה הוא חובה",
+    "email": "אנא הזן כתובת דוא\"ל תקינה",
+    "minLength": "אורך מינימלי הוא {{min}} תווים",
+    "maxLength": "אורך מקסימלי הוא {{max}} תווים",
+    "passwordMismatch": "הסיסמאות אינן תואמות"
+  },
+  "errors": {
+    "generic": "אירעה שגיאה",
+    "network": "שגיאת רשת. אנא בדוק את החיבור שלך",
+    "notFound": "לא נמצא",
+    "unauthorized": "לא מורשה",
+    "forbidden": "אסור",
+    "serverError": "שגיאת שרת"
+  }
+}

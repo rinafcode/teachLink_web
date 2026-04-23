@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "welcome": "Bienvenue"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "courses": "Cours",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "signup": "S'inscrire"
+  },
+  "course": {
+    "title": "Cours",
+    "enroll": "S'inscrire",
+    "enrolled": "Inscrit",
+    "progress": "Progression",
+    "lessons": "Leçons",
+    "duration": "Durée",
+    "instructor": "Instructeur",
+    "reviews": "Avis",
+    "rating": "Note",
+    "description": "Description",
+    "syllabus": "Programme",
+    "resources": "Ressources"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "myCourses": "Mes Cours",
+    "recentActivity": "Activité Récente",
+    "upcomingDeadlines": "Échéances à Venir",
+    "recommendedCourses": "Cours Recommandés",
+    "learningStreak": "Série d'Apprentissage",
+    "progressSummary": "Résumé de Progression"
+  },
+  "profile": {
+    "editProfile": "Modifier le Profil",
+    "preferences": "Préférences",
+    "language": "Langue",
+    "theme": "Thème",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "account": "Compte"
+  },
+  "i18n": {
+    "selectLanguage": "Sélectionner la Langue",
+    "currentLanguage": "Langue Actuelle",
+    "languageChanged": "Langue modifiée avec succès",
+    "rtlMode": "Mode Droite à Gauche",
+    "ltrMode": "Mode Gauche à Droite"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "email": "Veuillez entrer une adresse e-mail valide",
+    "minLength": "La longueur minimale est de {{min}} caractères",
+    "maxLength": "La longueur maximale est de {{max}} caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue",
+    "network": "Erreur réseau. Veuillez vérifier votre connexion",
+    "notFound": "Non trouvé",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Interdit",
+    "serverError": "Erreur du serveur"
+  }
+}

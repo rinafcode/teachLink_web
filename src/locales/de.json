@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein",
+    "welcome": "Willkommen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "courses": "Kurse",
+    "dashboard": "Dashboard",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "messages": "Nachrichten",
+    "notifications": "Benachrichtigungen",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "signup": "Registrieren"
+  },
+  "course": {
+    "title": "Kurs",
+    "enroll": "Einschreiben",
+    "enrolled": "Eingeschrieben",
+    "progress": "Fortschritt",
+    "lessons": "Lektionen",
+    "duration": "Dauer",
+    "instructor": "Dozent",
+    "reviews": "Bewertungen",
+    "rating": "Bewertung",
+    "description": "Beschreibung",
+    "syllabus": "Lehrplan",
+    "resources": "Ressourcen"
+  },
+  "dashboard": {
+    "welcome": "Willkommen",
+    "myCourses": "Meine Kurse",
+    "recentActivity": "Letzte Aktivität",
+    "upcomingDeadlines": "Anstehende Fristen",
+    "recommendedCourses": "Empfohlene Kurse",
+    "learningStreak": "Lernserie",
+    "progressSummary": "Fortschrittsübersicht"
+  },
+  "profile": {
+    "editProfile": "Profil Bearbeiten",
+    "preferences": "Einstellungen",
+    "language": "Sprache",
+    "theme": "Design",
+    "notifications": "Benachrichtigungen",
+    "privacy": "Datenschutz",
+    "account": "Konto"
+  },
+  "i18n": {
+    "selectLanguage": "Sprache Auswählen",
+    "currentLanguage": "Aktuelle Sprache",
+    "languageChanged": "Sprache erfolgreich geändert",
+    "rtlMode": "Rechts-nach-Links-Modus",
+    "ltrMode": "Links-nach-Rechts-Modus"
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "email": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "minLength": "Mindestlänge beträgt {{min}} Zeichen",
+    "maxLength": "Maximale Länge beträgt {{max}} Zeichen",
+    "passwordMismatch": "Passwörter stimmen nicht überein"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten",
+    "network": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Nicht autorisiert",
+    "forbidden": "Verboten",
+    "serverError": "Serverfehler"
+  }
+}

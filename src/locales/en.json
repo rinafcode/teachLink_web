@@ -17,7 +17,8 @@
     "submit": "Submit",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "welcome": "Welcome"
   },
   "navigation": {
     "home": "Home",

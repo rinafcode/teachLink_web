@@ -1,0 +1,89 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "create": "Criar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "yes": "Sim",
+    "no": "Não",
+    "welcome": "Bem-vindo"
+  },
+  "navigation": {
+    "home": "Início",
+    "courses": "Cursos",
+    "dashboard": "Painel",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "messages": "Mensagens",
+    "notifications": "Notificações",
+    "logout": "Sair",
+    "login": "Entrar",
+    "signup": "Cadastrar"
+  },
+  "course": {
+    "title": "Curso",
+    "enroll": "Matricular-se",
+    "enrolled": "Matriculado",
+    "progress": "Progresso",
+    "lessons": "Aulas",
+    "duration": "Duração",
+    "instructor": "Instrutor",
+    "reviews": "Avaliações",
+    "rating": "Nota",
+    "description": "Descrição",
+    "syllabus": "Ementa",
+    "resources": "Recursos"
+  },
+  "dashboard": {
+    "welcome": "Bem-vindo",
+    "myCourses": "Meus Cursos",
+    "recentActivity": "Atividade Recente",
+    "upcomingDeadlines": "Próximos Prazos",
+    "recommendedCourses": "Cursos Recomendados",
+    "learningStreak": "Sequência de Aprendizado",
+    "progressSummary": "Resumo de Progresso"
+  },
+  "profile": {
+    "editProfile": "Editar Perfil",
+    "preferences": "Preferências",
+    "language": "Idioma",
+    "theme": "Tema",
+    "notifications": "Notificações",
+    "privacy": "Privacidade",
+    "account": "Conta"
+  },
+  "i18n": {
+    "selectLanguage": "Selecionar Idioma",
+    "currentLanguage": "Idioma Atual",
+    "languageChanged": "Idioma alterado com sucesso",
+    "rtlMode": "Modo Direita para Esquerda",
+    "ltrMode": "Modo Esquerda para Direita"
+  },
+  "validation": {
+    "required": "Este campo é obrigatório",
+    "email": "Por favor, insira um endereço de e-mail válido",
+    "minLength": "O comprimento mínimo é de {{min}} caracteres",
+    "maxLength": "O comprimento máximo é de {{max}} caracteres",
+    "passwordMismatch": "As senhas não coincidem"
+  },
+  "errors": {
+    "generic": "Ocorreu um erro",
+    "network": "Erro de rede. Por favor, verifique sua conexão",
+    "notFound": "Não encontrado",
+    "unauthorized": "Não autorizado",
+    "forbidden": "Proibido",
+    "serverError": "Erro do servidor"
+  }
+}
