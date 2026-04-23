@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X, Clock, ChevronRight, Sparkles, User, Tag, Type } from 'lucide-react';
 import { getSearchSuggestions, highlightMatch } from '../../utils/searchUtils';
 
@@ -11,7 +11,7 @@ interface IntelligentAutoCompleteProps {
   history?: string[];
 }
 
-export const IntelligentAutoComplete: React.FC<IntelligentAutoCompleteProps> = ({
+export const IntelligentAutoComplete = React.memo<IntelligentAutoCompleteProps>(({
   value,
   onChange,
   onSearch,
@@ -33,7 +33,14 @@ export const IntelligentAutoComplete: React.FC<IntelligentAutoCompleteProps> = (
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleSelect = useCallback((suggestion: string) => {
+    onChange(suggestion);
+    onSearch(suggestion);
+    setIsOpen(false);
+    setActiveIndex(-1);
+  }, [onChange, onSearch]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       setActiveIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
       e.preventDefault();
@@ -50,14 +57,9 @@ export const IntelligentAutoComplete: React.FC<IntelligentAutoCompleteProps> = (
     } else if (e.key === 'Escape') {
       setIsOpen(false);
     }
-  };
+  }, [activeIndex, handleSelect, onSearch, suggestions, value]);
 
-  const handleSelect = (suggestion: string) => {
-    onChange(suggestion);
-    onSearch(suggestion);
-    setIsOpen(false);
-    setActiveIndex(-1);
-  };
+
 
   const getSuggestionIcon = (suggestion: string) => {
     if (suggestion.startsWith('author:')) return <User className="w-3.5 h-3.5" />;
@@ -195,4 +197,6 @@ export const IntelligentAutoComplete: React.FC<IntelligentAutoCompleteProps> = (
       )}
     </div>
   );
-};
+});
+
+IntelligentAutoComplete.displayName = 'IntelligentAutoComplete';

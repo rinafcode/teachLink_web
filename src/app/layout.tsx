@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
@@ -37,15 +38,40 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = cookies();
+  const themeCookie = cookieStore.get('theme');
+  const defaultTheme = themeCookie ? themeCookie.value : 'system';
+
+  const themeScript = `
+    (function() {
+      try {
+        var theme = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+        var isDark = false;
+        if (theme && theme[1]) {
+          if (theme[1] === 'dark') isDark = true;
+          else if (theme[1] === 'system') isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        } else {
+          isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  `;
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50 transition-colors duration-200`}
       >
         <I18nProvider>
           <InternationalizationEngine>
             <CulturalAdaptationManager>
-              <ThemeProvider>
+              <ThemeProvider defaultTheme={defaultTheme}>
                 <DynamicTheming />
                 <AccessibilityProvider pageLabel="TeachLink — main application">
                   <PerformanceMonitoringProvider>

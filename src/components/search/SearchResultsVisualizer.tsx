@@ -22,7 +22,7 @@ interface SearchResultsVisualizerProps {
   onSortChange: (sortBy: any) => void;
 }
 
-export const SearchResultsVisualizer: React.FC<SearchResultsVisualizerProps> = ({
+export const SearchResultsVisualizer = React.memo<SearchResultsVisualizerProps>(({
   results,
   isSearching,
   sortBy,
@@ -167,9 +167,11 @@ export const SearchResultsVisualizer: React.FC<SearchResultsVisualizerProps> = (
       </div>
     </div>
   );
-};
+});
 
-const BarChart = ({ className }: { className?: string }) => (
+SearchResultsVisualizer.displayName = 'SearchResultsVisualizer';
+
+const BarChart = React.memo(({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 24 24"
     className={className}
@@ -183,4 +185,6 @@ const BarChart = ({ className }: { className?: string }) => (
     <line x1="18" y1="20" x2="18" y2="4" />
     <line x1="6" y1="20" x2="6" y2="16" />
   </svg>
-);
+));
+
+BarChart.displayName = 'BarChart';

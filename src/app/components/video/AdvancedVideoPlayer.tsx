@@ -18,6 +18,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
+import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
 import { PlaybackControls } from './PlaybackControls';
 import { VideoNotes } from './VideoNotes';
 import { VideoBookmarks } from './VideoBookmarks';
@@ -61,6 +62,12 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
+
+  const { isInViewport, isLoaded } = useVideoLazyLoad(videoRef, {
+    enabled: true,
+    threshold: 0.1,
+    rootMargin: '50px',
+  });
 
   const [autoQuality, setAutoQuality] = useState(true);
   const initialQualityValue = qualities?.[0]?.value ?? '';
@@ -365,8 +372,9 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
 
       <video
         ref={videoRef}
-        src={activeSrc}
+        src={isLoaded ? activeSrc : undefined}
         poster={poster}
+        preload="metadata"
         className="w-full h-full object-contain"
         onDoubleClick={toggleFullscreen}
         onLoadedMetadata={() => {

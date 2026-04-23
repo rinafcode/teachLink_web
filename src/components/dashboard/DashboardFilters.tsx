@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Filter, X, RotateCcw } from 'lucide-react';
 import { TimeRange, AggregationType, CHART_COLOR_PALETTE } from '@/utils/visualizationUtils';
 import type { DashboardFiltersState } from '@/hooks/useDashboardData';
@@ -45,7 +45,7 @@ const DEFAULT_METRICS = ['enrollments', 'revenue', 'completions', 'views'];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
+export const DashboardFilters = React.memo<DashboardFiltersProps>(({
   filters,
   onFiltersChange,
   onReset,
@@ -55,22 +55,23 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleCategory = (cat: string) => {
+  const toggleCategory = useCallback((cat: string) => {
     const next = filters.categories.includes(cat)
       ? filters.categories.filter((c) => c !== cat)
       : [...filters.categories, cat];
     onFiltersChange({ categories: next });
-  };
+  }, [filters.categories, onFiltersChange]);
 
-  const removeCategory = (cat: string) => {
+  const removeCategory = useCallback((cat: string) => {
     onFiltersChange({ categories: filters.categories.filter((c) => c !== cat) });
-  };
+  }, [filters.categories, onFiltersChange]);
 
-  const activeFilterCount =
+  const activeFilterCount = useMemo(() => (
     (filters.timeRange !== '30d' ? 1 : 0) +
     filters.categories.length +
     (filters.metric !== 'enrollments' ? 1 : 0) +
-    (filters.aggregation !== 'sum' ? 1 : 0);
+    (filters.aggregation !== 'sum' ? 1 : 0)
+  ), [filters]);
 
   return (
     <div
@@ -249,4 +250,6 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
       )}
     </div>
   );
-};
+});
+
+DashboardFilters.displayName = 'DashboardFilters';

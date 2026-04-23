@@ -49,7 +49,7 @@ const CHART_TYPE_BUTTONS: { type: ChartType; Icon: React.ElementType; label: str
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
+export const InteractiveCharts = React.memo<InteractiveChartsProps>(({
   panelId,
   data,
   chartType,
@@ -161,4 +161,6 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
       </AnimatePresence>
     </div>
   );
-};
+});
+
+InteractiveCharts.displayName = 'InteractiveCharts';

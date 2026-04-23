@@ -268,68 +268,35 @@ const wizardFormConfig: FormConfiguration = {
 
 // Demonstration functions
 export function demonstrateConfigurationParser() {
-  console.log('=== Configuration Parser Demonstration ===\n');
-
-  // 1. Validate configurations
-  console.log('1. Validating configurations...');
-
   const basicValidation = parser.validate(basicFormConfig);
-  console.log(`Basic form validation: ${basicValidation.isValid ? 'VALID' : 'INVALID'}`);
+
   if (!basicValidation.isValid) {
-    console.log('Errors:', basicValidation.errors);
   }
 
   const wizardValidation = parser.validate(wizardFormConfig);
-  console.log(`Wizard form validation: ${wizardValidation.isValid ? 'VALID' : 'INVALID'}`);
+
   if (!wizardValidation.isValid) {
-    console.log('Errors:', wizardValidation.errors);
   }
 
-  // 2. Format to JSON
-  console.log('\n2. Formatting configurations to JSON...');
-
   const basicJson = parser.formatToJson(basicFormConfig);
-  console.log('Basic form JSON length:', basicJson.length, 'characters');
 
   const compactJson = parser.formatToCompactJson(basicFormConfig);
-  console.log('Compact JSON length:', compactJson.length, 'characters');
 
   // 3. Format with custom options
-  console.log('\n3. Formatting with custom options...');
 
   const jsonWithMetadata = parser.formatToJsonWithOptions(wizardFormConfig, {
     includeMetadata: true,
     sortKeys: true,
     indent: 4,
   });
-  console.log(
-    'JSON with metadata includes _metadata field:',
-    jsonWithMetadata.includes('_metadata'),
-  );
 
   // 4. Round-trip test
-  console.log('\n4. Testing round-trip (format -> parse -> validate)...');
 
   try {
     const formattedJson = parser.formatToJson(wizardFormConfig);
     const parsedConfig = parser.parse(formattedJson);
     const revalidation = parser.validate(parsedConfig);
-
-    console.log(`Round-trip successful: ${revalidation.isValid ? 'YES' : 'NO'}`);
-    console.log(
-      `Original fields: ${wizardFormConfig.fields.length}, Parsed fields: ${parsedConfig.fields.length}`,
-    );
-    console.log(
-      `Original steps: ${wizardFormConfig.steps?.length || 0}, Parsed steps: ${
-        parsedConfig.steps?.length || 0
-      }`,
-    );
-  } catch (error) {
-    console.log('Round-trip failed:', error);
-  }
-
-  // 5. Error handling demonstration
-  console.log('\n5. Demonstrating error handling...');
+  } catch (error) {}
 
   const invalidConfig = {
     id: '', // Invalid: empty ID
@@ -339,17 +306,11 @@ export function demonstrateConfigurationParser() {
   };
 
   const invalidValidation = parser.validate(invalidConfig as unknown as FormConfiguration);
-  console.log(`Invalid config validation: ${invalidValidation.isValid ? 'VALID' : 'INVALID'}`);
-  console.log(`Number of validation errors: ${invalidValidation.errors.length}`);
 
   // Try parsing invalid JSON
   try {
     parser.parse('{ invalid json }');
-  } catch (error) {
-    console.log('Invalid JSON parsing correctly throws error:', error instanceof Error);
-  }
-
-  console.log('\n=== Demonstration Complete ===');
+  } catch (error) {}
 }
 
 // Export configurations for use in other examples

@@ -18,10 +18,8 @@ export const stateLogger =
       (args) => {
         if (process.env.NODE_ENV === 'development') {
           console.group('%c [State Action]', 'color: #00bcd4; font-weight: bold;');
-          console.log('Action:', args);
-          console.log('Previous State:', get());
+
           set(args);
-          console.log('Next State:', get());
           console.groupEnd();
         } else {
           set(args);
@@ -37,6 +35,5 @@ export const stateLogger =
 export const inspectState = (store: any) => {
   if (typeof window !== 'undefined') {
     (window as any).__TEACHLINK_STATE__ = store.getState;
-    console.log('[DevTools] State inspector attached to window.__TEACHLINK_STATE__');
   }
 };
