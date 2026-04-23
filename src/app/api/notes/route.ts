@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server';
+import type { VideoNote, ApiResponse, SuccessResponse } from '@/types/api';
 
-type PersistedVideoNote = {
-  id: string;
-  time: number;
-  text: string;
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
-};
+type PersistedVideoNote = VideoNote;
 
 const notesStore = new Map<string, PersistedVideoNote[]>();
 
@@ -15,7 +10,7 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse<ApiResponse<PersistedVideoNote[]> | SuccessResponse>> {
   const { searchParams } = new URL(request.url);
   const lessonId = searchParams.get('lessonId');
   const userId = searchParams.get('userId') ?? undefined;
@@ -30,7 +25,7 @@ export async function GET(request: Request) {
   });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<ApiResponse<PersistedVideoNote> | SuccessResponse>> {
   const body = (await request.json()) as {
     userId?: string;
     lessonId: string;
@@ -59,7 +54,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ success: true, data: persisted });
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: Request): Promise<NextResponse<SuccessResponse>> {
   const body = (await request.json()) as {
     userId?: string;
     lessonId: string;
@@ -91,7 +86,7 @@ export async function PATCH(request: Request) {
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: Request): Promise<NextResponse<SuccessResponse>> {
   const body = (await request.json()) as { userId?: string; lessonId: string; id: string };
   if (!body?.lessonId || !body?.id) {
     return NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 });
