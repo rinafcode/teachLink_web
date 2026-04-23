@@ -4,12 +4,14 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { LucideIcon } from 'lucide-react';
 
-interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
+interface FormInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> {
   name: string;
   label: string;
   icon?: LucideIcon;
   as?: 'input' | 'textarea' | 'select';
   children?: React.ReactNode; // For select options
+  rows?: number; // Explicitly add rows for textarea
 }
 
 /**
@@ -22,6 +24,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   as = 'input',
   children,
   className = '',
+  rows,
   ...props
 }) => {
   const {
@@ -49,37 +52,36 @@ export const FormInput: React.FC<FormInputProps> = ({
       <div className="relative group">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className={`h-5 w-5 ${isError ? 'text-red-400' : 'text-gray-400 group-focus-within:text-blue-500'} transition-colors`} />
+            <Icon
+              className={`h-5 w-5 ${
+                isError ? 'text-red-400' : 'text-gray-400 group-focus-within:text-blue-500'
+              } transition-colors`}
+            />
           </div>
         )}
-        
+
         {as === 'textarea' ? (
           <textarea
             {...(register(name) as any)}
             className={`${baseStyles} resize-none ${className}`}
-            {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+            rows={rows}
+            {...(props as any)}
           />
         ) : as === 'select' ? (
           <select
             {...(register(name) as any)}
             className={`${baseStyles} ${className}`}
-            {...(props as React.SelectHTMLAttributes<HTMLSelectElement>)}
+            {...(props as any)}
           >
             {children}
           </select>
         ) : (
-          <input
-            {...register(name)}
-            className={`${baseStyles} ${className}`}
-            {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
-          />
+          <input {...register(name)} className={`${baseStyles} ${className}`} {...(props as any)} />
         )}
       </div>
-      
+
       {isError && (
-        <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
-          {error.message as string}
-        </p>
+        <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{error.message as string}</p>
       )}
     </div>
   );
