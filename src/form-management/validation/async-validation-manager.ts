@@ -20,7 +20,7 @@ export interface AsyncValidationOptions {
 
 export interface AsyncValidationRequest {
   fieldId: string;
-  value: any;
+  value: unknown;
   formState: FormState;
   validationFunction: ValidationFunction;
   options?: Partial<AsyncValidationOptions>;
@@ -38,7 +38,7 @@ export type AsyncValidationCallback = (response: AsyncValidationResponse) => voi
 export class AsyncValidationManager {
   private validationStates: Map<string, AsyncValidationState> = new Map();
   private pendingValidations: Map<string, Promise<ValidationResult>> = new Map();
-  private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
+  private debounceTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
   private callbacks: Set<AsyncValidationCallback> = new Set();
 
   private defaultOptions: AsyncValidationOptions = {
@@ -131,7 +131,7 @@ export class AsyncValidationManager {
    */
   private async executeValidationWithRetry(
     fieldId: string,
-    value: any,
+    value: unknown,
     formState: FormState,
     validationFunction: ValidationFunction,
     options: AsyncValidationOptions,
@@ -215,7 +215,7 @@ export class AsyncValidationManager {
    */
   private async performValidationWithRetries(
     fieldId: string,
-    value: any,
+    value: unknown,
     formState: FormState,
     validationFunction: ValidationFunction,
     options: AsyncValidationOptions,
@@ -228,9 +228,8 @@ export class AsyncValidationManager {
         this.updateValidationState(fieldId, { retryCount: attempt });
 
         // Execute validation with timeout
-        let timeoutId: any;
         const timeoutPromise = new Promise<never>((_, reject) => {
-          timeoutId = setTimeout(() => {
+          setTimeout(() => {
             reject(new Error(`Validation timeout after ${options.timeout}ms`));
           }, options.timeout);
         });
@@ -242,7 +241,6 @@ export class AsyncValidationManager {
         validationPromise.catch(() => {});
 
         const result = await Promise.race([validationPromise, timeoutPromise]);
-        clearTimeout(timeoutId);
 
         // Validation succeeded
         return result;
