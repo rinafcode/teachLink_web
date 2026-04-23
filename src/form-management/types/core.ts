@@ -79,7 +79,7 @@ export interface ConditionalRule {
 export interface ConditionalAction {
   type: 'show' | 'hide' | 'enable' | 'disable' | 'setValue';
   targetFieldId: string;
-  value?: any;
+  value?: unknown;
 }
 
 // Layout Configuration
@@ -111,7 +111,6 @@ export interface ValidationConfiguration {
   customRules: Record<string, ValidationFunction>;
 }
 
-export type ValidationFunction = (value: unknown, formState: FormState, context?: unknown) => ValidationResult | Promise<ValidationResult>;
 export interface ValidationExecutionContext {
   getFieldValue(fieldId: string): unknown;
   getFieldDescriptor(fieldId: string): FieldDescriptor | undefined;
@@ -143,7 +142,6 @@ export interface FormConfiguration {
   autoSave?: AutoSaveConfiguration;
   analytics?: AnalyticsConfiguration;
   accessibility?: AccessibilityConfiguration;
-  conditionalLogic?: ConditionalRule[];
 }
 
 // Auto-Save Configuration
@@ -246,7 +244,7 @@ export interface FieldInteraction {
   fieldId: string;
   eventType: 'focus' | 'blur' | 'change' | 'error';
   timestamp: Date;
-  value?: any;
+  value?: unknown;
   timeSpent?: number;
 }
 
@@ -263,8 +261,8 @@ export interface StepMetrics {
 export interface StateChangeEvent {
   type: 'field-change' | 'validation-change' | 'form-submit' | 'step-change';
   fieldId?: string;
-  oldValue?: any;
-  newValue?: any;
+  oldValue?: unknown;
+  newValue?: unknown;
   timestamp: Date;
 }
 
@@ -286,7 +284,7 @@ export interface FormElement {
 }
 
 export interface FieldUpdates {
-  value?: any;
+  value?: unknown;
   visible?: boolean;
   enabled?: boolean;
   validation?: ValidationResult;
