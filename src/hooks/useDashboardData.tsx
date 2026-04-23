@@ -4,7 +4,7 @@
  * Manages panels, filters, drag-and-drop ordering, drill-down, and sharing.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   ChartType,
   TimeRange,
@@ -43,6 +43,7 @@ export interface UseDashboardDataReturn {
   panels: DashboardPanel[];
   filters: DashboardFiltersState;
   shareURL: string | null;
+  isLoading: boolean;
   setFilters: (filters: Partial<DashboardFiltersState>) => void;
   resetFilters: () => void;
   setPanelChartType: (id: string, chartType: ChartType) => void;
@@ -100,6 +101,13 @@ const buildDefaultPanels = (timeRange: TimeRange): DashboardPanel[] => [
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export const useDashboardData = (): UseDashboardDataReturn => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [filters, setFiltersState] = useState<DashboardFiltersState>(() => {
     if (typeof window !== 'undefined') {
       const parsed = parseDashboardURL(window.location.search);
@@ -195,6 +203,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
     panels: [...panels].sort((a, b) => a.position - b.position),
     filters,
     shareURL,
+    isLoading,
     setFilters,
     resetFilters,
     setPanelChartType,

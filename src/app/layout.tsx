@@ -15,6 +15,8 @@ import StateManagerIntegration from '@/components/state/StateManagerIntegration'
 import { PWAManager } from '@/components/pwa/PWAManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 import { EnvGuard } from '@/components/shared/EnvGuard';
+import { Suspense } from 'react';
+import { Loading } from '@/components/ui/Loading';
 
 const geistSans = Geist({
   // ...
@@ -81,7 +83,9 @@ export default function RootLayout({
                         <StateManagerIntegration />
                         <PerformanceMonitor />
                         <PrefetchingEngine />
-                        {children}
+                        <Suspense fallback={<Loading />}>
+                          {children}
+                        </Suspense>
                       </OfflineModeProvider>
                     </PerformanceMonitoringProvider>
                   </AccessibilityProvider>
