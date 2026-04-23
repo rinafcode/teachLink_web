@@ -1,5 +1,6 @@
 // CourseCard.tsx
 import { Play } from 'lucide-react'; // or your preferred icon library
+import Image from 'next/image';
 
 interface CourseCardProps {
   title: string;
@@ -23,14 +24,17 @@ export default function CourseCard({
       {/* Course Image */}
       <div className="relative h-48 w-full overflow-hidden bg-gray-900">
         {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={imageUrl}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800" />
+          <div className="h-full w-full bg-linear-to-br from-gray-800 via-gray-900 to-gray-800" />
         )}
       </div>
 

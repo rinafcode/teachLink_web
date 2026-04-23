@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { BookOpen, Star, Clock, Users, Settings } from 'lucide-react';
 
 interface Course {
@@ -228,9 +229,18 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
             className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex">
-              <div className="w-24 h-20 bg-gray-200 flex-shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
+              <div className="w-24 h-20 bg-gray-200 shrink-0">
+                {}
+
+                <Image
+                  src={course.image}
+                  alt={course.title}
+                  fill
+                  sizes="96px"
+                  className="object-cover"
+                  placeholder="blur"
+                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
+                />
               </div>
               <div className="flex-1 p-3">
                 <h4 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">

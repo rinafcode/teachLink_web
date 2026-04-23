@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface VideoPreviewProps {
   videoUrl?: string;
@@ -22,8 +23,19 @@ export default function VideoPreview({
         onClick={() => setIsOpen(true)}
         className="group relative w-full aspect-video rounded-xl overflow-hidden border-2 border-[#E2E8F0] dark:border-[#334155] hover:border-[#0066FF] dark:hover:border-[#00C2FF] transition-all duration-200"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={thumbnailUrl} alt="Video preview" className="w-full h-full object-cover" />
+        {}
+        <div className="absolute inset-0">
+          <Image
+            src={thumbnailUrl}
+            alt="Video preview"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
+            priority={false}
+          />
+        </div>
         <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
           <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white group-hover:scale-110 transition-all duration-200 flex items-center justify-center">
             <svg className="w-8 h-8 text-[#0066FF] ml-1" fill="currentColor" viewBox="0 0 20 20">

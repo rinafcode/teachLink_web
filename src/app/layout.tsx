@@ -14,12 +14,12 @@ import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 import { PWAManager } from '@/components/pwa/PWAManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
+import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 import { EnvGuard } from '@/components/shared/EnvGuard';
 import { Suspense } from 'react';
-import { Loading } from '@/components/ui/Loading';
+import Loading from '@/components/ui/Loading';
 
 const geistSans = Geist({
-  // ...
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
@@ -83,7 +83,9 @@ export default async function RootLayout({
                         <StateManagerIntegration />
                         <PerformanceMonitor />
                         <PrefetchingEngine />
-                        <Suspense fallback={<Loading />}>{children}</Suspense>
+                        <ErrorBoundary>
+                          <Suspense fallback={<Loading />}>{children}</Suspense>
+                        </ErrorBoundary>
                       </OfflineModeProvider>
                     </PerformanceMonitoringProvider>
                   </AccessibilityProvider>

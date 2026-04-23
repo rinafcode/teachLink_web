@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import {
   FiCheck,
@@ -73,12 +74,18 @@ function AttachmentPreview({ attachment }: { attachment: Attachment }) {
     <div className="mt-2 rounded-lg overflow-hidden">
       {isImage ? (
         <div className="relative group">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={attachment.url}
-            alt={attachment.name}
-            className="max-w-[240px] max-h-[180px] rounded-lg object-cover"
-          />
+          {}
+          <div className="relative w-60 h-45 rounded-lg overflow-hidden">
+            <Image
+              src={attachment.url}
+              alt={attachment.name}
+              fill
+              sizes="240px"
+              className="object-cover"
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
+            />
+          </div>
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
             <a
               href={attachment.url}
@@ -140,11 +147,11 @@ function TypingIndicator({ text }: { text: string }) {
 function DateDivider({ date }: { date: Date }) {
   return (
     <div className="flex items-center gap-4 my-6">
-      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
+      <div className="flex-1 h-px bg-linear-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
       <span className="text-xs font-medium text-gray-400 dark:text-gray-500 px-3 py-1 bg-gray-50 dark:bg-gray-800/50 rounded-full">
         {formatMessageDate(date)}
       </span>
-      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
+      <div className="flex-1 h-px bg-linear-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
     </div>
   );
 }
@@ -198,7 +205,7 @@ export default function MessageThread({
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center max-w-sm">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-violet-100 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 flex items-center justify-center">
             <svg
               className="w-12 h-12 text-violet-500"
               fill="none"
@@ -230,7 +237,7 @@ export default function MessageThread({
       {/* Chat Header */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
         <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+          <div className="w-10 h-10 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
             {participantName
               .split(' ')
               .map((n) => n[0])

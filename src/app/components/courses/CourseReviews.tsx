@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface Review {
   id: string;
@@ -138,12 +139,19 @@ export default function CourseReviews({
             className="border-b border-[#E2E8F0] dark:border-[#334155] last:border-b-0 pb-6 last:pb-0"
           >
             <div className="flex items-start gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={review.userAvatar}
-                alt={review.userName}
-                className="w-12 h-12 rounded-full object-cover"
-              />
+              {}
+
+              <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                <Image
+                  src={review.userAvatar}
+                  alt={review.userName}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                  placeholder="blur"
+                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
+                />
+              </div>
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-2">
                   <div>
