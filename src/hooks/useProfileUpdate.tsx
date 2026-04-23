@@ -10,7 +10,7 @@ interface ProfileData {
     email: boolean;
     push: boolean;
   };
-  theme?: "light" | "dark";
+  theme?: 'light' | 'dark';
   [key: string]: unknown;
 }
 

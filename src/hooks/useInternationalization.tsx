@@ -6,7 +6,11 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { LanguageCode, Translations, CulturalPreferences } from '@/locales/types';
-import { loadTranslations, getTranslation, getMissingTranslations } from '@/locales/translationManager';
+import {
+  loadTranslations,
+  getTranslation,
+  getMissingTranslations,
+} from '@/locales/translationManager';
 import { DEFAULT_LANGUAGE } from '@/locales/config';
 import {
   getCulturalPreferences,
@@ -81,7 +85,10 @@ export function I18nProvider({
               if (missing.length > 0) {
                 // Limit output to first 50 keys to avoid flooding logs
                 const sample = missing.slice(0, 50);
-                console.warn(`Translations for '${language}' missing ${missing.length} keys. Sample:`, sample);
+                console.warn(
+                  `Translations for '${language}' missing ${missing.length} keys. Sample:`,
+                  sample,
+                );
               }
             }
           } catch (e) {
