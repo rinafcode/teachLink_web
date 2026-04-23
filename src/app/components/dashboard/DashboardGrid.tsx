@@ -23,11 +23,11 @@ import { Settings, Plus, Grid3X3, Calendar } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
 
-import { 
-  DashboardWidgetSkeleton, 
-  SummaryWidgetSkeleton, 
-  ListWidgetSkeleton, 
-  ChartWidgetSkeleton 
+import {
+  DashboardWidgetSkeleton,
+  SummaryWidgetSkeleton,
+  ListWidgetSkeleton,
+  ChartWidgetSkeleton,
 } from './DashboardSkeletons';
 
 const ProgressSummaryWidget = dynamic(

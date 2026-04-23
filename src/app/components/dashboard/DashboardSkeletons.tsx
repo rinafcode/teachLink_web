@@ -3,11 +3,13 @@
 import React from 'react';
 import { Skeleton } from '@/components/ui/Skeleton';
 
-export const DashboardWidgetSkeleton: React.FC<{ height?: string; className?: string }> = ({ 
-  height = 'h-64', 
-  className = '' 
+export const DashboardWidgetSkeleton: React.FC<{ height?: string; className?: string }> = ({
+  height = 'h-64',
+  className = '',
 }) => (
-  <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${className}`}>
+  <div
+    className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${className}`}
+  >
     <div className="flex items-center justify-between mb-6">
       <Skeleton width="40%" height={24} />
       <Skeleton width={24} height={24} variant="circle" />
@@ -64,11 +66,7 @@ export const ChartWidgetSkeleton: React.FC = () => (
     </div>
     <div className="flex items-end space-x-4 h-48 pt-4">
       {[...Array(6)].map((_, i) => (
-        <Skeleton 
-          key={i} 
-          className="flex-1" 
-          height={`${Math.random() * 60 + 20}%`} 
-        />
+        <Skeleton key={i} className="flex-1" height={`${Math.random() * 60 + 20}%`} />
       ))}
     </div>
     <div className="mt-6 flex justify-between">

@@ -18,7 +18,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   height,
 }) => {
   const baseStyles = 'bg-slate-200 dark:bg-slate-700 overflow-hidden relative';
-  
+
   const variantStyles = {
     rect: 'rounded-lg',
     circle: 'rounded-full',
