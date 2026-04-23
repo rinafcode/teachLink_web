@@ -81,10 +81,8 @@ export const headerEnhancementInterceptor: RequestInterceptor = async (config: R
   headers['X-Request-ID'] = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   // Add client version if available
-  const appWindow =
-    typeof window !== 'undefined' ? (window as Window & { __APP_VERSION__?: string }) : null;
-  if (appWindow?.__APP_VERSION__) {
-    headers['X-Client-Version'] = appWindow.__APP_VERSION__;
+  if (typeof window !== 'undefined' && window.__APP_VERSION__) {
+    headers['X-Client-Version'] = window.__APP_VERSION__;
   }
 
   config.headers = headers;

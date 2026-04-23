@@ -18,6 +18,7 @@ import { BookmarkManager } from './BookmarkManager';
 import { TranscriptView } from './TranscriptView';
 import { NotesTaker } from './NotesTaker';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
+import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
 
 interface VideoPlayerProps {
   src: string;
@@ -50,6 +51,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
+
+  const { isInViewport, isLoaded } = useVideoLazyLoad(videoRef, {
+    enabled: true,
+    threshold: 0.1,
+    rootMargin: '50px',
+  });
 
   const {
     isPlaying,
@@ -375,8 +382,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Video Element */}
       <video
         ref={videoRef}
-        src={src}
+        src={isLoaded ? src : undefined}
         poster={poster}
+        preload="metadata"
         className="w-full h-full object-contain"
         onDoubleClick={toggleFullscreen}
         aria-label="Course video content"
