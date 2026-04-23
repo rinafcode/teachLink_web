@@ -18,7 +18,7 @@ export interface ErrorInfo {
   type: ErrorType;
   message: string;
   statusCode?: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: number;
   retryable: boolean;
   userMessage: string;
@@ -28,7 +28,7 @@ export interface ErrorInfo {
 /**
  * Classify an error based on its type and properties
  */
-export function classifyError(error: any): ErrorInfo {
+export function classifyError(error: unknown): ErrorInfo {
   const now = Date.now();
 
   // Check if error is a network error
@@ -44,7 +44,7 @@ export function classifyError(error: any): ErrorInfo {
   }
 
   // Check for timeout
-  if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+  if (error instanceof Error && (error.name === 'AbortError' || error.message?.includes('timeout'))) {
     return {
       type: ErrorType.TIMEOUT,
       message: error.message || 'Request timeout',
@@ -68,17 +68,18 @@ export function classifyError(error: any): ErrorInfo {
   }
 
   // Check for HTTP response errors
-  if (error.status || error.statusCode) {
-    const statusCode = error.status || error.statusCode;
-    return classifyHttpError(statusCode, error.message || '', now);
+  if (error && typeof error === 'object' && ('status' in error || 'statusCode' in error)) {
+    const statusCode = (error as { status?: number; statusCode?: number }).status || (error as { status?: number; statusCode?: number }).statusCode;
+    const message = (error as { message?: string }).message || '';
+    return classifyHttpError(statusCode as number, message, now);
   }
 
   // Check for validation errors
-  if (error.name === 'ValidationError' || error.type === ErrorType.VALIDATION) {
+  if (error instanceof Error && (error.name === 'ValidationError' || ('type' in error && (error as { type: ErrorType }).type === ErrorType.VALIDATION))) {
     return {
       type: ErrorType.VALIDATION,
       message: error.message,
-      details: error.details,
+      details: (error as { details?: Record<string, unknown> }).details,
       timestamp: now,
       retryable: false,
       userMessage: 'Please check your input and try again.',
@@ -89,7 +90,7 @@ export function classifyError(error: any): ErrorInfo {
   // Default unknown error
   return {
     type: ErrorType.UNKNOWN,
-    message: error.message || String(error),
+    message: error instanceof Error ? error.message : String(error),
     details: { originalError: error },
     timestamp: now,
     retryable: true,
@@ -177,7 +178,7 @@ function classifyHttpError(statusCode: number, message: string, timestamp: numbe
 /**
  * Determine if an error is retryable
  */
-export function isRetryable(error: any): boolean {
+export function isRetryable(error: unknown): boolean {
   const errorInfo = classifyError(error);
   return errorInfo.retryable;
 }
@@ -185,7 +186,7 @@ export function isRetryable(error: any): boolean {
 /**
  * Get a user-friendly error message
  */
-export function getUserFriendlyMessage(error: any): string {
+export function getUserFriendlyMessage(error: unknown): string {
   const errorInfo = classifyError(error);
   return errorInfo.userMessage;
 }
@@ -193,7 +194,7 @@ export function getUserFriendlyMessage(error: any): string {
 /**
  * Get an action suggestion for the error
  */
-export function getActionSuggestion(error: any): string | undefined {
+export function getActionSuggestion(error: unknown): string | undefined {
   const errorInfo = classifyError(error);
   return errorInfo.actionSuggestion;
 }
@@ -217,7 +218,7 @@ export async function retryWithBackoff<T>(
     backoffFactor = 2,
   } = options || {};
 
-  let lastError: any;
+  let lastError: unknown;
   let delayMs = initialDelayMs;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -246,7 +247,7 @@ export async function retryWithBackoff<T>(
 /**
  * Format error for logging
  */
-export function formatErrorForLogging(error: any): Record<string, any> {
+export function formatErrorForLogging(error: unknown): Record<string, unknown> {
   const errorInfo = classifyError(error);
   return {
     type: errorInfo.type,
@@ -267,7 +268,7 @@ export class TypedError extends Error {
   constructor(
     public type: ErrorType,
     message: string,
-    public details?: Record<string, any>,
+    public details?: Record<string, unknown>,
     public statusCode?: number,
   ) {
     super(message);
