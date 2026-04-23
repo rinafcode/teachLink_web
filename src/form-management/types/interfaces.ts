@@ -32,10 +32,10 @@ export interface FormBuilder {
 
 // Validation Engine Interface
 export interface ValidationEngine {
-  validateField(fieldId: string, value: any, context: FormState): ValidationResult;
+  validateField(fieldId: string, value: unknown, context: FormState): ValidationResult;
   validateForm(formState: FormState): Promise<FormValidationResult>;
   addCustomRule(name: string, rule: ValidationFunction): void;
-  executeAsyncValidation(fieldId: string, value: any): Promise<ValidationResult>;
+  executeAsyncValidation(fieldId: string, value: unknown): Promise<ValidationResult>;
 }
 
 // Form State Manager Interface
@@ -90,17 +90,17 @@ export interface ConfigurationParser {
 // Analytics Tracker Interface
 export interface AnalyticsTracker {
   trackFormStart(formId: string): void;
-  trackFieldInteraction(fieldId: string, eventType: string, value?: any): void;
+  trackFieldInteraction(fieldId: string, eventType: string, value?: unknown): void;
   trackFormSubmission(formId: string, success: boolean): void;
   trackFormAbandonment(formId: string, abandonmentPoint: string): void;
-  getAnalytics(formId: string): Promise<any>;
+  getAnalytics(formId: string): Promise<unknown>;
   enablePrivacyMode(enabled: boolean): void;
 }
 
 // Storage Interface
 export interface StorageProvider {
-  save(key: string, data: any): Promise<void>;
-  load(key: string): Promise<any>;
+  save(key: string, data: unknown): Promise<void>;
+  load(key: string): Promise<unknown>;
   remove(key: string): Promise<void>;
   clear(): Promise<void>;
   getSize(): Promise<number>;
@@ -108,7 +108,7 @@ export interface StorageProvider {
 }
 
 // Event Emitter Interface
-export interface EventEmitter<T = any> {
+export interface EventEmitter<T = unknown> {
   on(event: string, callback: (data: T) => void): Subscription;
   emit(event: string, data: T): void;
   off(event: string, callback: (data: T) => void): void;
