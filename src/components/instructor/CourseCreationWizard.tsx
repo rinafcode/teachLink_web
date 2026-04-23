@@ -1,11 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Eye, BookOpen, Layers, Layout, Target, FileText } from 'lucide-react';
 import { useCourseCreation, Lesson } from '@/hooks/useCourseCreation';
 import { ContentUploader } from './ContentUploader';
 import { LessonBuilder } from './LessonBuilder';
 import { AssessmentCreator } from './AssessmentCreator';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { FormInput } from '../forms/FormInput';
+
+const courseSchema = z.object({
+  title: z.string().min(5, 'Title must be at least 5 characters'),
+  description: z.string().min(20, 'Description must be at least 20 characters'),
+  category: z.string().min(1, 'Please select a category'),
+  level: z.enum(['beginner', 'intermediate', 'advanced']),
+  pricing: z.object({
+    type: z.enum(['free', 'paid']),
+    amount: z.number().min(0).optional(),
+  }),
+});
+
+type CourseFormData = z.infer<typeof courseSchema>;
 
 const STEPS = [
   { id: 0, name: 'Basic Info', description: 'Course details' },
@@ -34,6 +51,35 @@ export const CourseCreationWizard = () => {
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [lessonForm, setLessonForm] = useState({ title: '', description: '', content: [] });
 
+  const methods = useForm<CourseFormData>({
+    resolver: zodResolver(courseSchema),
+    defaultValues: {
+      title: courseData.title,
+      description: courseData.description,
+      category: courseData.category,
+      level: courseData.level as any,
+      pricing: {
+        type: courseData.pricing.type,
+        amount: courseData.pricing.amount,
+      },
+    },
+    mode: 'onChange',
+  });
+
+  const { watch, trigger } = methods;
+  const formValues = watch();
+
+  // Sync form values with useCourseCreation state when they change
+  // In a real app, we might just use the form values directly
+  const handleStepChange = async (direction: 'next' | 'prev') => {
+    if (direction === 'next' && currentStep === 0) {
+      const isValid = await trigger();
+      if (!isValid) return;
+      updateCourseData(formValues);
+    }
+    direction === 'next' ? nextStep() : previousStep();
+  };
+
   const handleSaveLesson = () => {
     if (!lessonForm.title.trim()) {
       alert('Please enter a lesson title');
@@ -52,103 +98,81 @@ export const CourseCreationWizard = () => {
         return (
           <div className="space-y-4 sm:space-y-6">
             <h2 className="text-xl font-bold sm:text-2xl">Course Basic Information</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Course Title
-                </label>
-                <input
-                  type="text"
-                  value={courseData.title}
-                  onChange={(e) => updateCourseData({ title: e.target.value })}
-                  placeholder="e.g., Introduction to Web Development"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+            <div className="space-y-6">
+              <FormInput
+                name="title"
+                label="Course Title"
+                icon={BookOpen}
+                placeholder="e.g., Introduction to Web Development"
+              />
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Description
-                </label>
-                <textarea
-                  value={courseData.description}
-                  onChange={(e) => updateCourseData({ description: e.target.value })}
-                  placeholder="Describe what students will learn..."
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <FormInput
+                name="description"
+                label="Description"
+                as="textarea"
+                rows={4}
+                placeholder="Describe what students will learn..."
+              />
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Category
-                  </label>
-                  <select
-                    value={courseData.category}
-                    onChange={(e) => updateCourseData({ category: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select Category</option>
-                    <option value="development">Development</option>
-                    <option value="design">Design</option>
-                    <option value="business">Business</option>
-                    <option value="marketing">Marketing</option>
-                  </select>
-                </div>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <FormInput
+                  name="category"
+                  label="Category"
+                  as="select"
+                  icon={Layers}
+                >
+                  <option value="">Select Category</option>
+                  <option value="development">Development</option>
+                  <option value="design">Design</option>
+                  <option value="business">Business</option>
+                  <option value="marketing">Marketing</option>
+                </FormInput>
 
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Difficulty Level
-                  </label>
-                  <select
-                    value={courseData.level}
-                    onChange={(e) => updateCourseData({ level: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                </div>
+                <FormInput
+                  name="level"
+                  label="Difficulty Level"
+                  as="select"
+                  icon={Layout}
+                >
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </FormInput>
               </div>
 
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Pricing
                 </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
+                <div className="flex gap-6 p-4 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl">
+                  <label className="flex items-center space-x-2 cursor-pointer group">
                     <input
                       type="radio"
-                      checked={courseData.pricing.type === 'free'}
-                      onChange={() => updateCourseData({ pricing: { type: 'free' } })}
-                      className="mr-2"
+                      value="free"
+                      {...methods.register('pricing.type')}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
-                    Free
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">Free</span>
                   </label>
-                  <label className="flex items-center">
+                  <label className="flex items-center space-x-2 cursor-pointer group">
                     <input
                       type="radio"
-                      checked={courseData.pricing.type === 'paid'}
-                      onChange={() => updateCourseData({ pricing: { type: 'paid', amount: 0 } })}
-                      className="mr-2"
+                      value="paid"
+                      {...methods.register('pricing.type')}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
-                    Paid
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors">Paid</span>
                   </label>
                 </div>
-                {courseData.pricing.type === 'paid' && (
-                  <input
-                    type="number"
-                    value={courseData.pricing.amount || 0}
-                    onChange={(e) =>
-                      updateCourseData({
-                        pricing: { type: 'paid', amount: Number(e.target.value) },
-                      })
-                    }
-                    placeholder="Price in USD"
-                    className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                  />
+                {formValues.pricing?.type === 'paid' && (
+                  <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <FormInput
+                      name="pricing.amount"
+                      label="Price (USD)"
+                      type="number"
+                      placeholder="0.00"
+                    />
+                  </div>
                 )}
               </div>
             </div>
@@ -289,71 +313,73 @@ export const CourseCreationWizard = () => {
   };
 
   return (
-    <div className="max-w-5xl p-4 mx-auto sm:p-6">
-      <div className="mb-6 sm:mb-8">
-        <div className="flex items-center justify-between pb-4 overflow-x-auto">
-          {STEPS.map((step, index) => (
-            <div key={step.id} className="flex items-center flex-1 min-w-0">
-              <div className="flex flex-col items-center">
-                <button
-                  onClick={() => goToStep(step.id)}
-                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold transition-colors text-sm sm:text-base ${
-                    currentStep > step.id
-                      ? 'bg-green-600 text-white'
-                      : currentStep === step.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {currentStep > step.id ? (
-                    <Check className="w-4 h-4 sm:h-5 sm:w-5" />
-                  ) : (
-                    step.id + 1
-                  )}
-                </button>
-                <div className="hidden mt-2 text-center sm:block">
-                  <div className="text-sm font-medium">{step.name}</div>
-                  <div className="text-xs text-gray-500">{step.description}</div>
+    <FormProvider {...methods}>
+      <div className="max-w-5xl p-4 mx-auto sm:p-6">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between pb-4 overflow-x-auto">
+            {STEPS.map((step, index) => (
+              <div key={step.id} className="flex items-center flex-1 min-w-0">
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={() => goToStep(step.id)}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold transition-colors text-sm sm:text-base ${
+                      currentStep > step.id
+                        ? 'bg-green-600 text-white'
+                        : currentStep === step.id
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {currentStep > step.id ? (
+                      <Check className="w-4 h-4 sm:h-5 sm:w-5" />
+                    ) : (
+                      step.id + 1
+                    )}
+                  </button>
+                  <div className="hidden mt-2 text-center sm:block">
+                    <div className="text-sm font-medium">{step.name}</div>
+                    <div className="text-xs text-gray-500">{step.description}</div>
+                  </div>
+                  <div className="mt-1 text-center sm:hidden">
+                    <div className="text-xs font-medium">{step.name}</div>
+                  </div>
                 </div>
-                <div className="mt-1 text-center sm:hidden">
-                  <div className="text-xs font-medium">{step.name}</div>
-                </div>
+                {index < STEPS.length - 1 && (
+                  <div
+                    className={`flex-1 h-1 mx-2 sm:mx-4 transition-colors ${
+                      currentStep > step.id ? 'bg-green-600' : 'bg-gray-200'
+                    }`}
+                  />
+                )}
               </div>
-              {index < STEPS.length - 1 && (
-                <div
-                  className={`flex-1 h-1 mx-2 sm:mx-4 transition-colors ${
-                    currentStep > step.id ? 'bg-green-600' : 'bg-gray-200'
-                  }`}
-                />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 sm:p-8 min-h-[400px] sm:min-h-[500px]">
+          {renderStepContent()}
+        </div>
+
+        <div className="flex justify-between gap-2 mt-4 sm:mt-6">
+          <button
+            onClick={() => handleStepChange('prev')}
+            disabled={currentStep === 0}
+            className="flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-lg sm:gap-2 sm:px-6 sm:py-3 dark:border-gray-600 dark:bg-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed sm:text-base"
+          >
+            <ChevronLeft className="w-4 h-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Prev</span>
+          </button>
+          <button
+            onClick={() => handleStepChange('next')}
+            disabled={currentStep === STEPS.length - 1}
+            className="flex items-center gap-1 px-3 py-2 text-sm text-white bg-blue-600 rounded-lg sm:gap-2 sm:px-6 sm:py-3 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed sm:text-base"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 sm:h-5 sm:w-5" />
+          </button>
         </div>
       </div>
-
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 sm:p-8 min-h-[400px] sm:min-h-[500px]">
-        {renderStepContent()}
-      </div>
-
-      <div className="flex justify-between gap-2 mt-4 sm:mt-6">
-        <button
-          onClick={previousStep}
-          disabled={currentStep === 0}
-          className="flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-lg sm:gap-2 sm:px-6 sm:py-3 dark:border-gray-600 dark:bg-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed sm:text-base"
-        >
-          <ChevronLeft className="w-4 h-4 sm:h-5 sm:w-5" />
-          <span className="hidden sm:inline">Previous</span>
-          <span className="sm:hidden">Prev</span>
-        </button>
-        <button
-          onClick={nextStep}
-          disabled={currentStep === STEPS.length - 1}
-          className="flex items-center gap-1 px-3 py-2 text-sm text-white bg-blue-600 rounded-lg sm:gap-2 sm:px-6 sm:py-3 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed sm:text-base"
-        >
-          Next
-          <ChevronRight className="w-4 h-4 sm:h-5 sm:w-5" />
-        </button>
-      </div>
-    </div>
+    </FormProvider>
   );
 };
