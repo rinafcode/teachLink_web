@@ -4,14 +4,6 @@ import { openDB, IDBPDatabase } from 'idb';
 
 export type SyncItemType = 'course_progress';
 
-export interface CourseProgressData {
-  courseId: string;
-  moduleId: string;
-  progress: number;
-  completed: boolean;
-  updatedAt: string;
-}
-
 export interface OfflineAssetRecord {
   id: string;
   courseId: string;
@@ -32,7 +24,7 @@ export interface OfflineCourseRecord {
     id: string;
     title: string;
     type: 'video' | 'quiz' | 'document' | 'live' | 'assignment';
-    content?: unknown;
+    content?: any;
     durationSeconds?: number;
     assetUrls?: string[];
   }>;
@@ -61,7 +53,7 @@ export interface SyncQueueItem {
   id: string;
   type: SyncItemType;
   entityKey: string;
-  data: CourseProgressData;
+  data: any;
   timestamp: string;
   version: number;
 }
@@ -101,11 +93,8 @@ const ensureBrowser = () => {
   }
 };
 
-const createEntityKey = (_type: SyncItemType, data: unknown) => {
-  if (typeof data === 'object' && data !== null && 'courseId' in data && 'moduleId' in data) {
-    return `${(data as { courseId: string; moduleId: string }).courseId}:${(data as { courseId: string; moduleId: string }).moduleId}`;
-  }
-  throw new Error('Invalid data structure for entity key');
+const createEntityKey = (_type: SyncItemType, data: any) => {
+  return `${data.courseId}:${data.moduleId}`;
 };
 
 export class OfflineStorage {
@@ -114,7 +103,7 @@ export class OfflineStorage {
   async init(): Promise<void> {
     ensureBrowser();
     this.db = await openDB(OFFLINE_DB_NAME, OFFLINE_DB_VERSION, {
-      upgrade: (db: IDBPDatabase) => {
+      upgrade: (db) => {
         if (!db.objectStoreNames.contains('courses')) {
           const courseStore = db.createObjectStore('courses', { keyPath: 'id' });
           courseStore.createIndex('downloadedAt', 'downloadedAt', { unique: false });
@@ -235,7 +224,7 @@ export class OfflineStorage {
     const index = db.transaction('progress').objectStore('progress').index('synced');
     return await index.getAll(false as unknown as IDBValidKey);
     const all = await index.getAll();
-    return all.filter((p: { synced: boolean }) => !p.synced);
+    return all.filter((p) => !p.synced);
   }
 
   async markProgressSynced(courseId: string, moduleId: string, syncedAt: string): Promise<void> {
@@ -268,8 +257,8 @@ export class OfflineStorage {
     const syncQueue = await db.getAll('syncQueue');
 
     const used =
-      courses.reduce((acc: number, course: { sizeBytes?: number }) => acc + (course.sizeBytes || 0), 0) +
-      assets.reduce((acc: number, asset: { sizeBytes?: number }) => acc + (asset.sizeBytes || 0), 0) +
+      courses.reduce((acc, course) => acc + (course.sizeBytes || 0), 0) +
+      assets.reduce((acc, asset) => acc + (asset.sizeBytes || 0), 0) +
       progress.length * 1024 +
       syncQueue.length * 512;
 
@@ -296,7 +285,7 @@ export class OfflineSyncService {
     return this.storage.getDb();
   }
 
-  async enqueue(type: SyncItemType, data: CourseProgressData): Promise<SyncQueueItem> {
+  async enqueue(type: SyncItemType, data: any): Promise<SyncQueueItem> {
     const item: SyncQueueItem = {
       id: `${type}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       type,

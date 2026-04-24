@@ -79,7 +79,7 @@ export interface ConditionalRule {
 export interface ConditionalAction {
   type: 'show' | 'hide' | 'enable' | 'disable' | 'setValue';
   targetFieldId: string;
-  value?: unknown;
+  value?: any;
 }
 
 // Layout Configuration
@@ -245,7 +245,7 @@ export interface FieldInteraction {
   fieldId: string;
   eventType: 'focus' | 'blur' | 'change' | 'error';
   timestamp: Date;
-  value?: unknown;
+  value?: any;
   timeSpent?: number;
 }
 
@@ -262,8 +262,8 @@ export interface StepMetrics {
 export interface StateChangeEvent {
   type: 'field-change' | 'validation-change' | 'form-submit' | 'step-change';
   fieldId?: string;
-  oldValue?: unknown;
-  newValue?: unknown;
+  oldValue?: any;
+  newValue?: any;
   timestamp: Date;
 }
 
@@ -285,7 +285,7 @@ export interface FormElement {
 }
 
 export interface FieldUpdates {
-  value?: unknown;
+  value?: any;
   visible?: boolean;
   enabled?: boolean;
   validation?: ValidationResult;
