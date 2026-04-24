@@ -44,6 +44,11 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   const [tempTitle, setTempTitle] = useState(title);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setTempTitle(title);
@@ -264,7 +269,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
                 <div className="flex items-center space-x-1 mt-1">
                   <Clock size={12} className="text-gray-400" />
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatTimeAgo(activity.timestamp)}
+                    {isMounted ? formatTimeAgo(activity.timestamp) : ''}
                   </span>
                 </div>
               </div>

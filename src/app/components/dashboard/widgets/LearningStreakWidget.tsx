@@ -62,13 +62,18 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
     };
   }, [id]);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const streakDays = Array.from({ length: 30 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (29 - i));
     return {
       date,
       studied: i >= 23, // Last 7 days
-      hours: i >= 23 ? Math.floor(Math.random() * 3) + 1 : 0,
+      hours: i >= 23 ? (i % 3) + 1 : 0,
     };
   });
 
@@ -194,7 +199,7 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
                 className={`w-4 h-4 rounded-sm ${
                   day.studied ? (day.hours >= 2 ? 'bg-green-500' : 'bg-green-300') : 'bg-gray-200'
                 }`}
-                title={`${day.date.toLocaleDateString()}: ${day.hours}h`}
+                title={isMounted ? `${day.date.toLocaleDateString()}: ${day.hours}h` : ''}
               />
             ))}
           </div>
