@@ -121,6 +121,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">{events.length} events</span>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >

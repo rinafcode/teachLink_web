@@ -144,6 +144,7 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900 dark:text-gray-50">{title}</h3>
           <button
+            aria-label="Action"
             onClick={onToggleCollapse}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >

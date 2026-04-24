@@ -140,6 +140,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">{totalSales} sales</span>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >

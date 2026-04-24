@@ -167,6 +167,7 @@ export default function NotificationCenter({
           <div className="flex items-center gap-2">
             {showAnalytics && (
               <button
+                aria-label="Analytics"
                 onClick={() => setShowAnalyticsPanel(!showAnalyticsPanel)}
                 className="p-1.5 rounded hover:bg-gray-200 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 title="Analytics"
@@ -176,6 +177,7 @@ export default function NotificationCenter({
             )}
             {showFilters && (
               <button
+                aria-label="Filter"
                 onClick={() => setShowFiltersPanel(!showFiltersPanel)}
                 className={`p-1.5 rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   hasActiveFilters ? 'text-blue-600' : 'text-gray-600'
@@ -186,6 +188,7 @@ export default function NotificationCenter({
               </button>
             )}
             <button
+              aria-label="Mark all as read"
               onClick={markAllAsRead}
               className="p-1.5 rounded hover:bg-gray-200 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               title="Mark all as read"
@@ -208,6 +211,7 @@ export default function NotificationCenter({
           />
           {searchQuery && (
             <button
+              aria-label="Clear search"
               onClick={() => setSearchQuery('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
             >
@@ -283,6 +287,7 @@ export default function NotificationCenter({
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-gray-700">Analytics</span>
             <button
+              aria-label="Close analytics"
               onClick={() => setShowAnalyticsPanel(false)}
               className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
             >
@@ -407,6 +412,7 @@ export default function NotificationCenter({
                         <div className="flex items-center gap-1">
                           {!notification.read && (
                             <button
+                              aria-label="Mark as read"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 markAsRead(notification.id);
@@ -418,6 +424,7 @@ export default function NotificationCenter({
                             </button>
                           )}
                           <button
+                            aria-label="Delete"
                             onClick={(e) => {
                               e.stopPropagation();
                               clearNotification(notification.id);

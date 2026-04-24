@@ -136,6 +136,7 @@ export default function MessageComposer({
         <div className="flex items-end gap-2">
           {/* Attachment Button */}
           <button
+            aria-label="Attach file"
             onClick={handleFileClick}
             disabled={disabled}
             className="flex-shrink-0 w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-violet-100 dark:hover:bg-violet-950/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -165,6 +166,7 @@ export default function MessageComposer({
 
           {/* Send Button */}
           <button
+            aria-label="Send message"
             onClick={handleSend}
             disabled={!canSend}
             className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${

@@ -149,6 +149,7 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
               {activities.length} activities
             </span>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
