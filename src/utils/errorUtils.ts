@@ -77,11 +77,14 @@ export function classifyError(error: any): ErrorInfo {
     return classifyHttpError(statusCode as number, message, now);
   }
 
-  if ((error instanceof Error && error.name === 'ValidationError') || isValidationTypedError) {
+  if (
+    (error instanceof Error && error.name === 'ValidationError') ||
+    isValidationTypedError
+  ) {
     return {
       type: ErrorType.VALIDATION,
-      message: error?.message || 'Validation error',
-      details: (error as { details?: Record<string, any> }).details,
+      message: (error as { message?: string }).message || 'Validation error',
+      details: (error as { details?: Record<string, unknown> }).details,
       timestamp: now,
       retryable: false,
       userMessage: 'Please check your input and try again.',

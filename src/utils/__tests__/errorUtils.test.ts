@@ -221,10 +221,12 @@ describe('retryWithBackoff', () => {
 
   it('throws after exhausting all attempts', async () => {
     const fn = vi.fn().mockRejectedValue({ status: 500 });
-    const promise = retryWithBackoff(fn, { maxAttempts: 2, initialDelayMs: 10 });
-    const rejection = expect(promise).rejects.toMatchObject({ status: 500 });
+    const retryPromise = retryWithBackoff(fn, { maxAttempts: 2, initialDelayMs: 10 });
+    const caughtPromise = retryPromise.catch((e) => e);
     await vi.runAllTimersAsync();
-    await rejection;
+
+    const err = await caughtPromise;
+    expect(err).toMatchObject({ status: 500 });
     expect(fn).toHaveBeenCalledTimes(2);
   });
 });
