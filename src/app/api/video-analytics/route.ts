@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { SuccessResponse } from '@/types/api';
 
 type AnalyticsEvent = {
   userId?: string;
@@ -14,7 +15,7 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<SuccessResponse>> {
   const body = (await request.json()) as {
     userId?: string;
     lessonId: string;

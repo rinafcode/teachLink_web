@@ -1,8 +1,10 @@
 'use client';
 
 import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { errorReportingService } from '@/services/errorReporting';
+import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
 
-type ErrorBoundaryState = {
+export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
@@ -43,6 +45,13 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       errorCount: prevState.errorCount + 1,
     }));
 
+    errorReportingService.addBreadcrumb('errorBoundary', {
+      isolationId: this.props.isolationId,
+      isolationLevel: this.props.isolationLevel,
+      errorMessage: error.message,
+      componentStack: errorInfo.componentStack,
+    });
+
     // Hook for reporting system
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -54,6 +63,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       hasError: false,
       error: null,
       errorInfo: null,
+      errorCount: 0,
     });
   };
 
@@ -61,12 +71,13 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div style={{ padding: '20px' }}>
-            <h2>Something went wrong.</h2>
-            <p>{this.state.error?.message}</p>
-
-            <button onClick={this.resetError}>Try Again</button>
-          </div>
+          <UserFriendlyErrorDisplay
+            error={this.state.error}
+            title="Application Error"
+            onRetry={this.resetError}
+            showDetails={true}
+            severity="error"
+          />
         )
       );
     }
