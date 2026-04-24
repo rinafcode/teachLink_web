@@ -223,7 +223,10 @@ export default function NotificationCenter({
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Filters</span>
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="text-xs text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">
+              <button
+                onClick={clearFilters}
+                className="text-xs text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              >
                 Clear all
               </button>
             )}
@@ -320,7 +323,10 @@ export default function NotificationCenter({
               {hasActiveFilters ? 'No notifications match your filters' : "You're all caught up!"}
             </p>
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="mt-2 text-sm text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">
+              <button
+                onClick={clearFilters}
+                className="mt-2 text-sm text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              >
                 Clear filters
               </button>
             )}
