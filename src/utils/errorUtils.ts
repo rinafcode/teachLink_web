@@ -27,6 +27,11 @@ export interface ErrorInfo {
 
 export function classifyError(error: any): ErrorInfo {
   const now = Date.now();
+  const isValidationTypedError =
+    error &&
+    typeof error === 'object' &&
+    'type' in error &&
+    (error as { type?: ErrorType }).type === ErrorType.VALIDATION;
 
   if (error instanceof TypeError && error.message.includes('fetch')) {
     return {
@@ -53,7 +58,7 @@ export function classifyError(error: any): ErrorInfo {
     };
   }
 
-  if (!navigator.onLine) {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
     return {
       type: ErrorType.OFFLINE,
       message: 'Application is offline',
@@ -72,14 +77,10 @@ export function classifyError(error: any): ErrorInfo {
     return classifyHttpError(statusCode as number, message, now);
   }
 
-  if (
-    error instanceof Error &&
-    (error.name === 'ValidationError' ||
-      ('type' in error && (error as { type: ErrorType }).type === ErrorType.VALIDATION))
-  ) {
+  if ((error instanceof Error && error.name === 'ValidationError') || isValidationTypedError) {
     return {
       type: ErrorType.VALIDATION,
-      message: error.message,
+      message: error?.message || 'Validation error',
       details: (error as { details?: Record<string, any> }).details,
       timestamp: now,
       retryable: false,
