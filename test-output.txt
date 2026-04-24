@@ -1,0 +1,139 @@
+
+> my-app@0.1.0 test
+> vitest run
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v2.1.9 /home/abujulaybeeb/Documents/Drips/teachLink_web
+
+ ✓ src/form-management/state/form-state-manager.test.ts (52 tests) 96ms
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx (16 tests) 154ms
+ ✓ src/form-management/utils/configuration-parser.test.ts (21 tests) 2073ms
+   ✓ FormConfigurationParser > Round-Trip Property Tests > Property: Configuration round-trip should produce equivalent object 2029ms
+ ✓ src/form-management/validation/custom-validation-registry.test.ts (23 tests) 39ms
+ ✓ src/form-management/validation/validation-engine.test.ts (15 tests) 101ms
+ ✓ src/form-management/validation/validation-feedback-display.test.ts (20 tests) 99ms
+ ✓ src/testing/UserFlowTester.test.tsx (23 tests) 2026ms
+   ✓ UserFlowTester – Authentication > completes a successful login flow 462ms
+ ✓ src/form-management/state/dependency-manager.test.ts (15 tests) 24ms
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts (20 tests) 47ms
+ ✓ src/testing/ComponentTester.test.tsx (26 tests) 593ms
+ ✓ src/testing/visualRegression.test.tsx (22 tests) 286ms
+ ✓ src/testing/TestingFramework.test.tsx (17 tests) 81ms
+ ✓ src/testing/PerformanceTester.test.tsx (18 tests) 409ms
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts (21 tests) 23ms
+ ❯ src/components/tipping/TipForm/TipForm.test.tsx (0 test)
+ ✓ src/app/hooks/__tests__/useDashboardWidgets.test.tsx (2 tests) 31ms
+ ❯ src/app/hooks/__tests__/useStudyGroups.test.tsx (3 tests | 1 failed) 51ms
+   × useStudyGroups > posts messages and builds leaderboard from challenges 19ms
+     → expected 'Alice' to be 'Bob' // Object.is equality
+ ✓ src/form-management/types/core.test.ts (4 tests) 20ms
+ ✓ src/app/components/social/__tests__/StudyGroupCard.test.tsx (1 test) 96ms
+ ✓ src/app/components/social/__tests__/LearningChallengeBoard.test.tsx (1 test) 147ms
+ ❯ src/form-management/validation/async-validation-manager.test.ts (14 tests | 2 failed) 10053ms
+   × AsyncValidationManager > failed validation with retry > should retry failed validations 5006ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × AsyncValidationManager > failed validation with retry > should fail after max retry attempts 5003ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+stderr | src/app/components/social/__tests__/GroupDiscussionThread.test.tsx > GroupDiscussionThread > posts content via onPost
+Error: Uncaught [TypeError: messagesEndRef.current?.scrollIntoView is not a function]
+    at reportException (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:27165:5) TypeError: messagesEndRef.current?.scrollIntoView is not a function
+    at /home/abujulaybeeb/Documents/Drips/teachLink_web/src/app/components/social/GroupDiscussionThread.tsx:43:29
+    at commitHookEffectListMount (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react/cjs/react.development.js:2667:24)
+
+ ❯ src/app/components/social/__tests__/GroupDiscussionThread.test.tsx (1 test | 1 failed) 91ms
+   × GroupDiscussionThread > posts content via onPost 89ms
+     → messagesEndRef.current?.scrollIntoView is not a function
+ ✓ src/app/components/social/__tests__/SharedResourceLibrary.test.tsx (1 test) 172ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/tipping/TipForm/TipForm.test.tsx [ src/components/tipping/TipForm/TipForm.test.tsx ]
+Error: Failed to resolve import "@/testing" from "src/components/tipping/TipForm/TipForm.test.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/abujulaybeeb/Documents/Drips/teachLink_web/src/components/tipping/TipForm/TipForm.test.tsx:6:38
+  4  |  const __vi_import_0__ = await import('react/jsx-dev-runtime')
+  5  |  const __vi_import_1__ = await import('react')
+  6  |  const __vi_import_2__ = await import('@/testing')
+     |                                       ^
+  7  |  const __vi_import_3__ = await import('@/testing/utils/mocks')
+  8  |  
+ ❯ TransformPluginContext._formatError node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49258:41
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49253:16
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64307:23
+ ❯ node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64439:39
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64366:7
+ ❯ PluginContainer.transform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49099:18
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51978:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > failed validation with retry > should retry failed validations
+ FAIL  src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > failed validation with retry > should fail after max retry attempts
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/app/hooks/__tests__/useStudyGroups.test.tsx > useStudyGroups > posts messages and builds leaderboard from challenges
+AssertionError: expected 'Alice' to be 'Bob' // Object.is equality
+
+Expected: "Bob"
+Received: "Alice"
+
+ ❯ src/app/hooks/__tests__/useStudyGroups.test.tsx:69:28
+     67| 
+     68|     const lb = result.current.challengeLeaderboard(challengeId);
+     69|     expect(lb[0].userName).toBe('Bob');
+       |                            ^
+     70|     expect(lb[0].progress).toBe(70);
+     71|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/app/components/social/__tests__/GroupDiscussionThread.test.tsx > GroupDiscussionThread > posts content via onPost
+TypeError: messagesEndRef.current?.scrollIntoView is not a function
+ ❯ src/app/components/social/GroupDiscussionThread.tsx:43:29
+     41|   // Auto-scroll to bottom when new messages arrive
+     42|   useEffect(() => {
+     43|     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+       |                             ^
+     44|   }, [messages]);
+     45| 
+ ❯ commitHookEffectListMount node_modules/react-dom/cjs/react-dom.development.js:23189:26
+ ❯ commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom.development.js:24970:11
+ ❯ commitPassiveMountEffects_complete node_modules/react-dom/cjs/react-dom.development.js:24930:9
+ ❯ commitPassiveMountEffects_begin node_modules/react-dom/cjs/react-dom.development.js:24917:7
+ ❯ commitPassiveMountEffects node_modules/react-dom/cjs/react-dom.development.js:24905:3
+ ❯ flushPassiveEffectsImpl node_modules/react-dom/cjs/react-dom.development.js:27078:3
+ ❯ flushPassiveEffects node_modules/react-dom/cjs/react-dom.development.js:27023:14
+ ❯ node_modules/react-dom/cjs/react-dom.development.js:26808:9
+ ❯ flushActQueue node_modules/react/cjs/react.development.js:2667:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ Test Files  4 failed | 19 passed (23)
+      Tests  4 failed | 332 passed (336)
+   Start at  12:25:51
+   Duration  18.04s (transform 1.15s, setup 3.49s, collect 5.85s, tests 16.71s, environment 18.29s, prepare 2.82s)
+

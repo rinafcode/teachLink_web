@@ -79,7 +79,7 @@ function getRetryDelay(attempt: number, baseDelay: number): number {
 class ApiClientImpl {
   private config: Required<ApiClientConfig>;
   private requestInterceptors: RequestInterceptor[] = [];
-  private responseInterceptors: ResponseInterceptor[] = [];
+  private responseInterceptors: ResponseInterceptor<unknown>[] = [];
   private errorInterceptors: ErrorInterceptor[] = [];
 
   constructor(config: ApiClientConfig = {}) {
@@ -101,7 +101,7 @@ class ApiClientImpl {
   /**
    * Add a response interceptor
    */
-  addResponseInterceptor(interceptor: ResponseInterceptor): void {
+  addResponseInterceptor(interceptor: ResponseInterceptor<unknown>): void {
     this.responseInterceptors.push(interceptor);
   }
 
