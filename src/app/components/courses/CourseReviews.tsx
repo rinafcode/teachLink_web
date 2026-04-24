@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 
 interface Review {
   id: string;
@@ -72,8 +71,9 @@ export default function CourseReviews({
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
-            className={`w-5 h-5 ${star <= rating ? 'text-yellow-400' : 'text-[#E2E8F0] dark:text-[#334155]'
-              }`}
+            className={`w-5 h-5 ${
+              star <= rating ? 'text-yellow-400' : 'text-[#E2E8F0] dark:text-[#334155]'
+            }`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -139,18 +139,11 @@ export default function CourseReviews({
           >
             <div className="flex items-start gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-
-              <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                <Image
-                  src={review.userAvatar}
-                  alt={review.userName}
-                  fill
-                  sizes="48px"
-                  className="object-cover"
-                  placeholder="blur"
-                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
-                />
-              </div>
+              <img
+                src={review.userAvatar}
+                alt={review.userName}
+                className="w-12 h-12 rounded-full object-cover"
+              />
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-2">
                   <div>

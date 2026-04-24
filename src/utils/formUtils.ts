@@ -94,7 +94,7 @@ export const ValidationRules = {
   }),
 
   custom: (
-    validator: (values: Record<string, unknown>, formState: FormState) => boolean,
+    validator: (value: any, formState: FormState) => boolean,
     message = 'Validation failed',
   ): ValidationRule => ({
     type: 'custom',
@@ -106,7 +106,7 @@ export const ValidationRules = {
 /**
  * Extract form values from FormState
  */
-export function getFormValues(formState: FormState): Record<string, unknown> {
+export function getFormValues(formState: FormState): Record<string, any> {
   return { ...formState.values };
 }
 
@@ -160,22 +160,22 @@ export function getTouchedFields(formState: FormState): string[] {
 /**
  * Format field value for display
  */
-export function formatFieldValue(value: unknown, type: FieldType): string {
+export function formatFieldValue(value: any, type: FieldType): string {
   if (value === null || value === undefined) {
     return '';
   }
 
   switch (type) {
     case 'date':
-      return value instanceof Date ? value.toLocaleDateString() : String(value);
+      return value instanceof Date ? value.toLocaleDateString() : value;
     case 'time':
-      return value instanceof Date ? value.toLocaleTimeString() : String(value);
+      return value instanceof Date ? value.toLocaleTimeString() : value;
     case 'datetime-local':
-      return value instanceof Date ? value.toLocaleString() : String(value);
+      return value instanceof Date ? value.toLocaleString() : value;
     case 'checkbox':
       return value ? 'Yes' : 'No';
     case 'number':
-      return typeof value === 'number' ? value.toString() : String(value);
+      return typeof value === 'number' ? value.toString() : value;
     default:
       return String(value);
   }
@@ -184,7 +184,7 @@ export function formatFieldValue(value: unknown, type: FieldType): string {
 /**
  * Parse field value from string
  */
-export function parseFieldValue(value: string, type: FieldType): unknown {
+export function parseFieldValue(value: string, type: FieldType): any {
   if (!value) {
     return type === 'checkbox' ? false : '';
   }
@@ -235,8 +235,8 @@ export function isValidPhone(phone: string): boolean {
 /**
  * Sanitize form values (remove empty strings, null, undefined)
  */
-export function sanitizeFormValues(values: Record<string, unknown>): Record<string, unknown> {
-  const sanitized: Record<string, unknown> = {};
+export function sanitizeFormValues(values: Record<string, any>): Record<string, any> {
+  const sanitized: Record<string, any> = {};
 
   Object.entries(values).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== '') {
@@ -313,7 +313,7 @@ export function getFieldType(fieldId: string, config: FormConfiguration): FieldT
 /**
  * Create form data for submission (FormData object)
  */
-export function createFormData(values: Record<string, unknown>): FormData {
+export function createFormData(values: Record<string, any>): FormData {
   const formData = new FormData();
 
   Object.entries(values).forEach(([key, value]) => {
@@ -332,8 +332,8 @@ export function createFormData(values: Record<string, unknown>): FormData {
 /**
  * Convert FormData to plain object
  */
-export function formDataToObject(formData: FormData): Record<string, unknown> {
-  const obj: Record<string, unknown> = {};
+export function formDataToObject(formData: FormData): Record<string, any> {
+  const obj: Record<string, any> = {};
 
   formData.forEach((value, key) => {
     if (obj[key]) {

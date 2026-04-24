@@ -6,11 +6,11 @@ import { ValidationFunction, ValidationResult, FormState, FieldDescriptor } from
 
 export interface ValidationContext {
   fieldId: string;
-  fieldValue: unknown;
+  fieldValue: any;
   formState: FormState;
   fieldDescriptor?: FieldDescriptor;
   allFieldDescriptors?: Map<string, FieldDescriptor>;
-  customData?: Record<string, unknown>;
+  customData?: Record<string, any>;
 }
 
 export interface CustomValidationRule {
@@ -24,22 +24,22 @@ export interface CustomValidationRule {
 }
 
 export interface ValidationExecutionContext {
-  getFieldValue(fieldId: string): unknown;
+  getFieldValue(fieldId: string): any;
   getFieldDescriptor(fieldId: string): FieldDescriptor | undefined;
-  getAllFieldValues(): Record<string, unknown>;
+  getAllFieldValues(): Record<string, any>;
   getFormMetadata(): FormState['metadata'];
   hasField(fieldId: string): boolean;
   isFieldTouched(fieldId: string): boolean;
   isFieldDirty(fieldId: string): boolean;
-  getCustomData(key: string): unknown;
-  setCustomData(key: string, value: unknown): void;
+  getCustomData(key: string): any;
+  setCustomData(key: string, value: any): void;
 }
 
 export class CustomValidationRegistry {
   private rules: Map<string, CustomValidationRule> = new Map();
   private categories: Map<string, Set<string>> = new Map();
   private dependencies: Map<string, Set<string>> = new Map();
-  private customData: Map<string, unknown> = new Map();
+  private customData: Map<string, any> = new Map();
 
   /**
    * Register a custom validation rule
@@ -387,7 +387,7 @@ export class CustomValidationRegistry {
 
 // Enhanced validation function type with execution context
 export type EnhancedValidationFunction = (
-  value: unknown,
+  value: any,
   formState: FormState,
   context?: ValidationExecutionContext,
 ) => ValidationResult | Promise<ValidationResult>;
@@ -478,7 +478,7 @@ export class ValidationRuleBuilders {
    */
   static createAsyncApiRule(
     name: string,
-    apiCall: (value: unknown) => Promise<boolean>,
+    apiCall: (value: any) => Promise<boolean>,
     message: string,
   ): CustomValidationRule {
     return {

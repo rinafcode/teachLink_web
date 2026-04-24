@@ -15,15 +15,15 @@ import {
 } from '../types/core.js';
 
 export interface ValidationEngine {
-  validateField(fieldId: string, value: unknown, context: FormState): ValidationResult;
+  validateField(fieldId: string, value: any, context: FormState): ValidationResult;
   validateForm(formState: FormState): Promise<FormValidationResult>;
   addCustomRule(name: string, rule: ValidationFunction): void;
-  executeAsyncValidation(fieldId: string, value: unknown): Promise<ValidationResult>;
+  executeAsyncValidation(fieldId: string, value: any): Promise<ValidationResult>;
 }
 
 export interface ValidationContext {
   fieldId: string;
-  value: unknown;
+  value: any;
   formState: FormState;
   fieldDescriptor?: FieldDescriptor;
 }
@@ -69,7 +69,7 @@ export class ValidationEngineImpl implements ValidationEngine {
   /**
    * Validate a single field with all its validation rules
    */
-  validateField(fieldId: string, value: unknown, context: FormState): ValidationResult {
+  validateField(fieldId: string, value: any, context: FormState): ValidationResult {
     const fieldDescriptor = this.fieldDescriptors.get(fieldId);
     if (!fieldDescriptor) {
       return {
@@ -168,7 +168,7 @@ export class ValidationEngineImpl implements ValidationEngine {
   /**
    * Execute asynchronous validation for a field
    */
-  async executeAsyncValidation(fieldId: string, value: unknown): Promise<ValidationResult> {
+  async executeAsyncValidation(fieldId: string, value: any): Promise<ValidationResult> {
     const fieldDescriptor = this.fieldDescriptors.get(fieldId);
     if (!fieldDescriptor) {
       return { isValid: true, errors: [] };
@@ -249,7 +249,7 @@ export class ValidationEngineImpl implements ValidationEngine {
   private async executeAsyncRules(
     rules: ValidationRule[],
     fieldId: string,
-    value: unknown,
+    value: any,
   ): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -289,7 +289,7 @@ export class ValidationEngineImpl implements ValidationEngine {
   private async executeAsyncRule(
     rule: ValidationRule,
     fieldId: string,
-    value: unknown,
+    value: any,
   ): Promise<ValidationResult> {
     const customRule = this.customRules.get(rule.type);
     if (!customRule) {
@@ -323,7 +323,7 @@ export class ValidationEngineImpl implements ValidationEngine {
 
   // Built-in validation rule implementations
 
-  private validateRequired(value: unknown, rule: ValidationRule): ValidationResult {
+  private validateRequired(value: any, rule: ValidationRule): ValidationResult {
     const isEmpty =
       value === null ||
       value === undefined ||
@@ -345,7 +345,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     return { isValid: true, errors: [] };
   }
 
-  private validateEmail(value: unknown, rule: ValidationRule): ValidationResult {
+  private validateEmail(value: any, rule: ValidationRule): ValidationResult {
     if (!value) {
       return { isValid: true, errors: [] }; // Empty values are handled by required rule
     }
@@ -367,7 +367,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     return { isValid: true, errors: [] };
   }
 
-  private validateMinLength(value: unknown, rule: ValidationRule): ValidationResult {
+  private validateMinLength(value: any, rule: ValidationRule): ValidationResult {
     if (!value) {
       return { isValid: true, errors: [] }; // Empty values are handled by required rule
     }
@@ -390,7 +390,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     return { isValid: true, errors: [] };
   }
 
-  private validateMaxLength(value: unknown, rule: ValidationRule): ValidationResult {
+  private validateMaxLength(value: any, rule: ValidationRule): ValidationResult {
     if (!value) {
       return { isValid: true, errors: [] }; // Empty values are handled by required rule
     }
@@ -413,7 +413,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     return { isValid: true, errors: [] };
   }
 
-  private validatePattern(value: unknown, rule: ValidationRule): ValidationResult {
+  private validatePattern(value: any, rule: ValidationRule): ValidationResult {
     if (!value) {
       return { isValid: true, errors: [] }; // Empty values are handled by required rule
     }

@@ -14,7 +14,7 @@ import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 import { PWAManager } from '@/components/pwa/PWAManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
-import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
+import { EnvGuard } from '@/components/shared/EnvGuard';
 
 const geistSans = Geist({
   // ...
@@ -73,19 +73,19 @@ export default async function RootLayout({
             <CulturalAdaptationManager>
               <ThemeProvider defaultTheme={defaultTheme}>
                 <DynamicTheming />
-                <AccessibilityProvider pageLabel="TeachLink — main application">
-                  <PerformanceMonitoringProvider>
-                    <OfflineModeProvider>
-                      <PWAManager />
-                      <StateManagerIntegration />
-                      <PerformanceMonitor />
-                      <PrefetchingEngine />
-                      <ErrorBoundary>
+                <EnvGuard>
+                  <AccessibilityProvider pageLabel="TeachLink — main application">
+                    <PerformanceMonitoringProvider>
+                      <OfflineModeProvider>
+                        <PWAManager />
+                        <StateManagerIntegration />
+                        <PerformanceMonitor />
+                        <PrefetchingEngine />
                         {children}
-                      </ErrorBoundary>
-                    </OfflineModeProvider>
-                  </PerformanceMonitoringProvider>
-                </AccessibilityProvider>
+                      </OfflineModeProvider>
+                    </PerformanceMonitoringProvider>
+                  </AccessibilityProvider>
+                </EnvGuard>
               </ThemeProvider>
             </CulturalAdaptationManager>
           </InternationalizationEngine>
