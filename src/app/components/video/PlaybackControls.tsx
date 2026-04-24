@@ -46,6 +46,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       <div className="relative">
         <button
           onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+          aria-label={`Playback speed: ${playbackRate}x`}
+          aria-expanded={showSpeedMenu}
           className="flex items-center space-x-1 px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors text-white text-sm"
         >
           <span>{playbackRate}x</span>
@@ -85,6 +87,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowQualityMenu(!showQualityMenu)}
+              aria-label="Video quality"
+              aria-expanded={showQualityMenu}
               className="flex items-center space-x-1 px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors text-white text-sm"
             >
               <Settings size={12} />

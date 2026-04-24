@@ -153,6 +153,8 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
         onClick={() => setShowTooltip(!showTooltip)}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
+        aria-label={`Network status: ${getStatusText()}. Click for details.`}
+        aria-expanded={showTooltip}
         className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
       >
         {getStatusIcon()}
@@ -181,6 +183,8 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
                 <h3 className="text-lg font-semibold text-gray-900">Offline Status</h3>
                 <button
                   onClick={() => setShowSettings(!showSettings)}
+                  aria-label={showSettings ? 'Hide settings' : 'Show settings'}
+                  aria-expanded={showSettings}
                   className="p-1 text-gray-400 hover:text-gray-600"
                 >
                   <Settings className="w-4 h-4" />

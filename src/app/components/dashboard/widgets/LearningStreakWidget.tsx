@@ -112,12 +112,14 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
               <Settings size={16} />
             </button>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <Flame size={16} />
             </button>
             <button
+              aria-label="Delete"
               onClick={onRemove}
               className="p-1 text-red-400 hover:text-red-600 transition-colors"
             >
