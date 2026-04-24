@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 
 interface Review {
   id: string;
@@ -72,7 +71,7 @@ export default function CourseReviews({
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
-            className={`w-5 h-5 ${
+            className={`h-5 w-5 ${
               star <= rating ? 'text-yellow-400' : 'text-[#E2E8F0] dark:text-[#334155]'
             }`}
             fill="currentColor"
@@ -94,17 +93,17 @@ export default function CourseReviews({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1E293B] rounded-xl shadow-sm border border-[#E2E8F0] dark:border-[#334155] p-6 lg:p-8 mb-6 lg:mb-8">
-      <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-[#0F172A] dark:text-white">
+    <div className="mb-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-sm dark:border-[#334155] dark:bg-[#1E293B] lg:mb-8 lg:p-8">
+      <h2 className="mb-6 text-2xl font-bold text-[#0F172A] dark:text-white lg:text-3xl">
         Student Reviews
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 pb-8 border-b border-[#E2E8F0] dark:border-[#334155]">
+      <div className="mb-8 grid grid-cols-1 gap-8 border-b border-[#E2E8F0] pb-8 dark:border-[#334155] md:grid-cols-3">
         <div className="text-center md:text-left">
-          <div className="text-5xl font-bold text-[#0F172A] dark:text-white mb-2">
+          <div className="mb-2 text-5xl font-bold text-[#0F172A] dark:text-white">
             {averageRating}
           </div>
-          <div className="flex items-center justify-center md:justify-start mb-2">
+          <div className="mb-2 flex items-center justify-center md:justify-start">
             {renderStars(Math.round(averageRating))}
           </div>
           <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
@@ -112,19 +111,19 @@ export default function CourseReviews({
           </p>
         </div>
 
-        <div className="md:col-span-2 space-y-2">
+        <div className="space-y-2 md:col-span-2">
           {ratingDistribution.map((dist) => (
             <div key={dist.stars} className="flex items-center gap-3">
-              <span className="text-sm text-[#64748B] dark:text-[#94A3B8] w-12">
+              <span className="w-12 text-sm text-[#64748B] dark:text-[#94A3B8]">
                 {dist.stars} star
               </span>
-              <div className="flex-1 h-2 bg-[#E2E8F0] dark:bg-[#334155] rounded-full overflow-hidden">
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#E2E8F0] dark:bg-[#334155]">
                 <div
-                  className="h-full bg-yellow-400 rounded-full"
+                  className="h-full rounded-full bg-yellow-400"
                   style={{ width: `${dist.percentage}%` }}
                 />
               </div>
-              <span className="text-sm text-[#64748B] dark:text-[#94A3B8] w-12 text-right">
+              <span className="w-12 text-right text-sm text-[#64748B] dark:text-[#94A3B8]">
                 {dist.percentage}%
               </span>
             </div>
@@ -136,29 +135,22 @@ export default function CourseReviews({
         {reviews.map((review) => (
           <div
             key={review.id}
-            className="border-b border-[#E2E8F0] dark:border-[#334155] last:border-b-0 pb-6 last:pb-0"
+            className="border-b border-[#E2E8F0] pb-6 last:border-b-0 last:pb-0 dark:border-[#334155]"
           >
             <div className="flex items-start gap-4">
-              {}
-
-              <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                <Image
-                  src={review.userAvatar}
-                  alt={review.userName}
-                  fill
-                  sizes="48px"
-                  className="object-cover"
-                  placeholder="blur"
-                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
-                />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={review.userAvatar}
+                alt={review.userName}
+                className="h-12 w-12 rounded-full object-cover"
+              />
               <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
+                <div className="mb-2 flex items-start justify-between">
                   <div>
                     <h4 className="font-semibold text-[#0F172A] dark:text-white">
                       {review.userName}
                     </h4>
-                    <div className="flex items-center gap-3 mt-1">
+                    <div className="mt-1 flex items-center gap-3">
                       {renderStars(review.rating)}
                       <span className="text-sm text-[#64748B] dark:text-[#94A3B8]">
                         {review.date}
@@ -166,14 +158,14 @@ export default function CourseReviews({
                     </div>
                   </div>
                 </div>
-                <p className="text-[#475569] dark:text-[#CBD5E1] mb-3 leading-relaxed">
+                <p className="mb-3 leading-relaxed text-[#475569] dark:text-[#CBD5E1]">
                   {review.comment}
                 </p>
                 <button
                   onClick={() => markHelpful(review.id)}
-                  className="inline-flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8] hover:text-[#0066FF] dark:hover:text-[#00C2FF] transition-colors"
+                  className="inline-flex items-center gap-2 text-sm text-[#64748B] transition-colors hover:text-[#0066FF] dark:text-[#94A3B8] dark:hover:text-[#00C2FF]"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

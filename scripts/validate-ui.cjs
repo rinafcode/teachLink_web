@@ -8,22 +8,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const SRC_DIR = path.join(__dirname, '../src');
 const COMPONENT_DIRS = ['components', 'app', 'pages'];
 
-// Disallowed icon libraries (should use lucide-react)
 const DISALLOWED_ICONS = [
   { pattern: /from ['"]@heroicons\/react/g, name: '@heroicons/react' },
   { pattern: /from ['"]@fortawesome/g, name: '@fortawesome' },
   { pattern: /from ['"]react-feather/g, name: 'react-feather' },
-];
-
-// Required responsive breakpoints for key layout patterns
-const RESPONSIVE_PATTERNS = [
-  { pattern: /\bflex\b/, shouldHave: ['sm:', 'md:', 'lg:'], context: 'flex layouts' },
-  { pattern: /\bgrid\b/, shouldHave: ['sm:', 'md:', 'lg:'], context: 'grid layouts' },
 ];
 
 let errors = [];
@@ -57,21 +49,17 @@ function checkIconUsage(content, filePath) {
     }
   }
 
-  // Check for react-icons usage (warning, not error)
   if (/from ['"]react-icons/g.test(content)) {
     warnings.push(`[ICON] ${filePath}: Uses react-icons - prefer lucide-react for consistency`);
   }
 }
 
 function checkResponsiveTailwind(content, filePath) {
-  // Only check component files that have className
   if (!content.includes('className')) return;
 
-  // Check for common layout patterns without responsive variants
   const lines = content.split('\n');
 
   lines.forEach((line, index) => {
-    // Check for grid/flex without any responsive classes
     if (/className=["'][^"']*\b(grid|flex)\b[^"']*["']/.test(line)) {
       const hasResponsive = /\b(sm|md|lg|xl|2xl):/.test(line);
       if (!hasResponsive && line.includes('grid-cols-') && !line.includes('grid-cols-1')) {
@@ -84,7 +72,6 @@ function checkResponsiveTailwind(content, filePath) {
 }
 
 function checkForConsoleStatements(content, filePath) {
-  // Allow console.warn and console.error, flag console.log
   const matches = content.match(/console\.log\(/g);
   if (matches && matches.length > 0) {
     warnings.push(`[CONSOLE] ${filePath}: Contains ${matches.length} console.log statement(s)`);
@@ -109,20 +96,19 @@ function validateFiles() {
 
 function printResults() {
   if (warnings.length > 0) {
-    console.log('\n⚠️  UI Validation Warnings:');
-    warnings.forEach((w) => console.warn(`  - ${w}`));
+    console.log('\n[WARN] UI Validation Warnings:');
+    warnings.forEach((warning) => console.warn(`  - ${warning}`));
   }
 
   if (errors.length > 0) {
-    console.error('\n❌ UI Validation Errors:');
-    errors.forEach((e) => console.error(`  - ${e}`));
+    console.error('\n[ERROR] UI Validation Errors:');
+    errors.forEach((error) => console.error(`  - ${error}`));
     process.exit(1);
   }
 
-  console.log('\n✅ UI validation passed');
+  console.log('\n[OK] UI validation passed');
   process.exit(0);
 }
 
-// Run validation
 validateFiles();
 printResults();

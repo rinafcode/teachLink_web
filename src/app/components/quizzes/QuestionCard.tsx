@@ -3,7 +3,12 @@
 import { Question, useQuizStore } from '@/app/store/quizStore';
 import MultipleChoiceQuestion from './question-types/MultipleChoiceQuestion';
 import TrueFalseQuestion from './question-types/TrueFalseQuestion';
-import CodeChallengeQuestion from './question-types/CodeChallengeQuestion';
+import dynamic from 'next/dynamic';
+
+const CodeChallengeQuestion = dynamic(() => import('./question-types/CodeChallengeQuestion'), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false,
+});
 
 interface QuestionCardProps {
   question: Question;

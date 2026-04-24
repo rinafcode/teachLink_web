@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   HardDrive,
@@ -10,8 +10,10 @@ import {
   Video,
   BookOpen,
   AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import { useOfflineModeContext } from '../../context/OfflineModeContext';
+import { offlineStorage } from '../../mobile/services/offlineStorage';
 
 interface StorageItem {
   id: string;
@@ -33,48 +35,51 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
   const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'accessed'>('date');
   const [filterBy, setFilterBy] = useState<'all' | 'course' | 'video' | 'document' | 'quiz'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [storageItems, setStorageItems] = useState<StorageItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { storageUsage, clearOfflineData } = useOfflineModeContext();
 
-  // Sample storage items for demonstration
-  const [storageItems, setStorageItems] = useState<StorageItem[]>([
-    {
-      id: 'course-1',
-      type: 'course',
-      title: 'React Fundamentals',
-      size: 250 * 1024 * 1024, // 250MB
-      downloadedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-      lastAccessed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      isPinned: true,
-    },
-    {
-      id: 'course-2',
-      type: 'course',
-      title: 'Advanced JavaScript',
-      size: 180 * 1024 * 1024, // 180MB
-      downloadedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      lastAccessed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      isPinned: false,
-    },
-    {
-      id: 'video-1',
-      type: 'video',
-      title: 'Introduction to React Hooks',
-      size: 45 * 1024 * 1024, // 45MB
-      downloadedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      lastAccessed: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      isPinned: false,
-    },
-    {
-      id: 'document-1',
-      type: 'document',
-      title: 'React Best Practices Guide',
-      size: 2 * 1024 * 1024, // 2MB
-      downloadedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-      lastAccessed: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-      isPinned: true,
-    },
-  ]);
+  const loadStorageItems = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const offlineContent = await offlineStorage.getAllOfflineContent();
+      const courses = await offlineStorage.getDownloadedCourses();
+
+      const items: StorageItem[] = [
+        ...courses.map((c) => ({
+          id: c.id,
+          type: 'course' as const,
+          title: c.title,
+          size: parseInt(c.size) || 0,
+          downloadedAt: new Date(), // DB should store this
+          lastAccessed: c.lastUpdated || new Date(),
+          isPinned: false,
+        })),
+        ...offlineContent.map((content) => ({
+          id: content.courseId,
+          type: 'video' as const,
+          title: `Content for ${content.courseId}`,
+          size: content.size || 0,
+          downloadedAt: content.downloadedAt,
+          lastAccessed: content.lastAccessed,
+          isPinned: false,
+        })),
+      ];
+
+      setStorageItems(items);
+    } catch (error) {
+      console.error('Failed to load storage items:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showManager) {
+      loadStorageItems();
+    }
+  }, [showManager, loadStorageItems]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -160,9 +165,14 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
     }
   };
 
-  const deleteSelectedItems = () => {
-    setStorageItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
-    setSelectedItems([]);
+  const deleteSelectedItems = async () => {
+    try {
+      await Promise.all(selectedItems.map((id) => offlineStorage.deleteOfflineContent(id)));
+      setStorageItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
+      setSelectedItems([]);
+    } catch (error) {
+      console.error('Failed to delete items:', error);
+    }
   };
 
   const pinItem = (itemId: string) => {
@@ -172,9 +182,14 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
   };
 
   const clearAllData = async () => {
-    await clearOfflineData();
-    setStorageItems([]);
-    setSelectedItems([]);
+    try {
+      await clearOfflineData();
+      await offlineStorage.clearAll();
+      setStorageItems([]);
+      setSelectedItems([]);
+    } catch (error) {
+      console.error('Failed to clear all data:', error);
+    }
   };
 
   const getStorageWarning = () => {
@@ -334,7 +349,12 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
 
             {/* Storage Items List */}
             <div className="max-h-64 overflow-y-auto">
-              {sortedAndFilteredItems.length === 0 ? (
+              {isLoading ? (
+                <div className="p-8 text-center">
+                  <RefreshCw className="w-8 h-8 mx-auto mb-2 text-blue-500 animate-spin" />
+                  <p className="text-sm text-gray-500">Loading storage data...</p>
+                </div>
+              ) : sortedAndFilteredItems.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
                   <HardDrive className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">No items found</p>

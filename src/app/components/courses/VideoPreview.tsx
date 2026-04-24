@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 
 interface VideoPreviewProps {
   videoUrl?: string;
@@ -21,44 +20,33 @@ export default function VideoPreview({
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="group relative w-full aspect-video rounded-xl overflow-hidden border-2 border-[#E2E8F0] dark:border-[#334155] hover:border-[#0066FF] dark:hover:border-[#00C2FF] transition-all duration-200"
+        className="group relative aspect-video w-full overflow-hidden rounded-xl border-2 border-[#E2E8F0] transition-all duration-200 hover:border-[#0066FF] dark:border-[#334155] dark:hover:border-[#00C2FF]"
       >
-        {}
-        <div className="absolute inset-0">
-          <Image
-            src={thumbnailUrl}
-            alt="Video preview"
-            fill
-            sizes="100vw"
-            className="object-cover"
-            placeholder="blur"
-            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
-            priority={false}
-          />
-        </div>
-        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white group-hover:scale-110 transition-all duration-200 flex items-center justify-center">
-            <svg className="w-8 h-8 text-[#0066FF] ml-1" fill="currentColor" viewBox="0 0 20 20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={thumbnailUrl} alt="Video preview" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-colors group-hover:bg-black/50">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 transition-all duration-200 group-hover:scale-110 group-hover:bg-white">
+            <svg className="ml-1 h-8 w-8 text-[#0066FF]" fill="currentColor" viewBox="0 0 20 20">
               <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
             </svg>
           </div>
         </div>
-        <div className="absolute bottom-3 right-3 bg-black/80 text-white text-xs px-2 py-1 rounded">
+        <div className="absolute bottom-3 right-3 rounded bg-black/80 px-2 py-1 text-xs text-white">
           {duration}
         </div>
       </button>
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
         >
           <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setIsOpen(false)}
-              className="absolute -top-12 right-0 text-white hover:text-[#00C2FF] transition-colors"
+              className="absolute -top-12 right-0 text-white transition-colors hover:text-[#00C2FF]"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -67,7 +55,7 @@ export default function VideoPreview({
                 />
               </svg>
             </button>
-            <video src={videoUrl} controls autoPlay className="w-full aspect-video rounded-xl" />
+            <video src={videoUrl} controls autoPlay className="aspect-video w-full rounded-xl" />
           </div>
         </div>
       )}

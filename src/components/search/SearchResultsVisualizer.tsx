@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { SearchResult } from '../../utils/searchUtils';
 
+import { Skeleton } from '../ui/Skeleton';
+
 interface SearchResultsVisualizerProps {
   results: SearchResult[];
   isSearching: boolean;

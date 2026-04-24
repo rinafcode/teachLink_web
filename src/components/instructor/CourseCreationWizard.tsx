@@ -1,17 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  BookOpen,
-  Layers,
-  Layout,
-  Target,
-  FileText,
-} from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, BookOpen, Layers, Layout } from 'lucide-react';
 import { useCourseCreation, Lesson } from '@/hooks/useCourseCreation';
 import { ContentUploader } from './ContentUploader';
 import { LessonBuilder } from './LessonBuilder';
@@ -48,7 +38,6 @@ export const CourseCreationWizard = () => {
     courseData,
     updateCourseData,
     addLesson,
-    updateLesson,
     deleteLesson,
     reorderLessons,
     addAssessment,
@@ -57,7 +46,7 @@ export const CourseCreationWizard = () => {
     goToStep,
   } = useCourseCreation();
 
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [, setEditingLesson] = useState<Lesson | null>(null);
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [lessonForm, setLessonForm] = useState({ title: '', description: '', content: [] });
 
@@ -102,7 +91,7 @@ export const CourseCreationWizard = () => {
     setShowLessonForm(false);
   };
 
-  const handleContentUpload = (file: File, type: 'video' | 'text' | 'pdf') => {};
+  const handleContentUpload = (_file: File, _type: 'video' | 'text' | 'pdf') => {};
 
   const renderStepContent = () => {
     switch (currentStep) {

@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
+import type { Course, ApiResponse } from '@/types/api';
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse<ApiResponse<Course>>> {
   const { id } = await params;
   // Mock single course data
   const course = {

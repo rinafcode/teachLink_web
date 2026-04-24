@@ -4,14 +4,6 @@ import { openDB, IDBPDatabase } from 'idb';
 
 export type SyncItemType = 'course_progress';
 
-export interface CourseProgressData {
-  courseId: string;
-  moduleId: string;
-  progress: number;
-  completed: boolean;
-  updatedAt: string;
-}
-
 export interface OfflineAssetRecord {
   id: string;
   courseId: string;
@@ -32,7 +24,7 @@ export interface OfflineCourseRecord {
     id: string;
     title: string;
     type: 'video' | 'quiz' | 'document' | 'live' | 'assignment';
-    content?: unknown;
+    content?: any;
     durationSeconds?: number;
     assetUrls?: string[];
   }>;
@@ -61,7 +53,7 @@ export interface SyncQueueItem {
   id: string;
   type: SyncItemType;
   entityKey: string;
-  data: CourseProgressData;
+  data: any;
   timestamp: string;
   version: number;
 }
@@ -116,7 +108,7 @@ export class OfflineStorage {
   async init(): Promise<void> {
     ensureBrowser();
     this.db = await openDB(OFFLINE_DB_NAME, OFFLINE_DB_VERSION, {
-      upgrade: (db: IDBPDatabase) => {
+      upgrade: (db) => {
         if (!db.objectStoreNames.contains('courses')) {
           const courseStore = db.createObjectStore('courses', { keyPath: 'id' });
           courseStore.createIndex('downloadedAt', 'downloadedAt', { unique: false });
@@ -236,8 +228,6 @@ export class OfflineStorage {
     const db = this.getDb();
     const index = db.transaction('progress').objectStore('progress').index('synced');
     return await index.getAll(false as unknown as IDBValidKey);
-    const all = await index.getAll();
-    return all.filter((p: { synced: boolean }) => !p.synced);
   }
 
   async markProgressSynced(courseId: string, moduleId: string, syncedAt: string): Promise<void> {
@@ -304,7 +294,7 @@ export class OfflineSyncService {
     return this.storage.getDb();
   }
 
-  async enqueue(type: SyncItemType, data: CourseProgressData): Promise<SyncQueueItem> {
+  async enqueue(type: SyncItemType, data: any): Promise<SyncQueueItem> {
     const item: SyncQueueItem = {
       id: `${type}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       type,
@@ -494,8 +484,9 @@ export class OfflineSyncService {
       const bestUpdated = new Date(best.data.updatedAt).getTime();
       const currentUpdated = new Date(current.data.updatedAt).getTime();
       if (currentUpdated > bestUpdated) return current;
-      if (currentUpdated === bestUpdated && current.data.progress > best.data.progress)
+      if (currentUpdated === bestUpdated && current.data.progress > best.data.progress) {
         return current;
+      }
       if (current.data.completed && !best.data.completed) return current;
       return best;
     });

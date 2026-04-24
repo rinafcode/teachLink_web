@@ -1,0 +1,448 @@
+
+> my-app@0.1.0 test
+> vitest run --reporter=verbose
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v2.1.9 /home/abujulaybeeb/Documents/Drips/teachLink_web
+
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > initialization > should create initial state with correct metadata
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > initialization > should create initial state without userId
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > field value management > should update field value and mark as touched and dirty
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > field value management > should not mark field as dirty if value is the same
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > field value management > should get all field values
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > field value management > should set multiple values at once
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > validation management > should set and get validation state
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > validation management > should check if form is valid
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > validation management > should clear field validation
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > form reset > should reset form to initial state
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > submission state > should manage submission state
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > field state helpers > should mark field as touched
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > field state helpers > should not update lastModified if field already touched
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > state change subscriptions > should notify subscribers of field changes
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > state change subscriptions > should notify subscribers of validation changes
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > state change subscriptions > should handle subscription errors gracefully
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > state change subscriptions > should unsubscribe correctly
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > metadata management > should return metadata copy
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > metadata management > should update lastModified when field changes
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > edge cases > should handle undefined field values
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > edge cases > should handle null field values
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > edge cases > should handle empty string field values
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > edge cases > should handle complex object field values
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > silent field updates > should set field value without triggering change events
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > batch operations > should set multiple validation states at once
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > batch operations > should set multiple field values in batch
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > field reset operations > should reset specific fields
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > metadata management > should set partial metadata
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > validation summary > should provide comprehensive validation summary
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > form state queries > should check if form is dirty
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > form state queries > should get dirty fields list
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > form state queries > should get touched fields list
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > submission control > should start submission with callback
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > submission control > should complete submission successfully
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > submission control > should complete submission with failure
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > state snapshots > should create and restore snapshots
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > state snapshots > should create independent snapshots
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > validation control > should validate specific fields
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > validation control > should clear all validation
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > pristine state management > should mark field as pristine
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > pristine state management > should mark multiple fields as pristine
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > field state summary > should provide comprehensive field state
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > programmatic state control methods > field state summary > should handle field state for non-existent field
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should initialize dependencies correctly
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should handle field visibility changes
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should get all field visibility states
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should trigger cascading updates manually
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should preview cascading updates without applying them
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should get field processing order
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should evaluate all conditional logic
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should reset cascading state
+ ✓ src/form-management/state/form-state-manager.test.ts > FormStateManager > cascading state updates > should handle complex dependency chains
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > initialization > should initialize offline mode successfully
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > initialization > should handle initialization errors
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > course operations > should download and save a course
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > course operations > should check course availability
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > progress tracking > should save and retrieve progress
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > progress tracking > should get course progress
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > sync operations > should sync data successfully
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > sync operations > should handle sync errors gracefully
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > storage management > should get storage information
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > storage management > should clear all data
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > sync queue operations > should add items to sync queue
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > sync queue operations > should cache and retrieve assets
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > error handling > should handle database not initialized errors
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > error handling > should handle cleanup errors gracefully
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > performance and optimization > should handle large datasets efficiently
+ ✓ src/app/hooks/__tests__/useOfflineMode.test.tsx > useOfflineMode > performance and optimization > should handle concurrent operations
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule registration > should register a custom validation rule
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule registration > should throw error for duplicate rule names
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule registration > should throw error for invalid rule name
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule registration > should throw error for invalid validation function
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule registration > should register multiple rules at once
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule unregistration > should unregister a rule
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule unregistration > should return false for non-existent rule
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > category management > should organize rules by category
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > category management > should clean up empty categories
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > dependency management > should track rule dependencies
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > dependency management > should validate dependencies
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule execution > should execute a custom validation rule
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule execution > should handle rule execution errors
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule execution > should handle unknown rules
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > rule execution > should execute multiple rules for a field
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > execution context > should provide execution context to validation functions
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > execution context > should handle custom data in execution context
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > statistics and utilities > should provide registry statistics
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > statistics and utilities > should export rules configuration
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > statistics and utilities > should clear all rules and data
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > ValidationRuleBuilders > should create field comparison rule
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > ValidationRuleBuilders > should create conditional rule
+ ✓ src/form-management/validation/custom-validation-registry.test.ts > CustomValidationRegistry > ValidationRuleBuilders > should create async API rule
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Schema Validation > should validate a minimal valid configuration
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Schema Validation > should reject configuration with empty form ID
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Schema Validation > should reject configuration with no fields
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Schema Validation > should detect duplicate field IDs
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Schema Validation > should detect invalid field dependencies
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Schema Validation > should detect circular dependencies
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > JSON Parsing > should parse valid JSON configuration
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > JSON Parsing > should throw error for invalid JSON
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > JSON Parsing > should throw error for JSON with invalid schema
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Pretty Printing > should format configuration back to JSON
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Pretty Printing > should format configuration to compact JSON
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Pretty Printing > should format configuration with custom options
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Pretty Printing > should handle configurations with functions by omitting them
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Pretty Printing > should preserve structure and formatting
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Round-Trip Property Tests > Property: Configuration round-trip should produce equivalent object 1681ms
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Error Handling > should handle malformed JSON gracefully
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Error Handling > should provide descriptive error messages for validation failures
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Error Handling > should handle nested validation errors
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Complex Configuration Scenarios > should handle configuration with wizard steps
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Complex Configuration Scenarios > should handle configuration with auto-save settings
+ ✓ src/form-management/utils/configuration-parser.test.ts > FormConfigurationParser > Complex Configuration Scenarios > should handle configuration with analytics settings
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Authentication > completes a successful login flow 410ms
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Authentication > shows loading state while authenticating
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Authentication > displays error message on failed login
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Authentication > clears error on subsequent login attempt
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Todo CRUD > adds a new todo
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Todo CRUD > does not add empty todos
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Todo CRUD > clears input after adding
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Todo CRUD > toggles a todo done state
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > validateField > should validate required fields correctly
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > validateField > should validate email format correctly
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > validateField > should validate minimum length correctly
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > validateField > should handle non-existent fields gracefully
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > validateField > should skip validation when condition is not met
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > custom validation rules > should allow adding and using custom validation rules
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > custom validation rules > should handle custom rule errors gracefully
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > validateForm > should validate entire form and return combined results
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > validateForm > should return invalid result when any field fails validation
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > async validation > should handle async validation rules
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Todo CRUD > deletes a todo
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > async validation > should handle async validation timeout
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > built-in validation rules > should validate patterns correctly
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > built-in validation rules > should validate max length correctly
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > utility methods > should manage custom rules correctly
+ ✓ src/form-management/validation/validation-engine.test.ts > ValidationEngine > utility methods > should clear async cache
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Todo CRUD > manages multiple todos independently
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Search > shows all items when query is empty
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Search > filters results by query
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Search > is case-insensitive
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Search > shows no results for unmatched query
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Search > restores full list when query is cleared
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Multi-step form > starts on step 1 and shows correct label
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Multi-step form > advances to next step
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > initialization > should initialize with default container if none provided
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > initialization > should initialize styles on creation
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > feedback display > should display error feedback
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > feedback display > should display warning feedback
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > feedback display > should display success feedback when valid
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > feedback display > should not display success feedback when disabled
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > error processing > should limit number of errors displayed
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > error processing > should group similar errors when enabled
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > positioning and styling > should apply custom positioning
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > positioning and styling > should apply custom styles
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > positioning and styling > should update positioning after display
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > callback system > should notify callbacks on state changes
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > callback system > should handle callback errors gracefully
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > cleanup and management > should clear feedback for specific field
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > cleanup and management > should clear all feedback
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > cleanup and management > should get all display states
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > statistics > should provide feedback statistics
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > accessibility > should set appropriate ARIA attributes
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > accessibility > should create proper content structure with icons
+ ✓ src/form-management/validation/validation-feedback-display.test.ts > ValidationFeedbackDisplay > accessibility > should create content without icons when disabled
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Multi-step form > goes back a step
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Multi-step form > completes full workflow and submits data
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Multi-step form > hides back button on first step
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – Multi-step form > hides next button on last step
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – API-backed flow > fetches and displays user profile
+ ✓ src/testing/UserFlowTester.test.tsx > UserFlowTester – API-backed flow > handles network failure gracefully
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > validation state management > should initialize with empty state
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > validation state management > should track validation state correctly
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > successful validation > should execute successful async validation
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > successful validation > should handle debouncing correctly
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > successful validation > should cancel previous debounced validation when new one starts
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > initialization > should initialize with field descriptors
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > initialization > should initialize with conditional rules
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > dependency validation > should detect missing dependencies
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > dependency validation > should detect circular dependencies
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > dependency validation > should validate correct dependencies
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > cascading updates > should calculate visibility changes
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > cascading updates > should calculate value changes
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > cascading updates > should identify fields to revalidate
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > topological sorting > should return fields in dependency order
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > dependency queries > should check if field has dependencies
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > dependency queries > should check if field has dependents
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > dependency queries > should get field dependencies
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > dependency queries > should get dependent fields
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > error handling > should handle invalid conditional rule gracefully
+ ✓ src/form-management/state/dependency-manager.test.ts > DependencyManager > cleanup > should clear all dependency information
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Basic Auto-Save Functionality > should save form data immediately
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Basic Auto-Save Functionality > should include metadata in saved draft
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Basic Auto-Save Functionality > should update save status during save operation
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Basic Auto-Save Functionality > should set lastSaved timestamp after successful save
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Draft Data Recovery > should load previously saved draft
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Draft Data Recovery > should return null for non-existent draft
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Draft Data Recovery > should return null for expired draft
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Draft Data Recovery > should validate draft data integrity
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Draft Cleanup > should clear draft data
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Draft Cleanup > should not throw error when clearing non-existent draft
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Storage Quota Management > should set storage quota
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Storage Quota Management > should cleanup oldest drafts when quota is exceeded
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Save Status Indication > should notify subscribers of status changes
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Save Status Indication > should allow unsubscribing from status changes
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Save Status Indication > should include queued saves count in status
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Error Handling > should handle storage errors gracefully
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Error Handling > should update status to error on save failure
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Auto-Save Intervals > should enable auto-save with interval
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Auto-Save Intervals > should clear previous interval when enabling auto-save again
+ ✓ src/form-management/auto-save/auto-save-manager.test.ts > AutoSaveManager > Resource Cleanup > should cleanup resources on destroy
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > renders with the provided label
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > applies "primary" variant class
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > applies "secondary" variant class
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > applies "danger" variant class
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > calls onClick handler when clicked
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > does not call onClick when disabled
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > has an accessible aria-label
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Button > is focusable via keyboard
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Counter > renders initial count
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Counter > increments by default step on each click
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Counter > increments by custom step
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Counter > fires onCount callback with the new value
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Counter > accumulates across multiple clicks
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – AsyncDataComponent > shows loading state initially
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – AsyncDataComponent > displays data after successful fetch
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – AsyncDataComponent > displays error when fetch rejects
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – AsyncDataComponent > removes loading indicator after fetch completes
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – ErrorBoundary > renders fallback when child throws
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – ErrorBoundary > renders children when no error occurs
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Snapshots > Card (default variant) matches snapshot
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Snapshots > Card (featured variant) matches snapshot
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Snapshots > Card (compact variant) matches snapshot
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Snapshots > Badge matches snapshot for each color
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Snapshots > ThemeWrapper light mode matches snapshot
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Snapshots > ThemeWrapper dark mode matches snapshot
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – CSS class assertions > Card applies correct variant class
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – CSS class assertions > Card always has base "card" class
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – CSS class assertions > Badge applies correct color class
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – CSS class assertions > ThemeWrapper has correct theme class
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – CSS class assertions > ThemeWrapper exposes data-theme attribute
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – ARIA & semantic structure > Card has role="article"
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – ARIA & semantic structure > Card title is rendered as h2
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – ARIA & semantic structure > Card image has an alt attribute matching the title
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – ARIA & semantic structure > ResponsiveNav renders all links
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Theme switching > swaps CSS variable values between light and dark
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Theme switching > accent colour differs between themes
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Responsive layout > fires resize event when viewport changes
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Responsive layout > reports correct innerWidth after resize
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Responsive layout > reports mobile viewport after resize
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Inline style validation > Badge style references a CSS variable
+ ✓ src/testing/visualRegression.test.tsx > VisualRegression – Inline style validation > ThemeWrapper sets all expected CSS variables
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – SimpleForm > submits with the entered value
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – SimpleForm > is associated with a visible label
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – SimpleForm > clears input value when user clears it
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – File handling > accepts a mock file object
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – File handling > simulates file selection on an input
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Snapshot > matches stored snapshot for default Button
+ ✓ src/testing/ComponentTester.test.tsx > ComponentTester – Snapshot > matches stored snapshot for Counter at initial=0
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Initialisation > creates a framework with default configuration
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Initialisation > accepts custom configuration
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Suite registration > registers a single suite
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Suite registration > registers multiple suites of different types
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Suite registration > preserves registration order
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Sequential execution (parallel: false) > runs all suites and marks them as passed
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Sequential execution (parallel: false) > sets running flag during execution
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Sequential execution (parallel: false) > throws when runAll is called while already running
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > Parallel execution (parallel: true) > runs suites in parallel and returns all passed
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > runById > runs only the specified suite
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > runById > does not affect other suites
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > runById > throws for an unknown suite id
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Engine > reset > clears all registered suites
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – API integration > reports results to a remote endpoint
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – API integration > handles API errors gracefully
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Performance > registers 100 suites in under 50ms
+ ✓ src/testing/TestingFramework.test.tsx > TestingFramework – Performance > runs 20 suites sequentially in under 500ms
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Render budgets > renders a simple component within budget
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Render budgets > renders a 500-item list within budget
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Render budgets > renders a 1000-item list within extended budget
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Render budgets > memoized component does not re-render on identical props
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Computation benchmarks > computes sqrt-sum of 10 000 numbers within budget
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Computation benchmarks > sorts 1000 items within budget
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Computation benchmarks > filters 10 000 items within search budget
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Computation benchmarks > JSON serialises 1000 objects under 50ms
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Computation benchmarks > JSON parses a 1000-item payload under 50ms
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Re-render cycles > re-renders 50 times within budget
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Re-render cycles > average rerender time stays below 5ms per cycle
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Storage estimates > reads navigator.storage.estimate without error
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Storage estimates > calculates storage utilisation percentage correctly
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Async operation benchmarks > resolves 100 sequential microtasks under 200ms
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Async operation benchmarks > resolves 100 parallel microtasks under 100ms
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Async operation benchmarks > mocks 50 fetch calls and resolves them under 200ms
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Benchmark utility > returns avg, min, max for a synchronous operation
+ ✓ src/testing/PerformanceTester.test.tsx > PerformanceTester – Benchmark utility > runs exactly the requested number of iterations
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > calculateContrastRatio > should calculate correct contrast ratio for black and white
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > calculateContrastRatio > should calculate correct contrast ratio for similar colors
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > calculateContrastRatio > should pass AA for sufficient contrast
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > calculateContrastRatio > should pass AA Large for lower contrast
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > calculateContrastRatio > should handle invalid hex colors
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > isFocusable > should identify button as focusable
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > isFocusable > should identify link as focusable
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > isFocusable > should identify element with tabindex as focusable
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > isFocusable > should not identify regular div as focusable
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > hasAccessibleName > should detect aria-label
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > hasAccessibleName > should detect text content
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > hasAccessibleName > should detect title attribute
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > hasAccessibleName > should return false for element without accessible name
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > generateAriaId > should generate unique IDs
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > generateAriaId > should use provided prefix
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > generateAriaId > should use default prefix
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > getWCAGLevel > should return Fail for critical issues
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > getWCAGLevel > should return A for serious issues
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > getWCAGLevel > should return AA for moderate issues
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > getWCAGLevel > should return AAA for few minor issues
+ ✓ src/app/components/accessibility/__tests__/accessibilityUtils.test.ts > accessibilityUtils > getWCAGLevel > should return AAA for no issues
+ × src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > failed validation with retry > should retry failed validations 5007ms
+   → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ✓ src/app/hooks/__tests__/useDashboardWidgets.test.tsx > useDashboardWidgets > initializes with defaults and persists layout
+ ✓ src/app/hooks/__tests__/useDashboardWidgets.test.tsx > useDashboardWidgets > adds, reorders, updates, collapses, resizes, and removes widgets
+ ✓ src/app/hooks/__tests__/useStudyGroups.test.tsx > useStudyGroups > creates a group and allows joining
+ × src/app/hooks/__tests__/useStudyGroups.test.tsx > useStudyGroups > posts messages and builds leaderboard from challenges
+   → expected 'Alice' to be 'Bob' // Object.is equality
+ ✓ src/app/hooks/__tests__/useStudyGroups.test.tsx > useStudyGroups > adds resources (link and file)
+ ✓ src/form-management/types/core.test.ts > Core Types > should have valid FieldType values
+ ✓ src/form-management/types/core.test.ts > Core Types > should create valid ValidationRule objects
+ ✓ src/form-management/types/core.test.ts > Core Types > should create valid FieldDescriptor objects
+ ✓ src/form-management/types/core.test.ts > Core Types > Property: FieldType values are always valid
+ ✓ src/app/components/social/__tests__/StudyGroupCard.test.tsx > StudyGroupCard > renders group info and triggers join/leave
+ ✓ src/app/components/social/__tests__/LearningChallengeBoard.test.tsx > LearningChallengeBoard > renders challenge and updates progress
+ × src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > failed validation with retry > should fail after max retry attempts 5003ms
+   → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > failed validation with retry > should handle timeout correctly
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > callback system > should notify callbacks on validation completion
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > callback system > should handle callback errors gracefully
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > concurrent validation > should validate multiple fields concurrently
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > cancellation > should cancel individual field validation
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > cancellation > should cancel all validations
+ ✓ src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > statistics > should provide validation statistics
+stderr | src/app/components/social/__tests__/GroupDiscussionThread.test.tsx > GroupDiscussionThread > posts content via onPost
+Error: Uncaught [TypeError: messagesEndRef.current?.scrollIntoView is not a function]
+    at reportException (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:27165:5) TypeError: messagesEndRef.current?.scrollIntoView is not a function
+    at /home/abujulaybeeb/Documents/Drips/teachLink_web/src/app/components/social/GroupDiscussionThread.tsx:43:29
+    at commitHookEffectListMount (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/home/abujulaybeeb/Documents/Drips/teachLink_web/node_modules/react/cjs/react.development.js:2667:24)
+
+ × src/app/components/social/__tests__/GroupDiscussionThread.test.tsx > GroupDiscussionThread > posts content via onPost
+   → messagesEndRef.current?.scrollIntoView is not a function
+ ✓ src/app/components/social/__tests__/SharedResourceLibrary.test.tsx > SharedResourceLibrary > calls onAdd for link resource
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/tipping/TipForm/TipForm.test.tsx [ src/components/tipping/TipForm/TipForm.test.tsx ]
+Error: Failed to resolve import "@/testing" from "src/components/tipping/TipForm/TipForm.test.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/abujulaybeeb/Documents/Drips/teachLink_web/src/components/tipping/TipForm/TipForm.test.tsx:6:38
+  4  |  const __vi_import_0__ = await import('react/jsx-dev-runtime')
+  5  |  const __vi_import_1__ = await import('react')
+  6  |  const __vi_import_2__ = await import('@/testing')
+     |                                       ^
+  7  |  const __vi_import_3__ = await import('@/testing/utils/mocks')
+  8  |  
+ ❯ TransformPluginContext._formatError node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49258:41
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49253:16
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64307:23
+ ❯ node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64439:39
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64366:7
+ ❯ PluginContainer.transform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49099:18
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51978:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { __vitest_rollup_error__: { plugin: 'vite:import-analysis', id: '/home/abujulaybeeb/Documents/Drips/teachLink_web/src/components/tipping/TipForm/TipForm.test.tsx', loc: { file: '/home/abujulaybeeb/Documents/Drips/teachLink_web/src/components/tipping/TipForm/TipForm.test.tsx', line: 6, column: 38 }, frame: '4  |  const __vi_import_0__ = await import(\'react/jsx-dev-runtime\')\n5  |  const __vi_import_1__ = await import(\'react\')\n6  |  const __vi_import_2__ = await import(\'@/testing\')\n   |                                       ^\n7  |  const __vi_import_3__ = await import(\'@/testing/utils/mocks\')\n8  |  ' } }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > failed validation with retry > should retry failed validations
+ FAIL  src/form-management/validation/async-validation-manager.test.ts > AsyncValidationManager > failed validation with retry > should fail after max retry attempts
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/app/hooks/__tests__/useStudyGroups.test.tsx > useStudyGroups > posts messages and builds leaderboard from challenges
+AssertionError: expected 'Alice' to be 'Bob' // Object.is equality
+
+Expected: "Bob"
+Received: "Alice"
+
+ ❯ src/app/hooks/__tests__/useStudyGroups.test.tsx:69:28
+     67| 
+     68|     const lb = result.current.challengeLeaderboard(challengeId);
+     69|     expect(lb[0].userName).toBe('Bob');
+       |                            ^
+     70|     expect(lb[0].progress).toBe(70);
+     71|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/app/components/social/__tests__/GroupDiscussionThread.test.tsx > GroupDiscussionThread > posts content via onPost
+TypeError: messagesEndRef.current?.scrollIntoView is not a function
+ ❯ src/app/components/social/GroupDiscussionThread.tsx:43:29
+     41|   // Auto-scroll to bottom when new messages arrive
+     42|   useEffect(() => {
+     43|     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+       |                             ^
+     44|   }, [messages]);
+     45| 
+ ❯ commitHookEffectListMount node_modules/react-dom/cjs/react-dom.development.js:23189:26
+ ❯ commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom.development.js:24970:11
+ ❯ commitPassiveMountEffects_complete node_modules/react-dom/cjs/react-dom.development.js:24930:9
+ ❯ commitPassiveMountEffects_begin node_modules/react-dom/cjs/react-dom.development.js:24917:7
+ ❯ commitPassiveMountEffects node_modules/react-dom/cjs/react-dom.development.js:24905:3
+ ❯ flushPassiveEffectsImpl node_modules/react-dom/cjs/react-dom.development.js:27078:3
+ ❯ flushPassiveEffects node_modules/react-dom/cjs/react-dom.development.js:27023:14
+ ❯ node_modules/react-dom/cjs/react-dom.development.js:26808:9
+ ❯ flushActQueue node_modules/react/cjs/react.development.js:2667:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ Test Files  4 failed | 19 passed (23)
+      Tests  4 failed | 332 passed (336)
+   Start at  12:27:40
+   Duration  17.93s (transform 1.05s, setup 3.40s, collect 5.87s, tests 16.29s, environment 18.08s, prepare 2.88s)
+
