@@ -168,7 +168,7 @@ export default function NotificationCenter({
             {showAnalytics && (
               <button
                 onClick={() => setShowAnalyticsPanel(!showAnalyticsPanel)}
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+                className="p-1.5 rounded hover:bg-gray-200 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 title="Analytics"
               >
                 <BarChart3 size={18} />
@@ -177,7 +177,7 @@ export default function NotificationCenter({
             {showFilters && (
               <button
                 onClick={() => setShowFiltersPanel(!showFiltersPanel)}
-                className={`p-1.5 rounded hover:bg-gray-200 ${
+                className={`p-1.5 rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   hasActiveFilters ? 'text-blue-600' : 'text-gray-600'
                 }`}
                 title="Filters"
@@ -187,7 +187,7 @@ export default function NotificationCenter({
             )}
             <button
               onClick={markAllAsRead}
-              className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+              className="p-1.5 rounded hover:bg-gray-200 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               title="Mark all as read"
               disabled={unreadCount === 0}
             >
@@ -209,7 +209,7 @@ export default function NotificationCenter({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
             >
               <X size={14} />
             </button>
@@ -223,7 +223,7 @@ export default function NotificationCenter({
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Filters</span>
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="text-xs text-blue-600 hover:underline">
+              <button onClick={clearFilters} className="text-xs text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">
                 Clear all
               </button>
             )}
@@ -281,7 +281,7 @@ export default function NotificationCenter({
             <span className="text-sm font-medium text-gray-700">Analytics</span>
             <button
               onClick={() => setShowAnalyticsPanel(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
             >
               <X size={16} />
             </button>
@@ -320,7 +320,7 @@ export default function NotificationCenter({
               {hasActiveFilters ? 'No notifications match your filters' : "You're all caught up!"}
             </p>
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="mt-2 text-sm text-blue-600 hover:underline">
+              <button onClick={clearFilters} className="mt-2 text-sm text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">
                 Clear filters
               </button>
             )}
@@ -346,8 +346,16 @@ export default function NotificationCenter({
                     }`}
                   >
                     <div
-                      className="p-4 cursor-pointer"
+                      className="p-4 cursor-pointer focus:outline-none focus:bg-gray-50 focus:ring-2 focus:ring-inset focus:ring-blue-500"
                       onClick={() => handleNotificationClick(notification)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleNotificationClick(notification);
+                        }
+                      }}
                     >
                       <div className="flex items-start gap-3">
                         <span className="text-xl">{icon}</span>
@@ -376,7 +384,7 @@ export default function NotificationCenter({
                                 e.stopPropagation();
                                 toggleExpand(notification.id);
                               }}
-                              className="text-xs text-blue-600 hover:underline mt-1 flex items-center gap-1"
+                              className="text-xs text-blue-600 hover:underline mt-1 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                             >
                               {isExpanded ? (
                                 <>
@@ -397,7 +405,7 @@ export default function NotificationCenter({
                                 e.stopPropagation();
                                 markAsRead(notification.id);
                               }}
-                              className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"
+                              className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                               title="Mark as read"
                             >
                               <Check size={16} />
@@ -408,7 +416,7 @@ export default function NotificationCenter({
                               e.stopPropagation();
                               clearNotification(notification.id);
                             }}
-                            className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-red-600"
+                            className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                             title="Delete"
                           >
                             <Trash2 size={16} />
@@ -432,7 +440,7 @@ export default function NotificationCenter({
           </span>
           <button
             onClick={clearAllRead}
-            className="text-xs text-gray-600 hover:text-gray-900 hover:underline"
+            className="text-xs text-gray-600 hover:text-gray-900 hover:underline focus:outline-none focus:ring-2 focus:ring-gray-400 rounded"
             disabled={notifications.filter((n) => n.read).length === 0}
           >
             Clear all read

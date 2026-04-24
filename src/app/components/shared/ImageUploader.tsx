@@ -31,8 +31,16 @@ export default function ImageUploader({ onImageSelect, initialImageUrl }: ImageU
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative w-32 h-32 rounded-full overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+        className="relative w-32 h-32 rounded-full overflow-hidden cursor-pointer hover:opacity-90 transition-opacity focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2"
         onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
       >
         {previewUrl ? (
           <Image
