@@ -28,20 +28,32 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
-  const addToast = useCallback((message: string, type: ToastType = 'info', duration = 5000) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, type, message, duration }]);
-    
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, duration);
-    }
-  }, [removeToast]);
+  const addToast = useCallback(
+    (message: string, type: ToastType = 'info', duration = 5000) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      setToasts((prev) => [...prev, { id, type, message, duration }]);
 
-  const error = useCallback((message: string, duration?: number) => addToast(message, 'error', duration), [addToast]);
-  const success = useCallback((message: string, duration?: number) => addToast(message, 'success', duration), [addToast]);
-  const info = useCallback((message: string, duration?: number) => addToast(message, 'info', duration), [addToast]);
+      if (duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+        }, duration);
+      }
+    },
+    [removeToast],
+  );
+
+  const error = useCallback(
+    (message: string, duration?: number) => addToast(message, 'error', duration),
+    [addToast],
+  );
+  const success = useCallback(
+    (message: string, duration?: number) => addToast(message, 'success', duration),
+    [addToast],
+  );
+  const info = useCallback(
+    (message: string, duration?: number) => addToast(message, 'info', duration),
+    [addToast],
+  );
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast, error, success, info }}>
