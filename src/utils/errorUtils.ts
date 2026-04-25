@@ -11,6 +11,7 @@ export enum ErrorType {
   SERVER = 'SERVER',
   TIMEOUT = 'TIMEOUT',
   OFFLINE = 'OFFLINE',
+  RATE_LIMIT = 'RATE_LIMIT',
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -149,6 +150,18 @@ function classifyHttpError(statusCode: number, message: string, timestamp: numbe
       retryable: true,
       userMessage: 'The server is having trouble. Please try again later.',
       actionSuggestion: 'Try again later',
+    };
+  }
+
+  if (statusCode === 429) {
+    return {
+      type: ErrorType.RATE_LIMIT,
+      message: message || 'Rate limit exceeded',
+      statusCode,
+      timestamp,
+      retryable: true,
+      userMessage: 'Too many requests. Please wait before trying again.',
+      actionSuggestion: 'Wait and retry',
     };
   }
 
