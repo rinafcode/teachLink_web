@@ -10,7 +10,9 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-export async function GET(request: Request): Promise<NextResponse<ApiResponse<PersistedVideoBookmark[]> | SuccessResponse>> {
+export async function GET(
+  request: Request,
+): Promise<NextResponse<ApiResponse<PersistedVideoBookmark[]> | SuccessResponse>> {
   const { searchParams } = new URL(request.url);
   const lessonId = searchParams.get('lessonId');
   const userId = searchParams.get('userId') ?? undefined;
@@ -25,7 +27,9 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Pe
   });
 }
 
-export async function POST(request: Request): Promise<NextResponse<ApiResponse<PersistedVideoBookmark> | SuccessResponse>> {
+export async function POST(
+  request: Request,
+): Promise<NextResponse<ApiResponse<PersistedVideoBookmark> | SuccessResponse>> {
   const body = (await request.json()) as {
     userId?: string;
     lessonId: string;

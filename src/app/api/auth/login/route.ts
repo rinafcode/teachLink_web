@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { AuthResponse } from '@/types/api';
 
-export async function POST(request: NextRequest): Promise<NextResponse<AuthResponse | { message: string }>> {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<AuthResponse | { message: string }>> {
   try {
     const body = await request.json();
     const { email, password } = body;

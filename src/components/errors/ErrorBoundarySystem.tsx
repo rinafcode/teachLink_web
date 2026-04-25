@@ -7,7 +7,7 @@ import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
 export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-  errorInfo?: ErrorInfo;
+  errorInfo: ErrorInfo | null;
   errorCount: number;
 };
 
@@ -26,7 +26,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: undefined,
+      errorInfo: null,
       errorCount: 0,
     };
   }
@@ -45,7 +45,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       errorCount: prevState.errorCount + 1,
     }));
 
-    // Report error
     errorReportingService.addBreadcrumb('errorBoundary', {
       isolationId: this.props.isolationId,
       isolationLevel: this.props.isolationLevel,
@@ -63,7 +62,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: undefined,
+      errorInfo: null,
       errorCount: 0,
     });
   };

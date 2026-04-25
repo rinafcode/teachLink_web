@@ -6,10 +6,10 @@
  * Exit code 0 = pass, 1 = fail
  */
 
-import fs from 'fs';
-import path from 'path';
+const fs = require('fs');
+const path = require('path');
 
-const SRC_DIR = path.join(import.meta.dirname, '../src');
+const SRC_DIR = path.join(__dirname, '../src');
 
 let errors = [];
 let warnings = [];
@@ -24,17 +24,14 @@ function checkWalletProviderExists() {
 
   const content = fs.readFileSync(providerPath, 'utf-8');
 
-  // Check for error handling
   if (!content.includes('try') || !content.includes('catch')) {
     errors.push('[WEB3] WalletProvider should have try-catch error handling');
   }
 
-  // Check for SSR safety
   if (!content.includes('typeof window')) {
     warnings.push('[WEB3] WalletProvider should check for SSR (typeof window)');
   }
 
-  // Check for graceful fallback
   if (!content.includes('useContext') || !content.includes('null')) {
     warnings.push('[WEB3] useWallet hook should handle missing provider gracefully');
   }
@@ -58,7 +55,6 @@ function checkWeb3Utils() {
 
   const content = fs.readFileSync(envValidationPath, 'utf-8');
 
-  // Check for network validation
   if (!content.includes('NEXT_PUBLIC_STARKNET')) {
     warnings.push('[WEB3] Environment validation should check NEXT_PUBLIC_STARKNET_* vars');
   }
@@ -67,8 +63,8 @@ function checkWeb3Utils() {
 }
 
 function checkEnvExample() {
-  const envExamplePath = path.join(import.meta.dirname, '../.env.example');
-  const envLocalPath = path.join(import.meta.dirname, '../.env.local.example');
+  const envExamplePath = path.join(__dirname, '../.env.example');
+  const envLocalPath = path.join(__dirname, '../.env.local.example');
 
   if (!fs.existsSync(envExamplePath) && !fs.existsSync(envLocalPath)) {
     warnings.push('[WEB3] Consider adding .env.example with NEXT_PUBLIC_STARKNET_* variables');
@@ -81,17 +77,18 @@ function printResults() {
   checkEnvExample();
 
   if (warnings.length > 0) {
-    warnings.forEach((w) => {});
+    console.log('\nWeb3 Validation Warnings:');
+    warnings.forEach((warning) => console.warn(`  - ${warning}`));
   }
 
   if (errors.length > 0) {
-    errors.forEach((e) => {});
+    console.error('\nWeb3 Validation Errors:');
+    errors.forEach((error) => console.error(`  - ${error}`));
     process.exit(1);
   }
 
-  console.log(`✅ Web3 validation passed (${warnings.length} warning(s))`);
+  console.log(`\nWeb3 validation passed (${warnings.length} warning(s))`);
   process.exit(0);
 }
 
-// Run validation
 printResults();

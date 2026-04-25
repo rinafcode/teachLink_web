@@ -4,6 +4,7 @@ import type { ApiResponse, UserProgress } from '@/types/api';
 export async function GET(): Promise<NextResponse<ApiResponse<UserProgress>>> {
   // Mock user progress data
   return NextResponse.json({
+    success: true,
     data: {
       streak: 7,
       totalTimeSpent: 1245, // minutes
