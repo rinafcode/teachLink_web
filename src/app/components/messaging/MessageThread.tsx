@@ -284,8 +284,8 @@ export default function MessageThread({
                       : 'bg-violet-200 dark:bg-violet-800/50'
                   }`}
                   style={{
-                    width: `${150 + [45, 120, 80, 180][i % 4]}px`,
-                    height: `${40 + [15, 5, 25, 10][i % 4]}px`,
+                    width: `${150 + [45, 120, 80, 180][index % 4]}px`,
+                    height: `${40 + [15, 5, 25, 10][index % 4]}px`,
                   }}
                 />
               </div>
