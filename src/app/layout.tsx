@@ -18,6 +18,7 @@ import { AccessibilityProvider } from '@/components/accessibility/AccessibilityP
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 import { EnvGuard } from '@/components/shared/EnvGuard';
 import { Loading } from '@/components/ui/Loading';
+import { ToastProvider } from '@/context/ToastContext';
 
 const geistSans = Geist({
   // ...
@@ -78,13 +79,15 @@ export default async function RootLayout({
                   <AccessibilityProvider pageLabel="TeachLink - main application">
                     <PerformanceMonitoringProvider>
                       <OfflineModeProvider>
-                        <PWAManager />
-                        <StateManagerIntegration />
-                        <PerformanceMonitor />
-                        <PrefetchingEngine />
-                        <ErrorBoundary>
-                          <Suspense fallback={<Loading />}>{children}</Suspense>
-                        </ErrorBoundary>
+                        <ToastProvider>
+                          <PWAManager />
+                          <StateManagerIntegration />
+                          <PerformanceMonitor />
+                          <PrefetchingEngine />
+                          <ErrorBoundary>
+                            <Suspense fallback={<Loading />}>{children}</Suspense>
+                          </ErrorBoundary>
+                        </ToastProvider>
                       </OfflineModeProvider>
                     </PerformanceMonitoringProvider>
                   </AccessibilityProvider>
