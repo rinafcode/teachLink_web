@@ -2,26 +2,9 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { Suspense } from 'react';
-import { ThemeProvider } from '@/lib/theme-provider';
-import DynamicTheming from '@/components/theme/DynamicTheming';
-import { OfflineModeProvider } from './context/OfflineModeContext';
-import { I18nProvider } from '@/hooks/useInternationalization';
-import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
-import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
-import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
-import { PerformanceMonitoringProvider } from '@/hooks/usePerformanceMonitoring';
-import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
-import StateManagerIntegration from '@/components/state/StateManagerIntegration';
-import { PWAManager } from '@/components/pwa/PWAManager';
-import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
-import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
-import { EnvGuard } from '@/components/shared/EnvGuard';
-import { Loading } from '@/components/ui/Loading';
-import { ToastProvider } from '@/context/ToastContext';
+import { RootProviders } from '@/providers/RootProviders';
 
 const geistSans = Geist({
-  // ...
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
@@ -69,34 +52,14 @@ export default async function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50">
-        <I18nProvider>
-          <InternationalizationEngine>
-            <CulturalAdaptationManager>
-              <ThemeProvider defaultTheme={defaultTheme}>
-                <DynamicTheming />
-                <EnvGuard>
-                  <AccessibilityProvider pageLabel="TeachLink - main application">
-                    <PerformanceMonitoringProvider>
-                      <OfflineModeProvider>
-                        <ToastProvider>
-                          <PWAManager />
-                          <StateManagerIntegration />
-                          <PerformanceMonitor />
-                          <PrefetchingEngine />
-                          <ErrorBoundary>
-                            <Suspense fallback={<Loading />}>{children}</Suspense>
-                          </ErrorBoundary>
-                        </ToastProvider>
-                      </OfflineModeProvider>
-                    </PerformanceMonitoringProvider>
-                  </AccessibilityProvider>
-                </EnvGuard>
-              </ThemeProvider>
-            </CulturalAdaptationManager>
-          </InternationalizationEngine>
-        </I18nProvider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
+      >
+        <RootProviders defaultTheme={defaultTheme}>
+          {children}
+        </RootProviders>
       </body>
     </html>
   );
 }
+
