@@ -1,5 +1,6 @@
 import React, { HTMLAttributes, useState, useEffect } from 'react';
 import { useMobileGestures } from '../../hooks/useMobileGestures';
+import { ToggleLeft, ToggleRight } from 'lucide-react';
 
 interface GestureHandlerProps extends HTMLAttributes<HTMLDivElement> {
   onSwipeLeft?: () => void;
@@ -77,7 +78,7 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
             title={gesturesEnabled ? "Disable Custom Gestures" : "Enable Custom Gestures"}
             type="button"
           >
-            <div className={`w-2 h-2 rounded-full ${gesturesEnabled ? 'bg-green-400' : 'bg-red-400'}`}></div>
+            {gesturesEnabled ? <ToggleRight size={16} className="text-green-400" /> : <ToggleLeft size={16} className="text-red-400" />}
             {gesturesEnabled ? "Gestures On" : "Gestures Off"}
           </button>
         </div>
