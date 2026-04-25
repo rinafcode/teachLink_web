@@ -213,15 +213,18 @@ describe('retryWithBackoff', () => {
 
   it('throws immediately for non-retryable errors (401)', async () => {
     const fn = vi.fn().mockRejectedValue({ status: 401 });
-    await expect(retryWithBackoff(fn, { maxAttempts: 3, initialDelayMs: 10 })).rejects.toMatchObject({ status: 401 });
+    await expect(
+      retryWithBackoff(fn, { maxAttempts: 3, initialDelayMs: 10 }),
+    ).rejects.toMatchObject({ status: 401 });
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
   it('throws after exhausting all attempts', async () => {
     const fn = vi.fn().mockRejectedValue({ status: 500 });
     const promise = retryWithBackoff(fn, { maxAttempts: 2, initialDelayMs: 10 });
+    const rejection = expect(promise).rejects.toMatchObject({ status: 500 });
     await vi.runAllTimersAsync();
-    await expect(promise).rejects.toMatchObject({ status: 500 });
+    await rejection;
     expect(fn).toHaveBeenCalledTimes(2);
   });
 });

@@ -11,7 +11,9 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-export async function GET(request: Request): Promise<NextResponse<ApiResponse<PersistedVideoBookmark[]> | SuccessResponse>> {
+export async function GET(
+  request: Request,
+): Promise<NextResponse<ApiResponse<PersistedVideoBookmark[]> | SuccessResponse>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse;
@@ -33,7 +35,9 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Pe
   );
 }
 
-export async function POST(request: Request): Promise<NextResponse<ApiResponse<PersistedVideoBookmark> | SuccessResponse>> {
+export async function POST(
+  request: Request,
+): Promise<NextResponse<ApiResponse<PersistedVideoBookmark> | SuccessResponse>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse;

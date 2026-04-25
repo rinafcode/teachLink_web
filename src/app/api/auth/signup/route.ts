@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { AuthResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
 
-export async function POST(request: NextRequest): Promise<NextResponse<AuthResponse | { message: string }>> {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<AuthResponse | { message: string }>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse;

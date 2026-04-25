@@ -4,7 +4,6 @@ import React, { useEffect, useRef } from 'react';
 import { Search, X, Clock, Trash2 } from 'lucide-react';
 import { useSearch } from '../../hooks/useSearch';
 import clsx from 'clsx';
-import Image from 'next/image';
 
 interface SearchBarProps {
   className?: string;
@@ -100,10 +99,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
     <div ref={containerRef} className={clsx('relative', className)}>
       {/* Search Bar Container */}
       <div
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 ${localExpanded
-          ? 'border-blue-500 bg-white dark:bg-gray-900 shadow-lg w-full'
-          : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 md:w-full'
-          }`}
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 ${
+          localExpanded
+            ? 'border-blue-500 bg-white dark:bg-gray-900 shadow-lg w-full'
+            : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 md:w-full'
+        }`}
       >
         <Search size={18} className="text-gray-400 dark:text-gray-500 shrink-0" />
 
@@ -160,17 +160,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
                       className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                     >
                       {course.image && (
-                        <div className="relative w-10 h-10 rounded overflow-hidden shrink-0">
-                          <Image
+                        <picture>
+                          <img
                             src={course.image}
                             alt={course.title}
-                            fill
-                            sizes="40px"
-                            className="object-cover"
-                            placeholder="blur"
-                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
+                            className="w-10 h-10 rounded object-cover"
+                            loading="lazy"
                           />
-                        </div>
+                        </picture>
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 truncate">{course.title}</p>
@@ -200,17 +197,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
                       className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                     >
                       {instructor.image && (
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0">
-                          <Image
+                        <picture>
+                          <img
                             src={instructor.image}
                             alt={instructor.title}
-                            fill
-                            sizes="40px"
-                            className="object-cover"
-                            placeholder="blur"
-                            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
+                            className="w-10 h-10 rounded-full"
+                            loading="lazy"
                           />
-                        </div>
+                        </picture>
                       )}
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-800">{instructor.title}</p>

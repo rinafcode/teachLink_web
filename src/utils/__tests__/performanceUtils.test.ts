@@ -85,12 +85,20 @@ describe('formatMetricValue', () => {
   });
 
   it('formats LCP with ms suffix', () => {
-    const result = formatMetricValue({ name: 'LCP', value: 2500, label: 'ms' } as PerformanceMetric);
+    const result = formatMetricValue({
+      name: 'LCP',
+      value: 2500,
+      label: 'ms',
+    } as PerformanceMetric);
     expect(result).toBe('2500ms');
   });
 
   it('uses label from metric when present', () => {
-    const result = formatMetricValue({ name: 'TTFB', value: 800, label: 'ms' } as PerformanceMetric);
+    const result = formatMetricValue({
+      name: 'TTFB',
+      value: 800,
+      label: 'ms',
+    } as PerformanceMetric);
     expect(result).toBe('800ms');
   });
 

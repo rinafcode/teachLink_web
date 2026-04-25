@@ -7,7 +7,7 @@ import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
 export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-  errorInfo?: ErrorInfo;
+  errorInfo: ErrorInfo | null;
   errorCount: number;
 };
 
@@ -26,7 +26,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: undefined,
+      errorInfo: null,
       errorCount: 0,
     };
   }
@@ -39,13 +39,11 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Update state with error information
     this.setState((prevState) => ({
       errorInfo,
       errorCount: prevState.errorCount + 1,
     }));
 
-    // Report error
     errorReportingService.addBreadcrumb('errorBoundary', {
       isolationId: this.props.isolationId,
       isolationLevel: this.props.isolationLevel,
@@ -53,7 +51,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       componentStack: errorInfo.componentStack,
     });
 
-    // Hook for reporting system
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -63,7 +60,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: undefined,
+      errorInfo: null,
       errorCount: 0,
     });
   };
@@ -87,16 +84,10 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
   }
 }
 
-/**
- * Wrapper component for easy usage with functional components
- */
 export const ErrorBoundary: React.FC<ErrorBoundaryProps> = (props) => {
   return <ErrorBoundarySystem {...props} />;
 };
 
-/**
- * Higher-order component to wrap any component with error boundary
- */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   boundaryProps?: Omit<ErrorBoundaryProps, 'children'>,
@@ -112,9 +103,6 @@ export function withErrorBoundary<P extends object>(
   return WrappedComponent;
 }
 
-/**
- * Create a custom error boundary for a specific component
- */
 export function createErrorBoundary(
   displayName: string,
   options?: Omit<ErrorBoundaryProps, 'children'>,

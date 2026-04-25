@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { AuthResponse } from '@/types/api';
-import { withRateLimit, RATE_LIMIT_TIERS } from '@/lib/ratelimit';
+import { withRateLimit } from '@/lib/ratelimit';
 
-export async function POST(request: NextRequest): Promise<NextResponse<AuthResponse | { message: string }>> {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<AuthResponse | { message: string }>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse;
@@ -12,11 +14,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
     const body = await request.json();
     const { email, password } = body;
 
+    // Mock validation
     if (!email || !password) {
       return addHeaders(NextResponse.json({ message: 'Email and password are required' }, { status: 400 }));
     }
 
+    // Mock authentication - check for demo credentials
     if (email === 'demo@teachlink.com' && password === 'password123') {
+      // Simulate successful login
       return addHeaders(
         NextResponse.json(
           {
@@ -33,6 +38,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
       );
     }
 
+    // Mock: Accept any valid email format with password length >= 6
     if (password.length >= 6) {
       return addHeaders(
         NextResponse.json(
@@ -50,6 +56,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
       );
     }
 
+    // Invalid credentials
     return addHeaders(NextResponse.json({ message: 'Invalid email or password' }, { status: 401 }));
   } catch (error) {
     console.error('Login error:', error);

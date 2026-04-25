@@ -11,6 +11,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<UserProgress>>> {
 
   return addHeaders(
     NextResponse.json({
+      success: true,
       data: {
         streak: 7,
         totalTimeSpent: 1245,

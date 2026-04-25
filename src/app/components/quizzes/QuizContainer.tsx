@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Countdown from 'react-countdown';
 import { FaArrowLeft, FaArrowRight, FaCheck } from 'react-icons/fa';
-import { Quiz, useQuizStore } from '@/app/store/quizStore';
+import { useQuizStore } from '@/store/quizStore';
+import type { Quiz } from '@/store/quizStore';
 import QuestionCard from './QuestionCard';
 
 interface QuizContainerProps {
