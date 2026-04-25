@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import './globals.css';
+import { Suspense } from 'react';
 import { ThemeProvider } from '@/lib/theme-provider';
 import DynamicTheming from '@/components/theme/DynamicTheming';
 import { OfflineModeProvider } from './context/OfflineModeContext';
@@ -13,7 +14,9 @@ import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
 import StateManagerIntegration from '@/components/state/StateManagerIntegration';
 import { PWAManager } from '@/components/pwa/PWAManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
+import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 import { EnvGuard } from '@/components/shared/EnvGuard';
+import { Loading } from '@/components/ui/Loading';
 
 const geistSans = Geist({
   // ...
@@ -64,21 +67,23 @@ export default async function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50 transition-colors duration-200">
+      <body className="antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50">
         <I18nProvider>
           <InternationalizationEngine>
             <CulturalAdaptationManager>
               <ThemeProvider defaultTheme={defaultTheme}>
                 <DynamicTheming />
                 <EnvGuard>
-                  <AccessibilityProvider pageLabel="TeachLink — main application">
+                  <AccessibilityProvider pageLabel="TeachLink - main application">
                     <PerformanceMonitoringProvider>
                       <OfflineModeProvider>
                         <PWAManager />
                         <StateManagerIntegration />
                         <PerformanceMonitor />
                         <PrefetchingEngine />
-                        {children}
+                        <ErrorBoundary>
+                          <Suspense fallback={<Loading />}>{children}</Suspense>
+                        </ErrorBoundary>
                       </OfflineModeProvider>
                     </PerformanceMonitoringProvider>
                   </AccessibilityProvider>

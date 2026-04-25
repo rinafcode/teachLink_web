@@ -93,8 +93,13 @@ const ensureBrowser = () => {
   }
 };
 
-const createEntityKey = (_type: SyncItemType, data: any) => {
-  return `${data.courseId}:${data.moduleId}`;
+const createEntityKey = (_type: SyncItemType, data: unknown) => {
+  if (typeof data === 'object' && data !== null && 'courseId' in data && 'moduleId' in data) {
+    return `${(data as { courseId: string; moduleId: string }).courseId}:${
+      (data as { courseId: string; moduleId: string }).moduleId
+    }`;
+  }
+  throw new Error('Invalid data structure for entity key');
 };
 
 export class OfflineStorage {
@@ -223,8 +228,6 @@ export class OfflineStorage {
     const db = this.getDb();
     const index = db.transaction('progress').objectStore('progress').index('synced');
     return await index.getAll(false as unknown as IDBValidKey);
-    const all = await index.getAll();
-    return all.filter((p) => !p.synced);
   }
 
   async markProgressSynced(courseId: string, moduleId: string, syncedAt: string): Promise<void> {
@@ -257,8 +260,14 @@ export class OfflineStorage {
     const syncQueue = await db.getAll('syncQueue');
 
     const used =
-      courses.reduce((acc, course) => acc + (course.sizeBytes || 0), 0) +
-      assets.reduce((acc, asset) => acc + (asset.sizeBytes || 0), 0) +
+      courses.reduce(
+        (acc: number, course: { sizeBytes?: number }) => acc + (course.sizeBytes || 0),
+        0,
+      ) +
+      assets.reduce(
+        (acc: number, asset: { sizeBytes?: number }) => acc + (asset.sizeBytes || 0),
+        0,
+      ) +
       progress.length * 1024 +
       syncQueue.length * 512;
 
@@ -475,8 +484,9 @@ export class OfflineSyncService {
       const bestUpdated = new Date(best.data.updatedAt).getTime();
       const currentUpdated = new Date(current.data.updatedAt).getTime();
       if (currentUpdated > bestUpdated) return current;
-      if (currentUpdated === bestUpdated && current.data.progress > best.data.progress)
+      if (currentUpdated === bestUpdated && current.data.progress > best.data.progress) {
         return current;
+      }
       if (current.data.completed && !best.data.completed) return current;
       return best;
     });
