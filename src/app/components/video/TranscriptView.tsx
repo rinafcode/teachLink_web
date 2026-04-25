@@ -139,12 +139,20 @@ export const TranscriptView: React.FC<TranscriptViewProps> = React.memo(
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: visibleIndex * 0.02 }}
-                      className={`p-3 rounded-lg cursor-pointer transition-all duration-200 mb-2 ${
+                      className={`p-3 rounded-lg cursor-pointer transition-all duration-200 mb-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 ${
                         isActive
                           ? 'bg-blue-50 border-l-4 border-blue-500'
                           : 'hover:bg-gray-50 border-l-4 border-transparent'
                       }`}
                       onClick={() => onSeek(entry.time)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSeek(entry.time);
+                        }
+                      }}
                       style={{ height: ITEM_HEIGHT - 8 }}
                     >
                       <div className="flex items-start space-x-3 h-full">
@@ -153,7 +161,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = React.memo(
                             e.stopPropagation();
                             onSeek(entry.time);
                           }}
-                          className={`flex-shrink-0 p-1 rounded-full transition-colors self-start mt-1 ${
+                          className={`flex-shrink-0 p-1 rounded-full transition-colors self-start mt-1 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 ${
                             isActive
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-600 hover:bg-gray-300'

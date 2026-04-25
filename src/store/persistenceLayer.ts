@@ -11,6 +11,7 @@ export const persistenceLayer = {
    * Loads the state from IndexedDB.
    */
   async getItem(name: string): Promise<string | null> {
+    if (typeof window === 'undefined') return null;
     try {
       const db = await openDB(DB_NAME, 1, {
         upgrade(db) {
@@ -29,6 +30,7 @@ export const persistenceLayer = {
    * Saves the state to IndexedDB.
    */
   async setItem(name: string, value: string): Promise<void> {
+    if (typeof window === 'undefined') return;
     try {
       const db = await openDB(DB_NAME, 1, {
         upgrade(db) {
@@ -45,6 +47,7 @@ export const persistenceLayer = {
    * Removes the state from IndexedDB.
    */
   async removeItem(name: string): Promise<void> {
+    if (typeof window === 'undefined') return;
     const db = await openDB(DB_NAME, 1);
     await db.delete(STORE_NAME, name);
   },

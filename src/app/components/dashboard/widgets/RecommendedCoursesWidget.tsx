@@ -128,6 +128,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500">{recommendedCourses.length} courses</span>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="text-gray-400 transition-colors hover:text-gray-600"
             >
@@ -159,12 +160,14 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
               <Settings size={16} />
             </button>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="p-1 text-gray-400 transition-colors hover:text-gray-600"
             >
               <BookOpen size={16} />
             </button>
             <button
+              aria-label="Delete"
               onClick={onRemove}
               className="p-1 text-red-400 transition-colors hover:text-red-600"
             >

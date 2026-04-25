@@ -11,6 +11,7 @@ export enum ErrorType {
   SERVER = 'SERVER',
   TIMEOUT = 'TIMEOUT',
   OFFLINE = 'OFFLINE',
+  RATE_LIMIT = 'RATE_LIMIT',
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -77,11 +78,14 @@ export function classifyError(error: any): ErrorInfo {
     return classifyHttpError(statusCode as number, message, now);
   }
 
-  if ((error instanceof Error && error.name === 'ValidationError') || isValidationTypedError) {
+  if (
+    (error instanceof Error && error.name === 'ValidationError') ||
+    isValidationTypedError
+  ) {
     return {
       type: ErrorType.VALIDATION,
-      message: error?.message || 'Validation error',
-      details: (error as { details?: Record<string, any> }).details,
+      message: (error as { message?: string }).message || 'Validation error',
+      details: (error as { details?: Record<string, unknown> }).details,
       timestamp: now,
       retryable: false,
       userMessage: 'Please check your input and try again.',
@@ -146,6 +150,18 @@ function classifyHttpError(statusCode: number, message: string, timestamp: numbe
       retryable: true,
       userMessage: 'The server is having trouble. Please try again later.',
       actionSuggestion: 'Try again later',
+    };
+  }
+
+  if (statusCode === 429) {
+    return {
+      type: ErrorType.RATE_LIMIT,
+      message: message || 'Rate limit exceeded',
+      statusCode,
+      timestamp,
+      retryable: true,
+      userMessage: 'Too many requests. Please wait before trying again.',
+      actionSuggestion: 'Wait and retry',
     };
   }
 

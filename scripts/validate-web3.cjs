@@ -24,14 +24,17 @@ function checkWalletProviderExists() {
 
   const content = fs.readFileSync(providerPath, 'utf-8');
 
+  // Check for error handling
   if (!content.includes('try') || !content.includes('catch')) {
     errors.push('[WEB3] WalletProvider should have try-catch error handling');
   }
 
+  // Check for SSR safety
   if (!content.includes('typeof window')) {
     warnings.push('[WEB3] WalletProvider should check for SSR (typeof window)');
   }
 
+  // Check for graceful fallback
   if (!content.includes('useContext') || !content.includes('null')) {
     warnings.push('[WEB3] useWallet hook should handle missing provider gracefully');
   }
@@ -55,6 +58,7 @@ function checkWeb3Utils() {
 
   const content = fs.readFileSync(envValidationPath, 'utf-8');
 
+  // Check for network validation
   if (!content.includes('NEXT_PUBLIC_STARKNET')) {
     warnings.push('[WEB3] Environment validation should check NEXT_PUBLIC_STARKNET_* vars');
   }
@@ -72,11 +76,31 @@ function checkEnvExample() {
 }
 
 function printResults() {
+  console.log('🔍 Running Web3 validation checks...\n');
+
   checkWalletProviderExists();
   checkWeb3Utils();
   checkEnvExample();
 
   if (warnings.length > 0) {
+    console.log('⚠️  Warnings:\n');
+    warnings.forEach((w) => console.log(`  ${w}`));
+    console.log('');
+  }
+
+  if (errors.length > 0) {
+    console.log('❌ Errors:\n');
+    errors.forEach((e) => console.log(`  ${e}`));
+    console.log('');
+    console.log(`\n❌ Web3 validation failed with ${errors.length} error(s)`);
+    process.exit(1);
+  }
+
+  console.log(`✅ Web3 validation passed (${warnings.length} warning(s))`);
+  process.exit(0);
+}
+
+// Run validation
     console.log('\n[WARN] Web3 Validation Warnings:');
     warnings.forEach((warning) => console.warn(`  - ${warning}`));
   }

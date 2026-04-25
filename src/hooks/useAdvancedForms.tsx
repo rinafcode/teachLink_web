@@ -123,6 +123,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     stateManager.initializeDependencies(config.fields, config.conditionalLogic || []);
   }, [config.fields, config.conditionalLogic, stateManager]);
 
+  // Internal validation function
   const validateFieldInternal = useCallback(
     async (fieldId: string): Promise<ValidationResult> => {
       const value = stateManager.getFieldValue(fieldId);
@@ -157,6 +158,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     return () => subscription.unsubscribe();
   }, [stateManager, validateOnChange, autoSave, formId, autoSaveManager, validateFieldInternal]);
 
+  // Load draft function
   const loadDraft = useCallback(async () => {
     const draft = await autoSaveManager.loadDraft(formId);
     if (draft) {
@@ -338,7 +340,6 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
 };
 
 // Additional utility hooks
-
 export const useFormField = (formHook: UseAdvancedFormsReturn, fieldId: string) => {
   const value = formHook.getFieldValue(fieldId);
   const validation = formHook.getFieldValidation(fieldId);

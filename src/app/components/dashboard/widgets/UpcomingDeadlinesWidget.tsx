@@ -43,6 +43,11 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
   const [tempTitle, setTempTitle] = useState(title);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setTempTitle(title);
@@ -116,6 +121,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">{events.length} events</span>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
@@ -243,7 +249,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
                 </div>
                 <div className="flex-shrink-0 text-right">
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
-                    {formatScheduleDate(event.date)}
+                    {isMounted ? formatScheduleDate(event.date) : ''}
                   </p>
                 </div>
               </motion.div>
