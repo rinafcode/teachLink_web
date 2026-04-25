@@ -41,3 +41,11 @@ jest-coverage/
 
 # Misc
 *.log
+
+# Accidental transpiled source artifacts
+src/context/OfflineModeContext.js
+src/hooks/useAdvancedForms.js
+src/hooks/useDragDrop.js
+src/hooks/useSearchFilters.js
+src/services/offlineSync.js
+src/utils/dragDropUtils.js

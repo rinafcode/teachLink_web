@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useOfflineMode } from '../hooks/useOfflineMode';
 import {
   OfflineCourseRecord,
@@ -58,6 +66,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [pendingConflicts, setPendingConflicts] = useState<SyncConflict[]>([]);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 0, percentage: 0 });
+  const syncOfflineDataRef = useRef<(() => Promise<SyncResult>) | null>(null);
 
   const {
     isInitialized,
@@ -119,13 +128,6 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
     return () => clearInterval(interval);
   }, [isOfflineModeEnabled, refreshStorageUsage, refreshSyncStatus]);
 
-  useEffect(() => {
-    if (isOnline && isOfflineModeEnabled && pendingSyncCount > 0) {
-      syncOfflineData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline, isOfflineModeEnabled, pendingSyncCount]);
-
   const enableOfflineMode = useCallback(async () => {
     try {
       await initializeOfflineMode();
@@ -185,6 +187,14 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
       } as SyncResult;
     }
   }, [isOnline, isInitialized, syncData, refreshSyncStatus]);
+
+  syncOfflineDataRef.current = syncOfflineData;
+
+  useEffect(() => {
+    if (isOnline && isOfflineModeEnabled && pendingSyncCount > 0) {
+      void syncOfflineDataRef.current?.();
+    }
+  }, [isOnline, isOfflineModeEnabled, pendingSyncCount]);
 
   const clearOfflineData = useCallback(async () => {
     try {
