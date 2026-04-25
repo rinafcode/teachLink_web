@@ -77,17 +77,17 @@ function printResults() {
   checkEnvExample();
 
   if (warnings.length > 0) {
-    console.log('\nWeb3 Validation Warnings:');
+    console.log('\n[WARN] Web3 Validation Warnings:');
     warnings.forEach((warning) => console.warn(`  - ${warning}`));
   }
 
   if (errors.length > 0) {
-    console.error('\nWeb3 Validation Errors:');
+    console.error('\n[ERROR] Web3 Validation Errors:');
     errors.forEach((error) => console.error(`  - ${error}`));
     process.exit(1);
   }
 
-  console.log(`\nWeb3 validation passed (${warnings.length} warning(s))`);
+  console.log(`[OK] Web3 validation passed (${warnings.length} warning(s))`);
   process.exit(0);
 }
 

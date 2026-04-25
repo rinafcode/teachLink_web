@@ -51,7 +51,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       errorMessage: error.message,
       componentStack: errorInfo.componentStack,
     });
-
     // Hook for reporting system
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
