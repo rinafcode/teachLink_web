@@ -28,6 +28,11 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     isOnline,
@@ -228,7 +233,9 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
                     <span className="text-sm text-gray-600">Last Sync</span>
                     <div className="flex items-center space-x-2">
                       <Clock className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-900">{formatTime(lastSyncTime)}</span>
+                      <span className="text-sm text-gray-900">
+                        {isMounted ? formatTime(lastSyncTime) : ''}
+                      </span>
                     </div>
                   </div>
                 )}

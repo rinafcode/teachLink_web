@@ -50,6 +50,11 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
   const [tempTitle, setTempTitle] = useState(title);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setTempTitle(title);
@@ -264,7 +269,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
                   {sale.userEmail}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {format(sale.date, 'M/d/yyyy')}
+                  {isMounted ? format(sale.date, 'M/d/yyyy') : ''}
                 </p>
               </div>
 
