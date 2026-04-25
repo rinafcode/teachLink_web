@@ -47,7 +47,7 @@ export const useContentEditor = ({
           'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[300px] p-4',
       },
     },
-  });
+  }, [initialContent, placeholder, onUpdate]); // Added dependency array
 
   const addImage = useCallback(
     (url: string) => {

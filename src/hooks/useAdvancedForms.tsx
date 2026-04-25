@@ -104,7 +104,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
   // Initialize dependencies
   useEffect(() => {
     stateManager.initializeDependencies(config.fields, config.conditionalLogic || []);
-  }, [config, stateManager]);
+ }, [config.fields, config.conditionalLogic, stateManager]);
 
   // Subscribe to state changes
   useEffect(() => {
@@ -127,8 +127,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     });
 
     return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateManager, validateOnChange, autoSave, formId, onFieldChange]);
+   }, [stateManager, validateOnChange, autoSave, formId, onFieldChange, autoSaveManager]);
 
   // Setup auto-save
   useEffect(() => {
@@ -146,8 +145,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     return () => {
       subscription.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSave, autoSaveInterval, formId]);
+    }, [autoSave, autoSaveInterval, formId, autoSaveManager, loadDraft]);
 
   // Field operations
   const getFieldValue = useCallback(
@@ -261,8 +259,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     } finally {
       setIsSubmitting(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateManager, validateForm, onSubmit, formState.values, autoSave]);
+   }, [stateManager, validateForm, onSubmit, formState.values, autoSave, clearDraft]);
 
   // Auto-save operations
   const saveNow = useCallback(async () => {

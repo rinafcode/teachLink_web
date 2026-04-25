@@ -117,8 +117,8 @@ export function I18nProvider({
     if (savedLanguage && savedLanguage !== language) {
       setLanguage(savedLanguage);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally run once on mount - setLanguage is stable
 
   // Save language preference to localStorage
   const changeLanguage = useCallback(async (newLanguage: LanguageCode) => {
