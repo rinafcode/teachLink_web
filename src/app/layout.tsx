@@ -15,6 +15,17 @@ import { PWAManager } from '@/components/pwa/PWAManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 import { EnvGuard } from '@/components/shared/EnvGuard';
 
+const geistSans = Geist({
+  // ...
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
 export const metadata: Metadata = {
   title: 'TeachLink - Offline Learning Platform',
   description: 'Learn anywhere, anytime with offline capabilities',
