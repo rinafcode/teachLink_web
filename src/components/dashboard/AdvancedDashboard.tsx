@@ -45,12 +45,14 @@ const SortablePanel = React.memo<SortablePanelProps>(({ panel, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: panel.id,
   });
+  const transformValue = CSS.Transform.toString(transform);
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: transformValue ? `${transformValue} translate3d(0,0,0)` : 'translate3d(0,0,0)',
     transition,
     zIndex: isDragging ? 50 : undefined,
     opacity: isDragging ? 0.75 : 1,
+    willChange: isDragging ? 'transform' : undefined,
   };
 
   return (
@@ -103,16 +105,19 @@ export const AdvancedDashboard = React.memo<AdvancedDashboardProps>(({ className
     }),
   );
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    const fromIndex = panels.findIndex((p) => p.id === active.id);
-    const toIndex = panels.findIndex((p) => p.id === over.id);
-    if (fromIndex !== -1 && toIndex !== -1) {
-      reorderPanels(fromIndex, toIndex);
-    }
-  }, [panels, reorderPanels]);
+      const fromIndex = panels.findIndex((p) => p.id === active.id);
+      const toIndex = panels.findIndex((p) => p.id === over.id);
+      if (fromIndex !== -1 && toIndex !== -1) {
+        reorderPanels(fromIndex, toIndex);
+      }
+    },
+    [panels, reorderPanels],
+  );
 
   const handleShare = useCallback(async () => {
     const url = generateShareURL();
@@ -202,10 +207,10 @@ export const AdvancedDashboard = React.memo<AdvancedDashboardProps>(({ className
             {panels.map((panel, idx) => (
               <SortablePanel key={panel.id} panel={panel}>
                 <motion.div
-                  layout
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: idx * 0.05 }}
+                  style={{ willChange: 'transform, opacity', transform: 'translate3d(0,0,0)' }}
                   className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 pr-10"
                 >
                   {/* Panel header */}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import type { Course, PaginatedResponse } from '@/types/api';
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse<PaginatedResponse<Course>>> {
   const { searchParams } = new URL(request.url);
   const limit = searchParams.get('limit') || '10';
 

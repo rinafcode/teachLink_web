@@ -54,6 +54,7 @@ export const useSearchFilters = () => {
     }
 
     const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '';
+    const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '/';
     router.replace(newUrl, { scroll: false });
   }, [filters, pathname, router]); // searchParams only used for initial state
 

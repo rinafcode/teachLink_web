@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import type { ApiResponse, UserProgress } from '@/types/api';
 
-export async function GET() {
+export async function GET(): Promise<NextResponse<ApiResponse<UserProgress>>> {
   // Mock user progress data
   return NextResponse.json({
+    success: true,
     data: {
       streak: 7,
       totalTimeSpent: 1245, // minutes
@@ -14,7 +16,7 @@ export async function GET() {
   });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<ApiResponse<UserProgress>>> {
   const body = await request.json();
 
   // Mock progress update

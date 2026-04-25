@@ -15,7 +15,7 @@ export type RequestInterceptor = (config: RequestConfig) => Promise<RequestConfi
 /**
  * Response interceptor function type
  */
-export type ResponseInterceptor<T = unknown> = (response: T) => Promise<T> | T;
+export type ResponseInterceptor<T = any> = (response: T) => Promise<T> | T;
 
 /**
  * Error interceptor function type
@@ -79,12 +79,12 @@ function getRetryDelay(attempt: number, baseDelay: number): number {
 class ApiClientImpl {
   private config: Required<ApiClientConfig>;
   private requestInterceptors: RequestInterceptor[] = [];
-  private responseInterceptors: ResponseInterceptor[] = [];
+  private responseInterceptors: ResponseInterceptor<unknown>[] = [];
   private errorInterceptors: ErrorInterceptor[] = [];
 
   constructor(config: ApiClientConfig = {}) {
     this.config = {
-      baseURL: config.baseURL || '',
+      baseURL: config.baseURL || process.env.NEXT_PUBLIC_API_URL || '',
       timeout: config.timeout || DEFAULT_TIMEOUT_MS,
       maxRetries: config.maxRetries || MAX_RETRIES,
       retryDelay: config.retryDelay || RETRY_DELAY_MS,
@@ -101,7 +101,7 @@ class ApiClientImpl {
   /**
    * Add a response interceptor
    */
-  addResponseInterceptor(interceptor: ResponseInterceptor): void {
+  addResponseInterceptor(interceptor: ResponseInterceptor<unknown>): void {
     this.responseInterceptors.push(interceptor);
   }
 
@@ -127,11 +127,11 @@ class ApiClientImpl {
    * Apply all response interceptors
    */
   private async applyResponseInterceptors<T>(response: T): Promise<T> {
-    let processedResponse = response;
+    let processedResponse: any = response;
     for (const interceptor of this.responseInterceptors) {
       processedResponse = await interceptor(processedResponse);
     }
-    return processedResponse;
+    return processedResponse as T;
   }
 
   /**
@@ -175,9 +175,7 @@ class ApiClientImpl {
         signal: controller.signal,
       });
 
-      const url = this.config.baseURL
-        ? `${this.config.baseURL}${config.url}`
-        : config.url;
+      const url = this.config.baseURL ? `${this.config.baseURL}${config.url}` : config.url;
 
       const response = await fetch(url, processedConfig);
       clearTimeout(timer);
@@ -206,7 +204,7 @@ class ApiClientImpl {
       }
 
       const data = (await response.json()) as T;
-      
+
       // Apply response interceptors
       const processedResponse = await this.applyResponseInterceptors(data);
       return processedResponse;
@@ -214,7 +212,7 @@ class ApiClientImpl {
       clearTimeout(timer);
 
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
-      
+
       // Apply error interceptors
       await this.applyErrorInterceptors(error);
 

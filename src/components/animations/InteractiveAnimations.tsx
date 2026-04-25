@@ -25,16 +25,17 @@ export default function InteractiveAnimations({
     if (!el) return;
 
     let dragging = false;
-
-    function getCoord(e: PointerEvent | MouseEvent) {
-      return (e as PointerEvent).clientX ?? (e as MouseEvent).clientX;
-    }
+    const resetCompositorHints = () => {
+      el.style.willChange = '';
+    };
 
     const onPointerDown = (e: PointerEvent) => {
       dragging = true;
       startRef.current = axis === 'x' ? e.clientX : e.clientY;
       el.setPointerCapture(e.pointerId);
       if (ctrlRef.current) ctrlRef.current.stop();
+      el.style.willChange = 'transform';
+      el.style.transform = axis === 'x' ? 'translate3d(0,0,0)' : 'translate3d(0,0,0)';
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -66,6 +67,10 @@ export default function InteractiveAnimations({
         ctrlRef.current = engine.spring(delta, 0, (v) => {
           el.style.transform = axis === 'x' ? `translate3d(${v}px,0,0)` : `translate3d(0,${v}px,0)`;
         });
+        ctrlRef.current.onStop = () => {
+          el.style.transform = 'translate3d(0,0,0)';
+          resetCompositorHints();
+        };
       }
     };
 
@@ -77,11 +82,16 @@ export default function InteractiveAnimations({
       el.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
+      resetCompositorHints();
     };
   }, [axis, onDismiss, threshold]);
 
   return (
-    <div ref={ref} className={className} style={{ touchAction: 'pan-y' }}>
+    <div
+      ref={ref}
+      className={className}
+      style={{ touchAction: axis === 'x' ? 'pan-y' : 'pan-x', transform: 'translate3d(0,0,0)' }}
+    >
       {children}
     </div>
   );

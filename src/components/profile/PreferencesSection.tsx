@@ -58,6 +58,22 @@ export default function PreferencesSection() {
               </label>
             </div>
           </div>
+          <div>
+            <span className="block text-sm font-medium text-gray-700 mb-2">Performance</span>
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('prefetching')}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <div className="flex flex-col">
+                <span className="text-gray-700">Enable Smart Prefetching</span>
+                <span className="text-xs text-gray-500">
+                  Automatically load pages before you click. Disabled on slow connections.
+                </span>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
     </div>

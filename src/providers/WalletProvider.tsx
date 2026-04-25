@@ -13,16 +13,22 @@ import React, {
 const validateWalletEnv = () => {
   const warnings: string[] = [];
 
-  if (!process.env.NEXT_PUBLIC_STARKNET_NETWORK) {
+  if (typeof process !== 'undefined' && !process.env.NEXT_PUBLIC_STARKNET_NETWORK) {
     warnings.push('NEXT_PUBLIC_STARKNET_NETWORK not set, defaulting to testnet');
   }
 
-  if (process.env.NODE_ENV === 'development' && warnings.length > 0) {
+  if (
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV === 'development' &&
+    warnings.length > 0
+  ) {
     console.warn('[WalletProvider] Environment warnings:', warnings);
   }
 
   return {
-    network: process.env.NEXT_PUBLIC_STARKNET_NETWORK || 'goerli-alpha',
+    network:
+      (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_STARKNET_NETWORK : null) ||
+      'goerli-alpha',
     isValid: true, // Non-blocking - app works without wallet
   };
 };

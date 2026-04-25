@@ -7,10 +7,22 @@ export function validateStarknetEnv(): { valid: boolean; missing: string[] } {
 export function getStarknetNetwork(): string {
   return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? 'testnet';
 }
+import { z } from 'zod';
 /**
  * Web3 Environment Validation
  * Validates required environment variables for Starknet integration
  */
+
+const envSchema = z.object({
+  NEXT_PUBLIC_STARKNET_NETWORK: z
+    .enum(['mainnet-alpha', 'goerli-alpha', 'sepolia-alpha'])
+    .default('goerli-alpha'),
+  NEXT_PUBLIC_STARKNET_RPC_URL: z.string().url().optional(),
+  NEXT_PUBLIC_API_URL: z.string().url().optional(),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+});
+
+export type EnvConfig = z.infer<typeof envSchema>;
 
 export interface EnvValidationResult {
   isValid: boolean;
@@ -43,12 +55,43 @@ const NETWORKS = {
 type NetworkType = keyof typeof NETWORKS;
 
 /**
+ * Validates the entire application environment.
+ * Throws or returns errors for missing required variables.
+ */
+export function validateAppEnv(): { success: boolean; data?: EnvConfig; error?: string } {
+  try {
+    const data = envSchema.parse({
+      NEXT_PUBLIC_STARKNET_NETWORK: process.env.NEXT_PUBLIC_STARKNET_NETWORK,
+      NEXT_PUBLIC_STARKNET_RPC_URL: process.env.NEXT_PUBLIC_STARKNET_RPC_URL,
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const missingFields = error.issues.map((i) => i.path.join('.')).join(', ');
+      return {
+        success: false,
+        error: `Invalid environment configuration. Missing or invalid fields: ${missingFields}`,
+      };
+    }
+    return { success: false, error: 'Unknown environment validation error' };
+  }
+}
+
+/**
  * Validates web3-related environment variables
  * Returns warnings instead of throwing to prevent build breaks
  */
 export function validateWeb3Env(): EnvValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
+
+  const validation = validateAppEnv();
+
+  if (!validation.success) {
+    errors.push(validation.error || 'Environment validation failed');
+  }
 
   const network = process.env.NEXT_PUBLIC_STARKNET_NETWORK || 'goerli-alpha';
   const customRpcUrl = process.env.NEXT_PUBLIC_STARKNET_RPC_URL;
@@ -106,4 +149,13 @@ export function isValidStarknetAddress(address: string): boolean {
   // Starknet addresses are 66 chars (0x + 64 hex chars) or shorter
   const cleanAddress = address.toLowerCase();
   return /^0x[a-f0-9]{1,64}$/i.test(cleanAddress);
+}
+
+export function validateStarknetEnv(): { valid: boolean; missing: string[] } {
+  const { isValid, errors } = validateWeb3Env();
+  return { valid: isValid, missing: errors };
+}
+
+export function getStarknetNetwork(): string {
+  return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? 'goerli-alpha';
 }

@@ -7,6 +7,8 @@ import { useProfileUpdate } from '../../hooks/useProfileUpdate';
 import { User, Mail, FileText } from 'lucide-react';
 import ImageUploader from '../shared/ImageUploader';
 import PreferencesSection from './PreferencesSection';
+import { FormInput } from '../forms/FormInput';
+import { useStore } from '../../store/stateManager';
 
 // Schema definition
 const profileSchema = z.object({
@@ -19,24 +21,29 @@ const profileSchema = z.object({
     push: z.boolean(),
   }),
   theme: z.enum(['light', 'dark']),
+  prefetching: z.boolean(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfileEditForm() {
   const { updateProfile, isLoading } = useProfileUpdate();
+  const user = useStore((state) => state.user);
+  const setPreferences = useStore((state) => state.setPreferences);
+  const setUser = useStore((state) => state.setUser);
 
   const methods = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: 'John Doe',
-      email: 'john@example.com',
+      name: user.name || 'John Doe',
+      email: user.id ? 'user@example.com' : 'john@example.com', // Placeholder if no user
       bio: 'Lifelong learner and enthusiast.',
       notifications: {
-        email: true,
+        email: user.preferences.notifications,
         push: false,
       },
-      theme: 'light',
+      theme: user.preferences.theme,
+      prefetching: user.preferences.prefetching,
     },
   });
 
@@ -48,7 +55,15 @@ export default function ProfileEditForm() {
   } = methods;
 
   const onSubmit = async (data: ProfileFormData) => {
-    await updateProfile(data);
+    const success = await updateProfile(data);
+    if (success) {
+      setUser({ name: data.name });
+      setPreferences({
+        theme: data.theme,
+        notifications: data.notifications.email,
+        prefetching: data.prefetching,
+      });
+    }
   };
 
   const handleImageSelect = (file: File) => {
@@ -74,69 +89,24 @@ export default function ProfileEditForm() {
             </div>
 
             <div className="grow space-y-6 w-full">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                  </div>
-                  <input
-                    type="text"
-                    {...register('name')}
-                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 ${
-                      errors.name ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    placeholder="Your Name"
-                  />
-                </div>
-                {errors.name && (
-                  <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
+              <FormInput name="name" label="Full Name" icon={User} placeholder="Your Name" />
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                  </div>
-                  <input
-                    type="email"
-                    {...register('email')}
-                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 ${
-                      errors.email ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    placeholder="you@company.com"
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
+              <FormInput
+                name="email"
+                label="Email Address"
+                icon={Mail}
+                type="email"
+                placeholder="you@company.com"
+              />
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
-                <div className="relative group">
-                  <div className="absolute top-3 left-3 pointer-events-none">
-                    <FileText className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                  </div>
-                  <textarea
-                    {...register('bio')}
-                    rows={4}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 resize-none hover:border-gray-300"
-                    placeholder="Tell us a little about yourself..."
-                  />
-                </div>
-                {errors.bio && (
-                  <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.bio.message}</p>
-                )}
-              </div>
+              <FormInput
+                name="bio"
+                label="Bio"
+                icon={FileText}
+                as="textarea"
+                rows={4}
+                placeholder="Tell us a little about yourself..."
+              />
             </div>
           </div>
 

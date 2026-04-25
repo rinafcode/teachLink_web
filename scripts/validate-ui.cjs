@@ -72,6 +72,11 @@ function checkResponsiveTailwind(content, filePath) {
 
   lines.forEach((line, index) => {
     // Check for grid/flex without any responsive classes
+  if (!content.includes('className')) return;
+
+  const lines = content.split('\n');
+
+  lines.forEach((line, index) => {
     if (/className=["'][^"']*\b(grid|flex)\b[^"']*["']/.test(line)) {
       const hasResponsive = /\b(sm|md|lg|xl|2xl):/.test(line);
       if (!hasResponsive && line.includes('grid-cols-') && !line.includes('grid-cols-1')) {
@@ -129,5 +134,19 @@ function printResults() {
 }
 
 // Run validation
+    console.log('\n[WARN] UI Validation Warnings:');
+    warnings.forEach((warning) => console.warn(`  - ${warning}`));
+  }
+
+  if (errors.length > 0) {
+    console.error('\n[ERROR] UI Validation Errors:');
+    errors.forEach((error) => console.error(`  - ${error}`));
+    process.exit(1);
+  }
+
+  console.log('\n[OK] UI validation passed');
+  process.exit(0);
+}
+
 validateFiles();
 printResults();

@@ -11,6 +11,7 @@ interface UserState {
     theme: 'light' | 'dark';
     language: string;
     notifications: boolean;
+    prefetching: boolean;
   };
 }
 
@@ -49,6 +50,7 @@ export const useStore = create<StoreState>()(
             theme: 'light' as 'light' | 'dark',
             language: 'en',
             notifications: true,
+            prefetching: true,
           },
         },
         app: {
