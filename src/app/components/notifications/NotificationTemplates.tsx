@@ -306,6 +306,7 @@ export default function NotificationTemplates({
                         </div>
                         <div className="flex items-center gap-1 ml-4">
                           <button
+                            aria-label="Preview"
                             onClick={() => setPreviewTemplate(template)}
                             className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"
                             title="Preview"
@@ -313,6 +314,7 @@ export default function NotificationTemplates({
                             <Eye size={16} />
                           </button>
                           <button
+                            aria-label="Duplicate"
                             onClick={() => handleDuplicateTemplate(template)}
                             className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"
                             title="Duplicate"
@@ -320,6 +322,7 @@ export default function NotificationTemplates({
                             <Copy size={16} />
                           </button>
                           <button
+                            aria-label="Edit"
                             onClick={() => setEditingTemplate(template)}
                             className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"
                             title="Edit"
@@ -327,6 +330,7 @@ export default function NotificationTemplates({
                             <Edit2 size={16} />
                           </button>
                           <button
+                            aria-label="Delete"
                             onClick={() => handleDeleteTemplate(template.id)}
                             className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-red-600"
                             title="Delete"
@@ -334,6 +338,7 @@ export default function NotificationTemplates({
                             <Trash2 size={16} />
                           </button>
                           <button
+                            aria-label="Toggle details"
                             onClick={() => setExpandedTemplate(isExpanded ? null : template.id)}
                             className="p-1.5 rounded hover:bg-gray-200 text-gray-400"
                           >
@@ -397,6 +402,7 @@ export default function NotificationTemplates({
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="font-semibold text-gray-900">Template Preview</h3>
               <button
+                aria-label="Close"
                 onClick={() => setPreviewTemplate(null)}
                 className="text-gray-400 hover:text-gray-600"
               >
@@ -572,7 +578,11 @@ function TemplateEditor({ template, onSave, onCancel }: TemplateEditorProps) {
           <h3 className="font-semibold text-gray-900">
             {template ? 'Edit Template' : 'Create Template'}
           </h3>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+          <button
+            aria-label="Close"
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600"
+          >
             <X size={20} />
           </button>
         </div>
@@ -695,6 +705,7 @@ function TemplateEditor({ template, onSave, onCancel }: TemplateEditorProps) {
                 >
                   {`{{${variable}}}`}
                   <button
+                    aria-label="Remove variable"
                     onClick={() => removeVariable(variable)}
                     className="text-blue-600 hover:text-blue-800"
                   >

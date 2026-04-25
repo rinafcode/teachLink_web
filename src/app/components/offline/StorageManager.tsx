@@ -209,6 +209,8 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       {/* Storage Manager Toggle */}
       <button
         onClick={() => setShowManager(!showManager)}
+        aria-label={showManager ? 'Close storage manager' : 'Open storage manager'}
+        aria-expanded={showManager}
         className="fixed bottom-6 left-6 z-50 bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700 transition-colors"
       >
         <HardDrive className="w-6 h-6" />
@@ -233,6 +235,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-gray-900">Storage Manager</h3>
                 <button
+                  aria-label="Close storage manager"
                   onClick={() => setShowManager(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -409,6 +412,8 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                         </div>
                         <button
                           onClick={() => pinItem(item.id)}
+                          aria-label={item.isPinned ? `Unpin ${item.title}` : `Pin ${item.title}`}
+                          aria-pressed={item.isPinned}
                           className={`p-1 text-xs rounded ${
                             item.isPinned
                               ? 'bg-blue-100 text-blue-600'

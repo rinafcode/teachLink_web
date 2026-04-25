@@ -189,6 +189,8 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
       {/* Download Manager Toggle */}
       <button
         onClick={() => setShowManager(!showManager)}
+        aria-label={showManager ? 'Close download manager' : 'Open download manager'}
+        aria-expanded={showManager}
         className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
       >
         <Download className="w-6 h-6" />
@@ -315,6 +317,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                         {download.status === 'downloading' && (
                           <button
                             onClick={() => pauseDownload(download.id)}
+                            aria-label={`Pause download of ${download.title}`}
                             className="p-1 text-gray-400 hover:text-gray-600"
                           >
                             <Pause className="w-3 h-3" />
@@ -323,6 +326,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                         {download.status === 'paused' && (
                           <button
                             onClick={() => resumeDownload(download.id)}
+                            aria-label={`Resume download of ${download.title}`}
                             className="p-1 text-gray-400 hover:text-gray-600"
                           >
                             <Play className="w-3 h-3" />
@@ -330,6 +334,7 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({ className = ''
                         )}
                         <button
                           onClick={() => cancelDownload(download.id)}
+                          aria-label={`Cancel download of ${download.title}`}
                           className="p-1 text-gray-400 hover:text-red-500"
                         >
                           <XCircle className="w-3 h-3" />

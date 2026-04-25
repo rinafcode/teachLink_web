@@ -222,6 +222,8 @@ describe('retryWithBackoff', () => {
   it('throws after exhausting all attempts', async () => {
     const fn = vi.fn().mockRejectedValue({ status: 500 });
     const retryPromise = retryWithBackoff(fn, { maxAttempts: 2, initialDelayMs: 10 });
+
+    // Attach error handler immediately to avoid Unhandled Rejection warning
     const caughtPromise = retryPromise.catch((e) => e);
     await vi.runAllTimersAsync();
 
