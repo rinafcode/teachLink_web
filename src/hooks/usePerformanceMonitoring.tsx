@@ -15,6 +15,7 @@ import {
   buildOptimizationSuggestions,
   evaluatePerformanceDegradation,
   loadTrendHistory,
+  reportVitalToAnalytics,
   type PerformanceAlert,
   type PerformanceMetric,
   type PerformanceTrendPoint,
@@ -62,6 +63,9 @@ function usePerformanceMonitoringState(
     const unsub = subscribeCoreWebVitals((metric) => {
       setMetrics((prev) => ({ ...prev, [metric.name]: metric }));
       onMetricRef.current?.(metric);
+
+      // Report to analytics service
+      reportVitalToAnalytics(metric);
 
       if (enableTrendRecording) {
         const point: PerformanceTrendPoint = {
