@@ -26,39 +26,47 @@ export default function InteractiveAnimations({
 
     let dragging = false;
     const resetCompositorHints = () => {
-      el.style.willChange = '';
+      if (el) el.style.willChange = '';
     };
 
     const onPointerDown = (e: PointerEvent) => {
       dragging = true;
       startRef.current = axis === 'x' ? e.clientX : e.clientY;
       el.setPointerCapture(e.pointerId);
+
       if (ctrlRef.current) ctrlRef.current.stop();
+
       el.style.willChange = 'transform';
-      el.style.transform = axis === 'x' ? 'translate3d(0,0,0)' : 'translate3d(0,0,0)';
     };
 
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
       const cur = axis === 'x' ? e.clientX : e.clientY;
       const delta = cur - startRef.current;
-      // apply transform directly for immediate response
-      const transform =
-        axis === 'x' ? `translate3d(${delta}px,0,0)` : `translate3d(0,${delta}px,0)`;
-      el.style.transform = transform;
-      el.style.willChange = 'transform';
+
+      // Use requestAnimationFrame for the manual move to keep it in sync with refresh rate
+      requestAnimationFrame(() => {
+        if (!dragging) return;
+        el.style.transform =
+          axis === 'x' ? `translate3d(${delta}px,0,0)` : `translate3d(0,${delta}px,0)`;
+      });
     };
 
     const onPointerUp = (e: PointerEvent) => {
       if (!dragging) return;
       dragging = false;
+
       const cur = axis === 'x' ? e.clientX : e.clientY;
       const delta = cur - startRef.current;
       const abs = Math.abs(delta);
+
+      // READ outside the loop to avoid thrashing
+      const exitDistance = axis === 'x' ? window.innerWidth : window.innerHeight;
+
       if (abs > threshold && onDismiss) {
         // fling away
         const dir = delta > 0 ? 1 : -1;
-        ctrlRef.current = engine.spring(delta, dir * (window.innerWidth || 1200), (v) => {
+        ctrlRef.current = engine.spring(delta, dir * exitDistance, (v) => {
           el.style.transform = axis === 'x' ? `translate3d(${v}px,0,0)` : `translate3d(0,${v}px,0)`;
         });
         ctrlRef.current.onStop = () => onDismiss();
@@ -90,7 +98,11 @@ export default function InteractiveAnimations({
     <div
       ref={ref}
       className={className}
-      style={{ touchAction: axis === 'x' ? 'pan-y' : 'pan-x', transform: 'translate3d(0,0,0)' }}
+      style={{
+        touchAction: axis === 'x' ? 'pan-y' : 'pan-x',
+        transform: 'translate3d(0,0,0)',
+        willChange: 'transform',
+      }}
     >
       {children}
     </div>
