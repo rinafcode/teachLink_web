@@ -9,7 +9,8 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
   }
 
   const { searchParams } = new URL(request.url);
-  const limit = searchParams.get('limit') || '10';
+  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const cursor = searchParams.get('cursor');
 
   const courses = [
     {
@@ -53,10 +54,16 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
     },
   ];
 
+  const startIndex = cursor ? parseInt(cursor, 10) : 0;
+  const page = courses.slice(startIndex, startIndex + limit);
+  const nextIndex = startIndex + limit;
+  const nextCursor = nextIndex < courses.length ? String(nextIndex) : undefined;
+
   return addHeaders(
     NextResponse.json({
-      data: courses.slice(0, parseInt(limit)),
+      data: page,
       total: courses.length,
+      nextCursor,
     }),
   );
 }
