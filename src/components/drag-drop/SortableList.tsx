@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { DragDropItem } from '../../utils/dragDropUtils';
 
@@ -35,6 +35,37 @@ const SortableRow = ({
   onMoveToZone: (itemId: string, fromZoneId: string, toZoneId: string, toIndex?: number) => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [isKeyboardDragging, setIsKeyboardDragging] = useState(false);
+
+  const moveItem = (direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0) return;
+    onReorder(zoneId, index, targetIndex);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    switch (e.key) {
+      case ' ':
+      case 'Enter':
+        e.preventDefault();
+        setIsKeyboardDragging((prev) => !prev);
+        break;
+
+      case 'ArrowUp':
+        e.preventDefault();
+        if (isKeyboardDragging) moveItem('up');
+        break;
+
+      case 'ArrowDown':
+        e.preventDefault();
+        if (isKeyboardDragging) moveItem('down');
+        break;
+
+      case 'Escape':
+        setIsKeyboardDragging(false);
+        break;
+    }
+  };
 
   const [{ isDragging }, drag] = useDrag(
     () => ({
@@ -56,33 +87,20 @@ const SortableRow = ({
     () => ({
       accept: DRAG_ITEM_TYPE,
       hover: (dragged: DragPayload, monitor) => {
-        if (!ref.current) {
-          return;
-        }
-
-        if (dragged.fromZoneId !== zoneId) {
-          return;
-        }
-
-        if (dragged.index === index) {
-          return;
-        }
+        if (!ref.current) return;
+        if (dragged.fromZoneId !== zoneId) return;
+        if (dragged.index === index) return;
 
         const hoverRect = ref.current.getBoundingClientRect();
         const hoverMiddleY = (hoverRect.bottom - hoverRect.top) / 2;
+
         const clientOffset = monitor.getClientOffset();
-        if (!clientOffset) {
-          return;
-        }
+        if (!clientOffset) return;
 
         const hoverClientY = clientOffset.y - hoverRect.top;
 
-        if (dragged.index < index && hoverClientY < hoverMiddleY) {
-          return;
-        }
-        if (dragged.index > index && hoverClientY > hoverMiddleY) {
-          return;
-        }
+        if (dragged.index < index && hoverClientY < hoverMiddleY) return;
+        if (dragged.index > index && hoverClientY > hoverMiddleY) return;
 
         onReorder(zoneId, dragged.index, index);
         dragged.index = index;
@@ -103,12 +121,29 @@ const SortableRow = ({
   return (
     <div
       ref={ref}
-      className={`mb-2 rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition ${
+      tabIndex={0}
+      role="option"
+      aria-grabbed={isKeyboardDragging}
+      onKeyDown={handleKeyDown}
+      className={`mb-2 rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition outline-none focus:ring-2 focus:ring-blue-500 ${
         isDragging ? 'opacity-50' : 'opacity-100'
-      }`}
+      } ${isKeyboardDragging ? 'opacity-70' : ''}`}
     >
-      <div className="font-medium text-slate-800">{item.title}</div>
-      <div className="mt-1 text-xs text-slate-500">#{item.order + 1}</div>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="font-medium text-slate-800">{item.title}</div>
+          <div className="mt-1 text-xs text-slate-500">#{item.order + 1}</div>
+        </div>
+
+        {/* Accessible drag handle */}
+        <button
+          type="button"
+          aria-label={`Drag handle for ${item.title}`}
+          className="ml-2 cursor-grab rounded p-1 focus:ring-2 focus:ring-blue-500"
+        >
+          ⠿
+        </button>
+      </div>
     </div>
   );
 };
@@ -129,7 +164,7 @@ export const SortableList = ({
   }
 
   return (
-    <div>
+    <div role="listbox" aria-label="Sortable content list">
       {items.map((item, index) => (
         <SortableRow
           key={item.id}
