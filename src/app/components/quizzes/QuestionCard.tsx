@@ -1,6 +1,6 @@
 'use client';
 
-import { Question, useQuizStore } from '@/app/store/quizStore';
+import { Question } from '@/app/store/quizStore';
 import MultipleChoiceQuestion from './question-types/MultipleChoiceQuestion';
 import TrueFalseQuestion from './question-types/TrueFalseQuestion';
 import dynamic from 'next/dynamic';
@@ -15,16 +15,14 @@ interface QuestionCardProps {
 }
 
 export default function QuestionCard({ question }: QuestionCardProps) {
-  const { isReviewMode } = useQuizStore();
-
   const renderQuestion = () => {
     switch (question.type) {
       case 'multiple-choice':
-        return <MultipleChoiceQuestion question={question} isReviewMode={isReviewMode} />;
+        return <MultipleChoiceQuestion question={question} />;
       case 'true-false':
-        return <TrueFalseQuestion question={question} isReviewMode={isReviewMode} />;
+        return <TrueFalseQuestion question={question} />;
       case 'code-challenge':
-        return <CodeChallengeQuestion question={question} isReviewMode={isReviewMode} />;
+        return <CodeChallengeQuestion question={question} />;
       default:
         return <div>Unsupported question type</div>;
     }

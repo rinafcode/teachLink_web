@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useVideoPlayerContext } from './VideoPlayerContext';
 
 // Inline SVG Icons to replace lucide-react
 const ClockIcon = ({ size = 24, className = '' }) => (
@@ -41,14 +42,8 @@ interface TranscriptEntry {
   speaker?: string;
 }
 
-interface TranscriptViewProps {
-  transcript: TranscriptEntry[];
-  currentTime: number;
-  onSeek: (time: number) => void;
-}
-
-export const TranscriptView: React.FC<TranscriptViewProps> = React.memo(
-  ({ transcript, currentTime, onSeek }) => {
+export const TranscriptView: React.FC = React.memo(() => {
+  const { transcript, currentTime, seekToLearning: onSeek } = useVideoPlayerContext();
     const containerRef = useRef<HTMLDivElement>(null);
     const activeEntryRef = useRef<HTMLDivElement>(null);
 
@@ -161,7 +156,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = React.memo(
                             e.stopPropagation();
                             onSeek(entry.time);
                           }}
-                          className={`flex-shrink-0 p-1 rounded-full transition-colors self-start mt-1 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 ${
+                          className={`shrink-0 p-1 rounded-full transition-colors self-start mt-1 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 ${
                             isActive
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
@@ -207,7 +202,6 @@ export const TranscriptView: React.FC<TranscriptViewProps> = React.memo(
           </div>
         </div>
       </div>
-    );
-  },
-);
+  );
+});
 TranscriptView.displayName = 'TranscriptView';
