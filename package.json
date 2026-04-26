@@ -18,6 +18,9 @@
     "test:watch": "vitest --watch",
     "validate:ui": "node scripts/validate-ui.cjs",
     "validate:web3": "node scripts/validate-web3.cjs",
+    "check-i18n": "node scripts/check-i18n.cjs",
+    "check-locales": "node scripts/check-locales.mjs",
+    "prebuild": "npm run check-locales && npm run check-i18n",
     "validate": "npm run validate:ui && npm run validate:web3"
   },
   "dependencies": {

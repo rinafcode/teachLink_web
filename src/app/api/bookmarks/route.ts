@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { VideoBookmark, ApiResponse, SuccessResponse } from '@/types/api';
+import { withRateLimit } from '@/lib/ratelimit';
 
 type PersistedVideoBookmark = VideoBookmark;
 
@@ -13,23 +14,35 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
 export async function GET(
   request: Request,
 ): Promise<NextResponse<ApiResponse<PersistedVideoBookmark[]> | SuccessResponse>> {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse;
+  }
+
   const { searchParams } = new URL(request.url);
   const lessonId = searchParams.get('lessonId');
   const userId = searchParams.get('userId') ?? undefined;
 
   if (!lessonId) {
-    return NextResponse.json({ success: false, message: 'lessonId is required' }, { status: 400 });
+    return addHeaders(NextResponse.json({ success: false, message: 'lessonId is required' }, { status: 400 }));
   }
 
-  return NextResponse.json({
-    data: bookmarksStore.get(keyFor(userId, lessonId)) ?? [],
-    success: true,
-  });
+  return addHeaders(
+    NextResponse.json({
+      data: bookmarksStore.get(keyFor(userId, lessonId)) ?? [],
+      success: true,
+    }),
+  );
 }
 
 export async function POST(
   request: Request,
 ): Promise<NextResponse<ApiResponse<PersistedVideoBookmark> | SuccessResponse>> {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse;
+  }
+
   const body = (await request.json()) as {
     userId?: string;
     lessonId: string;
@@ -37,7 +50,7 @@ export async function POST(
   };
 
   if (!body?.lessonId || !body?.bookmark?.time || !body?.bookmark?.title) {
-    return NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 });
+    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
   }
 
   const now = new Date().toISOString();
@@ -57,10 +70,15 @@ export async function POST(
   const next = [persisted, ...prev.filter((b) => b.id !== persisted.id)];
   bookmarksStore.set(key, next);
 
-  return NextResponse.json({ success: true, data: persisted });
+  return addHeaders(NextResponse.json({ success: true, data: persisted }));
 }
 
 export async function PATCH(request: Request): Promise<NextResponse<SuccessResponse>> {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse;
+  }
+
   const body = (await request.json()) as {
     userId?: string;
     lessonId: string;
@@ -71,7 +89,7 @@ export async function PATCH(request: Request): Promise<NextResponse<SuccessRespo
   };
 
   if (!body?.lessonId || !body?.id || !body?.title) {
-    return NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 });
+    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
   }
 
   const key = keyFor(body.userId, body.lessonId);
@@ -91,13 +109,18 @@ export async function PATCH(request: Request): Promise<NextResponse<SuccessRespo
   );
 
   bookmarksStore.set(key, next);
-  return NextResponse.json({ success: true });
+  return addHeaders(NextResponse.json({ success: true }));
 }
 
 export async function DELETE(request: Request): Promise<NextResponse<SuccessResponse>> {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse;
+  }
+
   const body = (await request.json()) as { userId?: string; lessonId: string; id: string };
   if (!body?.lessonId || !body?.id) {
-    return NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 });
+    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
   }
 
   const key = keyFor(body.userId, body.lessonId);
@@ -107,5 +130,5 @@ export async function DELETE(request: Request): Promise<NextResponse<SuccessResp
     prev.filter((b) => b.id !== body.id),
   );
 
-  return NextResponse.json({ success: true });
+  return addHeaders(NextResponse.json({ success: true }));
 }

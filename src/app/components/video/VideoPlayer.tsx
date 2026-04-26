@@ -417,7 +417,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             {/* Progress Bar */}
             <div className="mb-4">
               <div
-                className="relative h-1 bg-white/30 rounded-full cursor-pointer"
+                className="relative h-1 bg-white/30 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black"
                 onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   const clickX = e.clientX - rect.left;
@@ -457,7 +457,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <div className="flex items-center space-x-4">
                 <button
                   onClick={isPlaying ? pause : play}
-                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors md:p-2"
+                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors md:p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   aria-label={isPlaying ? 'Pause video' : 'Play video'}
                 >
                   {isPlaying ? (
@@ -470,7 +470,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={toggleMute}
-                    className="p-2 rounded hover:bg-white/20 transition-colors md:p-1"
+                    className="p-2 rounded hover:bg-white/20 transition-colors md:p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
                   >
                     {isMuted ? (
@@ -486,7 +486,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     step="0.1"
                     value={volume}
                     onChange={(e) => setVolume(parseFloat(e.target.value))}
-                    className="w-20 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
+                    className="w-20 h-1 bg-white/30 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                     aria-label="Volume control"
                   />
                 </div>
@@ -501,7 +501,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   onClick={() => setShowBookmarks(!showBookmarks)}
                   className={`p-3 rounded ${
                     showBookmarks ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
-                  } transition-colors md:p-2`}
+                  } transition-colors md:p-2 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   title="Bookmarks"
                   aria-label={showBookmarks ? 'Hide bookmarks panel' : 'Show bookmarks panel'}
                   aria-expanded={showBookmarks}

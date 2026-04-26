@@ -14,6 +14,7 @@ import {
   retryWithBackoff,
   classifyError,
 } from '@/utils/errorUtils';
+import { useToast } from '@/context/ToastContext';
 
 export interface UseErrorHandlingState {
   error: any | null;
@@ -61,6 +62,8 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
     isRetryable: false,
   });
 
+  const { error: toastError, success: toastSuccess } = useToast();
+
   const timeoutRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController>();
 
@@ -99,9 +102,12 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
         errorReportingService.reportError(error).catch(console.error);
       }
 
+      // Show toast notification for errors
+      toastError(userMessage);
+
       onError?.(error);
     },
-    [reportErrors, onError],
+    [reportErrors, onError, toastError],
   );
 
   /**

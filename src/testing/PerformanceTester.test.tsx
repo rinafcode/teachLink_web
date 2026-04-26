@@ -19,7 +19,7 @@ const BUDGETS = {
   SEARCH_FILTER: 30,
   SORT_1000: 50,
   COMPUTATION: 100,
-  RERENDER_CYCLE: 100,
+  RERENDER_CYCLE: 500,
 };
 
 // Stub components

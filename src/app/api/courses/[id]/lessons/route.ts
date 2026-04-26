@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/ratelimit';
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   await params;
-  // Mock lessons data
   const lessons = [
     {
       id: '1',
@@ -30,8 +35,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     },
   ];
 
-  return NextResponse.json({
-    data: lessons,
-    success: true,
-  });
+  return addHeaders(
+    NextResponse.json({
+      data: lessons,
+      success: true,
+    }),
+  );
 }

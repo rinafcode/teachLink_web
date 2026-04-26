@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { SuccessResponse } from '@/types/api';
+import { withRateLimit } from '@/lib/ratelimit';
 
 type AnalyticsEvent = {
   userId?: string;
@@ -16,6 +17,11 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
 };
 
 export async function POST(request: Request): Promise<NextResponse<SuccessResponse>> {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse;
+  }
+
   const body = (await request.json()) as {
     userId?: string;
     lessonId: string;
@@ -24,7 +30,7 @@ export async function POST(request: Request): Promise<NextResponse<SuccessRespon
   };
 
   if (!body?.lessonId || !body?.eventType) {
-    return NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 });
+    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
   }
 
   const event: AnalyticsEvent = {
@@ -36,7 +42,7 @@ export async function POST(request: Request): Promise<NextResponse<SuccessRespon
 
   const key = keyFor(body.userId, body.lessonId);
   const prev = analyticsStore.get(key) ?? [];
-  analyticsStore.set(key, [event, ...prev].slice(0, 1000)); // cap for memory safety
+  analyticsStore.set(key, [event, ...prev].slice(0, 1000));
 
-  return NextResponse.json({ success: true });
+  return addHeaders(NextResponse.json({ success: true }));
 }

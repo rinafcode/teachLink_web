@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { toast } from 'react-hot-toast';
+import { useErrorHandling } from './useErrorHandling';
+import { useToast } from '@/context/ToastContext';
 
 interface ProfileData {
   name?: string;
@@ -15,23 +15,26 @@ interface ProfileData {
 }
 
 export function useProfileUpdate() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { execute, isLoading } = useErrorHandling();
+  const { success } = useToast();
 
   const updateProfile = async (data: ProfileData) => {
-    setIsLoading(true);
-    try {
+    const result = await execute(async () => {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      toast.success('Profile updated successfully!');
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // You could conditionally reject here to test error path
+          resolve(true);
+        }, 1500);
+      });
       return true;
-    } catch (error) {
-      console.error('Update failed:', error);
-      toast.error('Failed to update profile. Please try again.');
-      return false;
-    } finally {
-      setIsLoading(false);
+    });
+
+    if (result) {
+      success('Profile updated successfully!');
+      return true;
     }
+    return false;
   };
 
   return { updateProfile, isLoading };
