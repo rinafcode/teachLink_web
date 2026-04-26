@@ -27,11 +27,16 @@ export default function LearningChallengeBoard({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [target, setTarget] = useState<number>(100);
-  const [start, setStart] = useState<string>(() => new Date().toISOString().slice(0, 10));
-  const [end, setEnd] = useState<string>(() =>
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-  );
+  const [start, setStart] = useState<string>('');
+  const [end, setEnd] = useState<string>('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  React.useEffect(() => {
+    setStart(new Date().toISOString().slice(0, 10));
+    setEnd(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+    setIsMounted(true);
+  }, []);
 
   const activeChallenges = useMemo(
     () => challenges.filter((c) => new Date(c.endDate) >= new Date()),
@@ -175,8 +180,8 @@ export default function LearningChallengeBoard({
                     <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-1">
                         <Calendar size={14} />
-                        {new Date(c.startDate).toLocaleDateString()} -{' '}
-                        {new Date(c.endDate).toLocaleDateString()}
+                        {isMounted ? new Date(c.startDate).toLocaleDateString() : ''} -{' '}
+                        {isMounted ? new Date(c.endDate).toLocaleDateString() : ''}
                       </div>
                       <div className="flex items-center gap-1">
                         <Target size={14} />

@@ -288,7 +288,7 @@ export class FormConfigurationParser implements ConfigurationParser {
       // Add metadata if requested
       if (includeMetadata) {
         serializable = {
-          ...serializable,
+          ...(serializable as Record<string, unknown>),
           _metadata: {
             generatedAt: new Date().toISOString(),
             parserVersion: '1.0.0',
@@ -475,10 +475,11 @@ export class FormConfigurationParser implements ConfigurationParser {
     }
 
     const sortedKeys = Object.keys(obj).sort();
-    const sortedObj: any = {};
+    const sortedObj: Record<string, unknown> = {};
+    const objRecord = obj as Record<string, unknown>;
 
     for (const key of sortedKeys) {
-      sortedObj[key] = this.sortObjectKeys(obj[key]);
+      sortedObj[key] = this.sortObjectKeys(objRecord[key]);
     }
 
     return sortedObj;

@@ -246,6 +246,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
               <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
                 <span>Recent Searches</span>
                 <button
+                  aria-label="Clear history"
                   onClick={clearHistory}
                   className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 p-1 transition-colors"
                   title="Clear history"

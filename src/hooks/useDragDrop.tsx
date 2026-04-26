@@ -140,7 +140,8 @@ export const useDragDrop = ({
     } catch {
       setState(initialState);
     }
-  }, [initialState, storageKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]); // initialState intentionally excluded - only run on mount
 
   useEffect(() => {
     return () => {

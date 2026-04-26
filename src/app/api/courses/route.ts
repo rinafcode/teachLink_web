@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import type { Course, PaginatedResponse } from '@/types/api';
+import { withRateLimit } from '@/lib/ratelimit';
 
 export async function GET(request: Request): Promise<NextResponse<PaginatedResponse<Course>>> {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse<PaginatedResponse<Course>>;
+  }
+
   const { searchParams } = new URL(request.url);
   const limit = searchParams.get('limit') || '10';
 
-  // Mock course data
   const courses = [
     {
       id: '1',
@@ -48,8 +53,10 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
     },
   ];
 
-  return NextResponse.json({
-    data: courses.slice(0, parseInt(limit)),
-    total: courses.length,
-  });
+  return addHeaders(
+    NextResponse.json({
+      data: courses.slice(0, parseInt(limit)),
+      total: courses.length,
+    }),
+  );
 }

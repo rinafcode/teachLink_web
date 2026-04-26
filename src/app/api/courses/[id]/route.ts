@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { Course, ApiResponse } from '@/types/api';
+import { withRateLimit } from '@/lib/ratelimit';
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse<ApiResponse<Course>>> {
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse<ApiResponse<Course>>;
+  }
+
   const { id } = await params;
-  // Mock single course data
   const course = {
     id,
     title: 'Web3 UX Design Principles',
@@ -21,8 +26,10 @@ export async function GET(
     downloaded: false,
   };
 
-  return NextResponse.json({
-    data: course,
-    success: true,
-  });
+  return addHeaders(
+    NextResponse.json({
+      data: course,
+      success: true,
+    }),
+  );
 }

@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/ratelimit';
 
 export async function GET() {
-  // Mock downloadable courses data
+  const mockRequest = new Request('http://localhost');
+  const { addHeaders, rateLimitResponse } = withRateLimit(mockRequest, 'READ');
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const courses = [
     {
       id: '1',
@@ -31,8 +37,10 @@ export async function GET() {
     },
   ];
 
-  return NextResponse.json({
-    data: courses,
-    success: true,
-  });
+  return addHeaders(
+    NextResponse.json({
+      data: courses,
+      success: true,
+    }),
+  );
 }

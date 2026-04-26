@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Suspense } from 'react';
 import { ThemeProvider } from '@/lib/theme-provider';
@@ -17,6 +18,7 @@ import { AccessibilityProvider } from '@/components/accessibility/AccessibilityP
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 import { EnvGuard } from '@/components/shared/EnvGuard';
 import { Loading } from '@/components/ui/Loading';
+import { ToastProvider } from '@/context/ToastContext';
 
 const geistSans = Geist({
   // ...
@@ -77,13 +79,15 @@ export default async function RootLayout({
                   <AccessibilityProvider pageLabel="TeachLink - main application">
                     <PerformanceMonitoringProvider>
                       <OfflineModeProvider>
-                        <PWAManager />
-                        <StateManagerIntegration />
-                        <PerformanceMonitor />
-                        <PrefetchingEngine />
-                        <ErrorBoundary>
-                          <Suspense fallback={<Loading />}>{children}</Suspense>
-                        </ErrorBoundary>
+                        <ToastProvider>
+                          <PWAManager />
+                          <StateManagerIntegration />
+                          <PerformanceMonitor />
+                          <PrefetchingEngine />
+                          <ErrorBoundary>
+                            <Suspense fallback={<Loading />}>{children}</Suspense>
+                          </ErrorBoundary>
+                        </ToastProvider>
                       </OfflineModeProvider>
                     </PerformanceMonitoringProvider>
                   </AccessibilityProvider>

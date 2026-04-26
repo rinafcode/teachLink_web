@@ -129,7 +129,7 @@ class ApiClientImpl {
   private async applyResponseInterceptors<T>(response: T): Promise<T> {
     let processedResponse: any = response;
     for (const interceptor of this.responseInterceptors) {
-      processedResponse = await interceptor(processedResponse);
+      processedResponse = (await interceptor(processedResponse)) as T;
     }
     return processedResponse as T;
   }

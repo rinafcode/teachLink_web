@@ -50,6 +50,11 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
   const [tempTitle, setTempTitle] = useState(title);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setTempTitle(title);
@@ -135,6 +140,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">{totalSales} sales</span>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
@@ -264,7 +270,7 @@ export const RecentSalesWidget: React.FC<RecentSalesWidgetProps> = ({
                   {sale.userEmail}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {format(sale.date, 'M/d/yyyy')}
+                  {isMounted ? format(sale.date, 'M/d/yyyy') : ''}
                 </p>
               </div>
 
