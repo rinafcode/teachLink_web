@@ -2,6 +2,41 @@
  * Search Utilities for Advanced Search Interface
  */
 
+const VALID_DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const;
+const VALID_SORT_OPTIONS = ['relevance', 'newest', 'rating', 'price'] as const;
+const MAX_STRING_LENGTH = 100;
+const MAX_ARRAY_SIZE = 50;
+
+export const sanitizeString = (value: string): string =>
+  value
+    .trim()
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .slice(0, MAX_STRING_LENGTH);
+
+export const validateStringArray = (values: string[]): string[] =>
+  values.map(sanitizeString).filter(Boolean).slice(0, MAX_ARRAY_SIZE);
+
+export const isValidDifficulty = (
+  v: string,
+): v is 'beginner' | 'intermediate' | 'advanced' =>
+  (VALID_DIFFICULTIES as readonly string[]).includes(v);
+
+export const isValidSortOption = (
+  v: string,
+): v is 'relevance' | 'newest' | 'rating' | 'price' =>
+  (VALID_SORT_OPTIONS as readonly string[]).includes(v);
+
+export const validateNumericRange = (
+  rawMin: number,
+  rawMax: number,
+  lowerBound: number,
+  upperBound: number,
+): [number, number] | null => {
+  if (!Number.isFinite(rawMin) || !Number.isFinite(rawMax)) return null;
+  if (rawMin < lowerBound || rawMax > upperBound || rawMin > rawMax) return null;
+  return [rawMin, rawMax];
+};
+
 export type SearchContentType = 'all' | 'post' | 'profile' | 'topic' | 'course' | 'tutorial';
 
 export interface SearchResult {
@@ -61,7 +96,9 @@ export const parseAdvancedQuery = (query: string) => {
 
   parts.forEach((part) => {
     if (part.includes(':')) {
-      const [key, value] = part.split(':');
+      const colonIdx = part.indexOf(':');
+      const key = part.slice(0, colonIdx);
+      const value = part.slice(colonIdx + 1);
       switch (key.toLowerCase()) {
         case 'author':
           result.author = value;

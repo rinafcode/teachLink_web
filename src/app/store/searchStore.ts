@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  sanitizeString,
+  validateStringArray,
+  isValidDifficulty,
+  isValidSortOption,
+  validateNumericRange,
+} from '@/utils/searchUtils';
 
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 export type SortOption = 'relevance' | 'newest' | 'rating' | 'price';
@@ -95,34 +102,43 @@ export const useSearchStore = create<SearchStore>()(
 
         const difficulty = params.get('difficulty');
         if (difficulty) {
-          newState.difficulty = difficulty.split(',') as Difficulty[];
+          const validated = difficulty
+            .split(',')
+            .map(sanitizeString)
+            .filter(isValidDifficulty);
+          if (validated.length) newState.difficulty = validated;
         }
 
         const duration = params.get('duration');
         if (duration) {
-          const [min, max] = duration.split(',').map(Number);
-          newState.duration = [min, max];
+          const parts = duration.split(',').map(Number);
+          const validated = validateNumericRange(parts[0], parts[1], 0, 100);
+          if (validated) newState.duration = validated;
         }
 
         const topics = params.get('topics');
         if (topics) {
-          newState.topics = topics.split(',');
+          const validated = validateStringArray(topics.split(','));
+          if (validated.length) newState.topics = validated;
         }
 
         const instructors = params.get('instructors');
         if (instructors) {
-          newState.instructors = instructors.split(',');
+          const validated = validateStringArray(instructors.split(','));
+          if (validated.length) newState.instructors = validated;
         }
 
         const sort = params.get('sort');
         if (sort) {
-          newState.sortBy = sort as SortOption;
+          const sanitized = sanitizeString(sort);
+          if (isValidSortOption(sanitized)) newState.sortBy = sanitized;
         }
 
         const price = params.get('price');
         if (price) {
-          const [min, max] = price.split(',').map(Number);
-          newState.price = [min, max];
+          const parts = price.split(',').map(Number);
+          const validated = validateNumericRange(parts[0], parts[1], 0, 10000);
+          if (validated) newState.price = validated;
         }
 
         set(newState);
