@@ -7,8 +7,6 @@ import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
 export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-  errorInfo?: ErrorInfo | null;
-  errorCount?: number;
   errorInfo: ErrorInfo | null;
   errorCount: number;
 };

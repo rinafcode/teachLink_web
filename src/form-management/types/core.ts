@@ -139,6 +139,7 @@ export interface FormConfiguration {
   fields: FieldDescriptor[];
   layout: LayoutConfiguration;
   validation: ValidationConfiguration;
+  conditionalLogic?: ConditionalRule[];
   autoSave?: AutoSaveConfiguration;
   analytics?: AnalyticsConfiguration;
   accessibility?: AccessibilityConfiguration;

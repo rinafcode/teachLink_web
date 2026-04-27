@@ -81,8 +81,7 @@ export const useQuizStore = create<QuizState>()(
           currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
         })),
 
-      startQuiz: () =>
-        set((state) => ({ startTime: state.startTime ?? new Date() })),
+      startQuiz: () => set((state) => ({ startTime: state.startTime ?? new Date() })),
 
       endQuiz: () => set({ endTime: new Date() }),
 

@@ -72,7 +72,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
       subscription.unsubscribe();
       autoSaveManager.destroy();
     };
-  }, [formId, enabled, interval, autoSaveManager, onSaveSuccess, onSaveError]);
+  }, [formId, enabled, interval, autoSaveManager, onSaveSuccess, onSaveError, notifyError]);
 
   // Save on form state changes
   useEffect(() => {

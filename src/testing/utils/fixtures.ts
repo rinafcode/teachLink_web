@@ -33,11 +33,14 @@ export function makeCourse(overrides: Partial<Course> = {}): Course {
   return {
     id,
     title: `Test Course ${id}`,
+    description: `Description for test course ${id}`,
     instructor: "Jane Doe",
-    thumbnailUrl: `https://picsum.photos/seed/${id}/320/180`,
-    progress: 0,
     duration: "4h 30m",
-    category: "Engineering",
+    totalLessons: 10,
+    progress: 0,
+    size: "250 MB",
+    thumbnailUrl: `https://picsum.photos/seed/${id}/320/180`,
+    downloaded: false,
     ...overrides,
   };
 }
@@ -88,7 +91,17 @@ export const SEARCH_RESULTS: SearchResult[] = [
 // Message fixtures
 // ──────────────────────────────────────────────────────────────────────────────
 
-export function makeMessage(overrides: Partial<Message> = {}): Message {
+export interface MessageFixture {
+  id: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  timestamp: Date;
+  isOwn: boolean;
+  status: "sent" | "delivered" | "read";
+}
+
+export function makeMessage(overrides: Partial<MessageFixture> = {}): MessageFixture {
   const id = seq("msg-");
   return {
     id,
@@ -102,11 +115,11 @@ export function makeMessage(overrides: Partial<Message> = {}): Message {
   };
 }
 
-export function makeMessages(count: number, overrides: Partial<Message> = {}): Message[] {
+export function makeMessages(count: number, overrides: Partial<MessageFixture> = {}): MessageFixture[] {
   return Array.from({ length: count }, () => makeMessage(overrides));
 }
 
-export const MESSAGES: Message[] = [
+export const MESSAGES: MessageFixture[] = [
   makeMessage({ senderId: "user-2", senderName: "Bob", content: "Hey, how are you?" }),
   makeMessage({ senderId: "user-1", senderName: "Alice", content: "I'm great, thanks!", isOwn: true, status: "read" }),
   makeMessage({ senderId: "user-2", senderName: "Bob", content: "Can you review my PR?" }),
@@ -117,7 +130,16 @@ export const MESSAGES: Message[] = [
 // Notification fixtures
 // ──────────────────────────────────────────────────────────────────────────────
 
-export function makeNotification(overrides: Partial<Notification> = {}): Notification {
+export interface NotificationFixture {
+  id: string;
+  type: "info" | "success" | "warning" | "error";
+  title: string;
+  body: string;
+  timestamp: Date;
+  read: boolean;
+}
+
+export function makeNotification(overrides: Partial<NotificationFixture> = {}): NotificationFixture {
   const id = seq("notif-");
   return {
     id,
@@ -132,12 +154,12 @@ export function makeNotification(overrides: Partial<Notification> = {}): Notific
 
 export function makeNotifications(
   count: number,
-  overrides: Partial<Notification> = {}
-): Notification[] {
+  overrides: Partial<NotificationFixture> = {}
+): NotificationFixture[] {
   return Array.from({ length: count }, () => makeNotification(overrides));
 }
 
-export const NOTIFICATIONS: Notification[] = [
+export const NOTIFICATIONS: NotificationFixture[] = [
   makeNotification({ title: "Course completed!", body: "You finished TypeScript Fundamentals." }),
   makeNotification({ title: "New message from Bob", body: "Can you review my PR?" }),
   makeNotification({  title: "Subscription expiring soon", body: "Your plan expires in 3 days.", read: true }),

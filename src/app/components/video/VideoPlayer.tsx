@@ -566,7 +566,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             </div>
 
             {/* Playback Controls */}
-            <PlaybackControls playbackRate={playbackRate} onPlaybackRateChange={setPlaybackRate} />
+            <PlaybackControls />
           </motion.div>
         )}
       </AnimatePresence>
@@ -599,7 +599,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               exit={{ x: 300 }}
               className="w-80 bg-white shadow-lg"
             >
-              <TranscriptView transcript={transcript} currentTime={currentTime} onSeek={seekTo} />
+              <TranscriptView />
             </motion.div>
           )}
         </AnimatePresence>

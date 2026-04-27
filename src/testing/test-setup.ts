@@ -51,3 +51,39 @@ global.console = {
 };
 // Mock scrollIntoView for JSDOM
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
+
+// Polyfill localStorage if missing or incomplete (some JSDOM setups expose a
+// stub without all Storage methods)
+if (
+  typeof window.localStorage === 'undefined' ||
+  typeof window.localStorage.clear !== 'function'
+) {
+  const createStorage = (): Storage => {
+    let store: Record<string, string> = {};
+    return {
+      get length() {
+        return Object.keys(store).length;
+      },
+      clear: () => {
+        store = {};
+      },
+      getItem: (key: string) => (key in store ? store[key] : null),
+      key: (index: number) => Object.keys(store)[index] ?? null,
+      removeItem: (key: string) => {
+        delete store[key];
+      },
+      setItem: (key: string, value: string) => {
+        store[key] = String(value);
+      },
+    };
+  };
+
+  Object.defineProperty(window, 'localStorage', {
+    value: createStorage(),
+    writable: true,
+  });
+  Object.defineProperty(window, 'sessionStorage', {
+    value: createStorage(),
+    writable: true,
+  });
+}

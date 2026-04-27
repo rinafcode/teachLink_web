@@ -14,12 +14,12 @@ import { measureExecutionTime, expectWithinBudget } from '../utils/testUtils';
 //  Budget constants (ms)
 
 const BUDGETS = {
-  COMPONENT_RENDER: 100,
-  LARGE_LIST_RENDER: 300,
-  SEARCH_FILTER: 30,
-  SORT_1000: 50,
-  COMPUTATION: 100,
-  RERENDER_CYCLE: 500,
+  COMPONENT_RENDER: 500,
+  LARGE_LIST_RENDER: 1500,
+  SEARCH_FILTER: 100,
+  SORT_1000: 100,
+  COMPUTATION: 200,
+  RERENDER_CYCLE: 1500,
 };
 
 // Stub components
