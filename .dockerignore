@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+.next
+dist
+build
+
+# Development
+.git
+.gitignore
+.eslintignore
+.prettierignore
+.husky
+.env
+.env.local
+.env.*.local
+
+# IDE and editors
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage
+.vitest
+test-output*.txt
+
+# Documentation
+README.md
+CONTRIBUTING.md
+docs
+screenshots
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+
+# Lock files (optional - include for reproducibility)
+# package-lock.json
