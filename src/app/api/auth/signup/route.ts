@@ -7,7 +7,7 @@ export async function POST(
 ): Promise<NextResponse<AuthResponse | { message: string }>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<AuthResponse | { message: string }>;
   }
 
   try {
@@ -29,7 +29,9 @@ export async function POST(
     }
 
     if (email === 'existing@teachlink.com') {
-      return addHeaders(NextResponse.json({ message: 'Email already registered' }, { status: 409 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email already registered' }, { status: 409 }),
+      );
     }
 
     return addHeaders(

@@ -123,6 +123,7 @@ const SortableRow = ({
       ref={ref}
       tabIndex={0}
       role="option"
+      aria-selected={isKeyboardDragging}
       aria-grabbed={isKeyboardDragging}
       onKeyDown={handleKeyDown}
       className={`mb-2 rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition outline-none focus:ring-2 focus:ring-blue-500 ${

@@ -90,6 +90,7 @@ export const useSearchFilters = () => {
 
     isInternalNavigationRef.current = true;
     router.replace(newUrl, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, pathname, router]); // searchParams only used for initial state
 
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
