@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { FiSearch, FiMessageCircle } from 'react-icons/fi';
 import type { Conversation } from '@/app/store/messagingStore';
+import { EmptyState } from '@/components';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -95,19 +96,11 @@ export default function ConversationList({
             ))}
           </div>
         ) : conversations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 flex items-center justify-center mb-4">
-              <FiMessageCircle className="w-7 h-7 text-violet-500" />
-            </div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {searchQuery ? 'No conversations found' : 'No conversations yet'}
-            </p>
-            <p className="text-xs text-gray-400">
-              {searchQuery
-                ? 'Try a different search term'
-                : 'Start a new conversation to begin messaging'}
-            </p>
-          </div>
+          <EmptyState
+            icon={FiMessageCircle as any}
+            title={searchQuery ? 'No conversations found' : 'No conversations yet'}
+            description={searchQuery ? 'Try a different search term' : 'Start a new conversation to begin messaging'}
+          />
         ) : (
           <div className="space-y-0.5 px-2">
             {conversations.map((conversation) => {

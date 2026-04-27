@@ -2,7 +2,9 @@
 
 import React, { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import { GripVertical } from 'lucide-react';
 import { DragDropItem } from '../../utils/dragDropUtils';
+import { EmptyState } from '@/components';
 
 export const DRAG_ITEM_TYPE = 'COURSE_CONTENT_ITEM';
 
@@ -157,9 +159,11 @@ export const SortableList = ({
 }: SortableListProps) => {
   if (items.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-4 text-center text-sm text-slate-500">
-        {emptyText}
-      </div>
+      <EmptyState
+        icon={GripVertical}
+        title={emptyText}
+        className="border border-dashed border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-900/30 py-8"
+      />
     );
   }
 
