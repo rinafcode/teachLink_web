@@ -324,3 +324,47 @@ export function runWhenIdle(callback: () => void, timeoutMs = 2000): void {
     window.setTimeout(callback, 1);
   }
 }
+
+/**
+ * Report a performance metric to the analytics service.
+ */
+export async function reportVitalToAnalytics(metric: PerformanceMetric): Promise<void> {
+  if (typeof window === 'undefined') return;
+
+  // Only report in production or if explicitly enabled
+  const shouldReport =
+    process.env.NODE_ENV === 'production' ||
+    process.env.NEXT_PUBLIC_ENABLE_PERF_ANALYTICS === 'true';
+
+  if (!shouldReport) {
+    console.debug(`[Performance Analytics] Skipping report for ${metric.name} in development`);
+    return;
+  }
+
+  runWhenIdle(async () => {
+    try {
+      const body = JSON.stringify({
+        ...metric,
+        timestamp: Date.now(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+      });
+
+      const response = await fetch('/api/performance/vitals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        // Use keepalive to ensure the request is sent even if the page is closed
+        keepalive: true,
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `[Performance Analytics] Failed to send ${metric.name}: ${response.statusText}`,
+        );
+      }
+    } catch (err) {
+      console.error(`[Performance Analytics] Error sending ${metric.name}:`, err);
+    }
+  });
+}

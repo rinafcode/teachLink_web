@@ -3,7 +3,16 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { Toaster } from 'react-hot-toast';
-import { Activity, AlertTriangle, ArrowLeft, Eraser, Trash2 } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  ArrowLeft,
+  BarChart3,
+  Eraser,
+  Globe,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react';
 import {
   CartesianGrid,
   Line,
@@ -42,6 +51,10 @@ function formatTick(name: string, value: number): string {
 export const PerformanceDashboard: React.FC = () => {
   const { metrics, alerts, suggestions, trend, clearAlerts, refreshTrendFromStorage } =
     usePerformanceMonitoring();
+
+  const isAnalyticsEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_PERF_ANALYTICS === 'true' ||
+    process.env.NODE_ENV === 'production';
 
   const seriesByVital = useMemo(() => {
     const map: Record<string, ReturnType<typeof buildSeries>> = {};
@@ -87,7 +100,58 @@ export const PerformanceDashboard: React.FC = () => {
           </button>
         </header>
 
-        <CoreWebVitals metrics={metrics} />
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="md:col-span-2">
+            <CoreWebVitals metrics={metrics} />
+          </div>
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4">
+            <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
+              <BarChart3 className="w-4 h-4 text-indigo-500" aria-hidden />
+              Analytics Status
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Status</span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                    isAnalyticsEnabled
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                  }`}
+                >
+                  {isAnalyticsEnabled ? <ShieldCheck className="w-3 h-3" /> : null}
+                  {isAnalyticsEnabled ? 'Active' : 'Disabled (Dev)'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Endpoint</span>
+                <span className="text-xs font-mono text-gray-600 dark:text-gray-300">
+                  /api/performance/vitals
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-2">
+                  <Globe className="inline w-3 h-3 mr-1" />
+                  Simulated Global Average (7d)
+                </p>
+                <div className="space-y-1.5">
+                  {[
+                    { name: 'LCP', val: '1.2s', status: 'good' },
+                    { name: 'CLS', val: '0.04', status: 'good' },
+                    { name: 'INP', val: '180ms', status: 'good' },
+                  ].map((m) => (
+                    <div key={m.name} className="flex justify-between text-[11px]">
+                      <span className="text-gray-600 dark:text-gray-400">{m.name}</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {m.val}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <section aria-labelledby="perf-alerts-heading">
           <div className="flex items-center justify-between mb-3">
