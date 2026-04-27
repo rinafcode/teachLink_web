@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
 
@@ -58,6 +59,24 @@ export default async function RootLayout({
         <RootProviders defaultTheme={defaultTheme}>
           {children}
         </RootProviders>
+
+        {/* Non-essential analytics — loaded after page is interactive */}
+        {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_ANALYTICS_ID}`}
+            strategy="lazyOnload"
+          />
+        )}
+        {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
+          <Script id="analytics-init" strategy="lazyOnload">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${process.env.NEXT_PUBLIC_ANALYTICS_ID}');
+            `}
+          </Script>
+        )}
       </body>
     </html>
   );
