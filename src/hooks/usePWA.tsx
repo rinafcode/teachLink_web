@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -17,6 +17,7 @@ export const usePWA = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [isOffline, setIsOffline] = useState(false);
+  const updateFoundHandlerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     // Check if app is already installed
@@ -41,15 +42,17 @@ export const usePWA = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // Track installation
-    window.addEventListener('appinstalled', () => {
+    const handleAppInstalled = () => {
       setIsInstalled(true);
       setInstallPrompt(null);
-    });
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
@@ -59,7 +62,7 @@ export const usePWA = () => {
         const reg = await navigator.serviceWorker.register('/serviceWorker.js');
         setRegistration(reg);
 
-        reg.addEventListener('updatefound', () => {
+        const handleUpdateFound = () => {
           const newWorker = reg.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
@@ -68,12 +71,22 @@ export const usePWA = () => {
               }
             });
           }
-        });
+        };
+        updateFoundHandlerRef.current = handleUpdateFound;
+        reg.addEventListener('updatefound', handleUpdateFound);
       } catch (error) {
         console.error('Service worker registration failed:', error);
       }
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (registration && updateFoundHandlerRef.current) {
+        registration.removeEventListener('updatefound', updateFoundHandlerRef.current);
+      }
+    };
+  }, [registration]);
 
   const installApp = async () => {
     if (!installPrompt) return;
