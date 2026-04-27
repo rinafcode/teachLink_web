@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { AutoSaveManagerImpl } from '@/form-management/auto-save/auto-save-manager';
 import { FormState, SaveStatus } from '@/form-management/types/core';
+import { useNotification } from '@/hooks/use-notification';
 
 interface AutoSaveManagerProps {
   formId: string;
@@ -30,6 +31,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
   onSaveError,
   className = '',
 }) => {
+  const { success, error: notifyError } = useNotification();
   const [autoSaveManager] = useState(() => new AutoSaveManagerImpl());
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({
     status: 'idle',
@@ -53,6 +55,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
           onSaveSuccess();
         }
       } else if (status.status === 'error' && status.error) {
+        notifyError(`Auto-save Error: ${status.error.message}`);
         if (onSaveError) {
           onSaveError(status.error);
         }
