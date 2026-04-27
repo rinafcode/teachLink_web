@@ -4,6 +4,7 @@
  * Import from '@/components' rather than '@/app/components' for shared pieces.
  */
 
+export * from './ui/Modal';
 export * from './ui/Toast';
 export * from './shared/EnvGuard';
 export * from './errors/ErrorBoundarySystem';

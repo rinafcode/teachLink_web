@@ -7,6 +7,7 @@ import { I18nProvider } from '@/hooks/useInternationalization';
 import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
 import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
+import { RouteChangeAnnouncer } from '@/components/accessibility/RouteChangeAnnouncer';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 import { EnvGuard } from '@/components/shared/EnvGuard';
 import { ToastProvider } from '@/context/ToastContext';
@@ -68,6 +69,7 @@ export function RootProviders({ children, defaultTheme }: RootProvidersProps) {
             </Suspense>
             <EnvGuard>
               <AccessibilityProvider pageLabel="TeachLink - main application">
+                <RouteChangeAnnouncer />
                 <Suspense fallback={null}>
                   <PerformanceMonitoringProvider>
                     <OfflineModeProvider>
