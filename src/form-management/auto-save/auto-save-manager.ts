@@ -27,6 +27,9 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
   private storageQuota: number = 5 * 1024 * 1024; // 5MB default
   private isOnline: boolean = true;
   private maxRetries: number = 3;
+  private lastKnownUpdatedAt: Map<string, Date> = new Map();
+  private onlineHandler: (() => void) | null = null;
+  private offlineHandler: (() => void) | null = null;
 
   constructor(private storage: Storage = localStorage) {
     this.setupNetworkListeners();
@@ -105,12 +108,28 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
         compressed: false,
       };
 
+      // Conflict detection: if stored draft is newer than what we last read, abort
+      const key = this.getDraftKey(formId);
+      const existingJson = this.storage.getItem(key);
+      if (existingJson) {
+        const existing: DraftData = JSON.parse(existingJson);
+        const storedUpdatedAt = new Date(existing.updatedAt);
+        const lastKnown = this.lastKnownUpdatedAt.get(formId);
+        if (lastKnown && storedUpdatedAt > lastKnown) {
+          this.updateSaveStatus(formId, {
+            status: 'error',
+            error: new Error('Conflict: draft was modified externally'),
+            queuedSaves: this.saveQueue.length,
+          });
+          return;
+        }
+      }
+
       // Check storage quota before saving
       await this.ensureStorageQuota(formId, draftData);
 
-      // Save to storage
-      const key = this.getDraftKey(formId);
       this.storage.setItem(key, JSON.stringify(draftData));
+      this.lastKnownUpdatedAt.set(formId, draftData.updatedAt);
 
       this.updateSaveStatus(formId, {
         status: 'saved',
@@ -159,6 +178,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
         return null;
       }
 
+      this.lastKnownUpdatedAt.set(formId, new Date(draftData.updatedAt));
       return draftData.data;
     } catch (error) {
       console.error('Error loading draft:', error);
@@ -260,15 +280,15 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
    */
   private setupNetworkListeners(): void {
     if (typeof window !== 'undefined') {
-      window.addEventListener('online', () => {
+      this.onlineHandler = () => {
         this.isOnline = true;
         this.processQueue();
-      });
-
-      window.addEventListener('offline', () => {
+      };
+      this.offlineHandler = () => {
         this.isOnline = false;
-      });
-
+      };
+      window.addEventListener('online', this.onlineHandler);
+      window.addEventListener('offline', this.offlineHandler);
       this.isOnline = navigator.onLine;
     }
   }
@@ -409,17 +429,16 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
    * Cleanup resources
    */
   destroy(): void {
-    // Clear all intervals
     this.saveIntervals.forEach((intervalId) => clearInterval(intervalId));
     this.saveIntervals.clear();
-
-    // Clear callbacks
     this.statusCallbacks.clear();
-
-    // Clear status
     this.saveStatus.clear();
-
-    // Clear queue
     this.saveQueue = [];
+    this.lastKnownUpdatedAt.clear();
+
+    if (typeof window !== 'undefined') {
+      if (this.onlineHandler) window.removeEventListener('online', this.onlineHandler);
+      if (this.offlineHandler) window.removeEventListener('offline', this.offlineHandler);
+    }
   }
 }
