@@ -157,8 +157,12 @@ class ApiClientImpl {
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
     const controller = new AbortController();
     const timeout = config.timeout || this.config.timeout;
-    const timer = setTimeout(() => controller.abort(), timeout);
     const maxRetries = config.retries ?? this.config.maxRetries;
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeout);
 
     const token = this.getToken();
     const headers: HeadersInit = {
@@ -168,7 +172,6 @@ class ApiClientImpl {
     };
 
     try {
-      // Apply request interceptors
       const processedConfig = await this.applyRequestInterceptors({
         ...config,
         headers,
@@ -181,7 +184,6 @@ class ApiClientImpl {
       clearTimeout(timer);
 
       if (!response.ok) {
-        // Check if we should retry
         if (shouldRetry(response.status, attempt, maxRetries)) {
           const delay = getRetryDelay(attempt, this.config.retryDelay);
           await new Promise((resolve) => setTimeout(resolve, delay));
@@ -205,7 +207,6 @@ class ApiClientImpl {
 
       const data = (await response.json()) as T;
 
-      // Apply response interceptors
       const processedResponse = await this.applyResponseInterceptors(data);
       return processedResponse;
     } catch (err) {
@@ -213,10 +214,19 @@ class ApiClientImpl {
 
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
 
-      // Apply error interceptors
       await this.applyErrorInterceptors(error);
 
       if (err instanceof ApiError) throw err;
+
+      // Retry on network failures or internal timeouts (not on non-retriable errors)
+      const isNetworkError = err instanceof TypeError;
+      const isTimeout = timedOut && err instanceof DOMException && err.name === 'AbortError';
+      if ((isNetworkError || isTimeout) && attempt < maxRetries) {
+        const delay = getRetryDelay(attempt, this.config.retryDelay);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return this.requestWithRetry<T>(config, attempt + 1);
+      }
+
       throw parseApiError(err);
     }
   }

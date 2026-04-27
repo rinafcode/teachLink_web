@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, MessageSquare, Edit2, Trash2, Save } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { formatTime, generateId, getVideoStorageKey } from '@/utils/videoUtils';
+import { useVideoPlayerContext } from './VideoPlayerContext';
 
 type PersistedVideoNote = {
   id: string;
@@ -14,13 +15,8 @@ type PersistedVideoNote = {
   updatedAt: string; // ISO
 };
 
-export function VideoNotes(props: {
-  lessonId: string;
-  userId?: string;
-  currentTime: number;
-  onNote?: (note: { time: number; text: string }) => void;
-}) {
-  const { lessonId, userId, currentTime, onNote } = props;
+export function VideoNotes() {
+  const { lessonId, userId, currentTime, onNote } = useVideoPlayerContext();
 
   const storageKey = useMemo(
     () => getVideoStorageKey({ kind: 'notes', userId, lessonId }),

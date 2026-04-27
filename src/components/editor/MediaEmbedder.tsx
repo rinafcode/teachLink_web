@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Image as ImageIcon, Youtube as YoutubeIcon, Link as LinkIcon } from 'lucide-react';
+import { sanitizeUrl } from '@/utils/sanitize';
 
 interface MediaEmbedderProps {
   onAddImage: (url: string) => void;
@@ -10,13 +11,20 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState('');
   const [type, setType] = useState<'image' | 'youtube'>('image');
+  const [urlError, setUrlError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const safeUrl = sanitizeUrl(url);
+    if (!safeUrl) {
+      setUrlError('Only http and https URLs are allowed.');
+      return;
+    }
+    setUrlError('');
     if (type === 'image') {
-      onAddImage(url);
+      onAddImage(safeUrl);
     } else {
-      onAddYoutube(url);
+      onAddYoutube(safeUrl);
     }
     setUrl('');
     setIsOpen(false);
@@ -59,11 +67,12 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
           <input
             type="url"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => { setUrl(e.target.value); setUrlError(''); }}
             placeholder={`Enter ${type} URL...`}
-            className="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600"
+            className="w-full p-2 border rounded mb-1 dark:bg-gray-700 dark:border-gray-600"
             required
           />
+          <p className="text-red-500 text-sm mb-3 min-h-[1.25rem]">{urlError}</p>
           <div className="flex justify-end gap-2">
             <button
               type="button"

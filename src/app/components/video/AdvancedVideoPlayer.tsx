@@ -25,6 +25,7 @@ import { VideoBookmarks } from './VideoBookmarks';
 import { TranscriptView } from './TranscriptView';
 import { clamp, formatTime } from '@/utils/videoUtils';
 import { usePlaybackAnalytics } from './PlaybackAnalytics';
+import { VideoPlayerContext } from './VideoPlayerContext';
 
 export type VideoQualityOption = {
   label: string;
@@ -351,7 +352,27 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
   const seekBarCurrentWidth = duration > 0 ? `${(currentTime / duration) * 100}%` : '0%';
   const seekBarBufferedWidth = duration > 0 ? `${(buffered / duration) * 100}%` : '0%';
 
+  const videoPlayerContextValue = {
+    lessonId,
+    userId,
+    transcript,
+    currentTime,
+    duration,
+    playbackRate,
+    autoQuality,
+    selectedQualityValue,
+    qualitiesForControls,
+    seekToLearning,
+    setPlaybackRateLearning,
+    setQualityLearning,
+    setAutoQualityLearning,
+    onBookmark: (b: { time: number; title: string; note?: string }) =>
+      analytics.registerBookmarkAdded(b.time),
+    onNote: (n: { time: number; text: string }) => analytics.registerNoteAdded(n.time),
+  };
+
   return (
+    <VideoPlayerContext.Provider value={videoPlayerContextValue}>
     <div
       ref={containerRef}
       className={`relative bg-black rounded-lg overflow-hidden group ${className}`}
@@ -562,17 +583,7 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
               </div>
             </div>
 
-            <PlaybackControls
-              playbackRate={playbackRate}
-              onPlaybackRateChange={setPlaybackRateLearning}
-              qualities={qualitiesForControls}
-              quality={
-                qualitiesForControls ? (autoQuality ? undefined : selectedQualityValue) : undefined
-              }
-              autoQuality={autoQuality}
-              onAutoQualityChange={qualitiesForControls ? setAutoQualityLearning : undefined}
-              onQualityChange={qualitiesForControls ? setQualityLearning : undefined}
-            />
+            <PlaybackControls />
 
             <div className="mt-2 text-xs text-white/80 flex items-center justify-between">
               <span>Watched: {Math.round(analytics.snapshot.watchSeconds)}s</span>
@@ -592,14 +603,7 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
               exit={{ x: 300 }}
               className="w-80 bg-white shadow-lg"
             >
-              <VideoBookmarks
-                currentTime={currentTime}
-                duration={duration}
-                lessonId={lessonId}
-                userId={userId}
-                onSeek={seekToLearning}
-                onBookmark={(b) => analytics.registerBookmarkAdded(b.time)}
-              />
+              <VideoBookmarks />
             </motion.div>
           )}
         </AnimatePresence>
@@ -612,11 +616,7 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
               exit={{ x: 300 }}
               className="w-80 bg-white shadow-lg"
             >
-              <TranscriptView
-                transcript={transcript}
-                currentTime={currentTime}
-                onSeek={seekToLearning}
-              />
+              <TranscriptView />
             </motion.div>
           )}
         </AnimatePresence>
@@ -629,16 +629,12 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
               exit={{ x: 300 }}
               className="w-80 bg-white shadow-lg"
             >
-              <VideoNotes
-                currentTime={currentTime}
-                lessonId={lessonId}
-                userId={userId}
-                onNote={(n) => analytics.registerNoteAdded(n.time)}
-              />
+              <VideoNotes />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     </div>
+    </VideoPlayerContext.Provider>
   );
 }
