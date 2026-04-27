@@ -24,6 +24,7 @@ import {
   truncateMessage,
   groupNotificationsByDate,
 } from '@/utils/notificationUtils';
+import { EmptyState } from '@/components';
 
 interface NotificationCenterProps {
   userId?: string;
@@ -322,20 +323,20 @@ export default function NotificationCenter({
       {/* Notifications List */}
       <div className="overflow-y-auto" style={{ maxHeight }}>
         {processedNotifications.length === 0 ? (
-          <div className="p-8 text-center">
-            <Bell size={48} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500">
-              {hasActiveFilters ? 'No notifications match your filters' : "You're all caught up!"}
-            </p>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="mt-2 text-sm text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
+          <EmptyState
+            icon={Bell}
+            title={hasActiveFilters ? 'No notifications match your filters' : "You're all caught up!"}
+            action={
+              hasActiveFilters ? (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                >
+                  Clear filters
+                </button>
+              ) : undefined
+            }
+          />
         ) : (
           Array.from(groupedNotifications.entries()).map(([date, dateNotifications]) => (
             <div key={date}>

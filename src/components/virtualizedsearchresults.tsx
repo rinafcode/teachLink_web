@@ -1,6 +1,8 @@
 import React, { useCallback, memo, useMemo } from "react";
 import { VariableSizeList as List, ListChildComponentProps } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { SearchX } from "lucide-react";
+import { EmptyState } from "@/components";
 
 export type SearchResultType = "course" | "user" | "post" | "file";
 
@@ -110,11 +112,7 @@ const VirtualizedSearchResults: React.FC<VirtualizedSearchResultsProps> = ({
   }
 
   if (results.length === 0 && query) {
-    return (
-      <div className="search-results-empty">
-        <p>No results found for &ldquo;{query}&rdquo;</p>
-      </div>
-    );
+    return <EmptyState icon={SearchX} title={`No results for "${query}"`} description="Try a different search term" />;
   }
 
   return (

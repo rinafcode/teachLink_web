@@ -5,5 +5,6 @@
  */
 
 export * from './ui/Toast';
+export * from './ui/EmptyState';
 export * from './shared/EnvGuard';
 export * from './errors/ErrorBoundarySystem';

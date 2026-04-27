@@ -22,6 +22,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Settings, Plus, Grid3X3, Calendar } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
+import { EmptyState } from '@/components';
 
 const ProgressSummaryWidget = dynamic(
   () => import('./widgets/ProgressSummaryWidget').then((mod) => mod.ProgressSummaryWidget),
@@ -524,17 +525,19 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
 
         {/* Empty State */}
         {widgets.length === 0 && (
-          <div className="text-center py-12">
-            <Grid3X3 size={64} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No widgets yet</h3>
-            <p className="text-gray-600 mb-4">Add your first widget to get started</p>
-            <button
-              onClick={() => setShowAddWidget(true)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Add Widget
-            </button>
-          </div>
+          <EmptyState
+            icon={Grid3X3}
+            title="No widgets yet"
+            description="Add your first widget to get started"
+            action={
+              <button
+                onClick={() => setShowAddWidget(true)}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Add Widget
+              </button>
+            }
+          />
         )}
       </div>
     </div>
