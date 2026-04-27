@@ -39,10 +39,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
-<<<<<<< HEAD
-=======
     "dompurify": "^3.2.4",
->>>>>>> bc54ed8 (clean: remove node_modules and reset repo)
     "framer-motion": "^12.23.0",
     "idb": "^8.0.0",
     "lucide-react": "^0.462.0",
@@ -57,20 +54,13 @@
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^10.0.3",
-<<<<<<< HEAD
-=======
     "react-virtualized-auto-sizer": "^1.0.7",
     "react-window": "^1.8.9",
->>>>>>> bc54ed8 (clean: remove node_modules and reset repo)
     "recharts": "^2.15.4",
     "socket.io-client": "^4.8.3",
     "tailwind-merge": "^2.6.0",
     "web-vitals": "^4.2.4",
     "workbox-webpack-plugin": "^7.0.0",
-<<<<<<< HEAD
-    "dompurify": "^3.2.4",
-=======
->>>>>>> bc54ed8 (clean: remove node_modules and reset repo)
     "zod": "^3.25.75",
     "zustand": "^5.0.10"
   },
