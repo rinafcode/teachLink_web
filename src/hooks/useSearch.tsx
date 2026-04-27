@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface SearchResult {
   id: string;
@@ -73,6 +73,12 @@ export function useSearch<T extends SearchResult>(
     setNextCursor(undefined);
     setHasMore(false);
     setError(null);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
   }, []);
 
   return { query, updateQuery, results, isLoading, error, hasMore, loadMore, reset };
