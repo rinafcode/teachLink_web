@@ -90,12 +90,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div style={{ padding: '20px' }}>
-            <h2>Something went wrong.</h2>
-            <p>{this.state.error?.message}</p>
-
-            <button onClick={this.resetError}>Try Again</button>
-          </div>
           <UserFriendlyErrorDisplay
             error={this.state.error}
             title="Application Error"

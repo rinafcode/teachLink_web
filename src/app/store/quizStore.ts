@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface Option {
   id: string;
@@ -55,34 +56,48 @@ const initialState = {
   endTime: null,
 };
 
-export const useQuizStore = create<QuizState>((set, get) => ({
-  ...initialState,
+export const useQuizStore = create<QuizState>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  setCurrentQuiz: (quiz) => set({ currentQuiz: quiz }),
+      setCurrentQuiz: (quiz) => set({ currentQuiz: quiz }),
 
-  setAnswer: (questionId, answer) =>
-    set((state) => ({
-      answers: { ...state.answers, [questionId]: answer },
-    })),
+      setAnswer: (questionId, answer) =>
+        set((state) => ({
+          answers: { ...state.answers, [questionId]: answer },
+        })),
 
-  nextQuestion: () =>
-    set((state) => ({
-      currentQuestionIndex: Math.min(
-        state.currentQuestionIndex + 1,
-        (state.currentQuiz?.questions.length || 1) - 1,
-      ),
-    })),
+      nextQuestion: () =>
+        set((state) => ({
+          currentQuestionIndex: Math.min(
+            state.currentQuestionIndex + 1,
+            (state.currentQuiz?.questions.length || 1) - 1,
+          ),
+        })),
 
-  previousQuestion: () =>
-    set((state) => ({
-      currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
-    })),
+      previousQuestion: () =>
+        set((state) => ({
+          currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
+        })),
 
-  startQuiz: () => set({ startTime: new Date() }),
+      startQuiz: () =>
+        set((state) => ({ startTime: state.startTime ?? new Date() })),
 
-  endQuiz: () => set({ endTime: new Date() }),
+      endQuiz: () => set({ endTime: new Date() }),
 
-  toggleReviewMode: () => set((state) => ({ isReviewMode: !state.isReviewMode })),
+      toggleReviewMode: () => set((state) => ({ isReviewMode: !state.isReviewMode })),
 
-  resetQuiz: () => set(initialState),
-}));
+      resetQuiz: () => set(initialState),
+    }),
+    {
+      name: 'quiz-progress',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        currentQuestionIndex: state.currentQuestionIndex,
+        answers: state.answers,
+        isReviewMode: state.isReviewMode,
+      }),
+    },
+  ),
+);
