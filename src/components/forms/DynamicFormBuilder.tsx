@@ -11,6 +11,7 @@ import { FormConfigurationParser } from '@/form-management/utils/configuration-p
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { AutoSaveManagerImpl } from '@/form-management/auto-save/auto-save-manager';
+import { useNotification } from '@/hooks/use-notification';
 
 interface DynamicFormBuilderProps {
   config: FormConfiguration | string;
@@ -35,6 +36,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const [autoSaveManager] = useState(() => new AutoSaveManagerImpl());
   const [formState, setFormState] = useState<FormState>(stateManager.getState());
   const [saveStatus, setSaveStatus] = useState<string>('idle');
+  const { success, error: notifyError } = useNotification();
 
   // Parse configuration
   useEffect(() => {
@@ -65,6 +67,9 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
     const subscription = autoSaveManager.onSaveStatusChange((status) => {
       setSaveStatus(status.status);
+      if (status.status === 'error') {
+        notifyError('Auto-save failed. Your changes might not be synced.');
+      }
     });
 
     // Load draft on mount
@@ -79,7 +84,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     return () => {
       subscription.unsubscribe();
     };
-  }, [autoSave, autoSaveInterval, formConfig, stateManager, autoSaveManager]);
+  }, [autoSave, autoSaveInterval, formConfig, stateManager, autoSaveManager, notifyError]);
 
   // Subscribe to state changes
   useEffect(() => {
@@ -120,13 +125,14 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     if (!formConfig) return;
 
     stateManager.setSubmitting(true);
+    const toastId = success('Submitting...');
 
     try {
       // Validate entire form
       const validationResult = await validationEngine.validateForm(stateManager.getState());
 
       if (!validationResult.isValid) {
-        console.error('Form validation failed:', validationResult.fieldResults);
+        notifyError('Validation failed. Please check the required fields.');
         stateManager.setSubmitting(false);
         return;
       }
@@ -134,6 +140,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       // Submit form
       if (onSubmit) {
         await onSubmit(formState.values);
+        success('Form submitted successfully!');
       }
 
       // Clear draft after successful submission
@@ -143,7 +150,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
 
       stateManager.completeSubmission(true);
     } catch (error) {
-      console.error('Form submission error:', error);
+      notifyError('Submission failed. Please try again.');
       stateManager.completeSubmission(false);
     }
   };

@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { WizardStep, WizardProgress, FormState } from '@/form-management/types/core';
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
+import { useNotification } from '@/hooks/use-notification';
 
 interface FormWizardControllerProps {
   steps: WizardStep[];
@@ -37,6 +38,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [validationEngine] = useState(() => new ValidationEngineImpl());
   const [isValidating, setIsValidating] = useState(false);
+  const { error, success } = useNotification();
 
   const currentStep = steps[currentStepIndex];
 
@@ -72,6 +74,10 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
         if (!result.isValid) {
           allValid = false;
         }
+      }
+
+      if (!allValid) {
+        error('Please fix the errors in this step before continuing.');
       }
 
       return allValid;
@@ -128,14 +134,15 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
 
   const handleComplete = async () => {
     const isValid = await validateCurrentStep();
-
-    if (!isValid) {
-      console.warn('Final step validation failed');
-      return;
-    }
+    if (!isValid) return;
 
     if (onComplete) {
-      await onComplete(formState.values);
+      try {
+        await onComplete(formState.values);
+        success('Form submitted successfully!');
+      } catch (err) {
+        error(err instanceof Error ? err.message : 'Failed to complete the form.');
+      }
     }
   };
 
