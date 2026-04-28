@@ -1,3 +1,5 @@
+import { z } from 'zod';
+import { validateData } from './validation/validator';
 import { ApiError, parseApiError } from '@/utils/error-handler';
 import { ErrorType, ErrorInfo } from '@/utils/errorUtils';
 
@@ -29,6 +31,7 @@ export interface RequestConfig extends RequestInit {
   url: string;
   retries?: number;
   timeout?: number;
+  schema?: z.ZodSchema;
 }
 
 /**
@@ -205,7 +208,11 @@ class ApiClientImpl {
         );
       }
 
-      const data = (await response.json()) as T;
+      let data = (await response.json()) as T;
+
+      if (config.schema) {
+        data = validateData(config.schema, data);
+      }
 
       const processedResponse = await this.applyResponseInterceptors(data);
       return processedResponse;
@@ -234,7 +241,7 @@ class ApiClientImpl {
   /**
    * GET request
    */
-  async get<T>(url: string, options?: RequestInit): Promise<T> {
+  async get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -245,7 +252,11 @@ class ApiClientImpl {
   /**
    * POST request
    */
-  async post<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  async post<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -257,7 +268,11 @@ class ApiClientImpl {
   /**
    * PATCH request
    */
-  async patch<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  async patch<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -269,7 +284,11 @@ class ApiClientImpl {
   /**
    * PUT request
    */
-  async put<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  async put<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -281,7 +300,7 @@ class ApiClientImpl {
   /**
    * DELETE request
    */
-  async delete<T>(url: string, options?: RequestInit): Promise<T> {
+  async delete<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
