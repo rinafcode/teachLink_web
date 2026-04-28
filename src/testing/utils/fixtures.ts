@@ -8,6 +8,8 @@
 
 import { SearchResult } from '@/components/virtualizedsearchresults';
 import { Course } from '@/types';
+import { Message } from '@/components/virtualizedmessagethread';
+import { Notification } from '@/providers/Notificationprovider';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Utility
@@ -37,6 +39,10 @@ export function makeCourse(overrides: Partial<Course> = {}): Course {
     progress: 0,
     duration: '4h 30m',
     category: 'Engineering',
+    description: 'Test description',
+    totalLessons: 10,
+    size: '1.2 GB',
+    downloaded: false,
     ...overrides,
   };
 }

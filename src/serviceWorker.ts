@@ -134,7 +134,3 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(clientsClaim());
-});

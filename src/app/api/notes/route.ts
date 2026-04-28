@@ -16,7 +16,7 @@ export async function GET(
 ): Promise<NextResponse<ApiResponse<PersistedVideoNote[]> | SuccessResponse>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<ApiResponse<PersistedVideoNote[]> | SuccessResponse>;
   }
 
   const { searchParams } = new URL(request.url);
@@ -42,7 +42,7 @@ export async function POST(
 ): Promise<NextResponse<ApiResponse<PersistedVideoNote> | SuccessResponse>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<ApiResponse<PersistedVideoNote> | SuccessResponse>;
   }
 
   const body = (await request.json()) as {
@@ -78,7 +78,7 @@ export async function POST(
 export async function PATCH(request: Request): Promise<NextResponse<SuccessResponse>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<SuccessResponse>;
   }
 
   const body = (await request.json()) as {
@@ -117,7 +117,7 @@ export async function PATCH(request: Request): Promise<NextResponse<SuccessRespo
 export async function DELETE(request: Request): Promise<NextResponse<SuccessResponse>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<SuccessResponse>;
   }
 
   const body = (await request.json()) as { userId?: string; lessonId: string; id: string };

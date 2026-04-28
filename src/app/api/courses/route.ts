@@ -21,6 +21,7 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
       duration: '24 hours',
       totalLessons: 12,
       progress: 68,
+      category: 'Design',
       size: '250MB',
       thumbnailUrl:
         'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
@@ -34,6 +35,7 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
       duration: '36 hours',
       totalLessons: 18,
       progress: 45,
+      category: 'Security',
       size: '380MB',
       thumbnailUrl:
         'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
@@ -47,6 +49,7 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
       duration: '48 hours',
       totalLessons: 24,
       progress: 12,
+      category: 'Engineering',
       size: '520MB',
       thumbnailUrl:
         'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',

@@ -19,7 +19,7 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
 export async function POST(request: Request): Promise<NextResponse<SuccessResponse>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<SuccessResponse>;
   }
 
   const body = (await request.json()) as {

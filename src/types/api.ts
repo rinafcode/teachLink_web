@@ -81,6 +81,7 @@ export interface Course {
   duration: string;
   totalLessons: number;
   progress: number;
+  category: string;
   size: string;
   thumbnailUrl: string;
   downloaded: boolean;
