@@ -5,10 +5,13 @@ import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { SearchBar } from '@/app/components/search/SearchBar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { DynamicLanguageSwitcher } from '@/components/i18n/DynamicLanguageSwitcher';
+import { useInternationalization } from '@/hooks/useInternationalization';
 
 export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const { t } = useInternationalization();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -44,13 +47,13 @@ export const Header: React.FC = () => {
               href="/"
               className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              Home
+              {t('navigation.home')}
             </Link>
             <Link
               href="/courses"
               className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              Courses
+              {t('navigation.courses')}
             </Link>
             <Link
               href="/instructor"
@@ -59,15 +62,26 @@ export const Header: React.FC = () => {
               Teach
             </Link>
             <Link
+              href="/settings"
+              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              Settings
+            </Link>
+            <Link
               href="/dashboard"
               className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
             >
-              Dashboard
+              {t('navigation.dashboard')}
             </Link>
           </nav>
 
-          {/* Theme Toggle and Mobile Menu Button */}
+          {/* Theme Toggle, Language Switcher and Mobile Menu Button */}
           <div className="flex items-center gap-2">
+            {/* Language Switcher - Desktop */}
+            <div className="hidden md:block">
+              <DynamicLanguageSwitcher mode="dropdown" showNativeNames />
+            </div>
+
             {/* Theme Toggle */}
             <ThemeToggle />
 
@@ -111,14 +125,14 @@ export const Header: React.FC = () => {
               className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Home
+              {t('navigation.home')}
             </Link>
             <Link
               href="/courses"
               className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Courses
+              {t('navigation.courses')}
             </Link>
             <Link
               href="/instructor"
@@ -128,12 +142,23 @@ export const Header: React.FC = () => {
               Teach
             </Link>
             <Link
+              href="/settings"
+              className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Settings
+            </Link>
+            <Link
               href="/dashboard"
               className="block px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Dashboard
+              {t('navigation.dashboard')}
             </Link>
+            {/* Language Switcher - Mobile */}
+            <div className="px-2 pt-2">
+              <DynamicLanguageSwitcher mode="select" showNativeNames />
+            </div>
           </nav>
         )}
       </div>

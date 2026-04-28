@@ -11,3 +11,5 @@ export * from './shared/EnvGuard';
 export * from './errors/ErrorBoundarySystem';
 export { QRCodeComponent } from './QRCode';
 export { ShareModal } from './ShareModal';
+export { BulkImporter } from './BulkImporter';
+export type { BulkImporterProps, TargetFieldDef } from './BulkImporter';

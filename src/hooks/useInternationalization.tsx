@@ -25,6 +25,7 @@ import {
   formatFileSize,
   formatDuration,
 } from '@/utils/i18nUtils';
+import i18n, { loadLocale } from '@/lib/i18n/config';
 
 interface I18nContextValue {
   language: LanguageCode;
@@ -62,6 +63,15 @@ export function I18nProvider({
   const [translations, setTranslations] = useState<Translations>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // Keep react-i18next (i18n singleton) in sync with the active language.
+  useEffect(() => {
+    if (i18n.language !== language) {
+      void loadLocale(language).then(() => {
+        void i18n.changeLanguage(language);
+      });
+    }
+  }, [language]);
 
   // Load translations when language changes
   useEffect(() => {
@@ -120,15 +130,18 @@ export function I18nProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Intentionally run once on mount - setLanguage is stable
 
-  // Save language preference to localStorage
+  // Save language preference to localStorage + cookie (cookie enables SSR-side lang/dir)
   const changeLanguage = useCallback(async (newLanguage: LanguageCode) => {
     setLanguage(newLanguage);
     localStorage.setItem('i18n:language', newLanguage);
 
-    // Update HTML lang attribute
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = newLanguage;
-    }
+    // Persist to cookie so the server can read it on next request for SSR lang/dir.
+    document.cookie = `i18n:language=${newLanguage};path=/;max-age=31536000;SameSite=Lax`;
+
+    // Update <html lang> and <html dir> immediately for the current page visit.
+    const newDir = ['ar', 'he', 'fa', 'ur'].includes(newLanguage) ? 'rtl' : 'ltr';
+    document.documentElement.lang = newLanguage;
+    document.documentElement.dir = newDir;
   }, []);
 
   // Get cultural preferences

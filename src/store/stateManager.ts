@@ -9,7 +9,7 @@ interface UserState {
   id: string | null;
   name: string | null;
   preferences: {
-    theme: 'light' | 'dark';
+    theme: 'light' | 'dark' | 'system';
     language: string;
     notifications: boolean;
     prefetching: boolean;
@@ -49,7 +49,7 @@ export const useStore = create<StoreState>()(
           name: null,
           role: UserRole.GUEST,
           preferences: {
-            theme: 'light' as 'light' | 'dark',
+            theme: 'system' as 'light' | 'dark' | 'system',
             language: 'en',
             notifications: true,
             prefetching: true,

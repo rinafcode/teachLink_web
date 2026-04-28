@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 import type { Course, ApiResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse<ApiResponse<Course>>> {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<Course>>;

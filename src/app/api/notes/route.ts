@@ -11,9 +11,7 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-export async function GET(
-  request: Request,
-): Promise<NextResponse<ApiResponse<PersistedVideoNote[]> | SuccessResponse>> {
+export async function GET(request: Request) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<PersistedVideoNote[]> | SuccessResponse>;
@@ -37,9 +35,7 @@ export async function GET(
   );
 }
 
-export async function POST(
-  request: Request,
-): Promise<NextResponse<ApiResponse<PersistedVideoNote> | SuccessResponse>> {
+export async function POST(request: Request) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<PersistedVideoNote> | SuccessResponse>;
@@ -75,7 +71,7 @@ export async function POST(
   return addHeaders(NextResponse.json({ success: true, data: persisted }));
 }
 
-export async function PATCH(request: Request): Promise<NextResponse<SuccessResponse>> {
+export async function PATCH(request: Request) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<SuccessResponse>;
@@ -114,7 +110,7 @@ export async function PATCH(request: Request): Promise<NextResponse<SuccessRespo
   return addHeaders(NextResponse.json({ success: true }));
 }
 
-export async function DELETE(request: Request): Promise<NextResponse<SuccessResponse>> {
+export async function DELETE(request: Request) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<SuccessResponse>;

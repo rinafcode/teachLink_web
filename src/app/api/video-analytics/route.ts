@@ -16,7 +16,7 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-export async function POST(request: Request): Promise<NextResponse<SuccessResponse>> {
+export async function POST(request: Request) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<SuccessResponse>;
