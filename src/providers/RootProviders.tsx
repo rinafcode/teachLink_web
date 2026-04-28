@@ -10,6 +10,7 @@ import { AccessibilityProvider } from '@/components/accessibility/AccessibilityP
 import { RouteChangeAnnouncer } from '@/components/accessibility/RouteChangeAnnouncer';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 import { EnvGuard } from '@/components/shared/EnvGuard';
+import { FeatureFlagProvider } from '@/components/shared/FeatureFlagProvider';
 import { ToastProvider } from '@/context/ToastContext';
 import { Loading } from '@/components/ui/Loading';
 
@@ -60,6 +61,7 @@ interface RootProvidersProps {
  */
 export function RootProviders({ children, defaultTheme }: RootProvidersProps) {
   return (
+    <FeatureFlagProvider>
     <I18nProvider>
       <InternationalizationEngine>
         <CulturalAdaptationManager>
@@ -93,5 +95,6 @@ export function RootProviders({ children, defaultTheme }: RootProvidersProps) {
         </CulturalAdaptationManager>
       </InternationalizationEngine>
     </I18nProvider>
+    </FeatureFlagProvider>
   );
 }
