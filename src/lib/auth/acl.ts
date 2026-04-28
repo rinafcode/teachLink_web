@@ -20,9 +20,7 @@ export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.COURSE_DOWNLOAD,
     Permission.CONTENT_ACCESS,
   ],
-  [UserRole.GUEST]: [
-    Permission.COURSE_VIEW,
-  ],
+  [UserRole.GUEST]: [Permission.COURSE_VIEW],
 };
 
 /**
@@ -30,7 +28,7 @@ export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
  */
 export function hasPermission(user: User | null | undefined, permission: Permission): boolean {
   if (!user) return false;
-  
+
   const permissions = ROLES_PERMISSIONS[user.role] || [];
   return permissions.includes(permission);
 }
@@ -38,19 +36,25 @@ export function hasPermission(user: User | null | undefined, permission: Permiss
 /**
  * Check if a user has any of the provided permissions.
  */
-export function hasAnyPermission(user: User | null | undefined, permissions: Permission[]): boolean {
+export function hasAnyPermission(
+  user: User | null | undefined,
+  permissions: Permission[],
+): boolean {
   if (!user) return false;
-  
-  return permissions.some(permission => hasPermission(user, permission));
+
+  return permissions.some((permission) => hasPermission(user, permission));
 }
 
 /**
  * Check if a user has all of the provided permissions.
  */
-export function hasAllPermissions(user: User | null | undefined, permissions: Permission[]): boolean {
+export function hasAllPermissions(
+  user: User | null | undefined,
+  permissions: Permission[],
+): boolean {
   if (!user) return false;
-  
-  return permissions.every(permission => hasPermission(user, permission));
+
+  return permissions.every((permission) => hasPermission(user, permission));
 }
 
 /**
@@ -59,10 +63,10 @@ export function hasAllPermissions(user: User | null | undefined, permissions: Pe
  */
 export function isAtLeast(user: User | null | undefined, role: UserRole): boolean {
   if (!user) return false;
-  
+
   const hierarchy = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN];
   const userRoleIndex = hierarchy.indexOf(user.role);
   const requiredRoleIndex = hierarchy.indexOf(role);
-  
+
   return userRoleIndex >= requiredRoleIndex;
 }

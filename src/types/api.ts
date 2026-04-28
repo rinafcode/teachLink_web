@@ -42,15 +42,15 @@ export enum Permission {
   COURSE_EDIT = 'COURSE_EDIT',
   COURSE_DELETE = 'COURSE_DELETE',
   COURSE_DOWNLOAD = 'COURSE_DOWNLOAD',
-  
+
   // User Permissions
   USER_VIEW = 'USER_VIEW',
   USER_MANAGE = 'USER_MANAGE',
-  
+
   // Content Permissions
   CONTENT_ACCESS = 'CONTENT_ACCESS',
   CONTENT_UPLOAD = 'CONTENT_UPLOAD',
-  
+
   // System Permissions
   SYSTEM_SETTINGS = 'SYSTEM_SETTINGS',
   ANALYTICS_VIEW = 'ANALYTICS_VIEW',

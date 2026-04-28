@@ -29,7 +29,9 @@ export async function POST(
     }
 
     if (email === 'existing@teachlink.com') {
-      return addHeaders(NextResponse.json({ message: 'Email already registered' }, { status: 409 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email already registered' }, { status: 409 }),
+      );
     }
 
     return addHeaders(

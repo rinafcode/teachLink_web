@@ -212,7 +212,9 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
             {filteredResources.filter((r) => r.type === 'link').length === 0 && (
               <EmptyState
                 icon={LinkIcon}
-                title={searchQuery || filterType !== 'all' ? 'No matching links found' : 'No links yet'}
+                title={
+                  searchQuery || filterType !== 'all' ? 'No matching links found' : 'No links yet'
+                }
                 className="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg py-6"
               />
             )}
@@ -260,7 +262,9 @@ export default function SharedResourceLibrary({ resources, onAdd }: SharedResour
             {filteredResources.filter((r) => r.type === 'file').length === 0 && (
               <EmptyState
                 icon={FolderOpen}
-                title={searchQuery || filterType !== 'all' ? 'No matching files found' : 'No files yet'}
+                title={
+                  searchQuery || filterType !== 'all' ? 'No matching files found' : 'No files yet'
+                }
                 className="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg py-6"
               />
             )}

@@ -24,7 +24,9 @@ export async function GET(
   const userId = searchParams.get('userId') ?? undefined;
 
   if (!lessonId) {
-    return addHeaders(NextResponse.json({ success: false, message: 'lessonId is required' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'lessonId is required' }, { status: 400 }),
+    );
   }
 
   return addHeaders(
@@ -50,7 +52,9 @@ export async function POST(
   };
 
   if (!body?.lessonId || !body?.bookmark?.time || !body?.bookmark?.title) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }),
+    );
   }
 
   const now = new Date().toISOString();
@@ -89,7 +93,9 @@ export async function PATCH(request: Request): Promise<NextResponse<SuccessRespo
   };
 
   if (!body?.lessonId || !body?.id || !body?.title) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }),
+    );
   }
 
   const key = keyFor(body.userId, body.lessonId);
@@ -120,7 +126,9 @@ export async function DELETE(request: Request): Promise<NextResponse<SuccessResp
 
   const body = (await request.json()) as { userId?: string; lessonId: string; id: string };
   if (!body?.lessonId || !body?.id) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }),
+    );
   }
 
   const key = keyFor(body.userId, body.lessonId);

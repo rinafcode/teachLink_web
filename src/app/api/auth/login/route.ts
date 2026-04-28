@@ -16,7 +16,9 @@ export async function POST(
 
     // Mock validation
     if (!email || !password) {
-      return addHeaders(NextResponse.json({ message: 'Email and password are required' }, { status: 400 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email and password are required' }, { status: 400 }),
+      );
     }
 
     // Mock authentication - check for demo credentials

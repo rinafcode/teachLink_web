@@ -15,12 +15,15 @@ const ROUTE_PERMISSIONS: Record<string, UserRole> = {
 /**
  * RBAC Helper for Middleware
  */
-export function checkRoutePermission(request: NextRequest, userRole: UserRole | null): NextResponse | null {
+export function checkRoutePermission(
+  request: NextRequest,
+  userRole: UserRole | null,
+): NextResponse | null {
   const { pathname } = request.nextUrl;
 
   // Find the required role for the current path
-  const requiredRole = Object.entries(ROUTE_PERMISSIONS).find(([path]) => 
-    pathname.startsWith(path)
+  const requiredRole = Object.entries(ROUTE_PERMISSIONS).find(([path]) =>
+    pathname.startsWith(path),
   )?.[1];
 
   if (!requiredRole) {

@@ -102,10 +102,7 @@ export const useSearchStore = create<SearchStore>()(
 
         const difficulty = params.get('difficulty');
         if (difficulty) {
-          const validated = difficulty
-            .split(',')
-            .map(sanitizeString)
-            .filter(isValidDifficulty);
+          const validated = difficulty.split(',').map(sanitizeString).filter(isValidDifficulty);
           if (validated.length) newState.difficulty = validated;
         }
 
