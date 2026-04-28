@@ -9,6 +9,6 @@ import { useFocusOnRouteChange } from '@/hooks/useAccessibility';
  */
 export function RouteChangeAnnouncer() {
   const pathname = usePathname();
-  useFocusOnRouteChange(pathname);
+  useFocusOnRouteChange(pathname || '');
   return null;
 }

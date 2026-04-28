@@ -7,7 +7,7 @@ export async function POST(
 ): Promise<NextResponse<AuthResponse | { message: string }>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<AuthResponse | { message: string }>;
   }
 
   try {
@@ -16,7 +16,9 @@ export async function POST(
 
     // Mock validation
     if (!email || !password) {
-      return addHeaders(NextResponse.json({ message: 'Email and password are required' }, { status: 400 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email and password are required' }, { status: 400 }),
+      );
     }
 
     // Mock authentication - check for demo credentials

@@ -4,7 +4,8 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'TeachLink - Offline Learning Platform',
-  description: 'Learn anywhere, anytime with offline capabilities. Access courses, track progress, and study without an internet connection.',
+  description:
+    'Learn anywhere, anytime with offline capabilities. Access courses, track progress, and study without an internet connection.',
   openGraph: {
     title: 'TeachLink - Offline Learning Platform',
     description: 'Learn anywhere, anytime with offline capabilities.',

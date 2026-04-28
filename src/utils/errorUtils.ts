@@ -78,10 +78,7 @@ export function classifyError(error: any): ErrorInfo {
     return classifyHttpError(statusCode as number, message, now);
   }
 
-  if (
-    (error instanceof Error && error.name === 'ValidationError') ||
-    isValidationTypedError
-  ) {
+  if ((error instanceof Error && error.name === 'ValidationError') || isValidationTypedError) {
     return {
       type: ErrorType.VALIDATION,
       message: (error as { message?: string }).message || 'Validation error',

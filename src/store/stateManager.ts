@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { persistenceLayer } from './persistenceLayer';
 import { deepMerge } from '../utils/stateUtils';
 import { stateLogger } from './devTools';
+import { UserRole } from '../types/api';
 
 interface UserState {
   id: string | null;
@@ -46,6 +47,7 @@ export const useStore = create<StoreState>()(
         user: {
           id: null,
           name: null,
+          role: UserRole.GUEST,
           preferences: {
             theme: 'light' as 'light' | 'dark',
             language: 'en',

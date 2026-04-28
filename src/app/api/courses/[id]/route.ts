@@ -20,6 +20,7 @@ export async function GET(
     duration: '24 hours',
     totalLessons: 12,
     progress: 68,
+    category: 'Design',
     size: '250MB',
     thumbnailUrl:
       'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
