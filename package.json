@@ -45,6 +45,7 @@
     "framer-motion": "^12.23.0",
     "graphql": "^16.8.0",
     "graphql-ws": "^5.14.0",
+    "i18next": "^24.0.0",
     "idb": "^8.0.0",
     "lucide-react": "^0.462.0",
     "next": "15.3.1",
@@ -57,6 +58,7 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.60.0",
     "react-hot-toast": "^2.6.0",
+    "react-i18next": "^15.0.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^10.0.3",
     "react-virtualized-auto-sizer": "^1.0.7",
@@ -66,9 +68,9 @@
     "tailwind-merge": "^2.6.0",
     "web-vitals": "^4.2.4",
     "workbox-webpack-plugin": "^7.0.0",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.30",
     "zod": "^3.25.75",
-    "i18next": "^24.0.0",
-    "react-i18next": "^15.0.0",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
