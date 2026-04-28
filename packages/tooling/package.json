@@ -1,0 +1,15 @@
+{
+  "name": "@teachlink/tooling",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint": "./eslint/base.js",
+    "./tsconfig/base.json": "./tsconfig/base.json"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "@eslint/eslintrc": "^3.0.0"
+  }
+}
