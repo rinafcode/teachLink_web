@@ -9,13 +9,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { loginSchema, LoginFormData } from '../../lib/validationSchemas';
 import { FormError, FieldError } from '../../../components/forms/FormError';
+import { SubmitButton } from '../../../components/forms/SubmitButton';
+import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
 import { parseApiError } from '@/utils/error-handler';
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [apiError, setApiError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
 
@@ -27,20 +27,20 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
-    setApiError('');
-    setSuccessMessage('');
-
-    try {
+  const loginMutation = useMutation(
+    async (data: LoginFormData) => {
       await apiClient.post('/api/auth/login', data);
-      setSuccessMessage('Login successful! Redirecting...');
-      setTimeout(() => router.push('/dashboard'), 1500);
-    } catch (error) {
-      setApiError(parseApiError(error).userMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    },
+    {
+      onSuccess: () => {
+        setSuccessMessage('Login successful! Redirecting...');
+        setTimeout(() => router.push('/dashboard'), 1500);
+      },
+    },
+  );
+
+  const onSubmit = async (data: LoginFormData) => {
+    await loginMutation.mutate(data);
   };
 
   return (
@@ -131,7 +131,10 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <FormError error={apiError} id="login-api-error" />
+            <FormError
+              error={loginMutation.error?.message}
+              id="login-api-error"
+            />
 
             {successMessage && (
               <motion.div
@@ -143,13 +146,13 @@ export default function LoginPage() {
               </motion.div>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
+            <SubmitButton
+              isLoading={loginMutation.isLoading}
+              loadingText="Signing in…"
               className="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
+              Sign in
+            </SubmitButton>
           </motion.form>
 
           {/* Sign up link */}

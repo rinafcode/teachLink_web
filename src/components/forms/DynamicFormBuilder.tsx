@@ -12,6 +12,8 @@ import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { AutoSaveManagerImpl } from '@/form-management/auto-save/auto-save-manager';
 import { useNotification } from '@/hooks/use-notification';
+import { useMutation } from '@/hooks/useMutation';
+import { SubmitButton } from '@/components/forms/SubmitButton';
 
 interface DynamicFormBuilderProps {
   config: FormConfiguration | string;
@@ -37,6 +39,23 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const [formState, setFormState] = useState<FormState>(stateManager.getState());
   const [saveStatus, setSaveStatus] = useState<string>('idle');
   const { success, error: notifyError } = useNotification();
+
+  // ── Mutation ─────────────────────────────────────────────────────────────
+  const submitMutation = useMutation(
+    async (values: Record<string, any>) => {
+      if (onSubmit) {
+        await onSubmit(values);
+      }
+    },
+    {
+      onSuccess: () => {
+        success('Form submitted successfully!');
+      },
+      onError: () => {
+        notifyError('Submission failed. Please try again.');
+      },
+    },
+  );
 
   // Parse configuration
   useEffect(() => {
@@ -122,36 +141,21 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formConfig) return;
+    if (!formConfig || submitMutation.isLoading) return;
 
-    stateManager.setSubmitting(true);
-    const toastId = success('Submitting...');
+    // Validate entire form before delegating to mutation
+    const validationResult = await validationEngine.validateForm(stateManager.getState());
 
-    try {
-      // Validate entire form
-      const validationResult = await validationEngine.validateForm(stateManager.getState());
+    if (!validationResult.isValid) {
+      notifyError('Validation failed. Please check the required fields.');
+      return;
+    }
 
-      if (!validationResult.isValid) {
-        notifyError('Validation failed. Please check the required fields.');
-        stateManager.setSubmitting(false);
-        return;
-      }
+    await submitMutation.mutate(formState.values);
 
-      // Submit form
-      if (onSubmit) {
-        await onSubmit(formState.values);
-        success('Form submitted successfully!');
-      }
-
-      // Clear draft after successful submission
-      if (autoSave) {
-        await autoSaveManager.clearDraft(formConfig.id);
-      }
-
-      stateManager.completeSubmission(true);
-    } catch (error) {
-      notifyError('Submission failed. Please try again.');
-      stateManager.completeSubmission(false);
+    // Clear draft after successful submission
+    if (autoSave && submitMutation.isSuccess) {
+      await autoSaveManager.clearDraft(formConfig.id);
     }
   };
 
@@ -196,6 +200,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       onBlur: () => handleFieldBlur(field.id),
       placeholder: field.placeholder,
       required: field.required,
+      disabled: submitMutation.isLoading,
       className: 'form-input',
     };
 
@@ -257,13 +262,14 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       </div>
 
       <div className="form-actions">
-        <button
-          type="submit"
-          disabled={formState.isSubmitting || !stateManager.isFormValid()}
+        <SubmitButton
+          isLoading={submitMutation.isLoading}
+          loadingText="Submitting…"
+          disabled={!stateManager.isFormValid()}
           className="btn-submit"
         >
-          {formState.isSubmitting ? 'Submitting...' : 'Submit'}
-        </button>
+          Submit
+        </SubmitButton>
       </div>
     </form>
   );

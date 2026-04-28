@@ -9,13 +9,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signupSchema, SignupFormData } from '../../lib/validationSchemas';
 import { FormError, FieldError } from '../../../components/forms/FormError';
+import { SubmitButton } from '../../../components/forms/SubmitButton';
+import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
 import { parseApiError } from '@/utils/error-handler';
 
 export default function SignupPage() {
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [apiError, setApiError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
 
@@ -27,20 +27,20 @@ export default function SignupPage() {
     resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = async (data: SignupFormData) => {
-    setIsLoading(true);
-    setApiError('');
-    setSuccessMessage('');
-
-    try {
+  const signupMutation = useMutation(
+    async (data: SignupFormData) => {
       await apiClient.post('/api/auth/signup', data);
-      setSuccessMessage('Account created successfully! Redirecting...');
-      setTimeout(() => router.push('/dashboard'), 1500);
-    } catch (error) {
-      setApiError(parseApiError(error).userMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    },
+    {
+      onSuccess: () => {
+        setSuccessMessage('Account created successfully! Redirecting...');
+        setTimeout(() => router.push('/dashboard'), 1500);
+      },
+    },
+  );
+
+  const onSubmit = async (data: SignupFormData) => {
+    await signupMutation.mutate(data);
   };
 
   return (
@@ -133,7 +133,10 @@ export default function SignupPage() {
               <FieldError error={errors.password?.message} id="password-error" />
             </div>
 
-            <FormError error={apiError} id="signup-api-error" />
+            <FormError
+              error={signupMutation.error?.message}
+              id="signup-api-error"
+            />
 
             {successMessage && (
               <motion.div
@@ -145,13 +148,13 @@ export default function SignupPage() {
               </motion.div>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
+            <SubmitButton
+              isLoading={signupMutation.isLoading}
+              loadingText="Creating account…"
               className="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating account...' : 'Create account'}
-            </button>
+              Create account
+            </SubmitButton>
           </motion.form>
 
           {/* Sign in link */}

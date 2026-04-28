@@ -8,6 +8,7 @@ import { User, Mail, FileText } from 'lucide-react';
 import ImageUploader from '../shared/ImageUploader';
 import PreferencesSection from './PreferencesSection';
 import { FormInput } from '../forms/FormInput';
+import { SubmitButton } from '../forms/SubmitButton';
 import { useStore } from '../../store/stateManager';
 
 // Schema definition
@@ -123,17 +124,13 @@ export default function ProfileEditForm() {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`px-8 py-2 rounded-lg text-white font-medium transition-all shadow-md ${
-                isLoading
-                  ? 'bg-blue-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg'
-              }`}
+            <SubmitButton
+              isLoading={isLoading}
+              loadingText="Saving…"
+              className="px-8 py-2 rounded-lg text-white font-medium transition-all shadow-md bg-blue-600 hover:bg-blue-700 hover:shadow-lg disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </button>
+              Save Changes
+            </SubmitButton>
           </div>
         </form>
       </FormProvider>
