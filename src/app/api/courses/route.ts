@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { Course, PaginatedResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
 
-export async function GET(request: Request): Promise<NextResponse<PaginatedResponse<Course>>> {
+export async function GET(request: Request) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<PaginatedResponse<Course>>;

@@ -7,8 +7,6 @@ import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
 export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-  errorInfo?: ErrorInfo | null;
-  errorCount?: number;
   errorInfo: ErrorInfo | null;
   errorCount: number;
 };
@@ -62,7 +60,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     // Hook for reporting system
     this.setState((prevState) => ({
       errorInfo,
-      errorCount: prevState.errorCount + 1,
+      errorCount: (prevState.errorCount ?? 0) + 1,
     }));
 
     errorReportingService.addBreadcrumb('errorBoundary', {
@@ -90,12 +88,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div style={{ padding: '20px' }}>
-            <h2>Something went wrong.</h2>
-            <p>{this.state.error?.message}</p>
-
-            <button onClick={this.resetError}>Try Again</button>
-          </div>
           <UserFriendlyErrorDisplay
             error={this.state.error}
             title="Application Error"

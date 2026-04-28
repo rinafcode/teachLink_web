@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { AuthResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
 
-export async function POST(
-  request: NextRequest,
-): Promise<NextResponse<AuthResponse | { message: string }>> {
+export async function POST(request: NextRequest) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse;
@@ -16,7 +13,9 @@ export async function POST(
 
     // Mock validation
     if (!email || !password) {
-      return addHeaders(NextResponse.json({ message: 'Email and password are required' }, { status: 400 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email and password are required' }, { status: 400 }),
+      );
     }
 
     // Mock authentication - check for demo credentials

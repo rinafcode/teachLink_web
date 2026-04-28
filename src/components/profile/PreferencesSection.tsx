@@ -3,9 +3,7 @@
 import { useFormContext } from 'react-hook-form';
 
 export default function PreferencesSection() {
-  const { register, watch } = useFormContext();
-
-  const currentTheme = watch('theme');
+  const { register } = useFormContext();
 
   return (
     <div className="space-y-6">
@@ -55,6 +53,15 @@ export default function PreferencesSection() {
                   className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                 />
                 <span className="text-gray-700">Dark</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="system"
+                  {...register('theme')}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-gray-700">System</span>
               </label>
             </div>
           </div>

@@ -137,6 +137,7 @@ export interface FormConfiguration {
   description?: string;
   steps?: WizardStep[];
   fields: FieldDescriptor[];
+  conditionalLogic?: ConditionalRule[];
   layout: LayoutConfiguration;
   validation: ValidationConfiguration;
   autoSave?: AutoSaveConfiguration;
