@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
-import { useSubscription, useSubscriptionConnection, ConnectionState } from '@/hooks/useSubscription';
+import {
+  useSubscription,
+  useSubscriptionConnection,
+  ConnectionState,
+} from '@/hooks/useSubscription';
 import { SubscriptionProvider } from '@/components/SubscriptionProvider';
 import { ReactNode } from 'react';
 
@@ -29,9 +33,7 @@ describe('useSubscription hook', () => {
   });
 
   it('should initialize with loading state', () => {
-    const { result } = renderHook(
-      () => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient),
-    );
+    const { result } = renderHook(() => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient));
 
     expect(result.current.loading).toBe(true);
     expect(result.current.data).toBeUndefined();
@@ -39,8 +41,8 @@ describe('useSubscription hook', () => {
   });
 
   it('should skip subscription when skip option is true', () => {
-    const { result } = renderHook(
-      () => useSubscription(MOCK_SUBSCRIPTION, { skip: true }, mockClient),
+    const { result } = renderHook(() =>
+      useSubscription(MOCK_SUBSCRIPTION, { skip: true }, mockClient),
     );
 
     expect(result.current.loading).toBe(false);
@@ -48,8 +50,8 @@ describe('useSubscription hook', () => {
 
   it('should call onConnect callback when connected', async () => {
     const onConnect = vi.fn();
-    const { result } = renderHook(
-      () => useSubscription(MOCK_SUBSCRIPTION, { onConnect }, mockClient),
+    const { result } = renderHook(() =>
+      useSubscription(MOCK_SUBSCRIPTION, { onConnect }, mockClient),
     );
 
     // Wait for connection state change
@@ -60,8 +62,8 @@ describe('useSubscription hook', () => {
 
   it('should call onError callback on subscription error', async () => {
     const onError = vi.fn();
-    const { result } = renderHook(
-      () => useSubscription(MOCK_SUBSCRIPTION, { onError }, mockClient),
+    const { result } = renderHook(() =>
+      useSubscription(MOCK_SUBSCRIPTION, { onError }, mockClient),
     );
 
     await waitFor(() => {
@@ -70,17 +72,13 @@ describe('useSubscription hook', () => {
   });
 
   it('should provide resubscribe function', () => {
-    const { result } = renderHook(
-      () => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient),
-    );
+    const { result } = renderHook(() => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient));
 
     expect(typeof result.current.resubscribe).toBe('function');
   });
 
   it('should allow manual data update', () => {
-    const { result } = renderHook(
-      () => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient),
-    );
+    const { result } = renderHook(() => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient));
 
     const newData = { id: '1', data: 'test' };
     result.current.updateData(newData);
@@ -89,9 +87,7 @@ describe('useSubscription hook', () => {
   });
 
   it('should return error message when error occurs', () => {
-    const { result } = renderHook(
-      () => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient),
-    );
+    const { result } = renderHook(() => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient));
 
     expect(result.current.errorMessage).toBeDefined();
   });

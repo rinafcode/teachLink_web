@@ -1,6 +1,8 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React from 'react';
+import dynamic from 'next/dynamic';
+import { loader } from '@monaco-editor/react';
 import {
   Play,
   RotateCcw,
@@ -21,10 +23,18 @@ import { AutoCompletion } from './AutoCompletion';
 import { CollaborativeEditing } from './CollaborativeEditing';
 import type { CompletionSuggestion } from '@/utils/codeUtils';
 
-// Lazy-load Monaco to avoid SSR issues in Next.js
-const MonacoEditor = React.lazy(() =>
-  import('@monaco-editor/react').then((mod) => ({ default: mod.default })),
-);
+// Configure Monaco Web Worker to use CDN to prevent main-thread blocking
+loader.config({
+  paths: {
+    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs'
+  }
+});
+
+// Lazy-load Monaco using Next.js dynamic to avoid SSR issues and improve initial render
+const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((mod) => mod.default), {
+  ssr: false,
+  loading: () => <EditorSkeleton />,
+});
 
 // ---------------------------------------------------------------------------
 // Props
@@ -42,11 +52,29 @@ interface AdvancedCodeEditorProps {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-const EditorLoader: React.FC = () => (
-  <div className="flex items-center justify-center h-full bg-[#1e1e2e]">
-    <div className="flex flex-col items-center gap-3 text-gray-400">
-      <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
-      <span className="text-sm">Loading editor…</span>
+const EditorSkeleton: React.FC = () => (
+  <div className="absolute inset-0 flex flex-col bg-[#1e1e2e] animate-pulse p-4 z-10 overflow-hidden">
+    <div className="flex gap-4 opacity-50">
+      <div className="w-8 flex flex-col gap-3 border-r border-gray-700/50 pr-2">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+          <div key={i} className="h-3 w-4 bg-gray-700 rounded ml-auto"></div>
+        ))}
+      </div>
+      <div className="flex-1 flex flex-col gap-3 pt-1">
+        <div className="h-3 w-1/3 bg-gray-700 rounded"></div>
+        <div className="h-3 w-1/2 bg-gray-700 rounded"></div>
+        <div className="h-3 w-1/4 bg-gray-700 rounded ml-8"></div>
+        <div className="h-3 w-2/5 bg-gray-700 rounded ml-8"></div>
+        <div className="h-3 w-1/6 bg-gray-700 rounded"></div>
+        <div className="h-3 w-1/2 bg-gray-700 rounded"></div>
+        <div className="h-3 w-1/3 bg-gray-700 rounded ml-8"></div>
+      </div>
+    </div>
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3 text-gray-400 bg-[#1e1e2e]/80 p-6 rounded-xl border border-gray-700/50 shadow-2xl backdrop-blur-sm">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+        <span className="text-sm font-medium tracking-wide">Loading Editor...</span>
+      </div>
     </div>
   </div>
 );
@@ -239,38 +267,36 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
       {/* Monaco editor                                                       */}
       {/* ------------------------------------------------------------------ */}
       <div className="flex-1 min-h-0 relative">
-        <Suspense fallback={<EditorLoader />}>
-          <MonacoEditor
-            language={languageConfig.monacoLanguage}
-            theme={theme}
-            value={code}
-            onChange={(val) => setCode(val ?? '')}
-            onMount={handleEditorMount}
-            options={{
-              fontSize,
-              minimap: { enabled: true },
-              wordWrap: 'on',
-              lineNumbers: 'on',
-              renderLineHighlight: 'all',
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              padding: { top: 12, bottom: 12 },
-              suggestOnTriggerCharacters: autoCompleteEnabled,
-              quickSuggestions: autoCompleteEnabled,
-              tabSize: languageConfig.id === 'python' ? 4 : 2,
-              detectIndentation: false,
-              formatOnPaste: true,
-              smoothScrolling: true,
-              cursorBlinking: 'expand',
-              cursorSmoothCaretAnimation: 'on',
-              bracketPairColorization: { enabled: true },
-              fontFamily: '"Fira Code", "Cascadia Code", "Consolas", monospace',
-              fontLigatures: true,
-            }}
-            height="100%"
-            width="100%"
-          />
-        </Suspense>
+        <MonacoEditor
+          language={languageConfig.monacoLanguage}
+          theme={theme}
+          value={code}
+          onChange={(val) => setCode(val ?? '')}
+          onMount={handleEditorMount}
+          options={{
+            fontSize,
+            minimap: { enabled: true },
+            wordWrap: 'on',
+            lineNumbers: 'on',
+            renderLineHighlight: 'all',
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            padding: { top: 12, bottom: 12 },
+            suggestOnTriggerCharacters: autoCompleteEnabled,
+            quickSuggestions: autoCompleteEnabled,
+            tabSize: languageConfig.id === 'python' ? 4 : 2,
+            detectIndentation: false,
+            formatOnPaste: true,
+            smoothScrolling: true,
+            cursorBlinking: 'expand',
+            cursorSmoothCaretAnimation: 'on',
+            bracketPairColorization: { enabled: true },
+            fontFamily: '"Fira Code", "Cascadia Code", "Consolas", monospace',
+            fontLigatures: true,
+          }}
+          height="100%"
+          width="100%"
+        />
       </div>
 
       {/* ------------------------------------------------------------------ */}

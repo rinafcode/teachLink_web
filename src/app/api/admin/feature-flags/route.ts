@@ -13,7 +13,7 @@ import { withRateLimit } from '@/lib/ratelimit';
 // Returns the full flag list sorted by updatedAt desc.
 
 export async function GET(req: NextRequest) {
-  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'API');
+  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
   const flags = Array.from(flagStore.values()).sort(
@@ -43,10 +43,9 @@ export async function POST(req: NextRequest) {
     name: body.name.trim(),
     description: typeof body.description === 'string' ? body.description.trim() : '',
     enabled: false,
-    strategy: ['all', 'percentage', 'targeting'].includes(body.strategy)
-      ? body.strategy
-      : 'all',
-    percentage: typeof body.percentage === 'number' ? Math.max(0, Math.min(100, body.percentage)) : 0,
+    strategy: ['all', 'percentage', 'targeting'].includes(body.strategy) ? body.strategy : 'all',
+    percentage:
+      typeof body.percentage === 'number' ? Math.max(0, Math.min(100, body.percentage)) : 0,
     rules: Array.isArray(body.rules) ? (body.rules as TargetingRule[]) : [],
     tags: Array.isArray(body.tags) ? body.tags.map(String) : [],
     createdAt: now,

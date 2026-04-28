@@ -2,11 +2,12 @@ import {
   createEmailProvider,
   EmailQueue,
   EmailSendResult,
+  EmailTemplatePayload,
   emailTemplateManager,
   TransactionalTemplateId,
 } from '@/lib/email';
 
-interface BaseNotificationInput {
+interface BaseNotificationInput extends EmailTemplatePayload {
   email: string;
   name: string;
 }
@@ -75,10 +76,7 @@ export class NotificationService {
     return this.sendEvent({ type: 'course-enrollment', data });
   }
 
-  private buildTemplate(
-    templateId: TransactionalTemplateId,
-    payload: Record<string, string | number | boolean | null | undefined>,
-  ) {
+  private buildTemplate(templateId: TransactionalTemplateId, payload: EmailTemplatePayload) {
     return emailTemplateManager.getTemplate(templateId, payload);
   }
 }

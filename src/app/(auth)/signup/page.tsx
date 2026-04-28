@@ -133,10 +133,7 @@ export default function SignupPage() {
               <FieldError error={errors.password?.message} id="password-error" />
             </div>
 
-            <FormError
-              error={signupMutation.error?.message}
-              id="signup-api-error"
-            />
+            <FormError error={signupMutation.error?.message} id="signup-api-error" />
 
             {successMessage && (
               <motion.div

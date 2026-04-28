@@ -131,10 +131,7 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <FormError
-              error={loginMutation.error?.message}
-              id="login-api-error"
-            />
+            <FormError error={loginMutation.error?.message} id="login-api-error" />
 
             {successMessage && (
               <motion.div

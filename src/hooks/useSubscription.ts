@@ -91,8 +91,14 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
   options: UseSubscriptionOptions & { variables?: TVariables } = {},
   client?: ApolloClient<any>,
 ): UseSubscriptionResult<TData> {
-  const { skip = false, onConnect, onDisconnect, onError, onData, shouldResubscribe = true } =
-    options;
+  const {
+    skip = false,
+    onConnect,
+    onDisconnect,
+    onError,
+    onData,
+    shouldResubscribe = true,
+  } = options;
 
   const [data, setData] = useState<TData | undefined>();
   const [loading, setLoading] = useState(!skip);
@@ -149,7 +155,8 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
         error: (err: any) => {
           setLoading(false);
 
-          const apolloError = err instanceof ApolloError ? err : new ApolloError({ errorMessage: err.message });
+          const apolloError =
+            err instanceof ApolloError ? err : new ApolloError({ errorMessage: err.message });
           setError(apolloError);
 
           if (isConnectionError(err)) {
@@ -240,8 +247,8 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
     error instanceof ApolloError
       ? error.message || 'Subscription error'
       : error instanceof SubscriptionError
-        ? formatSubscriptionError(error)
-        : error?.message || null;
+      ? formatSubscriptionError(error)
+      : null;
 
   return {
     data,
@@ -300,13 +307,14 @@ export function usePollableSubscription<TData = any, TVariables extends Operatio
   const [isPolling, setIsPolling] = useState(false);
   const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const subscriptionResult = useSubscription<TData, TVariables>(subscription, options, client);
+  const { connectionState, updateData } = subscriptionResult;
 
   /**
    * Fallback to polling when subscription unavailable
    */
   useEffect(() => {
     // If subscription is working, don't poll
-    if (subscriptionResult.connectionState === ConnectionState.CONNECTED) {
+    if (connectionState === ConnectionState.CONNECTED) {
       setIsPolling(false);
       if (pollTimeoutRef.current) {
         clearTimeout(pollTimeoutRef.current);
@@ -318,15 +326,15 @@ export function usePollableSubscription<TData = any, TVariables extends Operatio
     // Start polling if connection is down and poll function available
     if (
       pollFn &&
-      (subscriptionResult.connectionState === ConnectionState.DISCONNECTED ||
-        subscriptionResult.connectionState === ConnectionState.ERROR)
+      (connectionState === ConnectionState.DISCONNECTED ||
+        connectionState === ConnectionState.ERROR)
     ) {
       setIsPolling(true);
 
       const poll = async () => {
         try {
           const data = await pollFn();
-          subscriptionResult.updateData(data);
+          updateData(data);
         } catch (err) {
           console.error('Poll failed:', err);
         }
@@ -344,7 +352,7 @@ export function usePollableSubscription<TData = any, TVariables extends Operatio
         pollTimeoutRef.current = null;
       }
     };
-  }, [pollFn, pollIntervalMs, subscriptionResult.connectionState, subscriptionResult.updateData]);
+  }, [pollFn, pollIntervalMs, connectionState, updateData]);
 
   return {
     ...subscriptionResult,

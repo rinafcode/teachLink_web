@@ -26,16 +26,24 @@ import { useAllFeatureFlags } from '@/hooks/useFeatureFlag';
 
 // ─── Small shared UI ──────────────────────────────────────────────────────────
 
-function Badge({ children, variant = 'default' }: { children: React.ReactNode; variant?: 'default' | 'green' | 'red' | 'yellow' | 'blue' }) {
+function Badge({
+  children,
+  variant = 'default',
+}: {
+  children: React.ReactNode;
+  variant?: 'default' | 'green' | 'red' | 'yellow' | 'blue';
+}) {
   const colors = {
     default: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-    green:   'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-    red:     'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-    yellow:  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-    blue:    'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+    green: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+    red: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    yellow: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   };
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${colors[variant]}`}>
+    <span
+      className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${colors[variant]}`}
+    >
       {children}
     </span>
   );
@@ -43,11 +51,19 @@ function Badge({ children, variant = 'default' }: { children: React.ReactNode; v
 
 function StrategyIcon({ strategy }: { strategy: RolloutStrategy }) {
   if (strategy === 'percentage') return <Percent className="w-3.5 h-3.5" />;
-  if (strategy === 'targeting')  return <Users   className="w-3.5 h-3.5" />;
+  if (strategy === 'targeting') return <Users className="w-3.5 h-3.5" />;
   return <Globe className="w-3.5 h-3.5" />;
 }
 
-function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+function Toggle({
+  checked,
+  onChange,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -79,14 +95,14 @@ interface FlagFormProps {
 const EMPTY_RULE: TargetingRule = { attribute: '', operator: 'equals', value: '' };
 
 function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
-  const [name, setName]               = useState(initial?.name ?? '');
+  const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
-  const [strategy, setStrategy]       = useState<RolloutStrategy>(initial?.strategy ?? 'all');
-  const [percentage, setPercentage]   = useState(initial?.percentage ?? 0);
-  const [rules, setRules]             = useState<TargetingRule[]>(initial?.rules ?? []);
-  const [tagsInput, setTagsInput]     = useState((initial?.tags ?? []).join(', '));
-  const [saving, setSaving]           = useState(false);
-  const [error, setError]             = useState<string | null>(null);
+  const [strategy, setStrategy] = useState<RolloutStrategy>(initial?.strategy ?? 'all');
+  const [percentage, setPercentage] = useState(initial?.percentage ?? 0);
+  const [rules, setRules] = useState<TargetingRule[]>(initial?.rules ?? []);
+  const [tagsInput, setTagsInput] = useState((initial?.tags ?? []).join(', '));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const addRule = () => setRules((r) => [...r, { ...EMPTY_RULE }]);
   const removeRule = (i: number) => setRules((r) => r.filter((_, idx) => idx !== i));
@@ -95,7 +111,10 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { setError('Name is required.'); return; }
+    if (!name.trim()) {
+      setError('Name is required.');
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -105,7 +124,10 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
         strategy,
         percentage: Number(percentage),
         rules: strategy === 'targeting' ? rules.filter((r) => r.attribute && r.value) : [],
-        tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
+        tags: tagsInput
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
       });
     } catch (err) {
       setError(String(err));
@@ -114,7 +136,10 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
         className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
@@ -123,7 +148,10 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {initial?.id ? 'Edit Feature Flag' : 'New Feature Flag'}
           </h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
@@ -150,7 +178,9 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Description
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -175,7 +205,9 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
 
           {/* Strategy */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rollout Strategy</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Rollout Strategy
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {(['all', 'percentage', 'targeting'] as RolloutStrategy[]).map((s) => (
                 <button
@@ -211,7 +243,9 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
                 className="w-full accent-blue-600"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>0%</span><span>50%</span><span>100%</span>
+                <span>0%</span>
+                <span>50%</span>
+                <span>100%</span>
               </div>
             </div>
           )}
@@ -232,7 +266,9 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
                 </button>
               </div>
               {rules.length === 0 && (
-                <p className="text-xs text-gray-400 italic">No rules — flag will never match. Add at least one rule.</p>
+                <p className="text-xs text-gray-400 italic">
+                  No rules — flag will never match. Add at least one rule.
+                </p>
               )}
               {rules.map((rule, i) => (
                 <div key={i} className="flex gap-2 items-center mb-2">
@@ -244,7 +280,9 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
                   />
                   <select
                     value={rule.operator}
-                    onChange={(e) => updateRule(i, { operator: e.target.value as TargetingRule['operator'] })}
+                    onChange={(e) =>
+                      updateRule(i, { operator: e.target.value as TargetingRule['operator'] })
+                    }
                     className="px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="equals">equals</option>
@@ -258,7 +296,11 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
                     placeholder="value"
                     className="flex-1 px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
-                  <button type="button" onClick={() => removeRule(i)} className="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => removeRule(i)}
+                    className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                  >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -294,7 +336,7 @@ function FlagForm({ initial, onSave, onClose }: FlagFormProps) {
 
 function AuditPanel({ flagId, onClose }: { flagId?: string; onClose: () => void }) {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
-  const [total, setTotal]     = useState(0);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -302,13 +344,15 @@ function AuditPanel({ flagId, onClose }: { flagId?: string; onClose: () => void 
     const params = new URLSearchParams({ limit: '50' });
     if (flagId) params.set('flagId', flagId);
     const res = await fetch(`/api/admin/feature-flags/audit?${params}`);
-    const data = await res.json() as { entries: AuditEntry[]; total: number };
+    const data = (await res.json()) as { entries: AuditEntry[]; total: number };
     setEntries(data.entries);
     setTotal(data.total);
     setLoading(false);
   }, [flagId]);
 
-  useState(() => { void load(); });
+  useState(() => {
+    void load();
+  });
 
   const ACTION_COLORS: Record<AuditEntry['action'], string> = {
     created: 'green',
@@ -318,7 +362,10 @@ function AuditPanel({ flagId, onClose }: { flagId?: string; onClose: () => void 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
         className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
@@ -331,25 +378,31 @@ function AuditPanel({ flagId, onClose }: { flagId?: string; onClose: () => void 
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">{total} total entries</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
         <div className="overflow-y-auto flex-1 p-4 space-y-2">
-          {loading && (
-            <div className="text-center py-12 text-gray-400 text-sm">Loading…</div>
-          )}
+          {loading && <div className="text-center py-12 text-gray-400 text-sm">Loading…</div>}
           {!loading && entries.length === 0 && (
             <div className="text-center py-12 text-gray-400 text-sm">No audit entries yet.</div>
           )}
           {entries.map((entry) => (
-            <div key={entry.id} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
+            <div
+              key={entry.id}
+              className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800"
+            >
               <Badge variant={ACTION_COLORS[entry.action] as 'green' | 'red' | 'yellow' | 'blue'}>
                 {entry.action}
               </Badge>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{entry.flagName}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {entry.flagName}
+                </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   by <span className="font-medium">{entry.actor}</span>
                 </p>
@@ -396,11 +449,13 @@ function FlagRow({
   };
 
   return (
-    <div className={`rounded-xl border transition-colors ${
-      flag.enabled
-        ? 'border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10'
-        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-    }`}>
+    <div
+      className={`rounded-xl border transition-colors ${
+        flag.enabled
+          ? 'border-green-200 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10'
+          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+      }`}
+    >
       {/* Main row */}
       <div className="flex items-center gap-4 p-4">
         {/* Expand chevron */}
@@ -428,11 +483,16 @@ function FlagRow({
               {strategyLabel[flag.strategy]}
             </Badge>
             {flag.tags.map((tag) => (
-              <Badge key={tag} variant="blue"><Tag className="w-3 h-3" />{tag}</Badge>
+              <Badge key={tag} variant="blue">
+                <Tag className="w-3 h-3" />
+                {tag}
+              </Badge>
             ))}
           </div>
           {flag.description && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{flag.description}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+              {flag.description}
+            </p>
           )}
         </div>
 
@@ -466,18 +526,34 @@ function FlagRow({
       {expanded && (
         <div className="px-4 pb-4 border-t dark:border-gray-700 pt-4 space-y-3">
           <div className="grid grid-cols-2 gap-4 text-xs text-gray-500 dark:text-gray-400">
-            <div><span className="font-medium">ID:</span> <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">{flag.id}</code></div>
-            <div><span className="font-medium">Created by:</span> {flag.createdBy}</div>
-            <div><span className="font-medium">Created:</span> {new Date(flag.createdAt).toLocaleString()}</div>
-            <div><span className="font-medium">Updated:</span> {new Date(flag.updatedAt).toLocaleString()}</div>
+            <div>
+              <span className="font-medium">ID:</span>{' '}
+              <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">{flag.id}</code>
+            </div>
+            <div>
+              <span className="font-medium">Created by:</span> {flag.createdBy}
+            </div>
+            <div>
+              <span className="font-medium">Created:</span>{' '}
+              {new Date(flag.createdAt).toLocaleString()}
+            </div>
+            <div>
+              <span className="font-medium">Updated:</span>{' '}
+              {new Date(flag.updatedAt).toLocaleString()}
+            </div>
           </div>
 
           {flag.strategy === 'targeting' && flag.rules.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Targeting Rules</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Targeting Rules
+              </p>
               <div className="space-y-1">
                 {flag.rules.map((rule, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-3 py-1.5 rounded-lg">
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-3 py-1.5 rounded-lg"
+                  >
                     <code className="text-blue-600 dark:text-blue-400">{rule.attribute}</code>
                     <span className="text-gray-400">{rule.operator}</span>
                     <code className="text-green-600 dark:text-green-400">{rule.value}</code>
@@ -497,13 +573,13 @@ function FlagRow({
 export default function FeatureFlagsPage() {
   const { flags, isLoading, error, reload } = useAllFeatureFlags();
 
-  const [search, setSearch]           = useState('');
-  const [filterTag, setFilterTag]     = useState('');
+  const [search, setSearch] = useState('');
+  const [filterTag, setFilterTag] = useState('');
   const [filterEnabled, setFilterEnabled] = useState<'all' | 'on' | 'off'>('all');
 
   const [editingFlag, setEditingFlag] = useState<Partial<FeatureFlag> | null | false>(false);
   const [auditFlagId, setAuditFlagId] = useState<string | null>(null);
-  const [showAudit, setShowAudit]     = useState(false);
+  const [showAudit, setShowAudit] = useState(false);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -512,7 +588,12 @@ export default function FeatureFlagsPage() {
   const allTags = [...new Set(flags.flatMap((f) => f.tags))].sort();
 
   const filtered = flags.filter((f) => {
-    if (search && !f.name.toLowerCase().includes(search.toLowerCase()) && !f.description.toLowerCase().includes(search.toLowerCase())) return false;
+    if (
+      search &&
+      !f.name.toLowerCase().includes(search.toLowerCase()) &&
+      !f.description.toLowerCase().includes(search.toLowerCase())
+    )
+      return false;
     if (filterTag && !f.tags.includes(filterTag)) return false;
     if (filterEnabled === 'on' && !f.enabled) return false;
     if (filterEnabled === 'off' && f.enabled) return false;
@@ -526,7 +607,10 @@ export default function FeatureFlagsPage() {
       headers: { 'Content-Type': 'application/json', 'x-admin-user': 'admin' },
       body: JSON.stringify({ enabled: !flag.enabled }),
     });
-    if (!res.ok) { setActionError(`Toggle failed: HTTP ${res.status}`); return; }
+    if (!res.ok) {
+      setActionError(`Toggle failed: HTTP ${res.status}`);
+      return;
+    }
     await reload();
   };
 
@@ -536,14 +620,19 @@ export default function FeatureFlagsPage() {
       method: 'DELETE',
       headers: { 'x-admin-user': 'admin' },
     });
-    if (!res.ok) { setActionError(`Delete failed: HTTP ${res.status}`); return; }
+    if (!res.ok) {
+      setActionError(`Delete failed: HTTP ${res.status}`);
+      return;
+    }
     setDeleteConfirmId(null);
     await reload();
   };
 
   const doSave = async (data: Partial<FeatureFlag>) => {
     const isNew = !editingFlag || !('id' in editingFlag);
-    const url = isNew ? '/api/admin/feature-flags' : `/api/admin/feature-flags/${(editingFlag as FeatureFlag).id}`;
+    const url = isNew
+      ? '/api/admin/feature-flags'
+      : `/api/admin/feature-flags/${(editingFlag as FeatureFlag).id}`;
     const method = isNew ? 'POST' : 'PUT';
 
     const res = await fetch(url, {
@@ -568,7 +657,10 @@ export default function FeatureFlagsPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setShowAudit(true); setAuditFlagId(null); }}
+              onClick={() => {
+                setShowAudit(true);
+                setAuditFlagId(null);
+              }}
               className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <History className="w-4 h-4" />
@@ -648,11 +740,26 @@ export default function FeatureFlagsPage() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
-            { label: 'Total', value: flags.length, icon: <Flag className="w-4 h-4 text-gray-500" /> },
-            { label: 'Enabled', value: flags.filter((f) => f.enabled).length, icon: <ToggleRight className="w-4 h-4 text-green-500" /> },
-            { label: 'Disabled', value: flags.filter((f) => !f.enabled).length, icon: <ToggleLeft className="w-4 h-4 text-gray-400" /> },
+            {
+              label: 'Total',
+              value: flags.length,
+              icon: <Flag className="w-4 h-4 text-gray-500" />,
+            },
+            {
+              label: 'Enabled',
+              value: flags.filter((f) => f.enabled).length,
+              icon: <ToggleRight className="w-4 h-4 text-green-500" />,
+            },
+            {
+              label: 'Disabled',
+              value: flags.filter((f) => !f.enabled).length,
+              icon: <ToggleLeft className="w-4 h-4 text-gray-400" />,
+            },
           ].map(({ label, value, icon }) => (
-            <div key={label} className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4 flex items-center gap-3">
+            <div
+              key={label}
+              className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4 flex items-center gap-3"
+            >
               {icon}
               <div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
@@ -673,7 +780,9 @@ export default function FeatureFlagsPage() {
           <div className="text-center py-20">
             <Flag className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {flags.length === 0 ? 'No flags yet. Create your first one.' : 'No flags match your filters.'}
+              {flags.length === 0
+                ? 'No flags yet. Create your first one.'
+                : 'No flags match your filters.'}
             </p>
           </div>
         ) : (
@@ -685,7 +794,10 @@ export default function FeatureFlagsPage() {
                 onEdit={() => setEditingFlag(flag)}
                 onToggle={() => doToggle(flag)}
                 onDelete={() => setDeleteConfirmId(flag.id)}
-                onAudit={() => { setAuditFlagId(flag.id); setShowAudit(true); }}
+                onAudit={() => {
+                  setAuditFlagId(flag.id);
+                  setShowAudit(true);
+                }}
               />
             ))}
           </div>
@@ -694,17 +806,16 @@ export default function FeatureFlagsPage() {
 
       {/* Modals */}
       {editingFlag !== false && (
-        <FlagForm
-          initial={editingFlag}
-          onSave={doSave}
-          onClose={() => setEditingFlag(false)}
-        />
+        <FlagForm initial={editingFlag} onSave={doSave} onClose={() => setEditingFlag(false)} />
       )}
 
       {showAudit && (
         <AuditPanel
           flagId={auditFlagId ?? undefined}
-          onClose={() => { setShowAudit(false); setAuditFlagId(null); }}
+          onClose={() => {
+            setShowAudit(false);
+            setAuditFlagId(null);
+          }}
         />
       )}
 
@@ -718,7 +829,9 @@ export default function FeatureFlagsPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Delete flag?</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  This action cannot be undone.
+                </p>
               </div>
             </div>
             <div className="flex gap-3 justify-end">

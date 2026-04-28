@@ -1,4 +1,11 @@
 @import 'tailwindcss';
+@import '../styles/print.css';
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
 
 :root {
   --background: #ffffff;

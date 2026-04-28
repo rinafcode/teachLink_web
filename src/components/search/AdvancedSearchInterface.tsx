@@ -1,15 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import {
-  Filter,
-  History,
-  TrendingUp,
-  BrainCircuit,
-  Sparkles,
-  Share2,
-  Check,
-} from 'lucide-react';
+import { Filter, History, TrendingUp, BrainCircuit, Sparkles, Share2, Check } from 'lucide-react';
 import { useSearchState } from '../../hooks/useSearchState';
 import { IntelligentAutoComplete } from './IntelligentAutoComplete';
 import { FacetedFilterSystem } from './FacetedFilterSystem';
@@ -102,7 +94,9 @@ export const AdvancedSearchInterface = React.memo(() => {
             }`}
           >
             <Filter
-              className={`w-4 h-4 ${showFilters ? 'rotate-180' : ''} transition-transform duration-300`}
+              className={`w-4 h-4 ${
+                showFilters ? 'rotate-180' : ''
+              } transition-transform duration-300`}
             />
             {showFilters ? 'HIDE_FILTERS' : 'FILTERS'}
           </button>

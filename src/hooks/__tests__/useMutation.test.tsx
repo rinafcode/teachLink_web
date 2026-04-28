@@ -154,9 +154,9 @@ describe('useMutation', () => {
 
     const { result } = renderHook(() => useMutation(mutationFn));
 
-    await expect(
-      act(() => result.current.mutateAsync(undefined as any)),
-    ).rejects.toThrow('reject me');
+    await expect(act(() => result.current.mutateAsync(undefined as any))).rejects.toThrow(
+      'reject me',
+    );
   });
 
   // ── Double-submission prevention ───────────────────────────────────────────

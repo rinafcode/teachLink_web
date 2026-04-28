@@ -53,11 +53,13 @@ This implementation provides production-ready GraphQL subscriptions for TeachLin
 ## Installation
 
 Dependencies are already added to `package.json`:
+
 - `@apollo/client` - GraphQL client
 - `graphql` - GraphQL core
 - `graphql-ws` - WebSocket protocol for GraphQL
 
 Run installation:
+
 ```bash
 npm install
 ```
@@ -76,11 +78,7 @@ npm install
 import { SubscriptionProvider } from '@/components/SubscriptionProvider';
 import type { JSX } from 'react';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {
   const subscriptionConfig = {
     subscriptionUrl: process.env.NEXT_PUBLIC_GRAPHQL_WS_URL || 'wss://api.teachlink.com/graphql',
     httpUrl: process.env.NEXT_PUBLIC_GRAPHQL_HTTP_URL || 'https://api.teachlink.com/graphql',
@@ -92,9 +90,7 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <SubscriptionProvider config={subscriptionConfig}>
-          {children}
-        </SubscriptionProvider>
+        <SubscriptionProvider config={subscriptionConfig}>{children}</SubscriptionProvider>
       </body>
     </html>
   );
@@ -127,12 +123,9 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { NEW_POSTS_SUBSCRIPTION } from '@/lib/graphql/subscriptionQueries';
 
 export function PostFeed() {
-  const { data, loading, error, connectionState } = useSubscription(
-    NEW_POSTS_SUBSCRIPTION,
-    {
-      variables: { topicId: 'web3' },
-    },
-  );
+  const { data, loading, error, connectionState } = useSubscription(NEW_POSTS_SUBSCRIPTION, {
+    variables: { topicId: 'web3' },
+  });
 
   if (loading) return <div>Loading posts...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -154,33 +147,24 @@ export function PostFeed() {
 
 ```tsx
 export function NotificationCenter() {
-  const { data, errorMessage, resubscribe } = useSubscription(
-    USER_NOTIFICATIONS_SUBSCRIPTION,
-    {
-      variables: { userId: 'user-123' },
-      onConnect: () => {
-        console.log('Connected to notifications');
-      },
-      onData: (newNotification) => {
-        console.log('New notification:', newNotification);
-        // Play sound, show toast, etc.
-      },
-      onError: (error) => {
-        console.error('Subscription error:', error);
-      },
-      onDisconnect: () => {
-        console.log('Disconnected from notifications');
-      },
+  const { data, errorMessage, resubscribe } = useSubscription(USER_NOTIFICATIONS_SUBSCRIPTION, {
+    variables: { userId: 'user-123' },
+    onConnect: () => {
+      console.log('Connected to notifications');
     },
-  );
+    onData: (newNotification) => {
+      console.log('New notification:', newNotification);
+      // Play sound, show toast, etc.
+    },
+    onError: (error) => {
+      console.error('Subscription error:', error);
+    },
+    onDisconnect: () => {
+      console.log('Disconnected from notifications');
+    },
+  });
 
-  return (
-    <div>
-      {errorMessage && (
-        <button onClick={resubscribe}>Retry Connection</button>
-      )}
-    </div>
-  );
+  return <div>{errorMessage && <button onClick={resubscribe}>Retry Connection</button>}</div>;
 }
 ```
 
@@ -217,24 +201,29 @@ export function LiveQuizResults() {
 Pre-built subscription queries available in `src/lib/graphql/subscriptionQueries.ts`:
 
 ### Posts & Comments
+
 - `NEW_POSTS_SUBSCRIPTION` - New posts in topic
 - `POST_COMMENTS_SUBSCRIPTION` - Comments on post
 
 ### Notifications
+
 - `USER_NOTIFICATIONS_SUBSCRIPTION` - User notifications
 - `FEED_UPDATES_SUBSCRIPTION` - Feed updates
 
 ### Tipping & Reputation
+
 - `TIPPING_UPDATES_SUBSCRIPTION` - Received tips
 - `REPUTATION_UPDATES_SUBSCRIPTION` - Reputation changes
 
 ### Real-Time Features
+
 - `USER_ACTIVITY_SUBSCRIPTION` - User activity status
 - `TYPING_INDICATOR_SUBSCRIPTION` - Typing indicators
 - `MESSAGE_STATUS_SUBSCRIPTION` - Message delivery status
 - `PRESENCE_SUBSCRIPTION` - Who's online
 
 ### Advanced
+
 - `STUDY_GROUP_UPDATES_SUBSCRIPTION` - Study group messages
 - `LIVE_QUIZ_RESPONSES_SUBSCRIPTION` - Quiz responses
 - `BLOCKCHAIN_TRANSACTION_SUBSCRIPTION` - Transaction updates
@@ -252,10 +241,7 @@ export function Header() {
   return (
     <header>
       <h1>TeachLink</h1>
-      <ConnectionStatusIndicator
-        showLabel={true}
-        size="md"
-      />
+      <ConnectionStatusIndicator showLabel={true} size="md" />
     </header>
   );
 }
@@ -292,11 +278,7 @@ export function PostFeed() {
   const { data, loading, error } = useSubscription(POST_SUBSCRIPTION);
 
   return (
-    <SubscriptionLoadingState
-      loading={loading}
-      error={error}
-      fallback={<SubscriptionSkeleton />}
-    >
+    <SubscriptionLoadingState loading={loading} error={error} fallback={<SubscriptionSkeleton />}>
       <PostList posts={data} />
     </SubscriptionLoadingState>
   );
@@ -374,13 +356,7 @@ import { formatSubscriptionError } from '@/lib/graphql/subscriptions';
 export function SubscriptionWithErrorDisplay() {
   const { error } = useSubscription(SUBSCRIPTION);
 
-  return (
-    <div>
-      {error && (
-        <ErrorAlert message={formatSubscriptionError(error)} />
-      )}
-    </div>
-  );
+  return <div>{error && <ErrorAlert message={formatSubscriptionError(error)} />}</div>;
 }
 ```
 
@@ -423,13 +399,10 @@ interface Props {
 }
 
 export function PostComments({ postId, isOpen }: Props) {
-  const { data } = useSubscription(
-    POST_COMMENTS_SUBSCRIPTION,
-    {
-      variables: { postId: postId || '' },
-      skip: !isOpen || !postId, // Skip if post not open or no postId
-    },
-  );
+  const { data } = useSubscription(POST_COMMENTS_SUBSCRIPTION, {
+    variables: { postId: postId || '' },
+    skip: !isOpen || !postId, // Skip if post not open or no postId
+  });
 
   if (!isOpen) return null;
   return <CommentsList comments={data?.onPostComment} />;
@@ -441,16 +414,13 @@ export function PostComments({ postId, isOpen }: Props) {
 ```tsx
 // Create a custom hook for specific feature
 export function usePostComments(postId: string) {
-  return useSubscription(
-    POST_COMMENTS_SUBSCRIPTION,
-    {
-      variables: { postId },
-      onData: (comment) => {
-        // Custom logic here
-        playNotificationSound();
-      },
+  return useSubscription(POST_COMMENTS_SUBSCRIPTION, {
+    variables: { postId },
+    onData: (comment) => {
+      // Custom logic here
+      playNotificationSound();
     },
-  );
+  });
 }
 
 // Use in component
@@ -487,6 +457,7 @@ export function OptimizedFeed() {
 ### Subscription Cleanup
 
 The `useSubscription` hook automatically cleans up resources:
+
 - Unsubscribes when component unmounts
 - Clears timers and listeners
 - Closes WebSocket connections
@@ -515,16 +486,14 @@ const config = {
   subscriptionUrl: 'wss://api.teachlink.com/graphql',
   httpUrl: 'https://api.teachlink.com/graphql',
   reconnect: {
-    maxRetries: 10,        // Retry up to 10 times
-    initialDelayMs: 500,   // Start with 500ms delay
-    maxDelayMs: 60000,     // Cap at 60 seconds
+    maxRetries: 10, // Retry up to 10 times
+    initialDelayMs: 500, // Start with 500ms delay
+    maxDelayMs: 60000, // Cap at 60 seconds
   },
   connectionTimeoutMs: 10000, // 10 second timeout
 };
 
-<SubscriptionProvider config={config}>
-  {children}
-</SubscriptionProvider>
+<SubscriptionProvider config={config}>{children}</SubscriptionProvider>;
 ```
 
 ### Custom Apollo Client
@@ -538,12 +507,9 @@ const customClient = new ApolloClient({
   // ... your configuration
 });
 
-<SubscriptionProvider
-  config={baseConfig}
-  client={customClient}
->
+<SubscriptionProvider config={baseConfig} client={customClient}>
   {children}
-</SubscriptionProvider>
+</SubscriptionProvider>;
 ```
 
 ---
@@ -558,9 +524,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 
 describe('useSubscription', () => {
   it('should subscribe and receive data', async () => {
-    const { result } = renderHook(() =>
-      useSubscription(SUBSCRIPTION)
-    );
+    const { result } = renderHook(() => useSubscription(SUBSCRIPTION));
 
     await waitFor(() => {
       expect(result.current.data).toBeDefined();
@@ -590,7 +554,7 @@ const mocks = [
 
 <MockedProvider mocks={mocks}>
   <Component />
-</MockedProvider>
+</MockedProvider>;
 ```
 
 ---
@@ -642,6 +606,7 @@ Solution:
 ## Best Practices
 
 ✅ **Do:**
+
 - Wrap app with `SubscriptionProvider` once at root
 - Use `useSubscription` hook for subscriptions
 - Handle errors gracefully with fallback UI
@@ -650,6 +615,7 @@ Solution:
 - Clean up with proper dependency arrays
 
 ❌ **Don't:**
+
 - Create multiple SubscriptionProviders
 - Subscribe in server components
 - Ignore connection errors

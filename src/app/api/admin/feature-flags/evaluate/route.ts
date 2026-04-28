@@ -8,7 +8,7 @@ import { withRateLimit } from '@/lib/ratelimit';
  * All query params beyond `id` are passed as the evaluation context.
  */
 export async function GET(req: NextRequest) {
-  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'API');
+  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
   const { searchParams } = new URL(req.url);

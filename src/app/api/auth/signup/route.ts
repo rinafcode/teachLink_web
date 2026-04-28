@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/ratelimit';
+import type { AuthResponse } from '@/types/api';
 
 export async function POST(request: NextRequest) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');

@@ -4,10 +4,23 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
-import { getHtmlDir } from '@/lib/i18n/config';
 
 // Languages supported at startup — extend as new locale files are added.
-const VALID_LOCALES = new Set(['en', 'es', 'ar', 'fr', 'de', 'he', 'ja', 'zh', 'pt', 'ru', 'it', 'ko']);
+const VALID_LOCALES = new Set([
+  'en',
+  'es',
+  'ar',
+  'fr',
+  'de',
+  'he',
+  'ja',
+  'zh',
+  'pt',
+  'ru',
+  'it',
+  'ko',
+]);
+const RTL_LOCALES = new Set(['ar', 'he']);
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -38,7 +51,7 @@ export default async function RootLayout({
   // avoids a hydration flash for RTL users.
   const rawLocale = cookieStore.get('i18n:language')?.value ?? 'en';
   const locale = VALID_LOCALES.has(rawLocale) ? rawLocale : 'en';
-  const dir = getHtmlDir(locale);
+  const dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
 
   const themeScript = `
     (function() {

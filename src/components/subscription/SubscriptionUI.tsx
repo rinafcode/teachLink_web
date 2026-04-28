@@ -82,10 +82,7 @@ export function ConnectionStatusBanner({
 }: ConnectionStatusBannerProps) {
   const connectionState = useSubscriptionConnection();
 
-  if (
-    connectionState === ConnectionState.CONNECTED &&
-    !showOnSuccess
-  ) {
+  if (connectionState === ConnectionState.CONNECTED && !showOnSuccess) {
     return null;
   }
 
