@@ -5,8 +5,7 @@
 export const queryKeys = {
   courses: {
     all: ['courses'] as const,
-    list: (params?: { cursor?: string; limit?: number }) =>
-      ['courses', 'list', params] as const,
+    list: (params?: { cursor?: string; limit?: number }) => ['courses', 'list', params] as const,
     detail: (id: string) => ['courses', id] as const,
     lessons: (courseId: string) => ['courses', courseId, 'lessons'] as const,
   },

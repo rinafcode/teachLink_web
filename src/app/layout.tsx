@@ -56,9 +56,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
       >
-        <RootProviders defaultTheme={defaultTheme}>
-          {children}
-        </RootProviders>
+        <RootProviders defaultTheme={defaultTheme}>{children}</RootProviders>
 
         {/* Non-essential analytics — loaded after page is interactive */}
         {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
@@ -81,4 +79,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

@@ -325,7 +325,9 @@ export default function NotificationCenter({
         {processedNotifications.length === 0 ? (
           <EmptyState
             icon={Bell}
-            title={hasActiveFilters ? 'No notifications match your filters' : "You're all caught up!"}
+            title={
+              hasActiveFilters ? 'No notifications match your filters' : "You're all caught up!"
+            }
             action={
               hasActiveFilters ? (
                 <button

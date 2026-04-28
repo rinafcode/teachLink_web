@@ -7,7 +7,7 @@ export async function POST(
 ): Promise<NextResponse<AuthResponse | { message: string }>> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<{ message: string }>;
   }
 
   try {
@@ -15,21 +15,27 @@ export async function POST(
     const { name, email, password, confirmPassword } = body;
 
     if (!name || !email || !password || !confirmPassword) {
-      return addHeaders(NextResponse.json({ message: 'All fields are required' }, { status: 400 }));
+      return addHeaders(
+        NextResponse.json({ message: 'All fields are required' }, { status: 400 }),
+      ) as NextResponse<{ message: string }>;
     }
 
     if (password !== confirmPassword) {
-      return addHeaders(NextResponse.json({ message: "Passwords don't match" }, { status: 400 }));
+      return addHeaders(
+        NextResponse.json({ message: "Passwords don't match" }, { status: 400 }),
+      ) as NextResponse<{ message: string }>;
     }
 
     if (password.length < 6) {
       return addHeaders(
         NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 }),
-      );
+      ) as NextResponse<{ message: string }>;
     }
 
     if (email === 'existing@teachlink.com') {
-      return addHeaders(NextResponse.json({ message: 'Email already registered' }, { status: 409 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email already registered' }, { status: 409 }),
+      ) as NextResponse<{ message: string }>;
     }
 
     return addHeaders(
@@ -45,9 +51,11 @@ export async function POST(
         },
         { status: 201 },
       ),
-    );
+    ) as NextResponse<AuthResponse>;
   } catch (error) {
     console.error('Signup error:', error);
-    return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
+    return addHeaders(
+      NextResponse.json({ message: 'Internal server error' }, { status: 500 }),
+    ) as NextResponse<{ message: string }>;
   }
 }

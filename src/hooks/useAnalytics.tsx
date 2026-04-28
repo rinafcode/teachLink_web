@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef } from "react";
-import analytics, { EventName, EventProperties } from "@/utils/analytics";
+import { useCallback, useEffect, useRef } from 'react';
+import analytics, { EventName, EventProperties } from '@/utils/analytics';
 
 /**
  * useAnalytics – React hook for consistent event tracking.
@@ -59,7 +59,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
     (name: EventName, properties: EventProperties = {}) => {
       analytics.track(name, { ...contextRef.current, ...properties });
     },
-    [] // stable — context accessed via ref
+    [], // stable — context accessed via ref
   );
 
   const trackPageView = useCallback((overrides: EventProperties = {}) => {
@@ -80,7 +80,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
 export function trackClick<T extends React.MouseEvent>(
   eventName: EventName,
   properties: EventProperties,
-  handler?: (e: T) => void
+  handler?: (e: T) => void,
 ): (e: T) => void {
   return (e: T) => {
     analytics.track(eventName, properties);

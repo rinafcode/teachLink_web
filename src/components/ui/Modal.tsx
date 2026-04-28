@@ -50,11 +50,7 @@ export function Modal({ isOpen, onClose, title, children, className = '' }: Moda
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black/50"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} aria-hidden="true" />
 
       {/* Dialog */}
       <div
