@@ -45,7 +45,13 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   }
 
   if (!results || results.length === 0) {
-    return <EmptyState icon={SearchX} title="No courses found" description="Try adjusting your search or filters" />;
+    return (
+      <EmptyState
+        icon={SearchX}
+        title="No courses found"
+        description="Try adjusting your search or filters"
+      />
+    );
   }
 
   const getPriceDisplay = (price: number, originalPrice?: number | null) => {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { ApiResponse, UserProgress } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
 
-export async function GET(): Promise<NextResponse<ApiResponse<UserProgress>>> {
+export async function GET() {
   const mockRequest = new Request('http://localhost');
   const { addHeaders, rateLimitResponse } = withRateLimit(mockRequest, 'WRITE');
   if (rateLimitResponse) {
@@ -24,7 +24,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<UserProgress>>> {
   );
 }
 
-export async function POST(request: Request): Promise<NextResponse<ApiResponse<UserProgress>>> {
+export async function POST(request: Request) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<UserProgress>>;

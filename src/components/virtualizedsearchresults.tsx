@@ -1,10 +1,11 @@
-import React, { useCallback, memo, useMemo } from "react";
-import { VariableSizeList as List, ListChildComponentProps } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
-import { SearchX } from "lucide-react";
-import { EmptyState } from "@/components";
+import React, { useCallback, memo, useMemo } from 'react';
+import { VariableSizeList as List, ListChildComponentProps } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { SearchX } from 'lucide-react';
+import { EmptyState } from '@/components';
+import Image from 'next/image';
 
-export type SearchResultType = "course" | "user" | "post" | "file";
+export type SearchResultType = 'course' | 'user' | 'post' | 'file';
 
 export interface SearchResult {
   id: string;
@@ -30,37 +31,31 @@ interface SearchResultItemProps {
   onSelect?: (result: SearchResult) => void;
 }
 
-const SearchResultItem = memo(
-  ({ result, style, onSelect }: SearchResultItemProps) => (
-    <div
-      style={style}
-      className={`search-result-item search-result-item--${result.type}`}
-      onClick={() => onSelect?.(result)}
-      role="option"
-      aria-selected="false"
-    >
-      <div className="search-result-icon">
-        {result.icon ? (
-          <img src={result.icon} alt="" aria-hidden="true" />
-        ) : (
-          <span className="search-result-type-badge">{result.type[0].toUpperCase()}</span>
-        )}
-      </div>
-      <div className="search-result-content">
-        <span className="search-result-title">{result.title}</span>
-        {result.subtitle && (
-          <span className="search-result-subtitle">{result.subtitle}</span>
-        )}
-        {result.description && (
-          <p className="search-result-description">{result.description}</p>
-        )}
-      </div>
-      <span className="search-result-type-label">{result.type}</span>
+const SearchResultItem = memo(({ result, style, onSelect }: SearchResultItemProps) => (
+  <div
+    style={style}
+    className={`search-result-item search-result-item--${result.type}`}
+    onClick={() => onSelect?.(result)}
+    role="option"
+    aria-selected="false"
+  >
+    <div className="search-result-icon">
+      {result.icon ? (
+        <Image src={result.icon} alt="" aria-hidden="true" width={40} height={40} />
+      ) : (
+        <span className="search-result-type-badge">{result.type[0].toUpperCase()}</span>
+      )}
     </div>
-  )
-);
+    <div className="search-result-content">
+      <span className="search-result-title">{result.title}</span>
+      {result.subtitle && <span className="search-result-subtitle">{result.subtitle}</span>}
+      {result.description && <p className="search-result-description">{result.description}</p>}
+    </div>
+    <span className="search-result-type-label">{result.type}</span>
+  </div>
+));
 
-SearchResultItem.displayName = "SearchResultItem";
+SearchResultItem.displayName = 'SearchResultItem';
 
 interface VirtualizedSearchResultsProps {
   results: SearchResult[];
@@ -79,24 +74,20 @@ const VirtualizedSearchResults: React.FC<VirtualizedSearchResultsProps> = ({
 }) => {
   const getItemSize = useCallback(
     (index: number) => ITEM_HEIGHT_MAP[results[index]?.type] ?? 80,
-    [results]
+    [results],
   );
 
   const Row = useCallback(
     ({ index, style }: ListChildComponentProps) => (
-      <SearchResultItem
-        result={results[index]}
-        style={style}
-        onSelect={onResultSelect}
-      />
+      <SearchResultItem result={results[index]} style={style} onSelect={onResultSelect} />
     ),
-    [results, onResultSelect]
+    [results, onResultSelect],
   );
 
   // Compute total estimated height for small result sets (avoids AutoSizer overhead)
   const estimatedTotalHeight = useMemo(
     () => results.reduce((sum, r) => sum + (ITEM_HEIGHT_MAP[r.type] ?? 80), 0),
-    [results]
+    [results],
   );
 
   if (isLoading) {
@@ -112,12 +103,18 @@ const VirtualizedSearchResults: React.FC<VirtualizedSearchResultsProps> = ({
   }
 
   if (results.length === 0 && query) {
-    return <EmptyState icon={SearchX} title={`No results for "${query}"`} description="Try a different search term" />;
+    return (
+      <EmptyState
+        icon={SearchX}
+        title={`No results for "${query}"`}
+        description="Try a different search term"
+      />
+    );
   }
 
   return (
     <div
-      className={`virtualized-search-results ${className ?? ""}`}
+      className={`virtualized-search-results ${className ?? ''}`}
       role="listbox"
       aria-label="Search results"
     >

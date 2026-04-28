@@ -5,6 +5,23 @@ import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
 
+// Languages supported at startup — extend as new locale files are added.
+const VALID_LOCALES = new Set([
+  'en',
+  'es',
+  'ar',
+  'fr',
+  'de',
+  'he',
+  'ja',
+  'zh',
+  'pt',
+  'ru',
+  'it',
+  'ko',
+]);
+const RTL_LOCALES = new Set(['ar', 'he']);
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -30,6 +47,12 @@ export default async function RootLayout({
   const themeCookie = cookieStore.get('theme');
   const defaultTheme = themeCookie ? themeCookie.value : 'system';
 
+  // Read persisted locale to server-render the correct lang/dir on <html> —
+  // avoids a hydration flash for RTL users.
+  const rawLocale = cookieStore.get('i18n:language')?.value ?? 'en';
+  const locale = VALID_LOCALES.has(rawLocale) ? rawLocale : 'en';
+  const dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
+
   const themeScript = `
     (function() {
       try {
@@ -49,14 +72,14 @@ export default async function RootLayout({
   `;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
       >
-        <RootProviders defaultTheme={defaultTheme}>
+        <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
           {children}
         </RootProviders>
 
@@ -81,4 +104,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

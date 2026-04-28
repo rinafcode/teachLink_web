@@ -116,10 +116,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
 
   const [shareURL, setShareURL] = useState<string | null>(null);
 
-  const sortedPanels = useMemo(
-    () => [...panels].sort((a, b) => a.position - b.position),
-    [panels],
-  );
+  const sortedPanels = useMemo(() => [...panels].sort((a, b) => a.position - b.position), [panels]);
 
   // Update filters and regenerate data for non-realtime panels
   const setFilters = useCallback((partial: Partial<DashboardFiltersState>) => {

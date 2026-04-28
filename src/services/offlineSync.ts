@@ -1,6 +1,13 @@
 'use client';
 
 import { openDB, IDBPDatabase } from 'idb';
+import {
+  ConflictRecord,
+  ResolutionStrategy,
+  detectConflict,
+  resolveConflict,
+  createConflictRecord,
+} from '@/lib/conflict/resolver';
 
 export type SyncItemType = 'course_progress';
 
@@ -47,6 +54,7 @@ export interface OfflineProgressRecord {
   updatedAt: string;
   synced: boolean;
   syncedAt?: string;
+  version?: number;
 }
 
 export interface SyncQueueItem {
@@ -58,17 +66,7 @@ export interface SyncQueueItem {
   version: number;
 }
 
-export interface SyncConflict {
-  id: string;
-  type: SyncItemType;
-  entityKey: string;
-  localItem: SyncQueueItem;
-  remoteItem: SyncQueueItem;
-  resolution: 'local' | 'remote' | 'merge' | 'manual';
-  resolved: boolean;
-  createdAt: string;
-  resolvedAt?: string;
-}
+export type SyncConflict = ConflictRecord<any>;
 
 export interface SyncResult {
   success: boolean;
@@ -80,7 +78,7 @@ export interface SyncResult {
 
 export interface SyncOptions {
   forceSync?: boolean;
-  resolveConflicts?: 'auto' | 'manual' | 'local' | 'remote' | 'merge';
+  resolveConflicts?: 'auto' | ResolutionStrategy;
   retryAttempts?: number;
 }
 
@@ -334,18 +332,44 @@ export class OfflineSyncService {
     return await index.getAll(IDBKeyRange.only(false));
   }
 
-  async resolveConflict(conflictId: string, resolution: SyncConflict['resolution']): Promise<void> {
+  async resolveConflict(
+    conflictId: string,
+    strategy: ResolutionStrategy,
+    manualData?: any,
+  ): Promise<void> {
     const conflict = await this.db.get('conflicts', conflictId);
     if (!conflict) return;
 
+    const resolvedData =
+      strategy === 'manual' && manualData
+        ? manualData
+        : resolveConflict(conflict.localData, conflict.remoteData, strategy);
+
     const resolvedConflict: SyncConflict = {
       ...conflict,
-      resolution,
+      strategy,
       resolved: true,
-      resolvedAt: new Date().toISOString(),
+      history: [
+        ...conflict.history,
+        {
+          timestamp: new Date().toISOString(),
+          action: 'RESOLVED',
+          details: `Resolved using ${strategy} strategy`,
+        },
+      ],
     };
 
     await this.db.put('conflicts', resolvedConflict);
+
+    // Update local storage with resolved data
+    const [courseId, moduleId] = conflict.entityKey.split(':');
+    await this.storage.saveProgress({
+      courseId,
+      moduleId,
+      ...resolvedData,
+      synced: true,
+      syncedAt: new Date().toISOString(),
+    });
   }
 
   async syncData(options: SyncOptions = {}): Promise<SyncResult> {
@@ -413,49 +437,47 @@ export class OfflineSyncService {
 
       const [courseId, moduleId] = entityKey.split(':');
       const existing = await this.storage.getProgress(courseId, moduleId);
-      const hasRemoteNewer = existing?.synced && existing.updatedAt > candidate.data.updatedAt;
 
-      if (hasRemoteNewer) {
-        const conflict: SyncConflict = {
-          id: `conflict-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          type: candidate.type,
-          entityKey,
-          localItem: candidate,
-          remoteItem: {
-            ...candidate,
-            data: {
-              ...candidate.data,
-              progress: existing.progress,
-              completed: existing.completed,
-              updatedAt: existing.updatedAt,
-            },
-            timestamp: existing.updatedAt,
-            version: candidate.version + 1,
-          },
-          resolution: 'manual',
-          resolved: false,
-          createdAt: new Date().toISOString(),
+      const isConflicted = existing?.synced && detectConflict(candidate.data, existing);
+
+      if (isConflicted) {
+        const remoteData = {
+          progress: existing.progress,
+          completed: existing.completed,
+          updatedAt: existing.updatedAt,
+          version: existing.version || 1,
         };
 
-        const resolution = this.resolveConflictStrategy(conflict, options);
-        conflict.resolution = resolution;
-        conflict.resolved = resolution !== 'manual';
-        conflict.resolvedAt = conflict.resolved ? new Date().toISOString() : undefined;
+        const conflict = createConflictRecord(
+          candidate.type,
+          entityKey,
+          candidate.data,
+          remoteData,
+        );
 
-        await this.addConflict(conflict);
-        conflicts.push(conflict);
+        const strategy = this.resolveConflictStrategy(conflict, options);
 
-        if (conflict.resolved && resolution !== 'remote') {
+        if (strategy !== 'manual') {
+          const resolvedData = resolveConflict(candidate.data, remoteData, strategy);
+          conflict.strategy = strategy;
+          conflict.resolved = true;
+          conflict.history.push({
+            timestamp: new Date().toISOString(),
+            action: 'AUTO_RESOLVED',
+            details: `Automatically resolved using ${strategy} strategy`,
+          });
+
           await this.storage.saveProgress({
             courseId,
             moduleId,
-            progress: candidate.data.progress,
-            completed: candidate.data.completed,
-            updatedAt: candidate.data.updatedAt,
+            ...resolvedData,
             synced: true,
             syncedAt: new Date().toISOString(),
           });
         }
+
+        await this.addConflict(conflict);
+        conflicts.push(conflict);
       } else {
         await this.storage.saveProgress({
           courseId,
@@ -463,6 +485,7 @@ export class OfflineSyncService {
           progress: candidate.data.progress,
           completed: candidate.data.completed,
           updatedAt: candidate.data.updatedAt,
+          version: candidate.data.version,
           synced: true,
           syncedAt: new Date().toISOString(),
         });
@@ -495,28 +518,20 @@ export class OfflineSyncService {
   private resolveConflictStrategy(
     conflict: SyncConflict,
     options: SyncOptions,
-  ): SyncConflict['resolution'] {
+  ): ResolutionStrategy {
     if (
       options.resolveConflicts === 'local' ||
       options.resolveConflicts === 'remote' ||
       options.resolveConflicts === 'merge'
     ) {
-      return options.resolveConflicts;
+      return options.resolveConflicts as ResolutionStrategy;
     }
 
     if (options.resolveConflicts === 'manual') {
       return 'manual';
     }
 
-    const localUpdated = new Date(conflict.localItem.data.updatedAt).getTime();
-    const remoteUpdated = new Date(conflict.remoteItem.data.updatedAt).getTime();
-
-    if (localUpdated === remoteUpdated) {
-      return conflict.localItem.data.progress >= conflict.remoteItem.data.progress
-        ? 'local'
-        : 'remote';
-    }
-
-    return localUpdated > remoteUpdated ? 'local' : 'remote';
+    // Default "auto" strategy: smart merge if both are progress data, otherwise manual
+    return 'manual';
   }
 }

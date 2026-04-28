@@ -14,3 +14,23 @@ export {
 } from './envValidation';
 
 export { validateWalletInteraction, type WalletInteractionResult } from './walletValidation';
+
+export {
+  isValidEthereumAddress,
+  isValidStarknetAddress,
+  isValidAddress,
+  isBlacklistedAddress,
+  performSecurityChecks,
+  RateLimiter,
+  decodeContractData,
+  formatGasPrice,
+  estimateGasCost,
+  isValidENSName,
+  toChecksumAddress,
+  validateTransaction,
+  walletActionRateLimiter,
+  transactionRateLimiter,
+  type SecurityCheckResult,
+  type Web3SecurityContext,
+  type ValidatedTransaction,
+} from './security';

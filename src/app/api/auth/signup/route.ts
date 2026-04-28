@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { AuthResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import type { AuthResponse } from '@/types/api';
 
-export async function POST(
-  request: NextRequest,
-): Promise<NextResponse<AuthResponse | { message: string }>> {
+export async function POST(request: NextRequest) {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<AuthResponse | { message: string }>;
   }
 
   try {
@@ -29,7 +27,9 @@ export async function POST(
     }
 
     if (email === 'existing@teachlink.com') {
-      return addHeaders(NextResponse.json({ message: 'Email already registered' }, { status: 409 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email already registered' }, { status: 409 }),
+      );
     }
 
     return addHeaders(
