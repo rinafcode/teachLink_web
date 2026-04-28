@@ -26,8 +26,8 @@ import type { CompletionSuggestion } from '@/utils/codeUtils';
 // Configure Monaco Web Worker to use CDN to prevent main-thread blocking
 loader.config({
   paths: {
-    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs'
-  }
+    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
+  },
 });
 
 // Lazy-load Monaco using Next.js dynamic to avoid SSR issues and improve initial render
@@ -99,6 +99,7 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
     output,
     validationErrors,
     collaborators,
+    isCollaborationConnected,
     autoCompleteEnabled,
     currentWord,
     languages,
@@ -259,7 +260,11 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
             onToggle={toggleAutoComplete}
             onSelect={handleSuggestionSelect}
           />
-          <CollaborativeEditing collaborators={collaborators} roomId={roomId} />
+          <CollaborativeEditing
+            collaborators={collaborators}
+            roomId={roomId}
+            isConnected={isCollaborationConnected}
+          />
         </div>
       </div>
 

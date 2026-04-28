@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auditLog } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 /**
  * GET /api/admin/feature-flags/audit?flagId=<id>&limit=50&offset=0
  */
 export async function GET(req: NextRequest) {
+  edgeLog('info', '/api/admin/feature-flags/audit', 'GET request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
