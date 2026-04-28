@@ -1,11 +1,11 @@
 import type { AppProps } from 'next/app';
-import { ToastProvider } from '@/context/ToastContext';
+import { RootProviders } from '@/providers/RootProviders';
 import '../app/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <ToastProvider>
+    <RootProviders defaultTheme="system">
       <Component {...pageProps} />
-    </ToastProvider>
+    </RootProviders>
   );
 }
