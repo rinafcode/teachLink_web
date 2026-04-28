@@ -16,6 +16,7 @@ export interface ApiResponse<T> {
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
+  nextCursor?: string;
 }
 
 export interface SuccessResponse {

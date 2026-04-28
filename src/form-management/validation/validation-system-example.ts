@@ -111,10 +111,10 @@ export class IntegratedValidationSystem {
     // Email availability check (example async rule)
     const emailAvailabilityRule = ValidationRuleBuilders.createAsyncApiRule(
       'email-availability',
-      async (email: string) => {
+      async (email: unknown) => {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 500));
-        return !email.includes('taken');
+        return !String(email).includes('taken');
       },
       'This email address is already taken',
     );
@@ -126,6 +126,7 @@ export class IntegratedValidationSystem {
       description: 'Validate minimum age requirement',
       isAsync: false,
       validationFunction: (value, formState, context) => {
+      validationFunction: (value) => {
         const age = parseInt(String(value));
         const minAge = 18;
 

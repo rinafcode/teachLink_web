@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { BookOpen, Star, Clock, Users, Settings } from 'lucide-react';
 
 interface Course {
@@ -56,7 +55,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
       setIsLoading(true);
       setError(null);
       try {
-        await new Promise((r) => setTimeout(r, 150));
+        await new Promise((resolve) => setTimeout(resolve, 150));
         if (cancelled) return;
       } catch {
         if (!cancelled) setError('Failed to load recommendations');
@@ -69,7 +68,6 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
     };
   }, [id]);
 
-  // Mock recommended courses
   const recommendedCourses: Course[] = [
     {
       id: '1',
@@ -112,26 +110,27 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'beginner':
-        return 'text-green-600 bg-green-100';
+        return 'bg-green-100 text-green-600';
       case 'intermediate':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'bg-yellow-100 text-yellow-600';
       case 'advanced':
-        return 'text-red-600 bg-red-100';
+        return 'bg-red-100 text-red-600';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'bg-gray-100 text-gray-600';
     }
   };
 
   if (isCollapsed) {
     return (
-      <motion.div layout className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <motion.div layout className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900">{title}</h3>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-500">{recommendedCourses.length} courses</span>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 transition-colors hover:text-gray-600"
             >
               <BookOpen size={20} />
             </button>
@@ -144,10 +143,9 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
   return (
     <motion.div
       layout
-      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+      className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
     >
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <BookOpen size={20} className="text-blue-600" />
@@ -155,47 +153,49 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setIsConfigOpen((v) => !v)}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              onClick={() => setIsConfigOpen((value) => !value)}
+              className="p-1 text-gray-400 transition-colors hover:text-gray-600"
               aria-label="Widget settings"
             >
               <Settings size={16} />
             </button>
             <button
+              aria-label="Action"
               onClick={onToggleCollapse}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1 text-gray-400 transition-colors hover:text-gray-600"
             >
               <BookOpen size={16} />
             </button>
             <button
+              aria-label="Delete"
               onClick={onRemove}
-              className="p-1 text-red-400 hover:text-red-600 transition-colors"
+              className="p-1 text-red-400 transition-colors hover:text-red-600"
             >
-              ×
+              x
             </button>
           </div>
         </div>
         {isConfigOpen && (
-          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Title</label>
+              <label className="mb-1 block text-xs text-gray-600">Title</label>
               <input
                 value={tempTitle}
                 onChange={(e) => setTempTitle(e.target.value)}
                 onBlur={() => {
-                  const t = tempTitle.trim();
-                  if (t) onUpdateTitle(t);
+                  const nextTitle = tempTitle.trim();
+                  if (nextTitle) onUpdateTitle(nextTitle);
                   else setTempTitle(title);
                 }}
-                className="w-full px-2 py-1 border border-gray-300 rounded"
+                className="w-full rounded border border-gray-300 px-2 py-1"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Size</label>
+              <label className="mb-1 block text-xs text-gray-600">Size</label>
               <select
                 value={size}
                 onChange={(e) => onChangeSize(e.target.value as 'small' | 'medium' | 'large')}
-                className="w-full px-2 py-1 border border-gray-300 rounded"
+                className="w-full rounded border border-gray-300 px-2 py-1"
               >
                 <option value="small">Small</option>
                 <option value="medium">Medium</option>
@@ -203,12 +203,12 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Category</label>
+              <label className="mb-1 block text-xs text-gray-600">Category</label>
               <input
-                // @ts-expect-error - settings is of type unknown
+                // @ts-expect-error settings uses an unknown-backed record
                 value={settings.category ?? ''}
                 onChange={(e) => onUpdateSettings({ category: e.target.value })}
-                className="w-full px-2 py-1 border border-gray-300 rounded"
+                className="w-full rounded border border-gray-300 px-2 py-1"
                 placeholder="e.g. Web Development"
               />
             </div>
@@ -216,9 +216,8 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-4 space-y-4">
-        {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
+      <div className="space-y-4 p-4">
+        {isLoading && <div className="text-sm text-gray-500">Loading...</div>}
         {error && <div className="text-sm text-red-600">{error}</div>}
         {recommendedCourses.map((course, index) => (
           <motion.div
@@ -226,32 +225,22 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+            className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 transition-shadow hover:shadow-md"
           >
             <div className="flex">
-              <div className="w-24 h-20 bg-gray-200 shrink-0">
+              <div className="h-20 w-24 flex-shrink-0 bg-gray-200">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-
-                <Image
-                  src={course.image}
-                  alt={course.title}
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                  placeholder="blur"
-                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
-                />
-
+                <img src={course.image} alt={course.title} className="h-full w-full object-cover" />
               </div>
               <div className="flex-1 p-3">
-                <h4 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
+                <h4 className="mb-1 line-clamp-2 text-sm font-medium text-gray-900">
                   {course.title}
                 </h4>
-                <p className="text-xs text-gray-600 mb-2">{course.instructor}</p>
+                <p className="mb-2 text-xs text-gray-600">{course.instructor}</p>
 
-                <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
+                <div className="mb-2 flex items-center space-x-4 text-xs text-gray-500">
                   <div className="flex items-center space-x-1">
-                    <Star size={12} className="text-yellow-500 fill-current" />
+                    <Star size={12} className="fill-current text-yellow-500" />
                     <span>{course.rating}</span>
                   </div>
                   <div className="flex items-center space-x-1">
@@ -266,7 +255,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
 
                 <div className="flex items-center justify-between">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${getLevelColor(
                       course.level,
                     )}`}
                   >
@@ -279,8 +268,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
           </motion.div>
         ))}
 
-        {/* View All Button */}
-        <button className="w-full py-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+        <button className="w-full py-2 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700">
           View All Recommendations
         </button>
       </div>

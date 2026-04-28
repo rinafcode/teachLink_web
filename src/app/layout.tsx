@@ -1,23 +1,11 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
-import { ThemeProvider } from '@/lib/theme-provider';
-import DynamicTheming from '@/components/theme/DynamicTheming';
-import { OfflineModeProvider } from './context/OfflineModeContext';
-import { I18nProvider } from '@/hooks/useInternationalization';
-import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
-import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
-import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
-import { PerformanceMonitoringProvider } from '@/hooks/usePerformanceMonitoring';
-import PrefetchingEngine from '@/components/performance/PrefetchingEngine';
-import StateManagerIntegration from '@/components/state/StateManagerIntegration';
-import { PWAManager } from '@/components/pwa/PWAManager';
-import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
-import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
+import { RootProviders } from '@/providers/RootProviders';
 
 const geistSans = Geist({
-  // ...
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
@@ -66,31 +54,31 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50 transition-colors duration-200`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
       >
-        <I18nProvider>
-          <InternationalizationEngine>
-            <CulturalAdaptationManager>
-              <ThemeProvider defaultTheme={defaultTheme}>
-                <DynamicTheming />
-                <AccessibilityProvider pageLabel="TeachLink — main application">
-                  <PerformanceMonitoringProvider>
-                    <OfflineModeProvider>
-                      <PWAManager />
-                      <StateManagerIntegration />
-                      <PerformanceMonitor />
-                      <PrefetchingEngine />
-                      <ErrorBoundary>
-                        {children}
-                      </ErrorBoundary>
-                    </OfflineModeProvider>
-                  </PerformanceMonitoringProvider>
-                </AccessibilityProvider>
-              </ThemeProvider>
-            </CulturalAdaptationManager>
-          </InternationalizationEngine>
-        </I18nProvider>
+        <RootProviders defaultTheme={defaultTheme}>
+          {children}
+        </RootProviders>
+
+        {/* Non-essential analytics — loaded after page is interactive */}
+        {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_ANALYTICS_ID}`}
+            strategy="lazyOnload"
+          />
+        )}
+        {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
+          <Script id="analytics-init" strategy="lazyOnload">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${process.env.NEXT_PUBLIC_ANALYTICS_ID}');
+            `}
+          </Script>
+        )}
       </body>
     </html>
   );
 }
+

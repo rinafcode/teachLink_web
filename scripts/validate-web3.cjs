@@ -6,10 +6,10 @@
  * Exit code 0 = pass, 1 = fail
  */
 
-import fs from 'fs';
-import path from 'path';
+const fs = require('fs');
+const path = require('path');
 
-const SRC_DIR = path.join(import.meta.dirname, '../src');
+const SRC_DIR = path.join(__dirname, '../src');
 
 let errors = [];
 let warnings = [];
@@ -67,8 +67,8 @@ function checkWeb3Utils() {
 }
 
 function checkEnvExample() {
-  const envExamplePath = path.join(import.meta.dirname, '../.env.example');
-  const envLocalPath = path.join(import.meta.dirname, '../.env.local.example');
+  const envExamplePath = path.join(__dirname, '../.env.example');
+  const envLocalPath = path.join(__dirname, '../.env.local.example');
 
   if (!fs.existsSync(envExamplePath) && !fs.existsSync(envLocalPath)) {
     warnings.push('[WEB3] Consider adding .env.example with NEXT_PUBLIC_STARKNET_* variables');
@@ -76,16 +76,23 @@ function checkEnvExample() {
 }
 
 function printResults() {
+  console.log('🔍 Running Web3 validation checks...\n');
+
   checkWalletProviderExists();
   checkWeb3Utils();
   checkEnvExample();
 
   if (warnings.length > 0) {
-    warnings.forEach((w) => {});
+    console.log('⚠️  Warnings:\n');
+    warnings.forEach((w) => console.log(`  ${w}`));
+    console.log('');
   }
 
   if (errors.length > 0) {
-    errors.forEach((e) => {});
+    console.log('❌ Errors:\n');
+    errors.forEach((e) => console.log(`  ${e}`));
+    console.log('');
+    console.log(`\n❌ Web3 validation failed with ${errors.length} error(s)`);
     process.exit(1);
   }
 
@@ -94,4 +101,18 @@ function printResults() {
 }
 
 // Run validation
+    console.log('\n[WARN] Web3 Validation Warnings:');
+    warnings.forEach((warning) => console.warn(`  - ${warning}`));
+  }
+
+  if (errors.length > 0) {
+    console.error('\n[ERROR] Web3 Validation Errors:');
+    errors.forEach((error) => console.error(`  - ${error}`));
+    process.exit(1);
+  }
+
+  console.log(`[OK] Web3 validation passed (${warnings.length} warning(s))`);
+  process.exit(0);
+}
+
 printResults();

@@ -6,11 +6,11 @@
  * Exit code 0 = pass, 1 = fail
  */
 
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
-const SRC_DIR = path.join(import.meta.dirname, '../src');
+const SRC_DIR = path.join(__dirname, '../src');
 const COMPONENT_DIRS = ['components', 'app', 'pages'];
 
 // Disallowed icon libraries (should use lucide-react)
@@ -72,6 +72,11 @@ function checkResponsiveTailwind(content, filePath) {
 
   lines.forEach((line, index) => {
     // Check for grid/flex without any responsive classes
+  if (!content.includes('className')) return;
+
+  const lines = content.split('\n');
+
+  lines.forEach((line, index) => {
     if (/className=["'][^"']*\b(grid|flex)\b[^"']*["']/.test(line)) {
       const hasResponsive = /\b(sm|md|lg|xl|2xl):/.test(line);
       if (!hasResponsive && line.includes('grid-cols-') && !line.includes('grid-cols-1')) {
@@ -92,6 +97,8 @@ function checkForConsoleStatements(content, filePath) {
 }
 
 function validateFiles() {
+  console.log('🔍 Running UI validation checks...\n');
+
   for (const dir of COMPONENT_DIRS) {
     const fullDir = path.join(SRC_DIR, dir);
     const files = getAllFiles(fullDir);
@@ -108,26 +115,38 @@ function validateFiles() {
 }
 
 function printResults() {
-  console.log('UI Validation Summary:');
-  console.log(`Files checked in: ${COMPONENT_DIRS.join(', ')}`);
-  console.log(`Found ${warnings.length} warnings and ${errors.length} errors.\n`);
-
   if (warnings.length > 0) {
-    console.log('--- WARNINGS ---');
-    warnings.forEach((w) => console.warn(w));
+    console.log('⚠️  Warnings:\n');
+    warnings.forEach((w) => console.log(`  ${w}`));
     console.log('');
   }
 
   if (errors.length > 0) {
-    console.log('--- ERRORS ---');
-    errors.forEach((e) => console.error(e));
+    console.log('❌ Errors:\n');
+    errors.forEach((e) => console.log(`  ${e}`));
+    console.log('');
+    console.log(`\n❌ UI validation failed with ${errors.length} error(s)`);
     process.exit(1);
   }
 
-  console.log('UI validation passed successfully! ✨');
+  console.log(`✅ UI validation passed (${warnings.length} warning(s))`);
   process.exit(0);
 }
 
 // Run validation
+    console.log('\n[WARN] UI Validation Warnings:');
+    warnings.forEach((warning) => console.warn(`  - ${warning}`));
+  }
+
+  if (errors.length > 0) {
+    console.error('\n[ERROR] UI Validation Errors:');
+    errors.forEach((error) => console.error(`  - ${error}`));
+    process.exit(1);
+  }
+
+  console.log('\n[OK] UI validation passed');
+  process.exit(0);
+}
+
 validateFiles();
 printResults();

@@ -1,11 +1,4 @@
-const config = {
-  '*.{js,jsx,ts,tsx}': (filenames) => [
-    // run eslint --fix on changed files
-    `eslint --max-warnings=0 --fix ${filenames.join(' ')}`,
-    // then format with prettier
-    `prettier --write ${filenames.join(' ')}`,
-  ],
-  '*.{json,md,css,scss,html}': (filenames) => [`prettier --write ${filenames.join(' ')}`],
+export default {
+  '*.{js,jsx,ts,tsx}': ['eslint --max-warnings=0 --no-warn-ignored --fix', 'prettier --write'],
+  '*.{json,md,css,scss,html}': ['prettier --write'],
 };
-
-export default config;

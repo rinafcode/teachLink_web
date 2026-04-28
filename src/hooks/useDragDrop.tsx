@@ -46,6 +46,8 @@ export const useDragDrop = ({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasHydratedRef = useRef(false);
+  const hydratedStorageKeyRef = useRef<string | null>(null);
 
   const persistState = useCallback(
     async (nextState: DragDropState) => {
@@ -129,8 +131,16 @@ export const useDragDrop = ({
       return;
     }
 
+    if (hasHydratedRef.current && hydratedStorageKeyRef.current === storageKey) {
+      return;
+    }
+
+    hasHydratedRef.current = true;
+    hydratedStorageKeyRef.current = storageKey;
+
     const raw = window.localStorage.getItem(storageKey);
     if (!raw) {
+      setState(initialState);
       return;
     }
 
@@ -140,7 +150,8 @@ export const useDragDrop = ({
     } catch {
       setState(initialState);
     }
-  }, [initialState, storageKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]); // initialState intentionally excluded - only run on mount
 
   useEffect(() => {
     return () => {

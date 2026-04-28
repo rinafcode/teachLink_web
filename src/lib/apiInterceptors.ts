@@ -1,6 +1,12 @@
 import { apiClient, RequestInterceptor, ResponseInterceptor, ErrorInterceptor } from './api';
 import { RequestConfig } from './api';
 
+declare global {
+  interface Window {
+    __APP_VERSION__?: string;
+  }
+}
+
 /**
  * Request logging interceptor - logs outgoing requests
  */
@@ -81,8 +87,8 @@ export const headerEnhancementInterceptor: RequestInterceptor = async (config: R
   headers['X-Request-ID'] = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   // Add client version if available
-  if (typeof window !== 'undefined' && window.__APP_VERSION__) {
-    headers['X-Client-Version'] = window.__APP_VERSION__;
+  if (typeof window !== 'undefined' && (window as any).__APP_VERSION__) {
+    headers['X-Client-Version'] = (window as any).__APP_VERSION__ as string;
   }
 
   config.headers = headers;

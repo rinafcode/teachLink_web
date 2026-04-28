@@ -1,40 +1,30 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, ChevronDown } from 'lucide-react';
+import { useVideoPlayerContext } from './VideoPlayerContext';
 
-interface QualityOption {
-  label: string;
-  value: string;
-  width?: number;
-  height?: number;
-  bitrate?: number;
-}
+const DEFAULT_QUALITIES = [
+  { label: 'Auto', value: 'auto', width: 0, height: 0 },
+  { label: '1080p', value: '1080p', width: 1920, height: 1080, bitrate: 5000 },
+  { label: '720p', value: '720p', width: 1280, height: 720, bitrate: 2500 },
+  { label: '480p', value: '480p', width: 854, height: 480, bitrate: 1000 },
+  { label: '360p', value: '360p', width: 640, height: 360, bitrate: 500 },
+];
 
-interface PlaybackControlsProps {
-  playbackRate: number;
-  onPlaybackRateChange: (rate: number) => void;
-  quality?: string;
-  onQualityChange?: (quality: string) => void;
-  qualities?: QualityOption[];
-  autoQuality?: boolean;
-  onAutoQualityChange?: (auto: boolean) => void;
-}
+export const PlaybackControls: React.FC = () => {
+  const {
+    playbackRate,
+    setPlaybackRateLearning: onPlaybackRateChange,
+    autoQuality,
+    selectedQualityValue,
+    qualitiesForControls,
+    setQualityLearning: onQualityChange,
+    setAutoQualityLearning: onAutoQualityChange,
+  } = useVideoPlayerContext();
 
-export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
-  playbackRate,
-  onPlaybackRateChange,
-  quality,
-  onQualityChange,
-  qualities = [
-    { label: 'Auto', value: 'auto', width: 0, height: 0 },
-    { label: '1080p', value: '1080p', width: 1920, height: 1080, bitrate: 5000 },
-    { label: '720p', value: '720p', width: 1280, height: 720, bitrate: 2500 },
-    { label: '480p', value: '480p', width: 854, height: 480, bitrate: 1000 },
-    { label: '360p', value: '360p', width: 640, height: 360, bitrate: 500 },
-  ],
-  autoQuality = true,
-  onAutoQualityChange,
-}) => {
+  const qualities = qualitiesForControls ?? DEFAULT_QUALITIES;
+  const quality = autoQuality ? undefined : selectedQualityValue;
+
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
 
@@ -46,6 +36,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       <div className="relative">
         <button
           onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+          aria-label={`Playback speed: ${playbackRate}x`}
+          aria-expanded={showSpeedMenu}
           className="flex items-center space-x-1 px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors text-white text-sm"
         >
           <span>{playbackRate}x</span>
@@ -80,11 +72,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       </div>
 
       {/* Quality Control */}
-      {onQualityChange && (
+      {qualitiesForControls && (
         <div className="relative">
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowQualityMenu(!showQualityMenu)}
+              aria-label="Video quality"
+              aria-expanded={showQualityMenu}
               className="flex items-center space-x-1 px-3 py-1 rounded bg-white/20 hover:bg-white/30 transition-colors text-white text-sm"
             >
               <Settings size={12} />

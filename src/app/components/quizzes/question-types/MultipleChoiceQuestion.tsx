@@ -5,14 +5,10 @@ import { FaCheck, FaTimes } from 'react-icons/fa';
 
 interface MultipleChoiceQuestionProps {
   question: Question;
-  isReviewMode: boolean;
 }
 
-export default function MultipleChoiceQuestion({
-  question,
-  isReviewMode,
-}: MultipleChoiceQuestionProps) {
-  const { answers, setAnswer } = useQuizStore();
+export default function MultipleChoiceQuestion({ question }: MultipleChoiceQuestionProps) {
+  const { answers, setAnswer, isReviewMode } = useQuizStore();
   const selectedAnswer = answers[question.id];
   const handleOptionSelect = (optionId: string) => {
     if (!isReviewMode) {

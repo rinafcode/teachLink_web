@@ -8,13 +8,12 @@ import { UserRole } from '../types/api';
 interface UserState {
   id: string | null;
   name: string | null;
-  role: UserRole;
-    preferences: {
-      theme: 'light' | 'dark';
-      language: string;
-      notifications: boolean;
-      prefetching: boolean;
-    };
+  preferences: {
+    theme: 'light' | 'dark';
+    language: string;
+    notifications: boolean;
+    prefetching: boolean;
+  };
 }
 
 interface AppState {

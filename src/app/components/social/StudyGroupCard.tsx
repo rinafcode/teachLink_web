@@ -43,8 +43,16 @@ export default function StudyGroupCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
       onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
     >
       {group.coverImage ? (
         <div
@@ -75,7 +83,7 @@ export default function StudyGroupCard({
               e.stopPropagation();
               onOpen();
             }}
-            className="ml-2 px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex-shrink-0"
+            className="ml-2 px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             Open
           </button>
@@ -132,7 +140,7 @@ export default function StudyGroupCard({
                 e.stopPropagation();
                 onLeave();
               }}
-              className="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
             >
               <LogOut size={16} />
               Leave
@@ -143,7 +151,7 @@ export default function StudyGroupCard({
                 e.stopPropagation();
                 onJoin();
               }}
-              className="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors flex items-center justify-center gap-2"
+              className="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <UserPlus size={16} />
               Join

@@ -189,7 +189,11 @@ class OfflineStorageService {
     const cached = this.getFromCache<Course[]>(cacheKey);
     if (cached) return cached;
 
-    const results = await this.queryByIndex<Course>('courses', 'downloaded', IDBKeyRange.only(true));
+    const results = await this.queryByIndex<Course>(
+      'courses',
+      'downloaded',
+      IDBKeyRange.only(true),
+    );
     this.setCache(cacheKey, results);
     return results;
   }
@@ -295,7 +299,10 @@ class OfflineStorageService {
     await this.waitForDB();
     return new Promise((resolve, reject) => {
       if (!this.db) return reject(new Error('DB not initialized'));
-      const transaction = this.db.transaction(['offlineContent', 'courses', 'lessons'], 'readwrite');
+      const transaction = this.db.transaction(
+        ['offlineContent', 'courses', 'lessons'],
+        'readwrite',
+      );
       const contentStore = transaction.objectStore('offlineContent');
       contentStore.delete(courseId);
 

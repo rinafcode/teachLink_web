@@ -1,10 +1,4 @@
-/**
- * useDashboardData Hook
- * Central state manager for the Advanced Data Visualization Dashboard.
- * Manages panels, filters, drag-and-drop ordering, drill-down, and sharing.
- */
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   ChartType,
   TimeRange,
@@ -43,6 +37,7 @@ export interface UseDashboardDataReturn {
   panels: DashboardPanel[];
   filters: DashboardFiltersState;
   shareURL: string | null;
+  isLoading: boolean;
   setFilters: (filters: Partial<DashboardFiltersState>) => void;
   resetFilters: () => void;
   setPanelChartType: (id: string, chartType: ChartType) => void;
@@ -100,6 +95,13 @@ const buildDefaultPanels = (timeRange: TimeRange): DashboardPanel[] => [
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export const useDashboardData = (): UseDashboardDataReturn => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [filters, setFiltersState] = useState<DashboardFiltersState>(() => {
     if (typeof window !== 'undefined') {
       const parsed = parseDashboardURL(window.location.search);
@@ -114,11 +116,15 @@ export const useDashboardData = (): UseDashboardDataReturn => {
 
   const [shareURL, setShareURL] = useState<string | null>(null);
 
+  const sortedPanels = useMemo(
+    () => [...panels].sort((a, b) => a.position - b.position),
+    [panels],
+  );
+
   // Update filters and regenerate data for non-realtime panels
   const setFilters = useCallback((partial: Partial<DashboardFiltersState>) => {
     setFiltersState((prev) => {
       const next = { ...prev, ...partial };
-      // Regenerate data if time range changed
       if (partial.timeRange && partial.timeRange !== prev.timeRange) {
         setPanels((prevPanels) =>
           prevPanels.map((panel) =>
@@ -163,8 +169,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
     });
   }, []);
 
-  const generateShareURL = useCallback((): string => {
-    const sortedPanels = [...panels].sort((a, b) => a.position - b.position);
+  const generateShareURLFn = useCallback((): string => {
     const config: DashboardShareConfig = {
       timeRange: filters.timeRange,
       categories: filters.categories,
@@ -175,7 +180,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
     const url = generateShareableURL(config);
     setShareURL(url);
     return url;
-  }, [panels, filters]);
+  }, [sortedPanels, filters]);
 
   const exportPanel = useCallback(
     (id: string, format: 'csv' | 'json') => {
@@ -192,16 +197,17 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   );
 
   return {
-    panels: [...panels].sort((a, b) => a.position - b.position),
+    panels: sortedPanels,
     filters,
     shareURL,
+    isLoading,
     setFilters,
     resetFilters,
     setPanelChartType,
     drillDown,
     clearDrillDown,
     reorderPanels,
-    generateShareURL,
+    generateShareURL: generateShareURLFn,
     exportPanel,
   };
 };

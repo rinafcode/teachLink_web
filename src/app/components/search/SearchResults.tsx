@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Star, Clock, User, ArrowRight } from 'lucide-react';
+import { Star, Clock, User, ArrowRight, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import Image from 'next/image';
+import { EmptyState } from '@/components';
 
 export interface CourseResult {
   id: string;
@@ -45,13 +45,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   }
 
   if (!results || results.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400 text-lg">
-          No courses found matching your criteria
-        </p>
-      </div>
-    );
+    return <EmptyState icon={SearchX} title="No courses found" description="Try adjusting your search or filters" />;
   }
 
   const getPriceDisplay = (price: number, originalPrice?: number | null) => {
@@ -119,17 +113,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           >
             {/* Course Image */}
             <div className="relative h-40 bg-linear-to-br from-gray-200 dark:from-gray-700 to-gray-300 dark:to-gray-800 overflow-hidden">
-              <div className="absolute inset-0">
-                <Image
+              <picture>
+                <img
                   src={course.image}
                   alt={course.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  placeholder="blur"
-                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTAnIGhlaWdodD0nMTAnIHhtbG5zPSciaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwvc3ZnPg=="
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
                 />
-              </div>
+              </picture>
               {course.tag && (
                 <span className="absolute top-3 right-3 bg-yellow-400 dark:bg-yellow-500 text-gray-900 dark:text-gray-800 px-3 py-1 rounded-full text-xs font-bold">
                   {course.tag}

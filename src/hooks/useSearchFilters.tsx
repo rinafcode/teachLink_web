@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export interface FilterState {
@@ -17,16 +17,43 @@ export const useSearchFilters = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const isInternalNavigationRef = useRef(false);
 
-  const [filters, setFiltersState] = useState<FilterState>({
-    difficulty: searchParams?.get('difficulty')?.split(',').filter(Boolean) || [],
-    topics: searchParams?.get('topics')?.split(',').filter(Boolean) || [],
-    duration: searchParams?.get('duration') ? Number(searchParams.get('duration')) : 100,
-    priceRange: searchParams?.get('price') ? Number(searchParams.get('price')) : 200,
-    sort: searchParams?.get('sort') || 'relevance',
-    instructor: searchParams?.get('instructor') || '',
-    searchTerm: searchParams?.get('q') || '',
-  });
+  const filtersFromSearchParams = useMemo<FilterState>(
+    () => ({
+      difficulty: searchParams?.get('difficulty')?.split(',').filter(Boolean) || [],
+      topics: searchParams?.get('topics')?.split(',').filter(Boolean) || [],
+      duration: searchParams?.get('duration') ? Number(searchParams.get('duration')) : 100,
+      priceRange: searchParams?.get('price') ? Number(searchParams.get('price')) : 200,
+      sort: searchParams?.get('sort') || 'relevance',
+      instructor: searchParams?.get('instructor') || '',
+      searchTerm: searchParams?.get('q') || '',
+    }),
+    [searchParams],
+  );
+
+  const [filters, setFiltersState] = useState<FilterState>(filtersFromSearchParams);
+
+  useEffect(() => {
+    if (isInternalNavigationRef.current) {
+      isInternalNavigationRef.current = false;
+      return;
+    }
+
+    setFiltersState((prev) => {
+      const next = filtersFromSearchParams;
+      const hasChanged =
+        prev.duration !== next.duration ||
+        prev.priceRange !== next.priceRange ||
+        prev.sort !== next.sort ||
+        prev.instructor !== next.instructor ||
+        prev.searchTerm !== next.searchTerm ||
+        prev.difficulty.join(',') !== next.difficulty.join(',') ||
+        prev.topics.join(',') !== next.topics.join(',');
+
+      return hasChanged ? next : prev;
+    });
+  }, [filtersFromSearchParams]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -53,9 +80,17 @@ export const useSearchFilters = () => {
       params.set('q', filters.searchTerm);
     }
 
-    const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '';
+    const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '/';
+    const currentSearch = searchParams?.toString() || '';
+    const nextSearch = params.toString();
+
+    if (currentSearch === nextSearch) {
+      return;
+    }
+
+    isInternalNavigationRef.current = true;
     router.replace(newUrl, { scroll: false });
-  }, [filters, pathname, router]);
+  }, [filters, pathname, router]); // searchParams only used for initial state
 
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
     setFiltersState((prev) => ({

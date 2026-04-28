@@ -66,7 +66,7 @@ export const ChartWidgetSkeleton: React.FC = () => (
     </div>
     <div className="flex items-end space-x-4 h-48 pt-4">
       {[...Array(6)].map((_, i) => (
-        <Skeleton key={i} className="flex-1" height={`${Math.random() * 60 + 20}%`} />
+        <Skeleton key={i} className="flex-1" height={`${[40, 65, 30, 80, 50, 45][i % 6]}%`} />
       ))}
     </div>
     <div className="mt-6 flex justify-between">

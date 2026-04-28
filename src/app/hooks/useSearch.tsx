@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface SearchResult {
@@ -118,6 +118,8 @@ const MOCK_DATA = {
   ],
 };
 
+const DEBOUNCE_MS = 300;
+
 export const useSearch = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<CategorizedResults>({
@@ -128,6 +130,7 @@ export const useSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
 
   // Load search history from localStorage
@@ -142,49 +145,57 @@ export const useSearch = () => {
     }
   }, []);
 
-  // Perform search
-  const search = useCallback((searchQuery: string) => {
-    setQuery(searchQuery);
-    setIsLoading(true);
+  // Execute the actual filtering (called after debounce)
+  const executeSearch = useCallback((searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      setResults({ courses: [], instructors: [], topics: [] });
+      setIsLoading(false);
+      return;
+    }
 
-    // Simulate API delay
-    const timer = setTimeout(() => {
+    const lowerQuery = searchQuery.toLowerCase();
+
+    setResults({
+      courses: MOCK_DATA.courses
+        .filter(
+          (c) =>
+            c.title.toLowerCase().includes(lowerQuery) ||
+            c.instructor?.toLowerCase().includes(lowerQuery),
+        )
+        .slice(0, 3),
+      instructors: MOCK_DATA.instructors
+        .filter((i) => i.title.toLowerCase().includes(lowerQuery))
+        .slice(0, 3),
+      topics: MOCK_DATA.topics
+        .filter(
+          (t) =>
+            t.title.toLowerCase().includes(lowerQuery) ||
+            t.description?.toLowerCase().includes(lowerQuery),
+        )
+        .slice(0, 3),
+    });
+
+    setIsLoading(false);
+  }, []);
+
+  // Debounced search: set loading immediately, delay execution
+  const search = useCallback(
+    (searchQuery: string) => {
+      setQuery(searchQuery);
+
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
       if (!searchQuery.trim()) {
-        setResults({ courses: [], instructors: [], topics: [] });
         setIsLoading(false);
+        setResults({ courses: [], instructors: [], topics: [] });
         return;
       }
 
-      const lowerQuery = searchQuery.toLowerCase();
-
-      // Filter results from mock data
-      const filteredCourses = MOCK_DATA.courses.filter(
-        (course) =>
-          course.title.toLowerCase().includes(lowerQuery) ||
-          course.instructor?.toLowerCase().includes(lowerQuery),
-      );
-
-      const filteredInstructors = MOCK_DATA.instructors.filter((instructor) =>
-        instructor.title.toLowerCase().includes(lowerQuery),
-      );
-
-      const filteredTopics = MOCK_DATA.topics.filter(
-        (topic) =>
-          topic.title.toLowerCase().includes(lowerQuery) ||
-          topic.description?.toLowerCase().includes(lowerQuery),
-      );
-
-      setResults({
-        courses: filteredCourses.slice(0, 3),
-        instructors: filteredInstructors.slice(0, 3),
-        topics: filteredTopics.slice(0, 3),
-      });
-
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, []);
+      setIsLoading(true);
+      debounceTimer.current = setTimeout(() => executeSearch(searchQuery), DEBOUNCE_MS);
+    },
+    [executeSearch],
+  );
 
   // Add to search history
   const addToHistory = useCallback(
