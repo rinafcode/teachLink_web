@@ -2,13 +2,11 @@
 
 import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { errorReportingService } from '@/services/errorReporting';
-import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
+import UserFriendlyErrorDisplay from './UserFriendlyErrorDisplay';
 
 export type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-  errorInfo?: ErrorInfo | null;
-  errorCount?: number;
   errorInfo: ErrorInfo | null;
   errorCount: number;
 };
@@ -90,19 +88,21 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div style={{ padding: '20px' }}>
-            <h2>Something went wrong.</h2>
-            <p>{this.state.error?.message}</p>
+          <>
+            <div style={{ padding: '20px' }}>
+              <h2>Something went wrong.</h2>
+              <p>{this.state.error?.message}</p>
 
-            <button onClick={this.resetError}>Try Again</button>
-          </div>
-          <UserFriendlyErrorDisplay
-            error={this.state.error}
-            title="Application Error"
-            onRetry={this.resetError}
-            showDetails={true}
-            severity="error"
-          />
+              <button onClick={this.resetError}>Try Again</button>
+            </div>
+            <UserFriendlyErrorDisplay
+              error={this.state.error}
+              title="Application Error"
+              onRetry={this.resetError}
+              showDetails={true}
+              severity="error"
+            />
+          </>
         )
       );
     }

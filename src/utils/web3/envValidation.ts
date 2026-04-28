@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export function validateStarknetEnv(): { valid: boolean; missing: string[] } {
   const required = ['NEXT_PUBLIC_STARKNET_NETWORK'];
   const missing = required.filter((key) => !process.env[key]);
@@ -7,7 +9,7 @@ export function validateStarknetEnv(): { valid: boolean; missing: string[] } {
 export function getStarknetNetwork(): string {
   return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? 'testnet';
 }
-import { z } from 'zod';
+
 /**
  * Web3 Environment Validation
  * Validates required environment variables for Starknet integration
@@ -149,13 +151,4 @@ export function isValidStarknetAddress(address: string): boolean {
   // Starknet addresses are 66 chars (0x + 64 hex chars) or shorter
   const cleanAddress = address.toLowerCase();
   return /^0x[a-f0-9]{1,64}$/i.test(cleanAddress);
-}
-
-export function validateStarknetEnv(): { valid: boolean; missing: string[] } {
-  const { isValid, errors } = validateWeb3Env();
-  return { valid: isValid, missing: errors };
-}
-
-export function getStarknetNetwork(): string {
-  return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? 'goerli-alpha';
 }
