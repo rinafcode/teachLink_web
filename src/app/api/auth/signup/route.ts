@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { AuthResponse } from '@/types/api';
+import { AuthResponse, UserRole } from '@/types/api';
 
 export async function POST(request: NextRequest): Promise<NextResponse<AuthResponse | { message: string }>> {
   try {
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
           id: Math.random().toString(36).substr(2, 9),
           name: name,
           email: email,
+          role: UserRole.STUDENT,
         },
         token: 'mock-jwt-token-' + Date.now(),
       },

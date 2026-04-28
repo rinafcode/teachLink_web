@@ -27,10 +27,39 @@ export interface SuccessResponse {
 // Auth
 // ---------------------------------------------------------------------------
 
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  INSTRUCTOR = 'INSTRUCTOR',
+  STUDENT = 'STUDENT',
+  GUEST = 'GUEST',
+}
+
+export enum Permission {
+  // Course Permissions
+  COURSE_VIEW = 'COURSE_VIEW',
+  COURSE_CREATE = 'COURSE_CREATE',
+  COURSE_EDIT = 'COURSE_EDIT',
+  COURSE_DELETE = 'COURSE_DELETE',
+  COURSE_DOWNLOAD = 'COURSE_DOWNLOAD',
+  
+  // User Permissions
+  USER_VIEW = 'USER_VIEW',
+  USER_MANAGE = 'USER_MANAGE',
+  
+  // Content Permissions
+  CONTENT_ACCESS = 'CONTENT_ACCESS',
+  CONTENT_UPLOAD = 'CONTENT_UPLOAD',
+  
+  // System Permissions
+  SYSTEM_SETTINGS = 'SYSTEM_SETTINGS',
+  ANALYTICS_VIEW = 'ANALYTICS_VIEW',
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
+  role: UserRole;
 }
 
 export interface AuthResponse {
