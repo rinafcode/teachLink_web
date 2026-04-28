@@ -4,15 +4,12 @@ import React, { useCallback, useState, useEffect } from 'react';
 import {
   TrendingUp,
   Lock,
-  AlertCircle,
-  ChevronDown,
   Loader2,
   ArrowUpRight,
   ArrowDownLeft,
   Zap,
   Info,
   Check,
-  X,
 } from 'lucide-react';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
 
@@ -233,7 +230,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
 
   if (!wallet.isConnected) {
     return (
-      <div className={`p-8 text-center bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg ${className}`}>
+      <div
+        className={`p-8 text-center bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg ${className}`}
+      >
         <TrendingUp className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-3 opacity-50" />
         <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
           Connect wallet to access DeFi protocols
@@ -255,7 +254,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               </p>
               <Lock className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalStaked.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {totalStaked.toFixed(2)}
+            </p>
             <p className="text-xs text-gray-500 mt-1">Across {stakingPositions.length} positions</p>
           </div>
 
@@ -267,7 +268,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               </p>
               <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalRewards.toFixed(4)}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {totalRewards.toFixed(4)}
+            </p>
             <p className="text-xs text-gray-500 mt-1">Earned to date</p>
           </div>
 
@@ -318,15 +321,17 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-bold text-gray-900 dark:text-white">{protocol.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{protocol.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {protocol.description}
+                  </p>
                 </div>
                 <span
                   className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                     protocol.riskLevel === 'low'
                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                       : protocol.riskLevel === 'medium'
-                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                   }`}
                 >
                   {protocol.riskLevel}
@@ -337,7 +342,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                   <p className="text-xs text-gray-500 dark:text-gray-400">APY</p>
-                  <p className="text-lg font-bold text-green-600 dark:text-green-400">{protocol.apy}%</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                    {protocol.apy}%
+                  </p>
                 </div>
                 <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                   <p className="text-xs text-gray-500 dark:text-gray-400">TVL</p>
@@ -418,7 +425,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                 <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                   <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Harvested</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{position.rewards} {position.token}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {position.rewards} {position.token}
+                    </p>
                   </div>
                   <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Unlocks</p>
@@ -446,7 +455,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <Zap className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
           <p className="text-gray-600 dark:text-gray-400">Reward tracking coming soon</p>
-          <p className="text-xs text-gray-500 mt-2">Monitor all your staking rewards in one place</p>
+          <p className="text-xs text-gray-500 mt-2">
+            Monitor all your staking rewards in one place
+          </p>
         </div>
       )}
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import io, { Socket } from 'socket.io-client';
+import io from 'socket.io-client';
 
 export interface Attachment {
   id: string;

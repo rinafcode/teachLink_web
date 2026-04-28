@@ -89,9 +89,7 @@ export default function LearningAssistant({ context }: LearningAssistantProps) {
             key={msg.id}
             className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            {msg.role === 'assistant' && (
-              <Bot className="w-6 h-6 text-blue-500 shrink-0 mt-0.5" />
-            )}
+            {msg.role === 'assistant' && <Bot className="w-6 h-6 text-blue-500 shrink-0 mt-0.5" />}
             <div
               className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
                 msg.role === 'user'
@@ -101,9 +99,7 @@ export default function LearningAssistant({ context }: LearningAssistantProps) {
             >
               {msg.content}
             </div>
-            {msg.role === 'user' && (
-              <User className="w-6 h-6 text-gray-400 shrink-0 mt-0.5" />
-            )}
+            {msg.role === 'user' && <User className="w-6 h-6 text-gray-400 shrink-0 mt-0.5" />}
           </div>
         ))}
 

@@ -61,9 +61,7 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
       .finally(() => setLoading(false));
   }, [tab, userId]);
 
-  const filtered = users.filter((u) =>
-    u.name.toLowerCase().includes(query.toLowerCase()),
-  );
+  const filtered = users.filter((u) => u.name.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -106,7 +104,9 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
           </div>
         )}
         {!loading && filtered.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">No users found.</p>
+          <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            No users found.
+          </p>
         )}
         {!loading && filtered.map((u) => <UserRow key={u.id} user={u} />)}
       </div>

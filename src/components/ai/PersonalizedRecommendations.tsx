@@ -40,18 +40,14 @@ export default function PersonalizedRecommendations() {
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <Sparkles className="w-5 h-5 text-yellow-500" />
-        <h2 className="font-semibold text-gray-900 dark:text-white text-sm">
-          Recommended for You
-        </h2>
+        <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Recommended for You</h2>
       </div>
 
       <div className="p-4 space-y-3">
         {loading && Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
 
         {error && (
-          <p className="text-sm text-center text-red-500 py-4">
-            Failed to load recommendations.
-          </p>
+          <p className="text-sm text-center text-red-500 py-4">Failed to load recommendations.</p>
         )}
 
         {!loading && !error && items.length === 0 && (

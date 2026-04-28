@@ -65,9 +65,7 @@ export default function IntelligentProgress() {
           </div>
         )}
 
-        {error && (
-          <p className="text-sm text-center text-red-500 py-4">Failed to load progress.</p>
-        )}
+        {error && <p className="text-sm text-center text-red-500 py-4">Failed to load progress.</p>}
 
         {data && (
           <>

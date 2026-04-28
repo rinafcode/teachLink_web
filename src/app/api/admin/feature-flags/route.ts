@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  flagStore,
-  auditLog,
-  createAuditEntry,
-  generateId,
-  evaluateFlag,
-} from '@/lib/feature-flags/store';
+import { flagStore, createAuditEntry, generateId } from '@/lib/feature-flags/store';
 import type { FeatureFlag, TargetingRule } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
 

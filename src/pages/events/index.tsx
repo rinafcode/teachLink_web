@@ -24,9 +24,7 @@ export default function EventsPage() {
     apiClient
       .get<CalendarEvent[]>('/api/events')
       .then((data) =>
-        setEvents(
-          data.map((e) => ({ ...e, start: new Date(e.start), end: new Date(e.end) })),
-        ),
+        setEvents(data.map((e) => ({ ...e, start: new Date(e.start), end: new Date(e.end) }))),
       )
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));

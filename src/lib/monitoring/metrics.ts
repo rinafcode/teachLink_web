@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { LocalMonitoringProvider, Metric } from "./provider";
+import { useEffect, useState } from 'react';
+import { LocalMonitoringProvider, Metric } from './provider';
 
 const provider = new LocalMonitoringProvider();
 

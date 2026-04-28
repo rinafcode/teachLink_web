@@ -25,10 +25,9 @@ export default function NaturalLanguageQuery() {
     setLoading(true);
     setError(false);
     try {
-      const { results: res } = await apiClient.post<{ results: SearchResult[] }>(
-        '/api/ai/search',
-        { query: q },
-      );
+      const { results: res } = await apiClient.post<{ results: SearchResult[] }>('/api/ai/search', {
+        query: q,
+      });
       setResults(res);
     } catch {
       setError(true);

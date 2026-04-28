@@ -47,7 +47,9 @@ export default function SocialProfile({ user, isOwnProfile = false }: SocialProf
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white truncate">{user.name}</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+              {user.name}
+            </h2>
             {!isOwnProfile && (
               <button
                 onClick={isFollowing ? unfollow : follow}

@@ -104,7 +104,9 @@ export default function SocialInteractions({ contentId, contentUrl }: SocialInte
                   <UserCircle className="w-7 h-7 text-gray-400 shrink-0" />
                 )}
                 <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-                  <p className="text-xs font-medium text-gray-900 dark:text-white">{c.authorName}</p>
+                  <p className="text-xs font-medium text-gray-900 dark:text-white">
+                    {c.authorName}
+                  </p>
                   <p className="text-sm text-gray-700 dark:text-gray-300">{c.body}</p>
                   <p className="text-xs text-gray-400 mt-1">{getRelativeTime(c.createdAt)}</p>
                 </div>

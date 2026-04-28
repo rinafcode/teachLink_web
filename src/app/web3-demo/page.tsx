@@ -1,20 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Wallet,
-  Send,
-  Image,
-  TrendingUp,
-  ChevronDown,
-  Terminal,
-} from 'lucide-react';
-import {
-  WalletConnector,
-  TransactionManager,
-  NFTGallery,
-  DeFiInterface,
-} from '@/components/web3';
+import { Wallet, Send, Image, TrendingUp, ChevronDown, Terminal } from 'lucide-react';
+import { WalletConnector, TransactionManager, NFTGallery, DeFiInterface } from '@/components/web3';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
 
 type DemoTab = 'wallet' | 'transactions' | 'nfts' | 'defi' | 'code';
@@ -84,8 +72,7 @@ export default function Web3DemoPage() {
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Network</p>
                   <p className="font-medium mt-1 text-gray-900 dark:text-white">
-                    {wallet.supportedChains[wallet.chainId || '0x1']?.chainName ||
-                      wallet.chainId}
+                    {wallet.supportedChains[wallet.chainId || '0x1']?.chainName || wallet.chainId}
                   </p>
                 </div>
               </div>
@@ -194,9 +181,7 @@ export default function Web3DemoPage() {
                       className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white mb-2"
                     >
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
-                          showCode ? 'rotate-180' : ''
-                        }`}
+                        className={`w-4 h-4 transition-transform ${showCode ? 'rotate-180' : ''}`}
                       />
                       Using the Hook
                     </button>
@@ -235,9 +220,7 @@ export function MyComponent() {
                       className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white mb-2"
                     >
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
-                          showCode ? 'rotate-180' : ''
-                        }`}
+                        className={`w-4 h-4 transition-transform ${showCode ? 'rotate-180' : ''}`}
                       />
                       Using Components
                     </button>
@@ -271,9 +254,7 @@ export default function Page() {
                       className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white mb-2"
                     >
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
-                          showCode ? 'rotate-180' : ''
-                        }`}
+                        className={`w-4 h-4 transition-transform ${showCode ? 'rotate-180' : ''}`}
                       />
                       Security Checks
                     </button>
@@ -331,9 +312,7 @@ if (!result.isSecure) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Web3 Integration
-              </h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Web3 Integration</h3>
               <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                 <li>✓ Multi-chain support</li>
                 <li>✓ Secure transactions</li>

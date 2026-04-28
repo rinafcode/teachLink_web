@@ -1,10 +1,10 @@
-import { useEditor, Editor } from '@tiptap/react';
+import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { sanitizeHtml, sanitizeUrl } from '@/utils/sanitize';
 
 interface UseContentEditorProps {

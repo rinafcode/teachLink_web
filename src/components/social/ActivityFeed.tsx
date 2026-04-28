@@ -30,7 +30,9 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) loadMore(); },
+      ([entry]) => {
+        if (entry.isIntersecting) loadMore();
+      },
       { threshold: 0.1 },
     );
     observer.observe(el);
@@ -48,7 +50,9 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
       <div className="divide-y divide-gray-100 dark:divide-gray-800">
         {loading && activities.length === 0 && (
           <div className="px-4">
-            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} />)}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} />
+            ))}
           </div>
         )}
 
@@ -73,7 +77,10 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
                     <span className="font-medium">{activity.actorName}</span>{' '}
                     <span className="text-gray-600 dark:text-gray-400">{activity.action}</span>
                     {activity.targetTitle && (
-                      <> <span className="font-medium">{activity.targetTitle}</span></>
+                      <>
+                        {' '}
+                        <span className="font-medium">{activity.targetTitle}</span>
+                      </>
                     )}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -99,7 +106,9 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
         )}
 
         {!loading && activities.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">No activity yet.</p>
+          <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            No activity yet.
+          </p>
         )}
       </div>
     </div>

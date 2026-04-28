@@ -2,7 +2,7 @@
 import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, NetworkFirst, CacheFirst } from 'workbox-strategies';
 import { BackgroundSyncPlugin } from 'workbox-background-sync';
 

@@ -5,8 +5,8 @@
  * Handles automatic retry and recovery for failed operations
  */
 
-import React, { useState, useCallback, useRef } from 'react';
-import { retryWithBackoff, isRetryable, getUserFriendlyMessage } from '@/utils/errorUtils';
+import { useState, useCallback, useRef } from 'react';
+import { retryWithBackoff, isRetryable } from '@/utils/errorUtils';
 import { errorReportingService } from '@/services/errorReporting';
 
 export interface RecoveryOptions {

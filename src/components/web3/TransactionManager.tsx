@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  Copy,
   ExternalLink,
   ChevronDown,
   Eye,
@@ -198,9 +197,13 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
 
   if (!wallet.isConnected) {
     return (
-      <div className={`p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-center ${className}`}>
+      <div
+        className={`p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-center ${className}`}
+      >
         <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-        <p className="text-sm text-blue-700 dark:text-blue-300">Connect wallet to manage transactions</p>
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          Connect wallet to manage transactions
+        </p>
       </div>
     );
   }
@@ -217,13 +220,14 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
             <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span className="font-semibold text-gray-900 dark:text-white">Send Transaction</span>
           </div>
-          <ChevronDown
-            className={`w-5 h-5 transition-transform ${showForm ? 'rotate-180' : ''}`}
-          />
+          <ChevronDown className={`w-5 h-5 transition-transform ${showForm ? 'rotate-180' : ''}`} />
         </button>
 
         {showForm && (
-          <form onSubmit={handleSubmitTransaction} className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
+          <form
+            onSubmit={handleSubmitTransaction}
+            className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4"
+          >
             {/* Error message */}
             {txError && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex gap-2">
@@ -375,8 +379,8 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                         tx.status === 'success'
                           ? 'text-green-600 dark:text-green-400'
                           : tx.status === 'pending'
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-red-600 dark:text-red-400'
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-red-600 dark:text-red-400'
                       }`}
                     >
                       {tx.status}
