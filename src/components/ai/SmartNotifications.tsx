@@ -1,85 +1,114 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * SmartNotifications – study reminders with dismiss support
+ *
+ * API (placeholder – implement backend to match):
+ *   GET  /api/ai/reminders          → ApiResponse<Reminder[]>
+ *   DELETE /api/ai/reminders/:id    → ApiResponse<null>
+ */
+
+import React, { useEffect, useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useNotification } from '@/hooks/use-notification';
-
-// GET /api/ai/reminders → { reminders: Reminder[] }
-// DELETE /api/ai/reminders/:id
+import type { ApiResponse } from '@/types/api';
 
 interface Reminder {
   id: string;
   title: string;
-  scheduledAt: string; // ISO string
+  scheduledAt: string;
 }
 
 export default function SmartNotifications() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
-  const { success, error } = useNotification();
+  const [error, setError] = useState<string | null>(null);
+  const { success, error: notifyError } = useNotification();
 
   useEffect(() => {
+    let cancelled = false;
     apiClient
-      .get<{ reminders: Reminder[] }>('/api/ai/reminders')
-      .then((r) => setReminders(r.reminders))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .get<ApiResponse<Reminder[]>>('/api/ai/reminders')
+      .then((res) => {
+        if (!cancelled) setReminders(res.data);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Could not load reminders.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const dismiss = useCallback(
-    async (id: string) => {
-      try {
-        await apiClient.delete(`/api/ai/reminders/${id}`);
-        setReminders((prev) => prev.filter((r) => r.id !== id));
-        success('Reminder dismissed');
-      } catch {
-        error('Failed to dismiss reminder');
-      }
-    },
-    [success, error],
-  );
+  const dismiss = async (id: string) => {
+    try {
+      await apiClient.delete<ApiResponse<null>>(`/api/ai/reminders/${id}`);
+      setReminders((prev) => prev.filter((r) => r.id !== id));
+      success('Reminder dismissed.');
+    } catch {
+      notifyError('Failed to dismiss reminder.');
+    }
+  };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <Bell className="w-5 h-5 text-orange-500" />
-        <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Study Reminders</h2>
+    <section
+      className="bg-white dark:bg-[#1E293B] rounded-xl border border-[#E2E8F0] dark:border-[#334155] shadow-sm p-5"
+      aria-label="Smart Notifications"
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <Bell className="w-5 h-5 text-[#0066FF] dark:text-[#00C2FF]" aria-hidden="true" />
+        <h2 className="font-semibold text-[#0F172A] dark:text-white">Study Reminders</h2>
       </div>
 
-      <div className="divide-y divide-gray-100 dark:divide-gray-800">
-        {loading && (
-          <div className="animate-pulse p-4 space-y-3">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-            ))}
-          </div>
-        )}
+      {loading && (
+        <ul className="space-y-3" aria-label="Loading reminders">
+          {[1, 2].map((i) => (
+            <li key={i}>
+              <Skeleton className="h-4 w-full" />
+            </li>
+          ))}
+        </ul>
+      )}
 
-        {!loading && reminders.length === 0 && (
-          <p className="text-sm text-center text-gray-400 py-6">No upcoming reminders.</p>
-        )}
+      {error && (
+        <p className="text-sm text-red-500 dark:text-red-400" role="alert">
+          {error}
+        </p>
+      )}
 
-        {reminders.map((reminder) => (
-          <div key={reminder.id} className="flex items-center justify-between px-4 py-3 gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {reminder.title}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {new Date(reminder.scheduledAt).toLocaleString()}
-              </p>
-            </div>
-            <button
-              onClick={() => dismiss(reminder.id)}
-              aria-label={`Dismiss ${reminder.title}`}
-              className="shrink-0 p-1 text-gray-400 hover:text-red-500 transition-colors"
+      {!loading && !error && reminders.length === 0 && (
+        <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">No upcoming reminders.</p>
+      )}
+
+      {!loading && !error && reminders.length > 0 && (
+        <ul className="space-y-2">
+          {reminders.map((r) => (
+            <li
+              key={r.id}
+              className="flex items-center justify-between gap-2 rounded-lg bg-[#F1F5F9] dark:bg-[#0F172A] px-3 py-2"
             >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
+              <div>
+                <p className="text-sm font-medium text-[#0F172A] dark:text-white">{r.title}</p>
+                <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                  {new Date(r.scheduledAt).toLocaleString()}
+                </p>
+              </div>
+              <button
+                onClick={() => dismiss(r.id)}
+                aria-label={`Dismiss reminder: ${r.title}`}
+                className="flex-shrink-0 p-1 rounded-md text-[#64748B] hover:bg-[#E2E8F0] dark:hover:bg-[#334155] focus:outline-none focus:ring-2 focus:ring-[#0066FF]"
+              >
+                <X className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

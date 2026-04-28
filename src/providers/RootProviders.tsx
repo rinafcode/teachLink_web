@@ -73,7 +73,7 @@ export function RootProviders({
   return (
     <I18nextProvider i18n={i18n}>
       <FeatureFlagProvider>
-        <I18nProvider defaultLanguage={defaultLocale as import('@/locales/types').LanguageCode}>
+        <I18nProvider defaultLanguage={defaultLocale as any}>
           <InternationalizationEngine>
             <LanguageManager />
             <CulturalAdaptationManager>

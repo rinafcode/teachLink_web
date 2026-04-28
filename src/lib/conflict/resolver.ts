@@ -1,5 +1,7 @@
 import { ConflictRecord, ResolutionStrategy, ProgressData } from './types';
 
+export type { ConflictRecord, ResolutionStrategy } from './types';
+
 /**
  * Detects if a conflict exists between local and remote data based on timestamps and versions.
  */

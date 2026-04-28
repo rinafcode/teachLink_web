@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog } from '@/../infra/edge-config';
 
-export async function GET() {
-  const mockRequest = new Request('http://localhost');
-  const { addHeaders, rateLimitResponse } = withRateLimit(mockRequest, 'READ');
+export const runtime = 'edge';
+
+export async function GET(request: Request) {
+  edgeLog('info', '/api/courses/downloadable', 'GET request received');
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
   if (rateLimitResponse) {
     return rateLimitResponse;
   }

@@ -1,7 +1,6 @@
 import { DEFAULT_SOCKET_URL } from '@/constants/app.constants';
 import { create } from 'zustand';
-import { io } from 'socket.io-client';
-import type { Socket } from 'socket.io-client';
+import io, { Socket } from 'socket.io-client';
 
 export interface Attachment {
   id: string;

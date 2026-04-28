@@ -248,7 +248,7 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
       ? error.message || 'Subscription error'
       : error instanceof SubscriptionError
       ? formatSubscriptionError(error)
-      : null;
+      : error?.message || null;
 
   return {
     data,
@@ -352,7 +352,13 @@ export function usePollableSubscription<TData = any, TVariables extends Operatio
         pollTimeoutRef.current = null;
       }
     };
-  }, [pollFn, pollIntervalMs, connectionState, updateData]);
+  }, [
+    pollFn,
+    pollIntervalMs,
+    subscriptionResult.connectionState,
+    subscriptionResult.updateData,
+    subscriptionResult,
+  ]);
 
   return {
     ...subscriptionResult,
