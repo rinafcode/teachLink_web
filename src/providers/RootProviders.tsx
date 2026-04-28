@@ -8,6 +8,7 @@ import { InternationalizationEngine } from '@/components/i18n/Internationalizati
 import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 import { RouteChangeAnnouncer } from '@/components/accessibility/RouteChangeAnnouncer';
+import { CommandPalette } from '@/components/CommandPalette';
 import {
   LegacyStorePreferencesBridge,
   RemoteSettingsSync,
@@ -73,6 +74,7 @@ export function RootProviders({ children, defaultTheme }: RootProvidersProps) {
             <EnvGuard>
               <AccessibilityProvider pageLabel="TeachLink - main application">
                 <RouteChangeAnnouncer />
+                <CommandPalette />
                 <Suspense fallback={null}>
                   <PerformanceMonitoringProvider>
                     <OfflineModeProvider>
