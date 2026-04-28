@@ -7,9 +7,9 @@ import { useFeatureFlag } from '@/components/shared/FeatureFlagProvider';
 
 function TippingButton() {
   const isTippingEnabled = useFeatureFlag('TIPPING');
-  
+
   if (!isTippingEnabled) return null;
-  
+
   return <button>Send Tip</button>;
 }
 ```
@@ -22,7 +22,7 @@ import { useFeatureFlag } from '@/components/shared/FeatureFlagProvider';
 function Dashboard() {
   const showOfflineMode = useFeatureFlag('OFFLINE_MODE');
   const showPerformanceAnalytics = useFeatureFlag('PERFORMANCE_ANALYTICS');
-  
+
   return (
     <div>
       <h1>Dashboard</h1>

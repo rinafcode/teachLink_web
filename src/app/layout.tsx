@@ -55,11 +55,8 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
       >
-        <RootProviders defaultTheme={defaultTheme}>
-          {children}
-        </RootProviders>
+        <RootProviders defaultTheme={defaultTheme}>{children}</RootProviders>
       </body>
     </html>
   );
 }
-

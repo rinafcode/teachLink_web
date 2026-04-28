@@ -11,14 +11,14 @@ const fixes = [
   }, [config, stateManager]);`,
         replace: `  useEffect(() => {
     stateManager.initializeDependencies(config.fields, config.conditionalLogic || []);
-  }, [config.fields, config.conditionalLogic, stateManager]);`
+  }, [config.fields, config.conditionalLogic, stateManager]);`,
       },
       {
         search: `    return () => subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, validateOnChange, autoSave, formId, onFieldChange]);`,
         replace: `    return () => subscription.unsubscribe();
-  }, [stateManager, validateOnChange, autoSave, formId, onFieldChange, autoSaveManager]);`
+  }, [stateManager, validateOnChange, autoSave, formId, onFieldChange, autoSaveManager]);`,
       },
       {
         search: `    return () => {
@@ -29,7 +29,7 @@ const fixes = [
         replace: `    return () => {
       subscription.unsubscribe();
     };
-  }, [autoSave, autoSaveInterval, formId, autoSaveManager, loadDraft]);`
+  }, [autoSave, autoSaveInterval, formId, autoSaveManager, loadDraft]);`,
       },
       {
         search: `    } finally {
@@ -40,9 +40,9 @@ const fixes = [
         replace: `    } finally {
       setIsSubmitting(false);
     }
-  }, [stateManager, validateForm, onSubmit, formState.values, autoSave, clearDraft]);`
-      }
-    ]
+  }, [stateManager, validateForm, onSubmit, formState.values, autoSave, clearDraft]);`,
+      },
+    ],
   },
   {
     file: 'src/hooks/useAdvancedSearch.tsx',
@@ -64,9 +64,9 @@ const fixes = [
       setHistory(storedHistory);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount`
-      }
-    ]
+  }, []); // Run only once on mount`,
+      },
+    ],
   },
   {
     file: 'src/hooks/useInternationalization.tsx',
@@ -85,19 +85,19 @@ const fixes = [
       setLanguage(savedLanguage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Intentionally run once on mount`
-      }
-    ]
+  }, []); // Intentionally run once on mount`,
+      },
+    ],
   },
   {
     file: 'src/hooks/useSearchFilters.tsx',
     replacements: [
       {
         search: `  }, [filters, pathname, router]);`,
-        replace: `  }, [filters, pathname, router]); // searchParams intentionally excluded - only used for initial state`
-      }
-    ]
-  }
+        replace: `  }, [filters, pathname, router]); // searchParams intentionally excluded - only used for initial state`,
+      },
+    ],
+  },
 ];
 
 fixes.forEach(({ file, replacements }) => {

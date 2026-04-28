@@ -46,7 +46,7 @@ export const useAdvancedSearch = () => {
       ) as string[];
       setHistory(storedHistory);
     }
- // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 
   // Persist history to localStorage

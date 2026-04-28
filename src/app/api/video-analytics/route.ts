@@ -30,7 +30,9 @@ export async function POST(request: Request): Promise<NextResponse<SuccessRespon
   };
 
   if (!body?.lessonId || !body?.eventType) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }),
+    );
   }
 
   const event: AnalyticsEvent = {

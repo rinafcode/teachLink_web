@@ -40,6 +40,7 @@ You will receive:
 | ------- | ------------------- | ------------- |
 | XX-01   | [Description]       | Positive Test |
 | XX-02   | [Description]       | Error Test    |
+
 [More cases...]
 
 ## Detailed Test Steps
@@ -49,15 +50,18 @@ You will receive:
 **Test Purpose**: [Specific purpose]
 
 **Test Data Preparation**:
+
 - [Mock data preparation]
 - [Environment setup]
 
 **Test Steps**:
+
 1. [Step 1]
 2. [Step 2]
 3. [Verification point]
 
 **Expected Results**:
+
 - [Expected result 1]
 - [Expected result 2]
 
@@ -66,12 +70,15 @@ You will receive:
 ## Test Considerations
 
 ### Mock Strategy
+
 [Explain how to mock dependencies]
 
 ### Boundary Conditions
+
 [List boundary cases that need testing]
 
 ### Asynchronous Operations
+
 [Considerations for async testing]
 ```
 

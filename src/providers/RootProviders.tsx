@@ -16,38 +16,33 @@ import { Loading } from '@/components/ui/Loading';
 // Lazy load heavy/non-critical providers/components to improve initial render time
 const OfflineModeProvider = dynamic(
   () => import('@/context/OfflineModeContext').then((mod) => mod.OfflineModeProvider),
-  { ssr: false }
+  { ssr: false },
 );
 
 const PerformanceMonitoringProvider = dynamic(
   () => import('@/hooks/usePerformanceMonitoring').then((mod) => mod.PerformanceMonitoringProvider),
-  { ssr: false }
+  { ssr: false },
 );
 
 const PWAManager = dynamic(
   () => import('@/components/pwa/PWAManager').then((mod) => mod.PWAManager),
-  { ssr: false }
+  { ssr: false },
 );
 
 const StateManagerIntegration = dynamic(
   () => import('@/components/state/StateManagerIntegration'),
-  { ssr: false }
+  { ssr: false },
 );
 
-const PerformanceMonitor = dynamic(
-  () => import('@/components/performance/PerformanceMonitor'),
-  { ssr: false }
-);
+const PerformanceMonitor = dynamic(() => import('@/components/performance/PerformanceMonitor'), {
+  ssr: false,
+});
 
-const PrefetchingEngine = dynamic(
-  () => import('@/components/performance/PrefetchingEngine'),
-  { ssr: false }
-);
+const PrefetchingEngine = dynamic(() => import('@/components/performance/PrefetchingEngine'), {
+  ssr: false,
+});
 
-const DynamicTheming = dynamic(
-  () => import('@/components/theme/DynamicTheming'),
-  { ssr: false }
-);
+const DynamicTheming = dynamic(() => import('@/components/theme/DynamicTheming'), { ssr: false });
 
 interface RootProvidersProps {
   children: React.ReactNode;
@@ -61,38 +56,38 @@ interface RootProvidersProps {
 export function RootProviders({ children, defaultTheme }: RootProvidersProps) {
   return (
     <FeatureFlagProvider>
-    <I18nProvider>
-      <InternationalizationEngine>
-        <CulturalAdaptationManager>
-          <ThemeProvider defaultTheme={defaultTheme}>
-            <Suspense fallback={null}>
-              <DynamicTheming />
-            </Suspense>
-            <EnvGuard>
-              <AccessibilityProvider pageLabel="TeachLink - main application">
-                <Suspense fallback={null}>
-                  <PerformanceMonitoringProvider>
-                    <OfflineModeProvider>
-                      <ToastProvider>
-                        <Suspense fallback={null}>
-                          <PWAManager />
-                          <StateManagerIntegration />
-                          <PerformanceMonitor />
-                          <PrefetchingEngine />
-                        </Suspense>
-                        <ErrorBoundary>
-                          <Suspense fallback={<Loading />}>{children}</Suspense>
-                        </ErrorBoundary>
-                      </ToastProvider>
-                    </OfflineModeProvider>
-                  </PerformanceMonitoringProvider>
-                </Suspense>
-              </AccessibilityProvider>
-            </EnvGuard>
-          </ThemeProvider>
-        </CulturalAdaptationManager>
-      </InternationalizationEngine>
-    </I18nProvider>
+      <I18nProvider>
+        <InternationalizationEngine>
+          <CulturalAdaptationManager>
+            <ThemeProvider defaultTheme={defaultTheme}>
+              <Suspense fallback={null}>
+                <DynamicTheming />
+              </Suspense>
+              <EnvGuard>
+                <AccessibilityProvider pageLabel="TeachLink - main application">
+                  <Suspense fallback={null}>
+                    <PerformanceMonitoringProvider>
+                      <OfflineModeProvider>
+                        <ToastProvider>
+                          <Suspense fallback={null}>
+                            <PWAManager />
+                            <StateManagerIntegration />
+                            <PerformanceMonitor />
+                            <PrefetchingEngine />
+                          </Suspense>
+                          <ErrorBoundary>
+                            <Suspense fallback={<Loading />}>{children}</Suspense>
+                          </ErrorBoundary>
+                        </ToastProvider>
+                      </OfflineModeProvider>
+                    </PerformanceMonitoringProvider>
+                  </Suspense>
+                </AccessibilityProvider>
+              </EnvGuard>
+            </ThemeProvider>
+          </CulturalAdaptationManager>
+        </InternationalizationEngine>
+      </I18nProvider>
     </FeatureFlagProvider>
   );
 }

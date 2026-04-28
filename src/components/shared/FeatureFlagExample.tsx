@@ -16,7 +16,7 @@ export function FeatureFlagExample() {
   return (
     <div className="space-y-4 p-6">
       <h2 className="text-2xl font-bold">Feature Flag Examples</h2>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {tippingEnabled && (
           <div className="rounded-lg border p-4">
@@ -89,9 +89,13 @@ export function FeatureFlagExample() {
         <ul className="mt-2 space-y-1 text-sm">
           <li>Tipping: {tippingEnabled ? '✅ Enabled' : '❌ Disabled'}</li>
           <li>Offline Mode: {offlineModeEnabled ? '✅ Enabled' : '❌ Disabled'}</li>
-          <li>Performance Analytics: {performanceAnalyticsEnabled ? '✅ Enabled' : '❌ Disabled'}</li>
+          <li>
+            Performance Analytics: {performanceAnalyticsEnabled ? '✅ Enabled' : '❌ Disabled'}
+          </li>
           <li>DAO Governance: {daoGovernanceEnabled ? '✅ Enabled' : '❌ Disabled'}</li>
-          <li>Collaborative Editing: {collaborativeEditingEnabled ? '✅ Enabled' : '❌ Disabled'}</li>
+          <li>
+            Collaborative Editing: {collaborativeEditingEnabled ? '✅ Enabled' : '❌ Disabled'}
+          </li>
         </ul>
       </div>
     </div>

@@ -6,12 +6,12 @@ import type { FeatureFlag } from '@/lib/featureFlags';
  */
 export function useFeatureFlags(flags: FeatureFlag[]) {
   const results: Record<FeatureFlag, boolean> = {} as Record<FeatureFlag, boolean>;
-  
-  flags.forEach(flag => {
+
+  flags.forEach((flag) => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     results[flag] = useFeatureFlag(flag);
   });
-  
+
   return results;
 }
 

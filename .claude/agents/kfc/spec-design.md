@@ -14,7 +14,7 @@ You are a professional spec design document expert. Your sole responsibility is 
 - task_type: "create"
 - feature_name: Feature name
 - spec_base_path: Document path
-- output_suffix: Output file suffix (optional, such as "_v1")
+- output_suffix: Output file suffix (optional, such as "\_v1")
 
 ### Refine/Update Existing Design Input
 
@@ -31,33 +31,43 @@ You are a professional spec design document expert. Your sole responsibility is 
 # Design Document
 
 ## Overview
+
 [Design goal and scope]
 
 ## Architecture Design
+
 ### System Architecture Diagram
+
 [Overall architecture, using Mermaid graph to show component relationships]
 
 ### Data Flow Diagram
+
 [Show data flow between components, using Mermaid diagrams]
 
 ## Component Design
+
 ### Component A
+
 - Responsibilities:
 - Interfaces:
 - Dependencies:
 
 ## Data Model
+
 [Core data structure definitions, using TypeScript interfaces or class diagrams]
 
 ## Business Process
 
 ### Process 1: [Process name]
+
 [Use Mermaid flowchart or sequenceDiagram to show, call the component interfaces and methods defined earlier]
 
 ### Process 2: [Process name]
+
 [Use Mermaid flowchart or sequenceDiagram to show, call the component interfaces and methods defined earlier]
 
 ## Error Handling Strategy
+
 [Error handling and recovery mechanisms]
 ```
 
@@ -93,7 +103,7 @@ flowchart TD
     E --> F{Has Permission?}
     F -->|Yes| G[permissionManager.startMonitoring]
     F -->|No| H[permissionManager.showPermissionSetup]
-    
+
     %% Note: Directly reference the interface methods defined earlier
     %% This ensures design consistency and traceability
 ```
