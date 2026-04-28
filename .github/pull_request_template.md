@@ -1,37 +1,19 @@
-## Summary
-
-<!-- What does this PR change and why? -->
+## Description
+Brief description of changes
 
 ## Related Issue
-
-<!-- REQUIRED: link the issue this PR addresses -->
-
 Closes #
 
-## Type of change
-
-- [ ] Feature
+## Type of Change
 - [ ] Bug fix
-- [ ] Chore / Refactor
-- [ ] Docs
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
 
-## Screenshots / Recording (if UI)
-
-<!-- Optional -->
-
-## Testing
-
-<!-- REQUIRED: describe how you tested this change -->
-
-- [ ] `npm run type-check`
-- [ ] `npm run lint`
-- [ ] `npm run test`
-- [ ] `npm run build`
-
-## Quality gate checklist
-
-- [ ] CI checks pass (Frontend CI)
-- [ ] At least 1–2 approvals (per branch protection rules)
-- [ ] Branch is up-to-date with the base branch
-- [ ] All conversations resolved
-- [ ] PR description includes `Closes #<issue-number>`
+## Checklist
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] No console errors
+- [ ] Uses Lucide icons consistently
+- [ ] Responsive design implemented
+- [ ] Starknet best practices followed
