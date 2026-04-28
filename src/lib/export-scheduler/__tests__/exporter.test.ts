@@ -20,8 +20,8 @@ describe('Data Exporter', () => {
   const mockData = {
     headers: ['id', 'name', 'value'],
     rows: [
-      { id: 1, name: 'Item 1', value: 100 },
-      { id: 2, name: 'Item 2', value: 200 },
+      { id: 1, name: 'Item 2', value: 200 },
+      { id: 2, name: 'Item 1', value: 100 },
     ],
   };
 
@@ -53,6 +53,20 @@ describe('Data Exporter', () => {
       const result = await exportData(template, mockData);
       expect(result.blob).toBeInstanceOf(Blob);
       expect(result.fileName).toContain('.pdf');
+    });
+
+    it('should apply filter and sort rules before exporting', async () => {
+      const progress: string[] = [];
+      const result = await exportData(mockTemplate, mockData, {
+        filters: [{ field: 'value', operator: 'gte', value: 150 }],
+        sort: [{ field: 'name', direction: 'asc' }],
+        onProgress: (state) => {
+          progress.push(state.stage);
+        },
+      });
+      expect(progress).toEqual(['preparing', 'filtering', 'formatting', 'completed']);
+      expect(result.blob.size).toBeGreaterThan(0);
+      expect(result.fileName).toContain('.csv');
     });
 
     it('should throw error for unsupported format', async () => {

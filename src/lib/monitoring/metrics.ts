@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { LocalMonitoringProvider, Metric } from "./provider";
+import { useEffect, useState } from 'react';
+import { LocalMonitoringProvider, Metric } from './provider';
 
 const provider = new LocalMonitoringProvider();
 
@@ -12,8 +12,10 @@ export function useMetrics() {
       setMetrics(data);
     };
 
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 5000); // real-time updates
+    void fetchMetrics();
+    const interval = setInterval(() => {
+      void fetchMetrics();
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);

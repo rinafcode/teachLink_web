@@ -3,6 +3,9 @@
  * Handles actual data export in various formats
  */
 
+import { createLogger } from '@/lib/logging';
+import { createCounterMetric, measureAsync } from '@/lib/logging/performance';
+import { ExportExecutionOptions, emitProgress, prepareExportData } from '@/lib/export';
 import { ExportFormat, ExportTemplate } from './types';
 
 export interface ExportData {
@@ -10,43 +13,82 @@ export interface ExportData {
   rows: Array<Record<string, unknown>>;
 }
 
+const exportLogger = createLogger('export-engine');
+
 export async function exportData(
   template: ExportTemplate,
   data: ExportData,
+  options: ExportExecutionOptions = {},
 ): Promise<{ blob: Blob; fileName: string }> {
   const timestamp = new Date().toISOString().split('T')[0];
   const fileName = `${template.name.replace(/\s+/g, '-').toLowerCase()}-${timestamp}`;
 
-  switch (template.format) {
-    case 'csv':
-      return {
-        blob: await exportToCSV(data),
-        fileName: `${fileName}.csv`,
-      };
-    case 'json':
-      return {
-        blob: await exportToJSON(data),
-        fileName: `${fileName}.json`,
-      };
-    case 'xlsx':
-      return {
-        blob: await exportToXLSX(data),
-        fileName: `${fileName}.xlsx`,
-      };
-    case 'pdf':
-      return {
-        blob: await exportToPDF(data, template.name),
-        fileName: `${fileName}.pdf`,
-      };
-    default:
-      throw new Error(`Unsupported export format: ${template.format}`);
-  }
+  emitProgress(options.onProgress, {
+    stage: 'preparing',
+    percent: 15,
+    message: 'Preparing export dataset',
+  });
+
+  const preparedData = prepareExportData(data, options);
+
+  emitProgress(options.onProgress, {
+    stage: 'filtering',
+    percent: 50,
+    message: 'Applying filters and sorting',
+  });
+
+  const { result: blob, metric } = await measureAsync(
+    `export.${template.format}`,
+    async () => {
+      switch (template.format) {
+        case 'csv':
+          return exportToCSV(preparedData);
+        case 'json':
+          return exportToJSON(preparedData);
+        case 'xlsx':
+          return exportToXLSX(preparedData);
+        case 'pdf':
+          return exportToPDF(preparedData, template.name);
+        default:
+          throw new Error(`Unsupported export format: ${template.format}`);
+      }
+    },
+    {
+      format: template.format,
+      templateId: template.id,
+    },
+  );
+
+  emitProgress(options.onProgress, {
+    stage: 'formatting',
+    percent: 85,
+    message: 'Formatting export output',
+  });
+
+  exportLogger.info('Export data prepared', {
+    context: {
+      templateId: template.id,
+      format: template.format,
+      rows: preparedData.rows.length,
+    },
+    metrics: [metric, createCounterMetric('export.jobs', 1, { format: template.format })],
+  });
+
+  emitProgress(options.onProgress, {
+    stage: 'completed',
+    percent: 100,
+    message: 'Export completed',
+  });
+
+  return {
+    blob,
+    fileName: `${fileName}.${extensionForFormat(template.format)}`,
+  };
 }
 
 async function exportToCSV(data: ExportData): Promise<Blob> {
   const { headers, rows } = data;
 
-  // Escape CSV values
   const escape = (value: unknown): string => {
     const str = String(value ?? '');
     if (str.includes(',') || str.includes('"') || str.includes('\n')) {
@@ -55,7 +97,6 @@ async function exportToCSV(data: ExportData): Promise<Blob> {
     return str;
   };
 
-  // Build CSV content
   const csvLines: string[] = [];
   csvLines.push(headers.map(escape).join(','));
 
@@ -64,33 +105,31 @@ async function exportToCSV(data: ExportData): Promise<Blob> {
     csvLines.push(values.join(','));
   }
 
-  const csvContent = csvLines.join('\n');
-  return new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  return new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
 }
 
 async function exportToJSON(data: ExportData): Promise<Blob> {
-  const jsonContent = JSON.stringify(data.rows, null, 2);
-  return new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+  return new Blob([JSON.stringify(data.rows, null, 2)], {
+    type: 'application/json;charset=utf-8;',
+  });
 }
 
 async function exportToXLSX(data: ExportData): Promise<Blob> {
-  // Simple XLSX generation (in production, use a library like 'xlsx' or 'exceljs')
-  // For now, we'll create a basic XML structure
   const { headers, rows } = data;
 
   let xml = '<?xml version="1.0"?>\n';
-  xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet">\n';
+  xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ';
+  xml += 'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
   xml += '  <Worksheet ss:Name="Sheet1">\n';
   xml += '    <Table>\n';
-
-  // Header row
   xml += '      <Row>\n';
+
   for (const header of headers) {
     xml += `        <Cell><Data ss:Type="String">${escapeXml(header)}</Data></Cell>\n`;
   }
+
   xml += '      </Row>\n';
 
-  // Data rows
   for (const row of rows) {
     xml += '      <Row>\n';
     for (const header of headers) {
@@ -109,8 +148,6 @@ async function exportToXLSX(data: ExportData): Promise<Blob> {
 }
 
 async function exportToPDF(data: ExportData, title: string): Promise<Blob> {
-  // Simple PDF generation (in production, use a library like 'jspdf' or 'pdfkit')
-  // For now, we'll create a basic HTML that can be printed to PDF
   const { headers, rows } = data;
 
   let html = `<!DOCTYPE html>
@@ -178,15 +215,22 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-// Mock data fetcher - in production, this would fetch from your actual data sources
-export async function fetchDataForTemplate(template: ExportTemplate): Promise<ExportData> {
-  // This is a mock implementation
-  // In production, you would:
-  // 1. Query your database based on template.dataSource
-  // 2. Apply template.filters
-  // 3. Select template.columns
-  // 4. Return the formatted data
+function extensionForFormat(format: ExportFormat): string {
+  switch (format) {
+    case 'csv':
+      return 'csv';
+    case 'json':
+      return 'json';
+    case 'xlsx':
+      return 'xlsx';
+    case 'pdf':
+      return 'pdf';
+    default:
+      return format;
+  }
+}
 
+export async function fetchDataForTemplate(template: ExportTemplate): Promise<ExportData> {
   const mockData: ExportData = {
     headers: template.columns || ['id', 'name', 'date', 'value'],
     rows: [

@@ -1,5 +1,6 @@
 import { apiClient, RequestInterceptor, ResponseInterceptor, ErrorInterceptor } from './api';
 import { RequestConfig } from './api';
+import { createLogger } from '@/lib/logging';
 
 declare global {
   interface Window {
@@ -7,61 +8,63 @@ declare global {
   }
 }
 
-/**
- * Request logging interceptor - logs outgoing requests
- */
+const apiLogger = createLogger('api-client');
+
+function safeBody(body: RequestConfig['body']): unknown {
+  if (!body || typeof body !== 'string') {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    return body;
+  }
+}
+
 export const loggingRequestInterceptor: RequestInterceptor = async (config: RequestConfig) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[API Request] ${config.method} ${config.url}`, {
-      headers: config.headers,
-      body: config.body ? JSON.parse(config.body as string) : undefined,
+    apiLogger.debug('API request started', {
+      context: {
+        method: config.method,
+        url: config.url,
+        headers: config.headers as Record<string, unknown>,
+        body: safeBody(config.body),
+      },
     });
   }
   return config;
 };
 
-/**
- * Response logging interceptor - logs successful responses
- */
 export const loggingResponseInterceptor: ResponseInterceptor = async (response: unknown) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('[API Response]', response);
+    apiLogger.debug('API response received', {
+      context: {
+        response,
+      },
+    });
   }
   return response;
 };
 
-/**
- * Error logging interceptor - logs errors
- */
 export const loggingErrorInterceptor: ErrorInterceptor = async (error: Error) => {
-  console.error('[API Error]', error.message, error);
+  apiLogger.error('API request failed', { error });
 };
 
-/**
- * Authentication refresh interceptor - handles 401 and refreshes token
- */
 export const authRefreshInterceptor: ErrorInterceptor = async (error: Error) => {
-  // Only handle authentication errors
   if (error.message && error.message.includes('401')) {
-    // Clear invalid token
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
-      // Optionally redirect to login
       window.location.href = '/login';
     }
   }
 };
 
-/**
- * Request timeout customization interceptor
- * Allows per-request timeout overrides
- */
 export const timeoutInterceptor: RequestInterceptor = async (config: RequestConfig) => {
-  // You can customize timeout per endpoint
   const urlPatterns: Array<{ pattern: string | RegExp; timeout: number }> = [
-    { pattern: /\/upload/, timeout: 60000 }, // 60s for uploads
-    { pattern: /\/download/, timeout: 60000 }, // 60s for downloads
-    { pattern: /\/search/, timeout: 15000 }, // 15s for search
+    { pattern: /\/upload/, timeout: 60000 },
+    { pattern: /\/download/, timeout: 60000 },
+    { pattern: /\/search/, timeout: 15000 },
   ];
 
   const url = config.url;
@@ -76,39 +79,24 @@ export const timeoutInterceptor: RequestInterceptor = async (config: RequestConf
   return config;
 };
 
-/**
- * Request header enhancement interceptor
- * Adds custom headers to all requests
- */
 export const headerEnhancementInterceptor: RequestInterceptor = async (config: RequestConfig) => {
   const headers = (config.headers as Record<string, string>) || {};
 
-  // Add request ID for tracing
-  headers['X-Request-ID'] = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  headers['X-Request-ID'] = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
-  // Add client version if available
-  if (typeof window !== 'undefined' && (window as any).__APP_VERSION__) {
-    headers['X-Client-Version'] = (window as any).__APP_VERSION__ as string;
+  if (typeof window !== 'undefined' && window.__APP_VERSION__) {
+    headers['X-Client-Version'] = window.__APP_VERSION__;
   }
 
   config.headers = headers;
   return config;
 };
 
-/**
- * Setup all default interceptors
- * Call this during app initialization
- */
 export function setupApiInterceptors(): void {
-  // Add request interceptors
   apiClient.addRequestInterceptor(loggingRequestInterceptor);
   apiClient.addRequestInterceptor(timeoutInterceptor);
   apiClient.addRequestInterceptor(headerEnhancementInterceptor);
-
-  // Add response interceptors
   apiClient.addResponseInterceptor(loggingResponseInterceptor);
-
-  // Add error interceptors
   apiClient.addErrorInterceptor(loggingErrorInterceptor);
   apiClient.addErrorInterceptor(authRefreshInterceptor);
 }
