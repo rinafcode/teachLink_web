@@ -20,7 +20,7 @@ const profileSchema = z.object({
     email: z.boolean(),
     push: z.boolean(),
   }),
-  theme: z.enum(['light', 'dark']),
+  theme: z.enum(['light', 'dark', 'system']),
   prefetching: z.boolean(),
 });
 

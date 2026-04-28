@@ -8,6 +8,12 @@ import { InternationalizationEngine } from '@/components/i18n/Internationalizati
 import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 import { RouteChangeAnnouncer } from '@/components/accessibility/RouteChangeAnnouncer';
+import { CommandPalette } from '@/components/CommandPalette';
+import {
+  LegacyStorePreferencesBridge,
+  RemoteSettingsSync,
+  ThemeFromSettingsBootstrap,
+} from '@/components/settings/SettingsOrchestration';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 import { EnvGuard } from '@/components/shared/EnvGuard';
 import { ToastProvider } from '@/context/ToastContext';
@@ -16,38 +22,33 @@ import { Loading } from '@/components/ui/Loading';
 // Lazy load heavy/non-critical providers/components to improve initial render time
 const OfflineModeProvider = dynamic(
   () => import('@/context/OfflineModeContext').then((mod) => mod.OfflineModeProvider),
-  { ssr: false }
+  { ssr: false },
 );
 
 const PerformanceMonitoringProvider = dynamic(
   () => import('@/hooks/usePerformanceMonitoring').then((mod) => mod.PerformanceMonitoringProvider),
-  { ssr: false }
+  { ssr: false },
 );
 
 const PWAManager = dynamic(
   () => import('@/components/pwa/PWAManager').then((mod) => mod.PWAManager),
-  { ssr: false }
+  { ssr: false },
 );
 
 const StateManagerIntegration = dynamic(
   () => import('@/components/state/StateManagerIntegration'),
-  { ssr: false }
+  { ssr: false },
 );
 
-const PerformanceMonitor = dynamic(
-  () => import('@/components/performance/PerformanceMonitor'),
-  { ssr: false }
-);
+const PerformanceMonitor = dynamic(() => import('@/components/performance/PerformanceMonitor'), {
+  ssr: false,
+});
 
-const PrefetchingEngine = dynamic(
-  () => import('@/components/performance/PrefetchingEngine'),
-  { ssr: false }
-);
+const PrefetchingEngine = dynamic(() => import('@/components/performance/PrefetchingEngine'), {
+  ssr: false,
+});
 
-const DynamicTheming = dynamic(
-  () => import('@/components/theme/DynamicTheming'),
-  { ssr: false }
-);
+const DynamicTheming = dynamic(() => import('@/components/theme/DynamicTheming'), { ssr: false });
 
 interface RootProvidersProps {
   children: React.ReactNode;
@@ -64,12 +65,16 @@ export function RootProviders({ children, defaultTheme }: RootProvidersProps) {
       <InternationalizationEngine>
         <CulturalAdaptationManager>
           <ThemeProvider defaultTheme={defaultTheme}>
+            <ThemeFromSettingsBootstrap />
+            <LegacyStorePreferencesBridge />
+            <RemoteSettingsSync />
             <Suspense fallback={null}>
               <DynamicTheming />
             </Suspense>
             <EnvGuard>
               <AccessibilityProvider pageLabel="TeachLink - main application">
                 <RouteChangeAnnouncer />
+                <CommandPalette />
                 <Suspense fallback={null}>
                   <PerformanceMonitoringProvider>
                     <OfflineModeProvider>

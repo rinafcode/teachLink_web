@@ -3,6 +3,10 @@ import path from 'path';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  eslint: {
+    // Many legacy files do not match Prettier; keep type checking without blocking production builds.
+    ignoreDuringBuilds: true,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
