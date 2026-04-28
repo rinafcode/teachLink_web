@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import io from 'socket.io-client';
-import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
+import { wsManager } from '@/lib/websocketManager';
 
 export interface Attachment {
   id: string;
@@ -48,7 +47,7 @@ interface MessagingState {
   conversations: Conversation[];
   currentConversation: Conversation | null;
   messages: Message[];
-  socket: ReturnType<typeof io> | null;
+  socket: Socket | null;
   isConnected: boolean;
   isTyping: boolean;
   typingUsers: Set<string>;
@@ -612,50 +611,38 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   },
 
   initializeSocket: () => {
-    // For demo/offline mode, we just load mock data without actually connecting
     get().loadConversations();
 
+    // Already initialized — skip to avoid duplicate listeners
+    if (get().socket) return;
+
     try {
-      const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001', {
-        autoConnect: false, // Don't auto-connect for demo
+      const socket = wsManager.connect('messaging', {
+        url: process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001',
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        heartbeatInterval: 30000,
       });
 
-      socket.on('connect', () => {
-        set({ isConnected: true });
-      });
-
-      socket.on('disconnect', () => {
-        set({ isConnected: false });
-      });
-
-      socket.on('message', (message: Message) => {
-        get().addMessage(message);
-      });
-
+      socket.on('connect', () => set({ isConnected: true }));
+      socket.on('disconnect', () => set({ isConnected: false }));
+      socket.on('message', (message: Message) => get().addMessage(message));
       socket.on('typing', ({ userId, isTyping }: { userId: string; isTyping: boolean }) => {
-        if (isTyping) {
-          get().addTypingUser(userId);
-        } else {
-          get().removeTypingUser(userId);
-        }
+        isTyping ? get().addTypingUser(userId) : get().removeTypingUser(userId);
       });
-
       socket.on('read', ({ messageId }: { messageId: string }) => {
         get().markMessageAsRead(messageId);
       });
 
       set({ socket });
     } catch {
-      // Socket connection failed, continue in offline/demo mode
+      // continue in offline/demo mode
     }
   },
 
   disconnectSocket: () => {
-    const socket = get().socket;
-    if (socket) {
-      socket.disconnect();
-      set({ socket: null, isConnected: false });
-    }
+    wsManager.disconnect('messaging');
+    set({ socket: null, isConnected: false });
   },
 
   loadConversations: () => {

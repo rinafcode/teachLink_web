@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useMessagingStore } from '@/app/store/messagingStore';
 import type { Attachment } from '@/app/store/messagingStore';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 export function useMessaging() {
   const {
@@ -35,6 +36,10 @@ export function useMessaging() {
   } = useMessagingStore();
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { status } = useWebSocket('messaging', {
+    onDisconnect: () => disconnectSocket(),
+  });
 
   // Initialize socket on mount
   useEffect(() => {
@@ -147,6 +152,8 @@ export function useMessaging() {
     currentConversation,
     messages,
     isConnected,
+    isReconnecting: status.isReconnecting,
+    connectionError: status.lastError,
     isTyping,
     typingUsers,
     isLoadingMessages,
