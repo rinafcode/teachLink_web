@@ -2,17 +2,15 @@
 
 import React, { useState, useCallback } from 'react';
 import {
-  Search,
   Filter,
-  Settings,
-  Sparkles,
-  ArrowLeft,
-  X,
   History,
   TrendingUp,
   BrainCircuit,
+  Sparkles,
+  Share2,
+  Check,
 } from 'lucide-react';
-import { useAdvancedSearch } from '../../hooks/useAdvancedSearch';
+import { useSearchState } from '../../hooks/useSearchState';
 import { IntelligentAutoComplete } from './IntelligentAutoComplete';
 import { FacetedFilterSystem } from './FacetedFilterSystem';
 import { SearchResultsVisualizer } from './SearchResultsVisualizer';
@@ -28,10 +26,16 @@ export const AdvancedSearchInterface = React.memo(() => {
     results,
     isSearching,
     history,
-  } = useAdvancedSearch();
+    copyShareableUrl,
+  } = useSearchState();
 
   const [showFilters, setShowFilters] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(() => {
+    // Derive initial value — if URL already had a query, we are in "searched" mode
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('q');
+  });
+  const [copied, setCopied] = useState(false);
 
   const handleSearch = useCallback(
     (text: string) => {
@@ -47,6 +51,14 @@ export const AdvancedSearchInterface = React.memo(() => {
     updateSearchText('');
     setHasSearched(false);
   }, [clearFilters, updateSearchText]);
+
+  const handleShare = useCallback(async () => {
+    const ok = await copyShareableUrl();
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [copyShareableUrl]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
@@ -79,6 +91,8 @@ export const AdvancedSearchInterface = React.memo(() => {
               history={history}
             />
           </div>
+
+          {/* Filter toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-mono text-xs uppercase tracking-widest font-bold transition-all h-[56px] border ${
@@ -88,12 +102,31 @@ export const AdvancedSearchInterface = React.memo(() => {
             }`}
           >
             <Filter
-              className={`w-4 h-4 ${
-                showFilters ? 'rotate-180' : ''
-              } transition-transform duration-300`}
+              className={`w-4 h-4 ${showFilters ? 'rotate-180' : ''} transition-transform duration-300`}
             />
             {showFilters ? 'HIDE_FILTERS' : 'FILTERS'}
           </button>
+
+          {/* Share button — only shown when there is active search state to share */}
+          {hasSearched && (
+            <button
+              onClick={handleShare}
+              aria-label="Copy shareable link"
+              className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl font-mono text-xs uppercase tracking-widest font-bold transition-all h-[56px] border bg-white text-slate-600 border-slate-200 hover:border-primary hover:text-primary"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-500" />
+                  <span className="text-emerald-500">COPIED!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4" />
+                  SHARE
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Quick Insights / Trending Tags */}
@@ -123,7 +156,10 @@ export const AdvancedSearchInterface = React.memo(() => {
             <FacetedFilterSystem
               filters={query.filters}
               onFilterChange={updateFilters}
-              onReset={clearFilters}
+              onReset={() => {
+                clearFilters();
+                setHasSearched(false);
+              }}
             />
           </div>
         )}
@@ -177,7 +213,7 @@ export const AdvancedSearchInterface = React.memo(() => {
         </div>
       </div>
 
-      {/* Search Insights Tooltip (Utility) */}
+      {/* History tooltip — bottom-left floating button */}
       <div className="fixed bottom-8 left-8">
         <div className="relative group">
           <button className="w-12 h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary transition-all shadow-xl shadow-slate-200/50 hover:shadow-primary/20 hover:scale-110 active:scale-95">
