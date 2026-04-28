@@ -8,7 +8,6 @@ export {
   validateWeb3Env,
   getExplorerUrl,
   formatAddress,
-  isValidStarknetAddress,
   type EnvValidationResult,
   type Web3Config,
 } from './envValidation';

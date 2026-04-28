@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { VideoNote, ApiResponse, SuccessResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 type PersistedVideoNote = VideoNote;
 
@@ -12,6 +15,7 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
 };
 
 export async function GET(request: Request) {
+  edgeLog('info', '/api/notes', 'GET request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<PersistedVideoNote[]> | SuccessResponse>;
@@ -36,6 +40,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  edgeLog('info', '/api/notes', 'POST request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<PersistedVideoNote> | SuccessResponse>;
@@ -72,6 +77,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  edgeLog('info', '/api/notes', 'PATCH request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<SuccessResponse>;
@@ -111,6 +117,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  edgeLog('info', '/api/notes', 'DELETE request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<SuccessResponse>;
