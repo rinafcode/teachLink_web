@@ -2,7 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { BellOff } from 'lucide-react';
 import { Notification, NotificationType, useNotifications } from '@/providers/Notificationprovider';
+import { EmptyState } from '@/components';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Icon helpers
@@ -182,10 +184,11 @@ export function NotificationCenter() {
 
           <div className="notification-panel__list">
             {notifications.length === 0 ? (
-              <div className="notification-empty">
-                <span aria-hidden="true">🔕</span>
-                <p>You&rsquo;re all caught up!</p>
-              </div>
+              <EmptyState
+                icon={<BellOff className="h-5 w-5" aria-hidden="true" />}
+                title="You're all caught up!"
+                description="No new notifications."
+              />
             ) : (
               notifications.map((n) => (
                 <NotificationItem
