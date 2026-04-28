@@ -99,7 +99,11 @@ export default function ConversationList({
           <EmptyState
             icon={FiMessageCircle as any}
             title={searchQuery ? 'No conversations found' : 'No conversations yet'}
-            description={searchQuery ? 'Try a different search term' : 'Start a new conversation to begin messaging'}
+            description={
+              searchQuery
+                ? 'Try a different search term'
+                : 'Start a new conversation to begin messaging'
+            }
           />
         ) : (
           <div className="space-y-0.5 px-2">

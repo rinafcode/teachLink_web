@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Dashboard | TeachLink',
-  description: 'Track your learning progress, manage downloaded courses, and continue where you left off.',
+  description:
+    'Track your learning progress, manage downloaded courses, and continue where you left off.',
   openGraph: {
     title: 'Dashboard | TeachLink',
     description: 'Track your learning progress and continue your courses.',
