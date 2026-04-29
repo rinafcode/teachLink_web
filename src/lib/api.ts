@@ -6,6 +6,15 @@ export type { ErrorInfo };
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
+const DEFAULT_TTL_MS = 300_000; // 5 minutes
+
+/**
+ * Cache entry structure
+ */
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
 
 /**
  * Request interceptor function type
@@ -29,6 +38,9 @@ export interface RequestConfig extends RequestInit {
   url: string;
   retries?: number;
   timeout?: number;
+  useCache?: boolean;
+  ttl?: number;
+  _bypassCacheRead?: boolean; // Internal flag for SWR revalidation
 }
 
 /**
@@ -39,6 +51,7 @@ export interface ApiClientConfig {
   timeout?: number;
   maxRetries?: number;
   retryDelay?: number;
+  defaultTTL?: number;
 }
 
 function statusToErrorType(status: number): ErrorType {
@@ -74,10 +87,24 @@ function getRetryDelay(attempt: number, baseDelay: number): number {
 }
 
 /**
- * Unified API Client with interceptors and retry logic
+ * Unified API Client with interceptors, retry logic, and SWR caching.
+ *
+ * Caching is opt-in per request via `useCache: true`.
+ * Default TTL is 5 minutes; override per-request with `ttl` (ms).
+ *
+ * @example
+ * // Cached GET – returns instantly on repeat calls within TTL
+ * await apiClient.get('/api/courses', { useCache: true });
+ *
+ * // Custom TTL (1 minute)
+ * await apiClient.get('/api/feed', { useCache: true, ttl: 60_000 });
+ *
+ * // Manually bust a specific cache entry
+ * apiClient.invalidateCache('/api/courses');
  */
 class ApiClientImpl {
   private config: Required<ApiClientConfig>;
+  private cache = new Map<string, CacheEntry<any>>();
   private requestInterceptors: RequestInterceptor[] = [];
   private responseInterceptors: ResponseInterceptor<unknown>[] = [];
   private errorInterceptors: ErrorInterceptor[] = [];
@@ -88,6 +115,7 @@ class ApiClientImpl {
       timeout: config.timeout || DEFAULT_TIMEOUT_MS,
       maxRetries: config.maxRetries || MAX_RETRIES,
       retryDelay: config.retryDelay || RETRY_DELAY_MS,
+      defaultTTL: config.defaultTTL || DEFAULT_TTL_MS,
     };
   }
 
@@ -152,9 +180,47 @@ class ApiClientImpl {
   }
 
   /**
+   * Invalidate cache for a specific URL or clear all
+   */
+  invalidateCache(url?: string): void {
+    if (url) {
+      this.cache.delete(url);
+    } else {
+      this.cache.clear();
+    }
+  }
+
+  /**
    * Make HTTP request with retry logic
    */
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
+    const token = this.getToken();
+    const url = this.config.baseURL ? `${this.config.baseURL}${config.url}` : config.url;
+    
+    // Include token in cache key to prevent cross-user cache leakage (security best practice)
+    const cacheKey = `${url}:${token || 'anonymous'}`;
+
+    // Handle caching for GET requests
+    if (config.method === 'GET' && config.useCache && !config._bypassCacheRead) {
+      const cached = this.cache.get(cacheKey);
+      if (cached) {
+        const ttl = config.ttl ?? this.config.defaultTTL;
+        const isExpired = Date.now() - cached.timestamp > ttl;
+
+        if (!isExpired) {
+          return cached.data as T;
+        }
+
+        // Stale-While-Revalidate: Return stale data and revalidate in background
+        // We set _bypassCacheRead: true so the background request skips the cache check
+        // but still updates the cache when it completes.
+        this.requestWithRetry<T>({ ...config, _bypassCacheRead: true }).catch((err) => {
+          console.error('Background revalidation failed:', err);
+        });
+        return cached.data as T;
+      }
+    }
+
     const controller = new AbortController();
     const timeout = config.timeout || this.config.timeout;
     const maxRetries = config.retries ?? this.config.maxRetries;
@@ -164,7 +230,6 @@ class ApiClientImpl {
       controller.abort();
     }, timeout);
 
-    const token = this.getToken();
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -177,8 +242,6 @@ class ApiClientImpl {
         headers,
         signal: controller.signal,
       });
-
-      const url = this.config.baseURL ? `${this.config.baseURL}${config.url}` : config.url;
 
       const response = await fetch(url, processedConfig);
       clearTimeout(timer);
@@ -208,6 +271,20 @@ class ApiClientImpl {
       const data = (await response.json()) as T;
 
       const processedResponse = await this.applyResponseInterceptors(data);
+
+      // Cache the response if it's a GET request and caching is enabled
+      if (config.method === 'GET' && config.useCache) {
+        this.cache.set(cacheKey, {
+          data: processedResponse,
+          timestamp: Date.now(),
+        });
+      }
+
+      // Invalidate cache on mutations
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method || '')) {
+        this.invalidateCache(cacheKey);
+      }
+
       return processedResponse;
     } catch (err) {
       clearTimeout(timer);
@@ -233,8 +310,10 @@ class ApiClientImpl {
 
   /**
    * GET request
+   * @param useCache - Enable SWR caching for this request (default: false)
+   * @param ttl      - Cache lifetime in ms (default: defaultTTL from config)
    */
-  async get<T>(url: string, options?: RequestInit): Promise<T> {
+  async get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -243,9 +322,9 @@ class ApiClientImpl {
   }
 
   /**
-   * POST request
+   * POST request – automatically invalidates the cache entry for this URL on success.
    */
-  async post<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  async post<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -255,9 +334,9 @@ class ApiClientImpl {
   }
 
   /**
-   * PATCH request
+   * PATCH request – automatically invalidates the cache entry for this URL on success.
    */
-  async patch<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  async patch<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -267,9 +346,9 @@ class ApiClientImpl {
   }
 
   /**
-   * PUT request
+   * PUT request – automatically invalidates the cache entry for this URL on success.
    */
-  async put<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  async put<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -279,9 +358,9 @@ class ApiClientImpl {
   }
 
   /**
-   * DELETE request
+   * DELETE request – automatically invalidates the cache entry for this URL on success.
    */
-  async delete<T>(url: string, options?: RequestInit): Promise<T> {
+  async delete<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,

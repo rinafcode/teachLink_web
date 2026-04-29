@@ -15,11 +15,13 @@ export interface MockApiResponse<T = unknown> {
   ok: boolean;
 }
 
+import { UserRole } from '../types/api';
+
 export interface TestUser {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'guest';
+  role: UserRole;
 }
 
 export interface WaitForOptions {
@@ -78,7 +80,7 @@ export function createTestUser(overrides?: Partial<TestUser>): TestUser {
     id: 'user-123',
     name: 'Test User',
     email: 'test@example.com',
-    role: 'user',
+    role: UserRole.STUDENT,
     ...overrides,
   };
 }

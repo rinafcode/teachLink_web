@@ -16,14 +16,10 @@ export const sanitizeString = (value: string): string =>
 export const validateStringArray = (values: string[]): string[] =>
   values.map(sanitizeString).filter(Boolean).slice(0, MAX_ARRAY_SIZE);
 
-export const isValidDifficulty = (
-  v: string,
-): v is 'beginner' | 'intermediate' | 'advanced' =>
+export const isValidDifficulty = (v: string): v is 'beginner' | 'intermediate' | 'advanced' =>
   (VALID_DIFFICULTIES as readonly string[]).includes(v);
 
-export const isValidSortOption = (
-  v: string,
-): v is 'relevance' | 'newest' | 'rating' | 'price' =>
+export const isValidSortOption = (v: string): v is 'relevance' | 'newest' | 'rating' | 'price' =>
   (VALID_SORT_OPTIONS as readonly string[]).includes(v);
 
 export const validateNumericRange = (

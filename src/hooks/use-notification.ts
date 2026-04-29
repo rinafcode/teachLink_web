@@ -13,8 +13,8 @@ export const useNotification = () => {
     const finalMessage = Array.isArray(message)
       ? message[0]
       : message instanceof Error
-        ? message.message
-        : message;
+      ? message.message
+      : message;
 
     toast.error(finalMessage || 'Something went wrong. Please try again.', {
       duration: 5000,
