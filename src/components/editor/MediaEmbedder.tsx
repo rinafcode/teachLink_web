@@ -67,7 +67,10 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
           <input
             type="url"
             value={url}
-            onChange={(e) => { setUrl(e.target.value); setUrlError(''); }}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setUrlError('');
+            }}
             placeholder={`Enter ${type} URL...`}
             className="w-full p-2 border rounded mb-1 dark:bg-gray-700 dark:border-gray-600"
             required

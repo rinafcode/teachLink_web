@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { registerSW, applyUpdate } from '@/utils/registerSW';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -41,38 +42,26 @@ export const usePWA = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // Track installation
-    window.addEventListener('appinstalled', () => {
+    const handleAppInstalled = () => {
       setIsInstalled(true);
       setInstallPrompt(null);
-    });
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
   const registerServiceWorker = useCallback(async () => {
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      try {
-        const reg = await navigator.serviceWorker.register('/serviceWorker.js');
-        setRegistration(reg);
-
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                setUpdateAvailable(true);
-              }
-            });
-          }
-        });
-      } catch (error) {
-        console.error('Service worker registration failed:', error);
-      }
-    }
+    const reg = await registerSW((r) => {
+      setRegistration(r);
+      setUpdateAvailable(true);
+    });
+    if (reg) setRegistration(reg);
   }, []);
 
   const installApp = async () => {
@@ -85,14 +74,7 @@ export const usePWA = () => {
   };
 
   const updateApp = () => {
-    if (registration?.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      registration.waiting.addEventListener('statechange', (e) => {
-        if ((e.target as ServiceWorker).state === 'activated') {
-          window.location.reload();
-        }
-      });
-    }
+    if (registration) applyUpdate(registration);
   };
 
   return {

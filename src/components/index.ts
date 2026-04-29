@@ -4,6 +4,12 @@
  * Import from '@/components' rather than '@/app/components' for shared pieces.
  */
 
+export * from './ui/Modal';
 export * from './ui/Toast';
+export * from './ui/EmptyState';
 export * from './shared/EnvGuard';
 export * from './errors/ErrorBoundarySystem';
+export { QRCodeComponent } from './QRCode';
+export { ShareModal } from './ShareModal';
+export { BulkImporter } from './BulkImporter';
+export type { BulkImporterProps, TargetFieldDef } from './BulkImporter';

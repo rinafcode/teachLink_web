@@ -124,7 +124,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
           )}
         />
 
-        {query && (
+        {isLoading && query && (
+          <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin shrink-0" />
+        )}
+
+        {query && !isLoading && (
           <button
             onClick={handleClear}
             className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 shrink-0 transition-colors"

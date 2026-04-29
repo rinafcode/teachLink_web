@@ -1,0 +1,105 @@
+@media print {
+  /* ── Hide screen-only elements ─────────────────────────────────────── */
+  nav,
+  header,
+  footer,
+  aside,
+  button,
+  dialog,
+  [role='dialog'],
+  [role='tooltip'],
+  [data-radix-popper-content-wrapper],
+  [data-print='false'],
+  [class*='no-print'],
+  .no-print {
+    display: none !important;
+  }
+
+  /* ── Page setup ────────────────────────────────────────────────────── */
+  @page {
+    margin: 1.5cm;
+  }
+
+  /* ── Reset layout ──────────────────────────────────────────────────── */
+  *,
+  *::before,
+  *::after {
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    gap: 0 !important;
+  }
+
+  html,
+  body {
+    width: 100%;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  body > *,
+  main,
+  article,
+  section,
+  .container,
+  [class*='max-w-'],
+  [class*='mx-auto'] {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+  }
+
+  /* ── Page-break rules ──────────────────────────────────────────────── */
+  h1,
+  h2,
+  h3,
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  img,
+  table,
+  figure {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ── Show link URLs ────────────────────────────────────────────────── */
+  a[href]::after {
+    content: ' (' attr(href) ')';
+    font-size: 10pt;
+    color: #444 !important;
+  }
+
+  /* Don't expand internal/anchor links or javascript: links */
+  a[href^='#']::after,
+  a[href^='javascript:']::after {
+    content: '';
+  }
+
+  /* ── Tables ────────────────────────────────────────────────────────── */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th,
+  td {
+    border: 1px solid #999 !important;
+    padding: 4pt 6pt;
+    text-align: left;
+  }
+}

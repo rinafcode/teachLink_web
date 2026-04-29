@@ -1,0 +1,106 @@
+'use client';
+
+import { useCallback, useEffect, useRef, forwardRef } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { QRCodeOptions, DEFAULT_QR_OPTIONS } from '@/utils/generate-qr';
+
+export interface QRCodeComponentProps {
+  /** URL or text to encode in QR code */
+  value: string;
+  /** Size of the QR code in pixels */
+  size?: number;
+  /** Error correction level */
+  level?: 'L' | 'M' | 'Q' | 'H';
+  /** Include margin/quiet zone */
+  includeMargin?: boolean;
+  /** Background color */
+  bgColor?: string;
+  /** Foreground/module color */
+  fgColor?: string;
+  /** Additional CSS class names */
+  className?: string;
+  /** Callback when QR code is rendered */
+  onRender?: (ref: HTMLCanvasElement | null) => void;
+}
+
+/**
+ * QRCode Component
+ * Renders a QR code for sharing URLs, text, or other data.
+ * Supports custom styling, sizing, and error correction levels.
+ *
+ * @example
+ * ```tsx
+ * <QRCodeComponent
+ *   value="https://teachlink.com/post/123"
+ *   size={256}
+ *   fgColor="#3b82f6"
+ * />
+ * ```
+ */
+export const QRCodeComponent = forwardRef<HTMLCanvasElement, QRCodeComponentProps>(
+  (
+    {
+      value,
+      size = DEFAULT_QR_OPTIONS.size,
+      level = DEFAULT_QR_OPTIONS.level,
+      includeMargin = DEFAULT_QR_OPTIONS.includeMargin,
+      bgColor = DEFAULT_QR_OPTIONS.bgColor,
+      fgColor = DEFAULT_QR_OPTIONS.fgColor,
+      className = '',
+      onRender,
+    },
+    ref,
+  ) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const getCanvasElement = () => containerRef.current?.querySelector('canvas') ?? null;
+
+    const assignForwardedRef = useCallback(
+      (canvas: HTMLCanvasElement | null) => {
+        if (!ref) return;
+        if (typeof ref === 'function') {
+          ref(canvas);
+        } else {
+          ref.current = canvas;
+        }
+      },
+      [ref],
+    );
+
+    useEffect(() => {
+      const canvas = getCanvasElement();
+      assignForwardedRef(canvas);
+      if (onRender && canvas) {
+        onRender(canvas);
+      }
+    }, [assignForwardedRef, onRender, value, size, level, includeMargin, bgColor, fgColor]);
+
+    if (!value) {
+      return (
+        <div
+          className={`flex items-center justify-center ${className}`}
+          style={{ width: size, height: size }}
+        >
+          <p className="text-sm text-gray-500">No value provided</p>
+        </div>
+      );
+    }
+
+    return (
+      <div ref={containerRef} className={`qr-code-container ${className}`}>
+        <QRCodeCanvas
+          value={value}
+          size={size}
+          level={level}
+          includeMargin={includeMargin}
+          bgColor={bgColor}
+          fgColor={fgColor}
+        />
+      </div>
+    );
+  },
+);
+
+QRCodeComponent.displayName = 'QRCodeComponent';
+
+export default QRCodeComponent;

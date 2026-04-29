@@ -14,6 +14,7 @@ export default defineConfig({
     globalSetup: [],
     setupFiles: ['./src/testing/test-setup.ts'],
     globals: true,
+    exclude: ['**/node_modules/**', '**/.next/**'],
   },
   resolve: {
     alias: {

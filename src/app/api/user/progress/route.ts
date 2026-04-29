@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { ApiResponse, UserProgress } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog } from '@/../infra/edge-config';
 
-export async function GET(): Promise<NextResponse<ApiResponse<UserProgress>>> {
-  const mockRequest = new Request('http://localhost');
-  const { addHeaders, rateLimitResponse } = withRateLimit(mockRequest, 'WRITE');
+export const runtime = 'edge';
+
+export async function GET(request: Request) {
+  edgeLog('info', '/api/user/progress', 'GET request received');
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<UserProgress>>;
   }
@@ -24,7 +27,8 @@ export async function GET(): Promise<NextResponse<ApiResponse<UserProgress>>> {
   );
 }
 
-export async function POST(request: Request): Promise<NextResponse<ApiResponse<UserProgress>>> {
+export async function POST(request: Request) {
+  edgeLog('info', '/api/user/progress', 'POST request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<ApiResponse<UserProgress>>;
