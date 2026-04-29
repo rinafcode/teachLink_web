@@ -1,8 +1,7 @@
 'use client';
-
+import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { UserCircle } from 'lucide-react';
-import Image from 'next/image';
 import { useActivityFeed } from '@/hooks/useSocialFeatures';
 import { getRelativeTime, groupActivitiesByDate } from '@/utils/socialUtils';
 

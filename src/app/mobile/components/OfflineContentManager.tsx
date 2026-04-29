@@ -13,7 +13,7 @@ interface DownloadProgress {
 
 export default function OfflineContentManager() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(false);
   const [storageUsed, setStorageUsed] = useState(0);
   const [storageTotal, setStorageTotal] = useState(5000 * 1024 * 1024);
   const [loading, setLoading] = useState(true);

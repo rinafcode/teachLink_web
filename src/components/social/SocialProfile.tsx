@@ -1,8 +1,7 @@
 'use client';
-
+import Image from 'next/image';
 import { useState } from 'react';
 import { UserCircle } from 'lucide-react';
-import Image from 'next/image';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
 import { formatFollowerCount } from '@/utils/socialUtils';
 

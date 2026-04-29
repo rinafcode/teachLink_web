@@ -1,8 +1,7 @@
 'use client';
-
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Search, UserCircle } from 'lucide-react';
-import Image from 'next/image';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
 import { apiClient } from '@/lib/api';
 import type { SocialUser } from './SocialProfile';

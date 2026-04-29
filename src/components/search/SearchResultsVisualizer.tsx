@@ -24,6 +24,19 @@ interface SearchResultsVisualizerProps {
   onSortChange: (sortBy: any) => void;
 }
 
+export function formatSearchResultDate(value: string | Date): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
 export const SearchResultsVisualizer = React.memo<SearchResultsVisualizerProps>(
   ({ results, isSearching, sortBy, onSortChange }) => {
     if (isSearching) {
@@ -135,7 +148,7 @@ export const SearchResultsVisualizer = React.memo<SearchResultsVisualizerProps>(
 
                     <div className="flex items-center gap-1.5 text-xs text-slate-400">
                       <Clock className="w-3.5 h-3.5" />
-                      {new Date(result.createdAt).toLocaleDateString()}
+                      {formatSearchResultDate(result.createdAt)}
                     </div>
 
                     {result.rating && (

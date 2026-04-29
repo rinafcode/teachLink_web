@@ -1,4 +1,5 @@
 import { Play } from 'lucide-react';
+import Link from 'next/link';
 
 interface CourseCardProps {
   title: string;
@@ -7,6 +8,7 @@ interface CourseCardProps {
   progress: number;
   timeRemaining: string;
   imageUrl?: string;
+  courseHref: string;
 }
 
 export default function CourseCard({
@@ -16,6 +18,7 @@ export default function CourseCard({
   progress = 68,
   timeRemaining = '12h remaining',
   imageUrl,
+  courseHref,
 }: CourseCardProps) {
   return (
     <div className="group relative w-full overflow-hidden rounded-xl border border-gray- shadow-lg bg-[#262f40] transition-all duration-300 hover:shadow-xl">
@@ -57,10 +60,13 @@ export default function CourseCard({
           </div>
         </div>
 
-        <button className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:scale-[0.98]">
+        <Link
+          href={courseHref}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:scale-[0.98]"
+        >
           <Play size={16} className="fill-current" />
           Continue Learning
-        </button>
+        </Link>
       </div>
     </div>
   );

@@ -203,7 +203,7 @@ class ApiClientImpl {
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
     const token = this.getToken();
     const url = this.config.baseURL ? `${this.config.baseURL}${config.url}` : config.url;
-    
+
     // Include token in cache key to prevent cross-user cache leakage (security best practice)
     const cacheKey = `${url}:${token || 'anonymous'}`;
 
@@ -331,7 +331,11 @@ class ApiClientImpl {
   /**
    * POST request – automatically invalidates the cache entry for this URL on success.
    */
-  async post<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
+  async post<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -343,7 +347,11 @@ class ApiClientImpl {
   /**
    * PATCH request – automatically invalidates the cache entry for this URL on success.
    */
-  async patch<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
+  async patch<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -355,7 +363,11 @@ class ApiClientImpl {
   /**
    * PUT request – automatically invalidates the cache entry for this URL on success.
    */
-  async put<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
+  async put<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
