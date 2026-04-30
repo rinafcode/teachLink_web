@@ -1,5 +1,5 @@
 'use client';
-
+import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { UserCircle } from 'lucide-react';
 import { useActivityFeed } from '@/hooks/useSocialFeatures';
@@ -64,9 +64,11 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
             {items.map((activity) => (
               <div key={activity.id} className="flex gap-3 px-4 py-3">
                 {activity.actorAvatar ? (
-                  <img
+                  <Image
                     src={activity.actorAvatar}
                     alt={activity.actorName}
+                    width={36}
+                    height={36}
                     className="w-9 h-9 rounded-full object-cover shrink-0"
                   />
                 ) : (

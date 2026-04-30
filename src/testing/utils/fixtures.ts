@@ -1,9 +1,5 @@
 // ──────────────────────────────────────────────────────────────────────────────
 // src/testing/utils/fixtures.ts
-//
-// Centralised, reusable test data.
-// Use the factory functions to generate single objects, or the preset arrays
-// (COURSES, USERS, etc.) for collection-level tests.
 // ──────────────────────────────────────────────────────────────────────────────
 
 import { SearchResult } from '@/components/virtualizedsearchresults';
@@ -20,7 +16,6 @@ function seq(prefix = '') {
   return `${prefix}${++_seq}`;
 }
 
-/** Reset auto-increment counter between test suites */
 export function resetFixtureCounter() {
   _seq = 0;
 }
@@ -39,7 +34,10 @@ export function makeCourse(overrides: Partial<Course> = {}): Course {
     thumbnailUrl: `https://picsum.photos/seed/${id}/320/180`,
     progress: 0,
     duration: '4h 30m',
-    category: 'Engineering',
+    category: 'Engineering', // kept from fix branch
+    totalLessons: 12, // merged (better default)
+    size: '120 MB', // merged (realistic value)
+    downloaded: false,
     ...overrides,
   };
 }
@@ -173,7 +171,7 @@ export const NOTIFICATIONS: Notification[] = [
 ];
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Common user fixture (reused across domain objects)
+// User fixtures
 // ──────────────────────────────────────────────────────────────────────────────
 
 export interface UserFixture {

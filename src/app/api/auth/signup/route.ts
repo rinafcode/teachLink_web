@@ -1,39 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/ratelimit';
-import type { AuthResponse } from '@/types/api';
+import { validateBody } from '@/lib/validation';
+import { SignupRequestSchema } from '@/types/api/auth.dto';
+import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
+import { edgeLog } from '@/../infra/edge-config';
 
-export async function POST(request: NextRequest) {
+export const runtime = 'edge';
+
+// ---------------------------------------------------------------------------
+// POST /api/auth/signup
+// ---------------------------------------------------------------------------
+
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<AuthResponseDTO | AuthErrorDTO>> {
+  edgeLog('info', '/api/auth/signup', 'POST request received');
+
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'AUTH');
-  if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse<{ message: string }>;
-  }
+  if (rateLimitResponse) return rateLimitResponse as NextResponse;
 
   try {
-    const body = await request.json();
-    const { name, email, password, confirmPassword } = body;
+    const result = validateBody(SignupRequestSchema, await request.json());
+    if (!result.ok) return addHeaders(result.error) as NextResponse;
 
+    const { name, email, password, confirmPassword } = result.data;
+
+    // Basic validation
     if (!name || !email || !password || !confirmPassword) {
-      return addHeaders(
-        NextResponse.json({ message: 'All fields are required' }, { status: 400 }),
-      ) as NextResponse<{ message: string }>;
+      return addHeaders(NextResponse.json({ message: 'All fields are required' }, { status: 400 }));
     }
 
     if (password !== confirmPassword) {
-      return addHeaders(
-        NextResponse.json({ message: "Passwords don't match" }, { status: 400 }),
-      ) as NextResponse<{ message: string }>;
+      return addHeaders(NextResponse.json({ message: "Passwords don't match" }, { status: 400 }));
     }
 
     if (password.length < 6) {
       return addHeaders(
         NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 }),
-      ) as NextResponse<{ message: string }>;
+      );
     }
 
+    // Mock: block already-registered email
     if (email === 'existing@teachlink.com') {
       return addHeaders(
         NextResponse.json({ message: 'Email already registered' }, { status: 409 }),
-      ) as NextResponse<{ message: string }>;
+      );
     }
 
     return addHeaders(
@@ -41,19 +52,18 @@ export async function POST(request: NextRequest) {
         {
           message: 'Account created successfully',
           user: {
-            id: Math.random().toString(36).substr(2, 9),
-            name: name,
-            email: email,
+            id: Math.random().toString(36).substring(2, 9),
+            name,
+            email,
           },
-          token: 'mock-jwt-token-' + Date.now(),
+          token: `mock-jwt-token-${Date.now()}`,
         },
         { status: 201 },
       ),
-    ) as NextResponse<AuthResponse>;
+    );
   } catch (error) {
     console.error('Signup error:', error);
-    return addHeaders(
-      NextResponse.json({ message: 'Internal server error' }, { status: 500 }),
-    ) as NextResponse<{ message: string }>;
+
+    return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
 }

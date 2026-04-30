@@ -1,5 +1,5 @@
 'use client';
-
+import Image from 'next/image';
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   Image as ImageIcon,
@@ -300,10 +300,12 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
             >
               {/* Image */}
               <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
-                <img
+                <Image
                   src={nft.image}
                   alt={nft.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover group-hover:scale-105 transition-transform"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
                       'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
@@ -341,9 +343,11 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
               onClick={() => handleSelectNFT(nft)}
               className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
             >
-              <img
+              <Image
                 src={nft.image}
                 alt={nft.name}
+                width={64}
+                height={64}
                 className="w-16 h-16 object-cover rounded"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src =
@@ -413,12 +417,17 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
                 ✕
               </button>
             </div>
-
             <div className="p-6 space-y-4">
-              <img
+              <Image
                 src={selectedNFT.image}
                 alt={selectedNFT.name}
+                width={640}
+                height={640}
                 className="w-full aspect-square object-cover rounded-lg"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
+                }}
               />
 
               <div>

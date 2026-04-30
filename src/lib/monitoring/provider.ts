@@ -11,7 +11,7 @@ export interface MonitoringProvider {
 // Simple local provider (can swap with Datadog/New Relic later)
 export class LocalMonitoringProvider implements MonitoringProvider {
   async getMetrics(): Promise<Metric[]> {
-    return [
+    const baseMetrics: Metric[] = [
       {
         name: 'response_time',
         value: Math.random() * 500,
@@ -23,5 +23,17 @@ export class LocalMonitoringProvider implements MonitoringProvider {
         timestamp: Date.now(),
       },
     ];
+
+    try {
+      const response = await fetch('/api/performance/db-metrics');
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data)) {
+        return [...baseMetrics, ...result.data];
+      }
+    } catch (error) {
+      console.warn('[Monitoring] Failed to fetch DB metrics:', error);
+    }
+
+    return baseMetrics;
   }
 }

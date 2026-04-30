@@ -1,5 +1,5 @@
 'use client';
-
+import Image from 'next/image';
 import { useState } from 'react';
 import { UserCircle } from 'lucide-react';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
@@ -36,9 +36,11 @@ export default function SocialProfile({ user, isOwnProfile = false }: SocialProf
       {/* Profile header */}
       <div className="p-6 flex items-start gap-4">
         {user.avatarUrl ? (
-          <img
+          <Image
             src={user.avatarUrl}
             alt={user.name}
+            width={64}
+            height={64}
             className="w-16 h-16 rounded-full object-cover shrink-0"
           />
         ) : (

@@ -29,7 +29,8 @@
     "notifications": "الإشعارات",
     "logout": "تسجيل الخروج",
     "login": "تسجيل الدخول",
-    "signup": "إنشاء حساب"
+    "signup": "إنشاء حساب",
+    "teach": "التدريس"
   },
   "course": {
     "title": "دورة",
@@ -43,7 +44,8 @@
     "rating": "التقييم",
     "description": "الوصف",
     "syllabus": "المنهج",
-    "resources": "الموارد"
+    "resources": "الموارد",
+    "previewTitle": "معاينة الدورة"
   },
   "dashboard": {
     "welcome": "مرحباً",
@@ -52,7 +54,20 @@
     "upcomingDeadlines": "المواعيد النهائية القادمة",
     "recommendedCourses": "الدورات الموصى بها",
     "learningStreak": "سلسلة التعلم",
-    "progressSummary": "ملخص التقدم"
+    "progressSummary": "ملخص التقدم",
+    "learningProgress": "تقدم التعلم",
+    "progressStatus": "{{percent}}% مكتمل • {{remaining}} متبقية",
+    "quickActions": "إجراءات سريعة",
+    "continueLearning": "تابع التعلم",
+    "downloadCourse": "تنزيل الدورة",
+    "offlineAccess": "للوصول دون اتصال",
+    "viewProgress": "عرض التقدم",
+    "trackLearning": "تتبّع تعلمك",
+    "completedLesson": "أكملت درساً",
+    "downloadedCourse": "تم تنزيل الدورة",
+    "activityEntry": "{{course}} • {{time}}",
+    "timeHoursAgo": "قبل {{count}} ساعات",
+    "timeDayAgo": "قبل {{count}} يوم"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
@@ -84,5 +99,27 @@
     "unauthorized": "غير مصرح",
     "forbidden": "محظور",
     "serverError": "خطأ في الخادم"
+  },
+  "home": {
+    "heroTitlePrefix": "مرحباً بك في",
+    "heroSubtitle": "تعلّم في أي وقت ومن أي مكان مع منصتنا الشاملة",
+    "navDesktopTitle": "لوحة تحكم سطح المكتب",
+    "navDesktopDescription": "منصة تعلم متكاملة مع أدوات متقدمة",
+    "navMobileTitle": "تطبيق الهاتف",
+    "navMobileDescription": "تجربة تعلم محسّنة للمس على التنقل",
+    "navCatalogTitle": "كتالوج الدورات",
+    "navCatalogDescription": "استعرض الدورات المتاحة",
+    "featuredTitle": "الدورات المميزة",
+    "whyTitle": "لماذا TeachLink؟",
+    "featureOfflineTitle": "تعلم دون اتصال",
+    "featureOfflineDescription": "حمّل الدورات وتعلّم بدون اتصال بالإنترنت",
+    "featureCrossPlatformTitle": "متعدد المنصات",
+    "featureCrossPlatformDescription": "تجربة سلسة عبر سطح المكتب والجوال والتابلت",
+    "featureWeb3Title": "تكامل Web3",
+    "featureWeb3Description": "منصة لامركزية بميزات قائمة على البلوكتشين",
+    "ctaTitle": "جاهز لبدء التعلم؟",
+    "ctaSubtitle": "انضم إلى آلاف المتعلمين على TeachLink اليوم",
+    "ctaPrimary": "ابدأ الآن",
+    "ctaSecondary": "تسجيل الدخول"
   }
 }

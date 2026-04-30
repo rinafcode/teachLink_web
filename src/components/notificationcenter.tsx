@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { BellOff } from 'lucide-react';
@@ -26,6 +27,17 @@ function timeAgo(date: Date): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
+function formatAbsoluteTimestamp(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // NotificationItem
 // ──────────────────────────────────────────────────────────────────────────────
@@ -38,6 +50,11 @@ interface NotificationItemProps {
 
 function NotificationItem({ notification, onRead, onClear }: NotificationItemProps) {
   const { id, type, title, body, timestamp, read, actionUrl, avatarUrl } = notification;
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   function handleClick() {
     if (!read) onRead(id);
@@ -59,9 +76,9 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
           <Image
             src={avatarUrl}
             alt=""
+            width={24}
+            height={24}
             className="notification-item__avatar"
-            width={40}
-            height={40}
           />
         ) : (
           <span aria-hidden="true">{TYPE_ICON[type]}</span>
@@ -71,7 +88,7 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
         <p className="notification-item__title">{title}</p>
         {body && <p className="notification-item__text">{body}</p>}
         <time className="notification-item__time" dateTime={timestamp.toISOString()}>
-          {timeAgo(timestamp)}
+          {isHydrated ? timeAgo(timestamp) : formatAbsoluteTimestamp(timestamp)}
         </time>
       </div>
       {!read && <span className="notification-item__dot" aria-label="Unread" />}
@@ -166,7 +183,11 @@ export function NotificationCenter() {
 
           <div className="notification-panel__list">
             {notifications.length === 0 ? (
-              <EmptyState icon={BellOff} title="You're all caught up!" className="py-8" />
+              <EmptyState
+                icon={<BellOff className="h-5 w-5" aria-hidden="true" />}
+                title="You're all caught up!"
+                description="No new notifications."
+              />
             ) : (
               notifications.map((n) => (
                 <NotificationItem

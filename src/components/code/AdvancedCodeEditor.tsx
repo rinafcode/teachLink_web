@@ -99,6 +99,7 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
     output,
     validationErrors,
     collaborators,
+    isCollaborationConnected,
     autoCompleteEnabled,
     currentWord,
     languages,
@@ -259,7 +260,11 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
             onToggle={toggleAutoComplete}
             onSelect={handleSuggestionSelect}
           />
-          <CollaborativeEditing collaborators={collaborators} roomId={roomId} />
+          <CollaborativeEditing
+            collaborators={collaborators}
+            roomId={roomId}
+            isConnected={isCollaborationConnected}
+          />
         </div>
       </div>
 

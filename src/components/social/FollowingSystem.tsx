@@ -1,5 +1,5 @@
 'use client';
-
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Search, UserCircle } from 'lucide-react';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
@@ -18,7 +18,13 @@ function UserRow({ user }: { user: SocialUser }) {
     <div className="flex items-center justify-between py-3">
       <div className="flex items-center gap-3">
         {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt={user.name} className="w-9 h-9 rounded-full object-cover" />
+          <Image
+            src={user.avatarUrl}
+            alt={user.name}
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-full object-cover"
+          />
         ) : (
           <UserCircle className="w-9 h-9 text-gray-400" />
         )}

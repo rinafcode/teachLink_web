@@ -55,9 +55,7 @@ export function MyComponent() {
       {wallet.isConnected ? (
         <p>Connected: {wallet.address}</p>
       ) : (
-        <button onClick={() => wallet.connect('metamask')}>
-          Connect Wallet
-        </button>
+        <button onClick={() => wallet.connect('metamask')}>Connect Wallet</button>
       )}
     </div>
   );
@@ -71,6 +69,7 @@ export function MyComponent() {
 The `WalletConnector` component provides a complete wallet connection UI.
 
 **Features:**
+
 - Multi-provider support (MetaMask, Starknet, WalletConnect, Coinbase)
 - Connection status indicator
 - Address display with copy-to-clipboard
@@ -88,7 +87,7 @@ export function Header() {
   return (
     <div className="flex justify-between items-center">
       <h1>TeachLink</h1>
-      <WalletConnector 
+      <WalletConnector
         showBalance={true}
         onConnect={(address, provider) => {
           console.log(`Connected to ${provider}: ${address}`);
@@ -101,18 +100,19 @@ export function Header() {
 
 **Props:**
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `className` | `string` | `''` | Additional CSS classes |
-| `showBalance` | `boolean` | `false` | Display wallet balances |
-| `onConnect` | `function` | `undefined` | Callback when wallet connects |
+| Prop           | Type       | Default     | Description                      |
+| -------------- | ---------- | ----------- | -------------------------------- |
+| `className`    | `string`   | `''`        | Additional CSS classes           |
+| `showBalance`  | `boolean`  | `false`     | Display wallet balances          |
+| `onConnect`    | `function` | `undefined` | Callback when wallet connects    |
 | `onDisconnect` | `function` | `undefined` | Callback when wallet disconnects |
 
-### TransactionManager  
+### TransactionManager
 
 Comprehensive transaction management with signing, confirmation, and tracking.
 
 **Features:**
+
 - Build transactions with gas settings
 - Advanced options (gas limit, data)
 - Transaction history with local persistence
@@ -127,7 +127,7 @@ import { TransactionManager } from '@/components/web3';
 
 export function PaymentComponent() {
   return (
-    <TransactionManager 
+    <TransactionManager
       onTransactionSent={(txHash) => {
         console.log('Transaction sent:', txHash);
       }}
@@ -138,17 +138,18 @@ export function PaymentComponent() {
 
 **Props:**
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `className` | `string` | Additional CSS classes |
-| `onTransactionSent` | `function` | Called with transaction hash |
-| `onTransactionError` | `function` | Called on transaction error |
+| Prop                 | Type       | Description                  |
+| -------------------- | ---------- | ---------------------------- |
+| `className`          | `string`   | Additional CSS classes       |
+| `onTransactionSent`  | `function` | Called with transaction hash |
+| `onTransactionError` | `function` | Called on transaction error  |
 
 ### NFTGallery
 
 Display and manage NFT collections with filtering and detailed views.
 
 **Features:**
+
 - Grid and list view modes
 - NFT filtering and search
 - Detailed NFT information with attributes
@@ -179,19 +180,20 @@ export function NFTsPage() {
 
 **Props:**
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `className` | `string` | Additional CSS classes |
-| `onNFTSelect` | `function` | Called when NFT is selected |
-| `showMintButton` | `boolean` | Display mint button |
-| `onMintClick` | `function` | Called when mint button clicked |
+| Prop             | Type       | Description                     |
+| ---------------- | ---------- | ------------------------------- |
+| `className`      | `string`   | Additional CSS classes          |
+| `onNFTSelect`    | `function` | Called when NFT is selected     |
+| `showMintButton` | `boolean`  | Display mint button             |
+| `onMintClick`    | `function` | Called when mint button clicked |
 
 ### DeFiInterface
 
 Access and manage DeFi protocols for staking and earning rewards.
 
 **Features:**
-- Browse multiple staking protocols  
+
+- Browse multiple staking protocols
 - Compare APY and TVL
 - Risk assessment indicators
 - Staking position tracking
@@ -206,7 +208,7 @@ import { DeFiInterface } from '@/components/web3';
 
 export function DeFiPage() {
   return (
-    <DeFiInterface 
+    <DeFiInterface
       onStake={(protocol, amount, duration) => {
         console.log(`Staked ${amount} in ${protocol}`);
       }}
@@ -217,11 +219,11 @@ export function DeFiPage() {
 
 **Props:**
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `className` | `string` | Additional CSS classes |
-| `onStake` | `function` | Called with staking details |
-| `onUnstake` | `function` | Called when unstaking |
+| Prop        | Type       | Description                 |
+| ----------- | ---------- | --------------------------- |
+| `className` | `string`   | Additional CSS classes      |
+| `onStake`   | `function` | Called with staking details |
+| `onUnstake` | `function` | Called when unstaking       |
 
 ## useWeb3Wallet Hook
 
@@ -233,29 +235,30 @@ The core hook for wallet management. Use this for deeper integration beyond comp
 const wallet = useWeb3Wallet();
 
 // Connection
-wallet.connect('metamask');              // Connect to MetaMask
-wallet.disconnect();                    // Disconnect wallet
+wallet.connect('metamask'); // Connect to MetaMask
+wallet.disconnect(); // Disconnect wallet
 
 // Chain management
-wallet.switchChain('0x89');            // Switch to Polygon
+wallet.switchChain('0x89'); // Switch to Polygon
 
 // Transactions
-wallet.sendTransaction({                // Send transaction
+wallet.sendTransaction({
+  // Send transaction
   to: '0x...',
   value: '1000000000000000000',
-  data: '0x'
+  data: '0x',
 });
 
 // Message signing
-wallet.signMessage('message to sign');  // Sign arbitrary message
+wallet.signMessage('message to sign'); // Sign arbitrary message
 
 // State
-wallet.address;                         // Connected address
-wallet.isConnected;                     // Connection status
-wallet.chainId;                         // Current chain ID
-wallet.provider;                        // Wallet provider type
-wallet.balances;                        // Token balances
-wallet.error;                           // Last error
+wallet.address; // Connected address
+wallet.isConnected; // Connection status
+wallet.chainId; // Current chain ID
+wallet.provider; // Wallet provider type
+wallet.balances; // Token balances
+wallet.error; // Last error
 ```
 
 **Return Type:**
@@ -279,19 +282,10 @@ interface WalletState {
 All components include comprehensive security checks:
 
 ```tsx
-import {
-  performSecurityChecks,
-  isValidAddress,
-  validateTransaction,
-} from '@/utils/web3';
+import { performSecurityChecks, isValidAddress, validateTransaction } from '@/utils/web3';
 
 // Security checks on transactions
-const result = performSecurityChecks(
-  toAddress,
-  value,
-  userAddress,
-  chainId
-);
+const result = performSecurityChecks(toAddress, value, userAddress, chainId);
 
 if (!result.isSecure) {
   console.error('Security warnings:', result.warnings);
@@ -335,11 +329,11 @@ if (walletActionRateLimiter.isLimited('connect')) {
 
 ### Chains
 
-| Chain | ID | RPC | Explorer |
-|-------|--|----|----------|
-| Ethereum Mainnet | `0x1` | BlastAPI | etherscan.io |
-| Polygon | `0x89` | polygon-rpc.com | polygonscan.com |
-| Polygon Mumbai | `0x13881` | Mumbai RPC | mumbai.polygonscan.com |
+| Chain            | ID        | RPC             | Explorer               |
+| ---------------- | --------- | --------------- | ---------------------- |
+| Ethereum Mainnet | `0x1`     | BlastAPI        | etherscan.io           |
+| Polygon          | `0x89`    | polygon-rpc.com | polygonscan.com        |
+| Polygon Mumbai   | `0x13881` | Mumbai RPC      | mumbai.polygonscan.com |
 
 ## Integration Examples
 
@@ -407,9 +401,7 @@ export function BalanceDisplay() {
           ))}
         </>
       ) : (
-        <button onClick={() => wallet.connect('metamask')}>
-          Connect
-        </button>
+        <button onClick={() => wallet.connect('metamask')}>Connect</button>
       )}
     </div>
   );
@@ -421,6 +413,7 @@ export function BalanceDisplay() {
 ### Testing Components
 
 Components include:
+
 - Loading states
 - Error handling
 - Empty states
@@ -430,11 +423,13 @@ Components include:
 ### Mock Data
 
 Components use realistic mock data for demonstration:
+
 - **NFTGallery**: Sample NFT metadata
 - **DeFiInterface**: Real protocol data structure
 - **TransactionManager**: Transaction history format
 
 For production, integrate with:
+
 - **NFT data**: OpenSea API, Alchemy, Moralis
 - **DeFi data**: The Graph, Uniswap V3, Aave protocols
 - **Transactions**: Etherscan API
@@ -460,9 +455,9 @@ Components are small enough for direct import, but can be lazy-loaded:
 ```tsx
 import dynamic from 'next/dynamic';
 
-const DeFiInterface = dynamic(() =>
-  import('@/components/web3').then((mod) => ({ default: mod.DeFiInterface })),
-  { ssr: false }
+const DeFiInterface = dynamic(
+  () => import('@/components/web3').then((mod) => ({ default: mod.DeFiInterface })),
+  { ssr: false },
 );
 ```
 
@@ -500,7 +495,7 @@ const DeFiInterface = dynamic(() =>
 ### Phase 2 Features (Future)
 
 - [ ] Advanced contract interaction UI
-- [ ] Gas optimization recommendations  
+- [ ] Gas optimization recommendations
 - [ ] Multi-sig wallet support
 - [ ] Token swapping interface
 - [ ] Governance voting UI

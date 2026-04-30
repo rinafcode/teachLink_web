@@ -2,7 +2,11 @@ import type { NextConfig } from 'next';
 import path from 'path';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  modularizeImports: {
+    lodash: {
+      transform: 'lodash/{{member}}',
+    },
+  },
   eslint: {
     // Many legacy files do not match Prettier; keep type checking without blocking production builds.
     ignoreDuringBuilds: true,
@@ -14,6 +18,19 @@ const nextConfig: NextConfig = {
   // short revalidation window for HTML pages so users never see stale UI.
   async headers() {
     return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+          },
+          { key: 'X-DNS-Prefetch-Control', value: 'off' },
+        ],
+      },
       {
         // Immutable hashed static assets – cache for 1 year
         source: '/_next/static/:path*',
