@@ -187,6 +187,7 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
             <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {totalStaked.toFixed(2)}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Across {stakingPositions.length} positions</p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-2">
@@ -198,6 +199,7 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
             <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {totalRewards.toFixed(4)}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Earned to date</p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-2">
@@ -246,6 +248,35 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                     {protocol.description}
                   </p>
                 </div>
+                <span
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                    protocol.riskLevel === 'low'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                      : protocol.riskLevel === 'medium'
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                  }`}
+                >
+                  {protocol.riskLevel}
+                </span>
+              </div>
+
+              {/* Protocol stats */}
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">APY</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                    {protocol.apy}%
+                  </p>
+                </div>
+                <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">TVL</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{protocol.tvl}</p>
+                </div>
+                <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Min Stake</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{protocol.minStake}</p>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedProtocol(protocol)}
@@ -284,6 +315,22 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                     +{position.unrealizedRewards}
                   </span>
                 </div>
+
+                <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+                  <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Harvested</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {position.rewards} {position.token}
+                    </p>
+                  </div>
+                  <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Unlocks</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {new Date(position.endDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
                 <button
                   onClick={() => handleUnstake(position.id)}
                   className="w-full px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 font-medium text-sm rounded-lg"
@@ -296,6 +343,18 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         </div>
       )}
 
+      {/* Rewards tab */}
+      {activeTab === 'rewards' && (
+        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <Zap className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
+          <p className="text-gray-600 dark:text-gray-400">Reward tracking coming soon</p>
+          <p className="text-xs text-gray-500 mt-2">
+            Monitor all your staking rewards in one place
+          </p>
+        </div>
+      )}
+
+      {/* Staking modal */}
       {selectedProtocol && (
         <div
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"

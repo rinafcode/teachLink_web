@@ -26,6 +26,10 @@ const keyFor = (userId: string | undefined, lessonId: string): string => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
+// ---------------------------------------------------------------------------
+// GET /api/bookmarks
+// ---------------------------------------------------------------------------
+
 export async function GET(request: Request): Promise<NextResponse<BookmarksListResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'GET request received');
 
@@ -43,6 +47,10 @@ export async function GET(request: Request): Promise<NextResponse<BookmarksListR
     }),
   );
 }
+
+// ---------------------------------------------------------------------------
+// POST /api/bookmarks
+// ---------------------------------------------------------------------------
 
 export async function POST(request: Request): Promise<NextResponse<BookmarkResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'POST request received');
@@ -87,6 +95,10 @@ export async function POST(request: Request): Promise<NextResponse<BookmarkRespo
   return response;
 }
 
+// ---------------------------------------------------------------------------
+// PATCH /api/bookmarks
+// ---------------------------------------------------------------------------
+
 export async function PATCH(request: Request): Promise<NextResponse<BookmarksSuccessResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'PATCH request received');
 
@@ -126,6 +138,10 @@ export async function PATCH(request: Request): Promise<NextResponse<BookmarksSuc
 
   return response;
 }
+
+// ---------------------------------------------------------------------------
+// DELETE /api/bookmarks
+// ---------------------------------------------------------------------------
 
 export async function DELETE(request: Request): Promise<NextResponse<BookmarksSuccessResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'DELETE request received');

@@ -39,9 +39,9 @@ export default function SocialProfile({ user, isOwnProfile = false }: SocialProf
           <Image
             src={user.avatarUrl}
             alt={user.name}
-            className="w-16 h-16 rounded-full object-cover shrink-0"
             width={64}
             height={64}
+            className="w-16 h-16 rounded-full object-cover shrink-0"
           />
         ) : (
           <UserCircle className="w-16 h-16 text-gray-400 shrink-0" />

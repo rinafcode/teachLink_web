@@ -22,7 +22,7 @@ describe('DatabasePool', () => {
   it('should create a singleton instance of Pool', () => {
     const pool1 = dbPool.getInstance();
     const pool2 = dbPool.getInstance();
-    
+
     expect(Pool).toHaveBeenCalledTimes(1);
     expect(pool1).toBe(pool2);
   });
@@ -30,7 +30,7 @@ describe('DatabasePool', () => {
   it('should report metrics correctly', () => {
     // Initialize pool
     dbPool.getInstance();
-    
+
     const metrics = dbPool.getMetrics();
     expect(metrics).toEqual({
       totalConnections: 5,

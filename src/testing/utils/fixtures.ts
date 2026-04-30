@@ -34,9 +34,9 @@ export function makeCourse(overrides: Partial<Course> = {}): Course {
     thumbnailUrl: `https://picsum.photos/seed/${id}/320/180`,
     progress: 0,
     duration: '4h 30m',
-    category: 'Engineering',        // kept from fix branch
-    totalLessons: 12,               // merged (better default)
-    size: '120 MB',                 // merged (realistic value)
+    category: 'Engineering', // kept from fix branch
+    totalLessons: 12, // merged (better default)
+    size: '120 MB', // merged (realistic value)
     downloaded: false,
     ...overrides,
   };

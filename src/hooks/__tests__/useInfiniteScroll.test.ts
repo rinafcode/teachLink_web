@@ -36,9 +36,7 @@ describe('useInfiniteScroll', () => {
         resolve = res;
       });
 
-    const { result } = renderHook(() =>
-      useInfiniteScroll({ onLoadMore, hasNextPage: true }),
-    );
+    const { result } = renderHook(() => useInfiniteScroll({ onLoadMore, hasNextPage: true }));
 
     act(() => {
       result.current.loadMore();
@@ -53,9 +51,7 @@ describe('useInfiniteScroll', () => {
     makeObserver(true);
     const onLoadMore = vi.fn().mockRejectedValueOnce(new Error('fetch failed'));
 
-    const { result } = renderHook(() =>
-      useInfiniteScroll({ onLoadMore, hasNextPage: true }),
-    );
+    const { result } = renderHook(() => useInfiniteScroll({ onLoadMore, hasNextPage: true }));
 
     await act(async () => {
       result.current.loadMore();
@@ -68,9 +64,7 @@ describe('useInfiniteScroll', () => {
     makeObserver(true);
     const onLoadMore = vi.fn();
 
-    const { result } = renderHook(() =>
-      useInfiniteScroll({ onLoadMore, hasNextPage: false }),
-    );
+    const { result } = renderHook(() => useInfiniteScroll({ onLoadMore, hasNextPage: false }));
 
     await act(async () => {
       result.current.loadMore();

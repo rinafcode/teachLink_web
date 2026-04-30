@@ -87,6 +87,19 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
     [wallet.address],
   );
 
+  /**
+   * Validate transaction form
+   */
+  const validateForm = useCallback((): string | null => {
+    if (!toAddress.trim()) return 'Recipient address is required';
+    if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
+    if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) return 'Invalid Ethereum address format';
+    return null;
+  }, [toAddress, amount]);
+
+  /**
+   * Handle transaction submission
+   */
   const handleSubmitTransaction = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -182,6 +195,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
             onSubmit={handleSubmitTransaction}
             className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4"
           >
+            {/* Error message */}
             {txError && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex gap-2">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -276,11 +290,37 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                     ) : (
                       <CheckCircle2 className="w-4 h-4 text-green-500" />
                     )}
-                    <span className="font-mono text-sm text-gray-600 dark:text-gray-400">
-                      {tx.hash.slice(0, 10)}...
+                    {tx.status === 'success' && (
+                      <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    )}
+                    {tx.status === 'failed' && (
+                      <CheckCircle2 className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-sm text-gray-600 dark:text-gray-400 truncate">
+                        {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        {new Date(tx.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right ml-2">
+                    <p className="font-medium text-gray-900 dark:text-white">{tx.value} ETH</p>
+                    <span
+                      className={`text-xs font-medium capitalize ${
+                        tx.status === 'success'
+                          ? 'text-green-600 dark:text-green-400'
+                          : tx.status === 'pending'
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}
+                    >
+                      {tx.status}
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 dark:text-white">{tx.value} ETH</p>
                 </button>
                 {expandedTx === tx.hash && (
                   <div className="mt-2 text-xs text-gray-500 space-y-1">

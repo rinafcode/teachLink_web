@@ -34,7 +34,10 @@ export const clampSeekTime = (time: number, duration: number): number => {
   return Math.max(0, Math.min(duration, time));
 };
 
-export const getSeekTimeWithStep = (currentTime: number, direction: 'forward' | 'backward'): number => {
+export const getSeekTimeWithStep = (
+  currentTime: number,
+  direction: 'forward' | 'backward',
+): number => {
   if (direction === 'forward') {
     return currentTime + VIDEO_SEEK_STEP_SECONDS;
   }

@@ -163,6 +163,79 @@ return wallet.isConnected ? <p>{wallet.address}</p> : <button>Connect</button>;`
                       </pre>
                     )}
                   </div>
+
+                  {/* Component usage */}
+                  <div>
+                    <button
+                      onClick={() => setShowCode(!showCode)}
+                      className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white mb-2"
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${showCode ? 'rotate-180' : ''}`}
+                      />
+                      Using Components
+                    </button>
+                    {showCode && (
+                      <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded overflow-x-auto text-xs">
+                        {`import {
+  WalletConnector,
+  TransactionManager,
+  NFTGallery,
+  DeFiInterface,
+} from '@/components/web3';
+
+export default function Page() {
+  return (
+    <div className="space-y-4">
+      <WalletConnector showBalance={true} />
+      <TransactionManager />
+      <NFTGallery />
+      <DeFiInterface />
+    </div>
+  );
+}`}
+                      </pre>
+                    )}
+                  </div>
+
+                  {/* Security checks */}
+                  <div>
+                    <button
+                      onClick={() => setShowCode(!showCode)}
+                      className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white mb-2"
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${showCode ? 'rotate-180' : ''}`}
+                      />
+                      Security Checks
+                    </button>
+                    {showCode && (
+                      <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded overflow-x-auto text-xs">
+                        {`import { performSecurityChecks } from '@/utils/web3';
+
+const result = performSecurityChecks(
+  toAddress,
+  value,
+  userAddress,
+  chainId
+);
+
+if (!result.isSecure) {
+  console.error('Warnings:', result.warnings);
+  console.error('Errors:', result.errors);
+} else {
+  console.log('Transaction is safe to proceed');
+}`}
+                      </pre>
+                    )}
+                  </div>
+
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      📖 For complete documentation, see{' '}
+                      <code className="font-mono">WEB3_INTEGRATION_GUIDE.md</code>
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -184,8 +257,41 @@ return wallet.isConnected ? <p>{wallet.address}</p> : <button>Connect</button>;`
       </main>
 
       <footer className="border-t border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50 backdrop-blur mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>© 2026 TeachLink DAO. All rights reserved.</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Web3 Integration</h3>
+              <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                <li>✓ Multi-chain support</li>
+                <li>✓ Secure transactions</li>
+                <li>✓ NFT management</li>
+                <li>✓ DeFi protocols</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Resources</h3>
+              <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    GitHub Repository
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    Support
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>© 2026 TeachLink DAO. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>

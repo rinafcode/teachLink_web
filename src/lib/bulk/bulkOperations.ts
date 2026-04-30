@@ -95,7 +95,11 @@ async function processBulkOperation<T extends { id?: string }>(
         }
         return { item, success: true, result } as const;
       } catch (error) {
-        return { item, success: false, error: error instanceof Error ? error : new Error(String(error)) } as const;
+        return {
+          item,
+          success: false,
+          error: error instanceof Error ? error : new Error(String(error)),
+        } as const;
       }
     });
 

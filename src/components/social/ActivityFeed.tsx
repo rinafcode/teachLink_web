@@ -67,9 +67,9 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
                   <Image
                     src={activity.actorAvatar}
                     alt={activity.actorName}
-                    className="w-9 h-9 rounded-full object-cover shrink-0"
                     width={36}
                     height={36}
+                    className="w-9 h-9 rounded-full object-cover shrink-0"
                   />
                 ) : (
                   <UserCircle className="w-9 h-9 text-gray-400 shrink-0" />

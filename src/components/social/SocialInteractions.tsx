@@ -98,9 +98,9 @@ export default function SocialInteractions({ contentId, contentUrl }: SocialInte
                   <Image
                     src={c.authorAvatar}
                     alt={c.authorName}
-                    className="w-7 h-7 rounded-full object-cover shrink-0"
                     width={28}
                     height={28}
+                    className="w-7 h-7 rounded-full object-cover shrink-0"
                   />
                 ) : (
                   <UserCircle className="w-7 h-7 text-gray-400 shrink-0" />

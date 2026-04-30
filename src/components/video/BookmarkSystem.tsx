@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import type { VideoBookmark } from '@/components/video/types';
 import { formatVideoTime, getVideoStorageKey } from '@/utils/videoPlayerUtils';
@@ -88,9 +89,11 @@ export function BookmarkSystem({
             className="flex w-full items-start gap-3 rounded-md border border-slate-200 p-2 text-left hover:bg-slate-50"
           >
             {bookmark.thumbnail ? (
-              <img
+              <Image
                 src={bookmark.thumbnail}
                 alt={bookmark.title}
+                width={80}
+                height={48}
                 className="h-12 w-20 rounded object-cover"
                 loading="lazy"
               />
@@ -100,7 +103,9 @@ export function BookmarkSystem({
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-slate-900">{bookmark.title}</p>
               <p className="text-xs text-slate-600">{formatVideoTime(bookmark.time)}</p>
-              {bookmark.note ? <p className="line-clamp-2 text-xs text-slate-500">{bookmark.note}</p> : null}
+              {bookmark.note ? (
+                <p className="line-clamp-2 text-xs text-slate-500">{bookmark.note}</p>
+              ) : null}
             </div>
           </button>
         ))}

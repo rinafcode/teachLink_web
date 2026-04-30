@@ -26,6 +26,10 @@ const keyFor = (userId: string | undefined, lessonId: string): string => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
+// ---------------------------------------------------------------------------
+// GET /api/notes
+// ---------------------------------------------------------------------------
+
 export async function GET(request: Request): Promise<NextResponse<NotesListResponseDTO>> {
   edgeLog('info', '/api/notes', 'GET request received');
 
@@ -43,6 +47,10 @@ export async function GET(request: Request): Promise<NextResponse<NotesListRespo
     }),
   );
 }
+
+// ---------------------------------------------------------------------------
+// POST /api/notes
+// ---------------------------------------------------------------------------
 
 export async function POST(request: Request): Promise<NextResponse<NoteResponseDTO>> {
   edgeLog('info', '/api/notes', 'POST request received');
@@ -86,6 +94,10 @@ export async function POST(request: Request): Promise<NextResponse<NoteResponseD
   return response;
 }
 
+// ---------------------------------------------------------------------------
+// PATCH /api/notes
+// ---------------------------------------------------------------------------
+
 export async function PATCH(request: Request): Promise<NextResponse<NotesSuccessResponseDTO>> {
   edgeLog('info', '/api/notes', 'PATCH request received');
 
@@ -124,6 +136,10 @@ export async function PATCH(request: Request): Promise<NextResponse<NotesSuccess
 
   return response;
 }
+
+// ---------------------------------------------------------------------------
+// DELETE /api/notes
+// ---------------------------------------------------------------------------
 
 export async function DELETE(request: Request): Promise<NextResponse<NotesSuccessResponseDTO>> {
   edgeLog('info', '/api/notes', 'DELETE request received');

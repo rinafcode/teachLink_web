@@ -1,10 +1,6 @@
 import { ApiError, parseApiError } from '@/utils/error-handler';
 import { ErrorType, ErrorInfo } from '@/utils/errorUtils';
-import {
-  API_VERSION_HEADER,
-  DEFAULT_API_VERSION,
-  getVersionedApiPath,
-} from './apiVersioning';
+import { API_VERSION_HEADER, DEFAULT_API_VERSION, getVersionedApiPath } from './apiVersioning';
 import {
   API_TIMEOUT_DEFAULT,
   MAX_RETRIES,

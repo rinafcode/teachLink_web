@@ -9,8 +9,18 @@ const sampleTranscript: TranscriptCue[] = [
   { id: 'cue-1', start: 0, end: 6, text: 'Welcome to the advanced learning module.' },
   { id: 'cue-2', start: 6, end: 14, text: 'This player supports transcript based navigation.' },
   { id: 'cue-3', start: 14, end: 22, text: 'Create bookmarks with thumbnails for quick revision.' },
-  { id: 'cue-4', start: 22, end: 31, text: 'Share collaborative annotations in real time with peers.' },
-  { id: 'cue-5', start: 31, end: 40, text: 'Adjust playback speed and quality for your learning pace.' },
+  {
+    id: 'cue-4',
+    start: 22,
+    end: 31,
+    text: 'Share collaborative annotations in real time with peers.',
+  },
+  {
+    id: 'cue-5',
+    start: 31,
+    end: 40,
+    text: 'Adjust playback speed and quality for your learning pace.',
+  },
 ];
 
 export default function VideoPlayerDemoPage() {

@@ -72,4 +72,5 @@ class DatabasePool {
 }
 
 export const dbPool = DatabasePool;
-export const query = (text: string, params?: any[]) => DatabasePool.getInstance().query(text, params);
+export const query = (text: string, params?: any[]) =>
+  DatabasePool.getInstance().query(text, params);

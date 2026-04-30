@@ -4,7 +4,12 @@ import React, { useState, useCallback } from 'react';
 import { Loader2, X, RotateCcw, RotateCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useBulkHistory } from '@/lib/bulk/bulkHistory';
-import { bulkCreate, bulkUpdate, bulkDelete, createCancellationToken } from '@/lib/bulk/bulkOperations';
+import {
+  bulkCreate,
+  bulkUpdate,
+  bulkDelete,
+  createCancellationToken,
+} from '@/lib/bulk/bulkOperations';
 
 export interface BulkActionsProps<T> {
   items: T[];
@@ -42,13 +47,26 @@ export function BulkActions<T extends { id?: string }>({
   const [operationType, setOperationType] = useState<'create' | 'update' | 'delete' | null>(null);
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [cancellationToken, setCancellationToken] = useState<{ signal: AbortSignal; cancel: () => void } | null>(null);
+  const [cancellationToken, setCancellationToken] = useState<{
+    signal: AbortSignal;
+    cancel: () => void;
+  } | null>(null);
 
   const handleBulkOperation = useCallback(
     async (
       opType: 'create' | 'update' | 'delete',
       operationFn?: (items: T[]) => Promise<void>,
-      bulkFn?: (items: T[], options: { signal: AbortSignal; onProgress?: (p: { completed: number; total: number; percentage: number }) => void }) => Promise<{ successful: Array<{ item: T }>; failed: Array<{ item: T; error: Error }>; cancelled: boolean }>,
+      bulkFn?: (
+        items: T[],
+        options: {
+          signal: AbortSignal;
+          onProgress?: (p: { completed: number; total: number; percentage: number }) => void;
+        },
+      ) => Promise<{
+        successful: Array<{ item: T }>;
+        failed: Array<{ item: T; error: Error }>;
+        cancelled: boolean;
+      }>,
     ) => {
       if (!items.length) {
         toast.info('No items selected');
@@ -89,9 +107,15 @@ export function BulkActions<T extends { id?: string }>({
         const failCount = result.failed.length;
 
         if (failCount === 0) {
-          toast.success(`${operationLabels[opType] || opType} successful for ${successCount} item(s)`);
+          toast.success(
+            `${operationLabels[opType] || opType} successful for ${successCount} item(s)`,
+          );
         } else if (successCount > 0) {
-          toast.success(`${operationLabels[opType] || opType} completed: ${successCount} successful, ${failCount} failed`);
+          toast.success(
+            `${
+              operationLabels[opType] || opType
+            } completed: ${successCount} successful, ${failCount} failed`,
+          );
         } else {
           toast.error(`All ${failCount} ${opType} operations failed`);
         }
@@ -250,7 +274,11 @@ export function BulkActions<T extends { id?: string }>({
             disabled={isLoading}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
           >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RotateCcw className="w-4 h-4" />
+            )}
             <span>Undo</span>
           </button>
         )}
@@ -262,7 +290,11 @@ export function BulkActions<T extends { id?: string }>({
             disabled={isLoading}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
           >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCw className="w-4 h-4" />}
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RotateCw className="w-4 h-4" />
+            )}
             <span>Redo</span>
           </button>
         )}

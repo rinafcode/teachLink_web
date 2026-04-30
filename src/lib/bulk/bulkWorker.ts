@@ -3,7 +3,14 @@ import { EventEmitter } from 'events';
 export type WorkerStatus = 'idle' | 'running' | 'paused' | 'cancelled' | 'completed' | 'error';
 
 export interface WorkerProgressEvent {
-  type: 'progress' | 'item-complete' | 'item-error' | 'batch-complete' | 'complete' | 'error' | 'cancelled';
+  type:
+    | 'progress'
+    | 'item-complete'
+    | 'item-error'
+    | 'batch-complete'
+    | 'complete'
+    | 'error'
+    | 'cancelled';
   payload: {
     completed: number;
     total: number;
@@ -23,7 +30,10 @@ export interface BulkWorkerOptions<T> {
   concurrency?: number;
   onItemSuccess?: (item: T, result: unknown) => void;
   onItemError?: (item: T, error: Error) => void;
-  onBatchComplete?: (batchIndex: number, batchResults: Array<{ item: T; success: boolean; result?: unknown; error?: Error }>) => void;
+  onBatchComplete?: (
+    batchIndex: number,
+    batchResults: Array<{ item: T; success: boolean; result?: unknown; error?: Error }>,
+  ) => void;
 }
 
 interface WorkerResult<T> {
@@ -40,7 +50,9 @@ interface WorkerResult<T> {
  * Emits progress events throughout the operation lifecycle.
  */
 export class BulkWorker<T> extends EventEmitter {
-  private options: Required<Omit<BulkWorkerOptions<T>, 'onItemSuccess' | 'onItemError' | 'onBatchComplete'>>;
+  private options: Required<
+    Omit<BulkWorkerOptions<T>, 'onItemSuccess' | 'onItemError' | 'onBatchComplete'>
+  >;
   private status: WorkerStatus = 'idle';
   private abortController: AbortController | null = null;
   private results: WorkerResult<T>[] = [];
@@ -65,7 +77,9 @@ export class BulkWorker<T> extends EventEmitter {
 
   private onItemSuccess: ((item: T, result: unknown) => void) | undefined;
   private onItemError: ((item: T, error: Error) => void) | undefined;
-  private onBatchComplete: ((batchIndex: number, batchResults: WorkerResult<T>[]) => void) | undefined;
+  private onBatchComplete:
+    | ((batchIndex: number, batchResults: WorkerResult<T>[]) => void)
+    | undefined;
 
   /**
    * Start processing.
@@ -87,7 +101,10 @@ export class BulkWorker<T> extends EventEmitter {
         this.emit('cancelled', { status: this.status, results: this.results });
       } else {
         this.status = 'error';
-        this.emit('error', { error: error instanceof Error ? error : new Error(String(error)), results: this.results });
+        this.emit('error', {
+          error: error instanceof Error ? error : new Error(String(error)),
+          results: this.results,
+        });
       }
     }
   }
@@ -160,14 +177,22 @@ export class BulkWorker<T> extends EventEmitter {
       const batch = items.slice(i, i + this.batchSize);
       const batchPromises = batch.map(async (item) => {
         if (signal.aborted) {
-          return { item, success: false, error: new Error('Operation cancelled') } as WorkerResult<T>;
+          return {
+            item,
+            success: false,
+            error: new Error('Operation cancelled'),
+          } as WorkerResult<T>;
         }
 
         try {
           const result = await operation(item, signal);
           return { item, success: true, result } as WorkerResult<T>;
         } catch (error) {
-          return { item, success: false, error: error instanceof Error ? error : new Error(String(error)) } as WorkerResult<T>;
+          return {
+            item,
+            success: false,
+            error: error instanceof Error ? error : new Error(String(error)),
+          } as WorkerResult<T>;
         }
       });
 
@@ -219,8 +244,6 @@ export class BulkWorker<T> extends EventEmitter {
 /**
  * Create a bulk worker instance.
  */
-export function createBulkWorker<T>(
-  options: BulkWorkerOptions<T>,
-): BulkWorker<T> {
+export function createBulkWorker<T>(options: BulkWorkerOptions<T>): BulkWorker<T> {
   return new BulkWorker(options);
 }

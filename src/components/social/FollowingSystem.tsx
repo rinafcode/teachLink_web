@@ -21,9 +21,9 @@ function UserRow({ user }: { user: SocialUser }) {
           <Image
             src={user.avatarUrl}
             alt={user.name}
-            className="w-9 h-9 rounded-full object-cover"
             width={36}
             height={36}
+            className="w-9 h-9 rounded-full object-cover"
           />
         ) : (
           <UserCircle className="w-9 h-9 text-gray-400" />

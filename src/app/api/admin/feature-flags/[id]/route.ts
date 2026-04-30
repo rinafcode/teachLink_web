@@ -9,10 +9,7 @@ export const runtime = 'edge';
 
 // ─── GET /api/admin/feature-flags/[id] ───────────────────────────────────────
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   edgeLog('info', '/api/admin/feature-flags/[id]', 'GET request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;

@@ -18,15 +18,12 @@ const offlineFallbackPage = '/offline.html';
 
 // Set up App Shell-style routing
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
-registerRoute(
-  ({ request, url }: { request: Request; url: URL }) => {
-    if (request.mode !== 'navigate') return false;
-    if (url.pathname.startsWith('/_')) return false;
-    if (url.pathname.match(fileExtensionRegexp)) return false;
-    return true;
-  },
-  createHandlerBoundToURL('/index.html'),
-);
+registerRoute(({ request, url }: { request: Request; url: URL }) => {
+  if (request.mode !== 'navigate') return false;
+  if (url.pathname.startsWith('/_')) return false;
+  if (url.pathname.match(fileExtensionRegexp)) return false;
+  return true;
+}, createHandlerBoundToURL('/index.html'));
 
 // Navigation fallback for offline
 registerRoute(
@@ -70,8 +67,7 @@ registerRoute(
 
 registerRoute(
   ({ url }) =>
-    url.origin === self.location.origin &&
-    url.pathname.match(/\.(jpg|jpeg|svg|gif|webp)$/),
+    url.origin === self.location.origin && url.pathname.match(/\.(jpg|jpeg|svg|gif|webp)$/),
   new CacheFirst({
     cacheName: 'images-ext',
     plugins: [new ExpirationPlugin({ maxEntries: 100 })],

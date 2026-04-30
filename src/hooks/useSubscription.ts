@@ -17,12 +17,7 @@ import {
   formatSubscriptionError,
 } from '@/lib/graphql/subscriptions';
 
-export {
-  ConnectionState,
-  getConnectionManager,
-  isConnectionError,
-  formatSubscriptionError,
-};
+export { ConnectionState, getConnectionManager, isConnectionError, formatSubscriptionError };
 
 /**
  * Subscription variable constraints
@@ -363,13 +358,7 @@ export function usePollableSubscription<TData = any, TVariables extends Operatio
         pollTimeoutRef.current = null;
       }
     };
-  }, [
-    pollFn,
-    pollIntervalMs,
-    subscriptionResult.connectionState,
-    subscriptionResult.updateData,
-    subscriptionResult,
-  ]);
+  }, [pollFn, pollIntervalMs, connectionState, updateData]);
 
   return {
     ...subscriptionResult,

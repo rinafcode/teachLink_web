@@ -57,14 +57,10 @@ export async function POST(
       );
     }
 
-    return addHeaders(
-      NextResponse.json({ message: 'Invalid email or password' }, { status: 401 }),
-    );
+    return addHeaders(NextResponse.json({ message: 'Invalid email or password' }, { status: 401 }));
   } catch (error) {
     console.error('Login error:', error);
 
-    return addHeaders(
-      NextResponse.json({ message: 'Internal server error' }, { status: 500 }),
-    );
+    return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
 }

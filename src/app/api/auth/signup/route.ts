@@ -27,23 +27,16 @@ export async function POST(
 
     // Basic validation
     if (!name || !email || !password || !confirmPassword) {
-      return addHeaders(
-        NextResponse.json({ message: 'All fields are required' }, { status: 400 }),
-      );
+      return addHeaders(NextResponse.json({ message: 'All fields are required' }, { status: 400 }));
     }
 
     if (password !== confirmPassword) {
-      return addHeaders(
-        NextResponse.json({ message: "Passwords don't match" }, { status: 400 }),
-      );
+      return addHeaders(NextResponse.json({ message: "Passwords don't match" }, { status: 400 }));
     }
 
     if (password.length < 6) {
       return addHeaders(
-        NextResponse.json(
-          { message: 'Password must be at least 6 characters' },
-          { status: 400 },
-        ),
+        NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 }),
       );
     }
 
@@ -71,8 +64,6 @@ export async function POST(
   } catch (error) {
     console.error('Signup error:', error);
 
-    return addHeaders(
-      NextResponse.json({ message: 'Internal server error' }, { status: 500 }),
-    );
+    return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
 }

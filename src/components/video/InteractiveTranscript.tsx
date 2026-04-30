@@ -25,7 +25,9 @@ export function InteractiveTranscript({ cues, currentTime, onSeek }: Interactive
               type="button"
               onClick={() => onSeek(cue.start)}
               className={`w-full rounded-md px-3 py-2 text-left transition ${
-                isActive ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                isActive
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
               }`}
             >
               <span className="mr-2 text-xs font-semibold">{formatVideoTime(cue.start)}</span>
