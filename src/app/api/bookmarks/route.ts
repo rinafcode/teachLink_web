@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { VideoBookmark } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
 
 import { validateBody, validateQuery } from '@/lib/validation';
@@ -17,10 +18,6 @@ import type {
 } from '@/types/api/bookmarks.dto';
 
 export const runtime = 'edge';
-
-// ---------------------------------------------------------------------------
-// In-memory store (replace with DB layer)
-// ---------------------------------------------------------------------------
 
 const bookmarksStore = new Map<string, VideoBookmark[]>();
 
@@ -80,12 +77,22 @@ export async function POST(request: Request): Promise<NextResponse<BookmarkRespo
 
   bookmarksStore.set(key, [persisted, ...prev.filter((b) => b.id !== persisted.id)]);
 
-  return addHeaders(
+  const response = addHeaders(
     NextResponse.json({
       success: true,
       data: persisted,
     }),
   );
+
+  logAuditMutation(request, {
+    action: 'create',
+    targetType: 'video-bookmark',
+    targetId: persisted.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,7 +127,16 @@ export async function PATCH(request: Request): Promise<NextResponse<BookmarksSuc
     ),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'update',
+    targetType: 'video-bookmark',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,5 +160,14 @@ export async function DELETE(request: Request): Promise<NextResponse<BookmarksSu
     prev.filter((b) => b.id !== result.data.id),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'delete',
+    targetType: 'video-bookmark',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }

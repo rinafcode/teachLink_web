@@ -8,6 +8,7 @@ import {
 } from '@/lib/feature-flags/store';
 import type { FeatureFlag, TargetingRule } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
+import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
 
 export const runtime = 'edge';
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   edgeLog('info', '/api/admin/feature-flags', 'POST request received');
-  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'WRITE');
+  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'AUTH');
   if (rateLimitResponse) return rateLimitResponse;
 
   const body = await req.json().catch(() => null);
@@ -61,5 +62,14 @@ export async function POST(req: NextRequest) {
   flagStore.set(flag.id, flag);
   createAuditEntry('created', actor, null, flag);
 
-  return addHeaders(NextResponse.json({ flag }, { status: 201 }));
+  const response = addHeaders(NextResponse.json({ flag }, { status: 201 }));
+  logAuditMutation(req, {
+    action: 'create',
+    targetType: 'feature-flag',
+    targetId: flag.id,
+    statusCode: response.status,
+    metadata: { name: flag.name },
+  });
+
+  return response;
 }

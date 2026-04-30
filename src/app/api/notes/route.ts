@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { VideoNote } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
 
 import { validateBody, validateQuery } from '@/lib/validation';
@@ -17,10 +18,6 @@ import type {
 } from '@/types/api/notes.dto';
 
 export const runtime = 'edge';
-
-// ---------------------------------------------------------------------------
-// In-memory store (replace with DB layer)
-// ---------------------------------------------------------------------------
 
 const notesStore = new Map<string, VideoNote[]>();
 
@@ -79,12 +76,22 @@ export async function POST(request: Request): Promise<NextResponse<NoteResponseD
 
   notesStore.set(key, [persisted, ...prev.filter((n) => n.id !== persisted.id)]);
 
-  return addHeaders(
+  const response = addHeaders(
     NextResponse.json({
       success: true,
       data: persisted,
     }),
   );
+
+  logAuditMutation(request, {
+    action: 'create',
+    targetType: 'video-note',
+    targetId: persisted.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
 // ---------------------------------------------------------------------------
@@ -118,7 +125,16 @@ export async function PATCH(request: Request): Promise<NextResponse<NotesSuccess
     ),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'update',
+    targetType: 'video-note',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
 // ---------------------------------------------------------------------------
@@ -142,5 +158,14 @@ export async function DELETE(request: Request): Promise<NextResponse<NotesSucces
     prev.filter((n) => n.id !== result.data.id),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'delete',
+    targetType: 'video-note',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
