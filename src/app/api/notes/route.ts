@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { VideoNote } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
 
 import { validateBody, validateQuery } from '@/lib/validation';
@@ -18,10 +19,6 @@ import type {
 
 export const runtime = 'edge';
 
-// ---------------------------------------------------------------------------
-// In-memory store (replace with DB layer)
-// ---------------------------------------------------------------------------
-
 const notesStore = new Map<string, VideoNote[]>();
 
 const keyFor = (userId: string | undefined, lessonId: string): string => {
@@ -29,13 +26,7 @@ const keyFor = (userId: string | undefined, lessonId: string): string => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-// ---------------------------------------------------------------------------
-// GET /api/notes
-// ---------------------------------------------------------------------------
-
-export async function GET(
-  request: Request,
-): Promise<NextResponse<NotesListResponseDTO>> {
+export async function GET(request: Request): Promise<NextResponse<NotesListResponseDTO>> {
   edgeLog('info', '/api/notes', 'GET request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -53,13 +44,7 @@ export async function GET(
   );
 }
 
-// ---------------------------------------------------------------------------
-// POST /api/notes
-// ---------------------------------------------------------------------------
-
-export async function POST(
-  request: Request,
-): Promise<NextResponse<NoteResponseDTO>> {
+export async function POST(request: Request): Promise<NextResponse<NoteResponseDTO>> {
   edgeLog('info', '/api/notes', 'POST request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -83,21 +68,25 @@ export async function POST(
 
   notesStore.set(key, [persisted, ...prev.filter((n) => n.id !== persisted.id)]);
 
-  return addHeaders(
+  const response = addHeaders(
     NextResponse.json({
       success: true,
       data: persisted,
     }),
   );
+
+  logAuditMutation(request, {
+    action: 'create',
+    targetType: 'video-note',
+    targetId: persisted.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
-// ---------------------------------------------------------------------------
-// PATCH /api/notes
-// ---------------------------------------------------------------------------
-
-export async function PATCH(
-  request: Request,
-): Promise<NextResponse<NotesSuccessResponseDTO>> {
+export async function PATCH(request: Request): Promise<NextResponse<NotesSuccessResponseDTO>> {
   edgeLog('info', '/api/notes', 'PATCH request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -124,16 +113,19 @@ export async function PATCH(
     ),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'update',
+    targetType: 'video-note',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
-// ---------------------------------------------------------------------------
-// DELETE /api/notes
-// ---------------------------------------------------------------------------
-
-export async function DELETE(
-  request: Request,
-): Promise<NextResponse<NotesSuccessResponseDTO>> {
+export async function DELETE(request: Request): Promise<NextResponse<NotesSuccessResponseDTO>> {
   edgeLog('info', '/api/notes', 'DELETE request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -150,5 +142,14 @@ export async function DELETE(
     prev.filter((n) => n.id !== result.data.id),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'delete',
+    targetType: 'video-note',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }

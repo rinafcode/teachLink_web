@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { VideoBookmark } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
 
 import { validateBody, validateQuery } from '@/lib/validation';
@@ -18,10 +19,6 @@ import type {
 
 export const runtime = 'edge';
 
-// ---------------------------------------------------------------------------
-// In-memory store (replace with DB layer)
-// ---------------------------------------------------------------------------
-
 const bookmarksStore = new Map<string, VideoBookmark[]>();
 
 const keyFor = (userId: string | undefined, lessonId: string): string => {
@@ -29,13 +26,7 @@ const keyFor = (userId: string | undefined, lessonId: string): string => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-// ---------------------------------------------------------------------------
-// GET /api/bookmarks
-// ---------------------------------------------------------------------------
-
-export async function GET(
-  request: Request,
-): Promise<NextResponse<BookmarksListResponseDTO>> {
+export async function GET(request: Request): Promise<NextResponse<BookmarksListResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'GET request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -53,13 +44,7 @@ export async function GET(
   );
 }
 
-// ---------------------------------------------------------------------------
-// POST /api/bookmarks
-// ---------------------------------------------------------------------------
-
-export async function POST(
-  request: Request,
-): Promise<NextResponse<BookmarkResponseDTO>> {
+export async function POST(request: Request): Promise<NextResponse<BookmarkResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'POST request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -84,21 +69,25 @@ export async function POST(
 
   bookmarksStore.set(key, [persisted, ...prev.filter((b) => b.id !== persisted.id)]);
 
-  return addHeaders(
+  const response = addHeaders(
     NextResponse.json({
       success: true,
       data: persisted,
     }),
   );
+
+  logAuditMutation(request, {
+    action: 'create',
+    targetType: 'video-bookmark',
+    targetId: persisted.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
-// ---------------------------------------------------------------------------
-// PATCH /api/bookmarks
-// ---------------------------------------------------------------------------
-
-export async function PATCH(
-  request: Request,
-): Promise<NextResponse<BookmarksSuccessResponseDTO>> {
+export async function PATCH(request: Request): Promise<NextResponse<BookmarksSuccessResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'PATCH request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -126,16 +115,19 @@ export async function PATCH(
     ),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'update',
+    targetType: 'video-bookmark',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
 
-// ---------------------------------------------------------------------------
-// DELETE /api/bookmarks
-// ---------------------------------------------------------------------------
-
-export async function DELETE(
-  request: Request,
-): Promise<NextResponse<BookmarksSuccessResponseDTO>> {
+export async function DELETE(request: Request): Promise<NextResponse<BookmarksSuccessResponseDTO>> {
   edgeLog('info', '/api/bookmarks', 'DELETE request received');
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
@@ -152,5 +144,14 @@ export async function DELETE(
     prev.filter((b) => b.id !== result.data.id),
   );
 
-  return addHeaders(NextResponse.json({ success: true }));
+  const response = addHeaders(NextResponse.json({ success: true }));
+  logAuditMutation(request, {
+    action: 'delete',
+    targetType: 'video-bookmark',
+    targetId: result.data.id,
+    statusCode: response.status,
+    metadata: { lessonId: result.data.lessonId },
+  });
+
+  return response;
 }
