@@ -350,7 +350,7 @@ export async function reportVitalToAnalytics(metric: PerformanceMetric): Promise
         userAgent: navigator.userAgent,
       });
 
-      const response = await fetch('/api/performance/vitals', {
+      const response = await fetch('/api/v1/performance/vitals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
