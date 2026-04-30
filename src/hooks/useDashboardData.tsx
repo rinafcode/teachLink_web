@@ -10,7 +10,6 @@ import {
   generateDashboardSampleData,
   generateShareableURL,
   parseDashboardURL,
-  getDrillDownData,
   DashboardShareConfig,
 } from '@/utils/chartUtils';
 import type { ChartData } from '@/utils/visualizationUtils';

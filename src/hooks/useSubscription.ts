@@ -1,15 +1,7 @@
 'use client';
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  DependencyList,
-  Dispatch,
-  SetStateAction,
-} from 'react';
-import { ApolloClient, DocumentNode, ApolloError, OperationVariables, gql } from '@apollo/client';
+import { useEffect, useRef, useState, useCallback, Dispatch, SetStateAction } from 'react';
+import { ApolloClient, DocumentNode, ApolloError, OperationVariables } from '@apollo/client';
 import {
   ConnectionState,
   getConnectionManager,

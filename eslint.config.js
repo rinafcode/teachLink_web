@@ -34,6 +34,7 @@ const eslintConfig = [
   {
     plugins: {
       prettier: prettierPlugin,
+      'unused-imports': unusedImportsPlugin,
     },
     rules: {
       // TypeScript & General Rules

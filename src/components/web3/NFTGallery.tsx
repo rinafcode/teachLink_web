@@ -8,7 +8,6 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   Plus,
   Grid3x3,
   List,

@@ -3,7 +3,7 @@
  * Handles error logging, analytics, and debugging insights
  */
 
-import { formatErrorForLogging, ErrorInfo, classifyError } from '@/utils/errorUtils';
+import { formatErrorForLogging } from '@/utils/errorUtils';
 
 export interface ErrorReport {
   id: string;
