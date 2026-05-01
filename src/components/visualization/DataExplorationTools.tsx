@@ -16,7 +16,6 @@ import {
   exportToCSV,
   exportToJSON,
   formatNumber,
-  formatPercentage,
 } from '@/utils/visualizationUtils';
 import {
   Filter,

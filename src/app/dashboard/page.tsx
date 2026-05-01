@@ -4,9 +4,11 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import { CardSkeleton, ListSkeleton } from '@/components/ui/LoadingSkeleton';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatusIndicator';
 import { DownloadManager } from '@/components/offline/DownloadManager';
+import { useInternationalization } from '@/hooks/useInternationalization';
 
 export default function Dashboard() {
   const { isLoading } = useDashboardData();
+  const { t } = useInternationalization();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -15,7 +17,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <OfflineStatusIndicator />
             </div>
           </div>
@@ -34,16 +36,16 @@ export default function Dashboard() {
             ) : (
               <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border dark:border-gray-800 p-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-                  Learning Progress
+                  {t('dashboard.learningProgress')}
                 </h2>
 
                 <div className="space-y-8">
-                  <div className="border-l-4 border-blue-500 pl-6 group">
+                  <div className="border-s-4 border-blue-500 ps-6 group">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                       Web3 UX Design Principles
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      68% complete • 12h remaining
+                      {t('dashboard.progressStatus', { percent: 68, remaining: '12h' })}
                     </p>
                     <div className="mt-4 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
                       <div
@@ -53,12 +55,12 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="border-l-4 border-green-500 pl-6 group">
+                  <div className="border-s-4 border-green-500 ps-6 group">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-green-600 transition-colors">
                       Smart Contract Security
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      45% complete • 18h remaining
+                      {t('dashboard.progressStatus', { percent: 45, remaining: '18h' })}
                     </p>
                     <div className="mt-4 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
                       <div
@@ -68,12 +70,12 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="border-l-4 border-purple-500 pl-6 group">
+                  <div className="border-s-4 border-purple-500 ps-6 group">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors">
                       Scaling DAPps on Starknet
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      12% complete • 32h remaining
+                      {t('dashboard.progressStatus', { percent: 12, remaining: '32h' })}
                     </p>
                     <div className="mt-4 w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
                       <div
@@ -97,12 +99,12 @@ export default function Dashboard() {
               <>
                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border dark:border-gray-800 p-8">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                    Quick Actions
+                    {t('dashboard.quickActions')}
                   </h3>
                   <div className="space-y-4">
                     <button className="w-full text-left p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-2xl transition-all group">
                       <div className="font-bold text-blue-900 dark:text-blue-300 group-hover:translate-x-1 transition-transform">
-                        Continue Learning
+                        {t('dashboard.continueLearning')}
                       </div>
                       <div className="text-sm text-blue-700 dark:text-blue-400/80 mt-1">
                         Web3 UX Design Principles
@@ -111,19 +113,19 @@ export default function Dashboard() {
 
                     <button className="w-full text-left p-4 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-2xl transition-all group">
                       <div className="font-bold text-green-900 dark:text-green-300 group-hover:translate-x-1 transition-transform">
-                        Download Course
+                        {t('dashboard.downloadCourse')}
                       </div>
                       <div className="text-sm text-green-700 dark:text-green-400/80 mt-1">
-                        For offline access
+                        {t('dashboard.offlineAccess')}
                       </div>
                     </button>
 
                     <button className="w-full text-left p-4 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-2xl transition-all group">
                       <div className="font-bold text-purple-900 dark:text-purple-300 group-hover:translate-x-1 transition-transform">
-                        View Progress
+                        {t('dashboard.viewProgress')}
                       </div>
                       <div className="text-sm text-purple-700 dark:text-purple-400/80 mt-1">
-                        Track your learning
+                        {t('dashboard.trackLearning')}
                       </div>
                     </button>
                   </div>
@@ -131,25 +133,35 @@ export default function Dashboard() {
 
                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border dark:border-gray-800 p-8">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                    Recent Activity
+                    {t('dashboard.recentActivity')}
                   </h3>
                   <div className="space-y-6">
-                    <div className="flex items-start space-x-4 group">
+                    <div className="flex items-start gap-4 group">
                       <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5 ring-4 ring-blue-50 dark:ring-blue-900/20" />
                       <div>
-                        <p className="font-bold text-gray-900 dark:text-white">Completed lesson</p>
+                        <p className="font-bold text-gray-900 dark:text-white">
+                          {t('dashboard.completedLesson')}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Web3 UX Design • 2 hours ago
+                          {t('dashboard.activityEntry', {
+                            course: 'Web3 UX Design',
+                            time: t('dashboard.timeHoursAgo', { count: 2 }),
+                          })}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-4 group">
+                    <div className="flex items-start gap-4 group">
                       <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5 ring-4 ring-green-50 dark:ring-green-900/20" />
                       <div>
-                        <p className="font-bold text-gray-900 dark:text-white">Downloaded course</p>
+                        <p className="font-bold text-gray-900 dark:text-white">
+                          {t('dashboard.downloadedCourse')}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Smart Contracts • 1 day ago
+                          {t('dashboard.activityEntry', {
+                            course: 'Smart Contracts',
+                            time: t('dashboard.timeDayAgo', { count: 1 }),
+                          })}
                         </p>
                       </div>
                     </div>

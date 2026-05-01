@@ -2,8 +2,7 @@
  * Translation Manager - Handles loading, caching, and managing translations
  */
 
-import type { LanguageCode, Translations, LocaleData } from './types';
-import { getLocaleConfig } from './config';
+import type { LanguageCode, Translations } from './types';
 
 // Cache for loaded translations
 const translationCache = new Map<LanguageCode, Translations>();

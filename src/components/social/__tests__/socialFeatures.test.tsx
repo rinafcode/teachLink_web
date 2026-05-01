@@ -20,19 +20,11 @@ vi.mock('next/router', () => ({
 // ─── Imports after mocks ───────────────────────────────────────────────────────
 
 import { apiClient } from '@/lib/api';
-import {
-  useFollowUser,
-  useActivityFeed,
-  useSocialInteractions,
-} from '@/hooks/useSocialFeatures';
+import { useFollowUser, useActivityFeed, useSocialInteractions } from '@/hooks/useSocialFeatures';
 import SocialProfile from '@/components/social/SocialProfile';
 import ActivityFeed from '@/components/social/ActivityFeed';
 import SocialInteractions from '@/components/social/SocialInteractions';
-import {
-  formatFollowerCount,
-  getRelativeTime,
-  groupActivitiesByDate,
-} from '@/utils/socialUtils';
+import { formatFollowerCount, getRelativeTime, groupActivitiesByDate } from '@/utils/socialUtils';
 import type { Activity } from '@/utils/socialUtils';
 
 // ─── socialUtils ──────────────────────────────────────────────────────────────

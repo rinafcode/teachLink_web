@@ -1,39 +1,63 @@
-const CACHE_NAME = 'teachlink-v1';
+const CACHE_NAME = 'teachlink-cache-v1';
 const OFFLINE_URL = '/offline.html';
 
-// Claim all clients immediately on activation
+// Core assets to cache immediately upon service worker installation
+const URLS_TO_CACHE = [
+  '/',
+  '/offline.html',
+  '/manifest.json',
+  '/favicon.ico'
+];
+
+// Install event - cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.add(OFFLINE_URL)),
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[ServiceWorker] Pre-caching offline page');
+      return cache.addAll(URLS_TO_CACHE);
+    })
   );
+  self.skipWaiting();
 });
 
+// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    Promise.all([
-      // Remove old caches
-      caches.keys().then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))),
-      ),
-      // Take control of all open clients immediately
-      self.clients.claim(),
-    ]),
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME && cacheName.startsWith('teachlink-cache-')) {
+            console.log('[ServiceWorker] Removing old cache', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
+  self.clients.claim();
 });
 
+// Fetch event - network first, falling back to cache strategy
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        caches.match(OFFLINE_URL).then((r) => r ?? new Response('Offline', { status: 503 })),
-      ),
-    );
-  }
-});
+  // Only handle GET requests for navigation and assets
+  if (event.request.method !== 'GET') return;
 
-// Allow the waiting SW to skip the waiting phase and activate immediately
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Cache successful network responses dynamically for future offline use
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
+        return response;
+      })
+      .catch(async () => {
+        console.log('[ServiceWorker] Fetch failed; returning offline page instead.', event.request.url);
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(event.request);
+        // Return cached response if available, otherwise return the fallback offline page
+        return cachedResponse || cache.match(OFFLINE_URL);
+      })
+  );
 });

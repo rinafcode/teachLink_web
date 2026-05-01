@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, forwardRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { QRCodeOptions, DEFAULT_QR_OPTIONS } from '@/utils/generate-qr';
+import { DEFAULT_QR_OPTIONS } from '@/utils/generate-qr';
 
 export interface QRCodeComponentProps {
   /** URL or text to encode in QR code */

@@ -7,7 +7,11 @@ import { generateICalContent, getGoogleCalendarUrl } from '@/utils/icalUtils';
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('react-big-calendar', () => ({
-  Calendar: ({ events, onSelectEvent, onSelectSlot }: {
+  Calendar: ({
+    events,
+    onSelectEvent,
+    onSelectSlot,
+  }: {
     events: CalendarEvent[];
     onSelectEvent?: (e: CalendarEvent) => void;
     onSelectSlot?: (slot: { start: Date; end: Date }) => void;
@@ -20,7 +24,9 @@ vi.mock('react-big-calendar', () => ({
       ))}
       <button
         data-testid="select-slot"
-        onClick={() => onSelectSlot?.({ start: new Date('2025-01-01'), end: new Date('2025-01-01T01:00:00') })}
+        onClick={() =>
+          onSelectSlot?.({ start: new Date('2025-01-01'), end: new Date('2025-01-01T01:00:00') })
+        }
       >
         Select Slot
       </button>
@@ -50,7 +56,10 @@ vi.mock('next/dynamic', () => ({
           <button
             data-testid="select-slot"
             onClick={() =>
-              onSelectSlot?.({ start: new Date('2025-01-01'), end: new Date('2025-01-01T01:00:00') })
+              onSelectSlot?.({
+                start: new Date('2025-01-01'),
+                end: new Date('2025-01-01T01:00:00'),
+              })
             }
           >
             Select Slot
@@ -230,9 +239,7 @@ describe('EditEventPage', () => {
 
   it('shows Google Calendar sync link', async () => {
     render(<EditEventPage />);
-    await waitFor(() =>
-      expect(screen.getByText('Sync with Google Calendar')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText('Sync with Google Calendar')).toBeInTheDocument());
   });
 });
 

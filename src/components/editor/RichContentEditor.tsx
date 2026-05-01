@@ -12,7 +12,6 @@ import {
   Redo,
   Heading1,
   Heading2,
-  Heading3,
 } from 'lucide-react';
 import { useContentEditor } from '@/hooks/useContentEditor';
 import { MediaEmbedder } from './MediaEmbedder';

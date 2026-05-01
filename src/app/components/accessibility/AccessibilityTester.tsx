@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAccessibilityCheck } from '@/hooks/useAccessibility';
-import { AccessibilityIssue, getWCAGLevel } from '@/utils/accessibilityUtils';
+import { getWCAGLevel } from '@/utils/accessibilityUtils';
 import { AlertCircle, CheckCircle, AlertTriangle, Info, Download } from 'lucide-react';
 
 interface AccessibilityTesterProps {

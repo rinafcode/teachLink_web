@@ -4,3 +4,5 @@ node_modules/
 dist/
 build/
 coverage/node_modules/
+.env.local
+package-lock.json

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Bell, Camera } from 'lucide-react';
 
 export const NativeIntegrationLayer: React.FC = () => {
   const requestNotificationPermission = async () => {

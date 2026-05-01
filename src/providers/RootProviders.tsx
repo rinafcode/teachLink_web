@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/lib/theme-provider';
 import { I18nProvider } from '@/hooks/useInternationalization';
 import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
 import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
+import { LanguageManager } from '@/components/i18n/LanguageManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 import { RouteChangeAnnouncer } from '@/components/accessibility/RouteChangeAnnouncer';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -72,8 +73,9 @@ export function RootProviders({
   return (
     <I18nextProvider i18n={i18n}>
       <FeatureFlagProvider>
-        <I18nProvider defaultLanguage={defaultLocale as import('@/locales/types').LanguageCode}>
+        <I18nProvider defaultLanguage={defaultLocale as any}>
           <InternationalizationEngine>
+            <LanguageManager />
             <CulturalAdaptationManager>
               <ThemeProvider defaultTheme={defaultTheme}>
                 <ThemeFromSettingsBootstrap />
