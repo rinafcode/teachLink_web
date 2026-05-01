@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install ALL dependencies including dev dependencies (needed for build)
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts && npm cache clean --force
+RUN npm ci --legacy-peer-deps --ignore-scripts && npm cache clean --force
 
 # Copy source code
 COPY . .

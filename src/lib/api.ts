@@ -1,3 +1,5 @@
+import { z } from 'zod';
+import { validateData } from './validation/validator';
 import { ApiError, parseApiError } from '@/utils/error-handler';
 import { ErrorType, ErrorInfo } from '@/utils/errorUtils';
 import { API_VERSION_HEADER, DEFAULT_API_VERSION, getVersionedApiPath } from './apiVersioning';
@@ -37,9 +39,7 @@ export interface RequestConfig extends RequestInit {
   url: string;
   retries?: number;
   timeout?: number;
-  useCache?: boolean;
-  ttl?: number;
-  _bypassCacheRead?: boolean;
+  schema?: z.ZodSchema;
 }
 
 export interface ApiClientConfig {
@@ -190,6 +190,25 @@ class ApiClientImpl {
     }
   }
 
+  /**
+   * GET request
+   */
+  async get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
+    return this.requestWithRetry<T>({
+      ...options,
+      url,
+      method: 'GET',
+    });
+  }
+
+  /**
+   * POST request
+   */
+  async post<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
   // ---------------------------------------------------------------------------
   // METHODS
   // ---------------------------------------------------------------------------
@@ -225,7 +244,10 @@ class ApiClientImpl {
     });
   }
 
-  delete<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>) {
+  /**
+   * DELETE request
+   */
+  async delete<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
