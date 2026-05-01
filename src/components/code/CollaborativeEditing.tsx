@@ -1,45 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Users, Wifi } from 'lucide-react';
 import type { Collaborator } from '@/hooks/useCodeEditor';
 
 interface CollaborativeEditingProps {
   collaborators: Collaborator[];
   roomId?: string;
+  isConnected?: boolean;
 }
 
 export const CollaborativeEditing: React.FC<CollaborativeEditingProps> = ({
   collaborators,
   roomId,
+  isConnected = false,
 }) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [activeCount, setActiveCount] = useState(collaborators.length);
-
-  // Simulate a Socket.IO connection lifecycle
-  useEffect(() => {
-    if (!roomId) return;
-
-    // Simulate connection delay
-    const connectTimer = setTimeout(() => {
-      setIsConnected(true);
-    }, 800);
-
-    // Simulate occasional collaborator join/leave
-    const updateTimer = setInterval(() => {
-      setActiveCount((prev) => {
-        const delta = Math.random() > 0.5 ? 0 : Math.random() > 0.5 ? 1 : -1;
-        return Math.max(0, Math.min(collaborators.length + 2, prev + delta));
-      });
-    }, 8000);
-
-    return () => {
-      clearTimeout(connectTimer);
-      clearInterval(updateTimer);
-      setIsConnected(false);
-    };
-  }, [roomId, collaborators.length]);
+  const activeCount = collaborators.length;
 
   const visibleCollaborators = collaborators.slice(0, 4);
   const overflow = Math.max(0, activeCount - 4);
+  const liveCursorPreview = collaborators
+    .filter((user) => user.cursorLine && user.cursorColumn)
+    .slice(0, 2);
 
   return (
     <div className="flex items-center gap-3">
@@ -107,6 +87,19 @@ export const CollaborativeEditing: React.FC<CollaborativeEditingProps> = ({
           <Users className="w-3 h-3" />
           {activeCount} live
         </div>
+
+        {liveCursorPreview.length > 0 && (
+          <div className="hidden md:flex items-center gap-2 text-[11px] text-indigo-200/90">
+            {liveCursorPreview.map((user) => (
+              <span
+                key={`${user.id}-cursor`}
+                className="rounded-full px-2 py-0.5 border border-indigo-500/30 bg-indigo-950/40"
+              >
+                {user.name}: L{user.cursorLine}, C{user.cursorColumn}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

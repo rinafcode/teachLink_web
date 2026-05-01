@@ -1,4 +1,10 @@
-import { EmailMessage, EmailProvider, EmailSendResult, QueueJob, QueueOptions } from '@/lib/email/types';
+import {
+  EmailMessage,
+  EmailProvider,
+  EmailSendResult,
+  QueueJob,
+  QueueOptions,
+} from '@/lib/email/types';
 
 const DEFAULT_OPTIONS: QueueOptions = {
   maxRetries: 3,

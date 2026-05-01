@@ -12,7 +12,6 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
-import { parseApiError } from '@/utils/error-handler';
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -133,10 +132,7 @@ export default function SignupPage() {
               <FieldError error={errors.password?.message} id="password-error" />
             </div>
 
-            <FormError
-              error={signupMutation.error?.message}
-              id="signup-api-error"
-            />
+            <FormError error={signupMutation.error?.message} id="signup-api-error" />
 
             {successMessage && (
               <motion.div

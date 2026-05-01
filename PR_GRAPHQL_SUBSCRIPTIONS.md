@@ -1,6 +1,7 @@
 # Pull Request: GraphQL Subscriptions - Real-Time Data Updates
 
 ## PR Title
+
 ✨ feat: Implement GraphQL Subscriptions with Real-Time Data Updates (Close #266)
 
 ## Description
@@ -8,9 +9,11 @@
 This PR implements comprehensive GraphQL subscriptions for TeachLink, enabling real-time data updates without polling. The implementation leverages Apollo Client with graphql-ws for efficient WebSocket communication and includes automatic reconnection, error recovery, connection state tracking, and production-ready UI components.
 
 ### Problem Statement
+
 TeachLink requires real-time data updates for notifications, feed updates, tipping, reputation changes, and user activity. Previous approach relied on polling, which is inefficient, has high latency, and increases server load.
 
 ### Solution Overview
+
 - **WebSocket-based subscriptions** using graphql-ws protocol
 - **Apollo Client integration** for seamless GraphQL client
 - **Automatic reconnection** with exponential backoff
@@ -26,6 +29,7 @@ TeachLink requires real-time data updates for notifications, feed updates, tippi
 ## Changes Made
 
 ### 📦 Dependencies Added
+
 ```json
 "@apollo/client": "^3.8.0",
 "graphql": "^16.8.0",
@@ -35,6 +39,7 @@ TeachLink requires real-time data updates for notifications, feed updates, tippi
 ### 🎯 Core Implementation
 
 #### 1. **Subscription Configuration** (`src/lib/graphql/subscriptions.ts`)
+
 - WebSocket client setup with graphql-ws
 - Apollo Client creation with HTTP + WS links
 - Connection manager singleton for lifecycle management
@@ -43,6 +48,7 @@ TeachLink requires real-time data updates for notifications, feed updates, tippi
 - Error handling and formatting utilities
 
 **Features**:
+
 - ✅ Split HTTP (queries/mutations) and WS (subscriptions) links
 - ✅ Connection timeout configuration
 - ✅ Retry strategy with configurable backoff
@@ -50,9 +56,11 @@ TeachLink requires real-time data updates for notifications, feed updates, tippi
 - ✅ Error recovery
 
 #### 2. **useSubscription Hook** (`src/hooks/useSubscription.ts`)
+
 Main hook for managing GraphQL subscriptions with full lifecycle support
 
 **Features**:
+
 - ✅ TypeScript generics for type safety
 - ✅ Connection state tracking
 - ✅ Automatic error handling with retries
@@ -62,11 +70,14 @@ Main hook for managing GraphQL subscriptions with full lifecycle support
 - ✅ Memory-efficient cleanup
 
 **Additional Hooks**:
+
 - `useSubscriptionConnection()` - Listen to connection state changes
 - `usePollableSubscription()` - Fallback to polling when WS unavailable
 
 #### 3. **Pre-built Subscriptions** (`src/lib/graphql/subscriptionQueries.ts`)
+
 15+ ready-to-use subscription definitions:
+
 - `NEW_POSTS_SUBSCRIPTION` - New posts in topic
 - `POST_COMMENTS_SUBSCRIPTION` - Comments on posts
 - `USER_NOTIFICATIONS_SUBSCRIPTION` - User notifications
@@ -83,17 +94,21 @@ Main hook for managing GraphQL subscriptions with full lifecycle support
 - `PRESENCE_SUBSCRIPTION` - Who's online
 
 #### 4. **SubscriptionProvider** (`src/components/SubscriptionProvider.tsx`)
+
 React context provider for Apollo Client
 
 **Exports**:
+
 - `SubscriptionProvider` - Wrapper component
 - `useSubscriptionClient()` - Access Apollo client
 - `useHasSubscriptionClient()` - Check availability
 
 #### 5. **UI Components** (`src/components/subscription/SubscriptionUI.tsx`)
+
 Production-ready components for subscription state management
 
 **Components**:
+
 - `ConnectionStatusIndicator` - Visual status indicator
 - `ConnectionStatusBanner` - Prominent status banner
 - `SubscriptionLoadingState` - Loading wrapper with fallback UI
@@ -101,13 +116,16 @@ Production-ready components for subscription state management
 - `SubscriptionSkeleton` - Loading skeleton placeholder
 
 **Features**:
+
 - ✅ Tailwind CSS styling
 - ✅ Dark mode support
 - ✅ Responsive design
 - ✅ WCAG accessibility
 
 #### 6. **Demo Page** (`src/app/subscriptions-demo/page.tsx`)
+
 Interactive demo showcasing all features:
+
 - Live connection status
 - Example subscriptions
 - Code snippets
@@ -115,7 +133,9 @@ Interactive demo showcasing all features:
 - Feature overview
 
 #### 7. **Tests** (`src/hooks/__tests__/useSubscription.test.ts`)
+
 Comprehensive unit tests covering:
+
 - Hook initialization
 - Connection lifecycle
 - Error handling
@@ -125,7 +145,9 @@ Comprehensive unit tests covering:
 ### 📚 Documentation
 
 #### **[GRAPHQL_SUBSCRIPTIONS_GUIDE.md](./GRAPHQL_SUBSCRIPTIONS_GUIDE.md)**
+
 Complete user guide including:
+
 - Feature overview
 - Architecture diagram
 - Installation steps
@@ -139,7 +161,9 @@ Complete user guide including:
 - Best practices
 
 #### **[GRAPHQL_SUBSCRIPTIONS_IMPLEMENTATION.md](./GRAPHQL_SUBSCRIPTIONS_IMPLEMENTATION.md)**
+
 Technical implementation details including:
+
 - Architecture overview
 - File structure
 - Installation steps
@@ -153,18 +177,21 @@ Technical implementation details including:
 ## Acceptance Criteria
 
 - ✅ **Real-time data updates without polling**
+
   - WebSocket subscriptions fully operational
   - Zero-latency data delivery
   - Demo page showcasing live updates
   - Performance optimized
 
 - ✅ **WebSocket link setup**
+
   - Apollo Client configured with WS + HTTP
   - GraphQL-ws protocol implemented
   - Automatic link selection based on query type
   - TLS/SSL support for production
 
 - ✅ **useSubscription Hook**
+
   - Full lifecycle management
   - TypeScript type safety
   - Error handling with recovery
@@ -172,6 +199,7 @@ Technical implementation details including:
   - Callbacks for key events
 
 - ✅ **Connection Lifecycle Handling**
+
   - Connection state enum (4 states)
   - State change notifications
   - Listener pattern for components
@@ -198,23 +226,14 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { NEW_POSTS_SUBSCRIPTION } from '@/lib/graphql/subscriptionQueries';
 
 export function PostFeed() {
-  const { data, loading, error } = useSubscription(
-    NEW_POSTS_SUBSCRIPTION,
-    {
-      variables: { topicId: 'web3' },
-    },
-  );
+  const { data, loading, error } = useSubscription(NEW_POSTS_SUBSCRIPTION, {
+    variables: { topicId: 'web3' },
+  });
 
   if (loading) return <Skeleton />;
   if (error) return <ErrorAlert error={error} />;
 
-  return (
-    <div>
-      {data?.onNewPost && (
-        <PostCard post={data.onNewPost} />
-      )}
-    </div>
-  );
+  return <div>{data?.onNewPost && <PostCard post={data.onNewPost} />}</div>;
 }
 ```
 
@@ -222,25 +241,20 @@ export function PostFeed() {
 
 ```tsx
 export function NotificationCenter() {
-  const { data, connectionState, resubscribe } = useSubscription(
-    USER_NOTIFICATIONS_SUBSCRIPTION,
-    {
-      variables: { userId: 'user-123' },
-      onData: (notification) => {
-        playSound();
-        showToast(notification.message);
-      },
+  const { data, connectionState, resubscribe } = useSubscription(USER_NOTIFICATIONS_SUBSCRIPTION, {
+    variables: { userId: 'user-123' },
+    onData: (notification) => {
+      playSound();
+      showToast(notification.message);
     },
-  );
+  });
 
   return (
     <>
       <ConnectionStatusIndicator />
-      
-      {connectionState === ConnectionState.ERROR && (
-        <button onClick={resubscribe}>Retry</button>
-      )}
-      
+
+      {connectionState === ConnectionState.ERROR && <button onClick={resubscribe}>Retry</button>}
+
       <NotificationsList notifications={data} />
     </>
   );
@@ -251,17 +265,14 @@ export function NotificationCenter() {
 
 ```tsx
 export function LiveQuizResults() {
-  const { data, loading } = usePollableSubscription(
-    LIVE_QUIZ_RESPONSES_SUBSCRIPTION,
-    {
-      variables: { quizId: 'quiz-123' },
-      pollFn: async () => {
-        const res = await fetch(`/api/quiz/quiz-123/responses`);
-        return res.json();
-      },
-      pollIntervalMs: 5000,
+  const { data, loading } = usePollableSubscription(LIVE_QUIZ_RESPONSES_SUBSCRIPTION, {
+    variables: { quizId: 'quiz-123' },
+    pollFn: async () => {
+      const res = await fetch(`/api/quiz/quiz-123/responses`);
+      return res.json();
     },
-  );
+    pollIntervalMs: 5000,
+  });
 
   return (
     <div>
@@ -279,6 +290,7 @@ export function LiveQuizResults() {
 ### 1. Environment Variables
 
 Add to `.env.local`:
+
 ```bash
 NEXT_PUBLIC_GRAPHQL_WS_URL=wss://api.teachlink.com/graphql
 NEXT_PUBLIC_GRAPHQL_HTTP_URL=https://api.teachlink.com/graphql
@@ -288,6 +300,7 @@ NEXT_PUBLIC_AUTH_TOKEN=your-jwt-token
 ### 2. Wrap App with Provider
 
 In `src/app/layout.tsx`:
+
 ```tsx
 <SubscriptionProvider
   config={{
@@ -305,6 +318,7 @@ In `src/app/layout.tsx`:
 ### 3. Use in Components
 
 Just import and use the hook:
+
 ```tsx
 import { useSubscription } from '@/hooks/useSubscription';
 import { POSTS_SUBSCRIPTION } from '@/lib/graphql/subscriptionQueries';
@@ -320,6 +334,7 @@ export function MyComponent() {
 ## Files Changed
 
 ### New Files (8 files)
+
 ```
 src/lib/graphql/subscriptions.ts              (347 lines)
 src/lib/graphql/subscriptionQueries.ts        (190 lines)
@@ -333,11 +348,13 @@ GRAPHQL_SUBSCRIPTIONS_IMPLEMENTATION.md       (600+ lines)
 ```
 
 ### Modified Files
+
 ```
 package.json (+3 dependencies, resolved)
 ```
 
 ### Total
+
 - **1,649** lines of implementation code
 - **1,100+** lines of documentation
 - **150** lines of tests
@@ -370,18 +387,22 @@ Connection State Events
 ## Testing
 
 ### Demo Page
+
 Visit `http://localhost:3000/subscriptions-demo` to:
+
 - See live subscription status
 - View connection state changes
 - Test reconnection logic
 - See code examples
 
 ### Run Tests
+
 ```bash
 npm run test -- src/hooks/__tests__/useSubscription.test.ts
 ```
 
 ### Manual Testing
+
 1. Start server with WebSocket endpoint
 2. Check `/subscriptions-demo` page
 3. Monitor connection state changes
@@ -399,6 +420,7 @@ npm run test -- src/hooks/__tests__/useSubscription.test.ts
 ✅ Mobile browsers (iOS Safari 15+, Chrome Android)
 
 **Requirements**:
+
 - WebSocket support
 - ES2020+ JavaScript
 - HTTPS (except localhost)
@@ -408,18 +430,21 @@ npm run test -- src/hooks/__tests__/useSubscription.test.ts
 ## Performance
 
 ### Bundle Size
+
 - `@apollo/client`: ~80KB gzipped
 - `graphql-ws`: ~12KB gzipped
 - `graphql`: ~15KB gzipped
 - **Total**: ~107KB (one-time, shared across app)
 
 ### Runtime
+
 - Subscription setup: <50ms
 - Data delivery: Real-time (latency depends on network)
 - Memory: < 5MB overhead (shared per app)
 - CPU: Minimal (event-driven, not polling)
 
 ### Optimizations
+
 - Memoized variables
 - Conditional subscriptions (skip when not needed)
 - Automatic cleanup on unmount
@@ -491,6 +516,7 @@ npm run test -- src/hooks/__tests__/useSubscription.test.ts
 ## Future Enhancements
 
 Possible improvements for future PRs:
+
 - [ ] Subscription result caching
 - [ ] Offline subscription queuing
 - [ ] Advanced reconnection strategies
@@ -505,6 +531,7 @@ Possible improvements for future PRs:
 ## Review Notes
 
 This PR is production-ready and follows all TeachLink standards:
+
 - Comprehensive implementation covering all acceptance criteria
 - Extensive documentation and examples
 - Full test coverage
@@ -513,6 +540,7 @@ This PR is production-ready and follows all TeachLink standards:
 - No breaking changes
 
 All files follow project conventions:
+
 - TypeScript with strict mode
 - Tailwind CSS for styling
 - lucide-react for icons
@@ -522,6 +550,7 @@ All files follow project conventions:
 ---
 
 **PR Summary**:
+
 - **Type**: ✨ Feature
 - **Priority**: 🟠 High (Real-time has been requested)
 - **Timeframe**: Within 48-72 hours
@@ -533,6 +562,7 @@ All files follow project conventions:
 **Ready for review and merge!** 🚀
 
 See detailed documentation:
+
 - [GRAPHQL_SUBSCRIPTIONS_GUIDE.md](./GRAPHQL_SUBSCRIPTIONS_GUIDE.md) - User guide
 - [GRAPHQL_SUBSCRIPTIONS_IMPLEMENTATION.md](./GRAPHQL_SUBSCRIPTIONS_IMPLEMENTATION.md) - Technical details
 - Demo: http://localhost:3000/subscriptions-demo

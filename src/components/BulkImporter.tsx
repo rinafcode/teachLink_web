@@ -21,14 +21,16 @@
  *   - className                              extra Tailwind classes for the outer wrapper
  */
 
-import React, {
-  useCallback,
-  useId,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
-import { Upload, AlertCircle, CheckCircle2, XCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useCallback, useId, useReducer, useRef, useState } from 'react';
+import {
+  Upload,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import {
   parseCsv,
   parseXlsxAsync,
@@ -106,13 +108,15 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         mappings: state.mappings.map((m) =>
-          m.sourceHeader === action.sourceHeader
-            ? { ...m, targetField: action.targetField }
-            : m,
+          m.sourceHeader === action.sourceHeader ? { ...m, targetField: action.targetField } : m,
         ),
       };
     case 'START_VALIDATION':
-      return { ...state, stage: 'validating', progress: { processed: 0, total: state.rawRows.length } };
+      return {
+        ...state,
+        stage: 'validating',
+        progress: { processed: 0, total: state.rawRows.length },
+      };
     case 'PROGRESS':
       return { ...state, progress: { processed: action.processed, total: action.total } };
     case 'VALIDATION_DONE':
@@ -172,7 +176,10 @@ export function BulkImporter<T>({
     const isCsv = name.endsWith('.csv');
 
     if (!isExcel && !isCsv) {
-      dispatch({ type: 'SET_ERROR', error: 'Unsupported file type. Please upload a CSV or XLSX file.' });
+      dispatch({
+        type: 'SET_ERROR',
+        error: 'Unsupported file type. Please upload a CSV or XLSX file.',
+      });
       return;
     }
 
@@ -242,9 +249,7 @@ export function BulkImporter<T>({
 
   const handleConfirmImport = useCallback(async () => {
     if (!state.result) return;
-    const validRecords = state.result.records
-      .filter((r) => r.valid)
-      .map((r) => r.data as T);
+    const validRecords = state.result.records.filter((r) => r.valid).map((r) => r.data as T);
 
     rollbackRef.current.clear();
 
@@ -256,7 +261,9 @@ export function BulkImporter<T>({
       dispatch({ type: 'ROLLBACK_DONE' });
       dispatch({
         type: 'SET_ERROR',
-        error: `Import failed${rbResult.rolledBack > 0 ? ` — rolled back ${rbResult.rolledBack} record(s)` : ''}: ${e instanceof Error ? e.message : String(e)}`,
+        error: `Import failed${
+          rbResult.rolledBack > 0 ? ` — rolled back ${rbResult.rolledBack} record(s)` : ''
+        }: ${e instanceof Error ? e.message : String(e)}`,
       });
     }
   }, [state.result, onImport]);
@@ -279,7 +286,6 @@ export function BulkImporter<T>({
 
   return (
     <div className={`w-full space-y-6 ${className}`}>
-
       {/* ── Error banner ── */}
       {state.error && (
         <div
@@ -297,13 +303,17 @@ export function BulkImporter<T>({
       {state.stage === 'idle' && (
         <label
           htmlFor={fileInputId}
-          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 text-center transition-colors
-            ${isDragging
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-              : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-blue-500'
+            ${
+              isDragging
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+                : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-blue-500'
             }`}
         >
           <Upload
@@ -331,7 +341,10 @@ export function BulkImporter<T>({
       ──────────────────────────────────────────────────────────────────────── */}
       {state.stage === 'mapping' && (
         <section aria-label="Column mapping">
-          <Header title="Map columns" subtitle={`File: ${state.fileName} — ${state.rawRows.length} rows detected`} />
+          <Header
+            title="Map columns"
+            subtitle={`File: ${state.fileName} — ${state.rawRows.length} rows detected`}
+          />
 
           <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
@@ -387,7 +400,12 @@ export function BulkImporter<T>({
 
           <ActionRow>
             <CancelButton onClick={handleCancel} />
-            <PrimaryButton onClick={() => dispatch({ type: 'START_VALIDATION' }) /* immediately go to validating */ } disabled={false}>
+            <PrimaryButton
+              onClick={
+                () => dispatch({ type: 'START_VALIDATION' }) /* immediately go to validating */
+              }
+              disabled={false}
+            >
               Validate &amp; continue
             </PrimaryButton>
           </ActionRow>
@@ -399,7 +417,10 @@ export function BulkImporter<T>({
       ──────────────────────────────────────────────────────────────────────── */}
       {state.stage === 'validating' && (
         <section aria-label="Validation progress" aria-live="polite">
-          <Header title="Validating…" subtitle={`${state.progress.processed} / ${state.progress.total} rows processed`} />
+          <Header
+            title="Validating…"
+            subtitle={`${state.progress.processed} / ${state.progress.total} rows processed`}
+          />
 
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
             <div
@@ -429,11 +450,7 @@ export function BulkImporter<T>({
         <section aria-label="Validation results">
           {/* Summary cards */}
           <div className="grid grid-cols-3 gap-4">
-            <SummaryCard
-              label="Total rows"
-              value={state.result.total}
-              color="gray"
-            />
+            <SummaryCard label="Total rows" value={state.result.total} color="gray" />
             <SummaryCard
               label="Valid"
               value={state.result.succeeded}
@@ -492,7 +509,8 @@ export function BulkImporter<T>({
               Import successful
             </p>
             <p className="mt-1 text-sm text-green-700 dark:text-green-300">
-              {state.importedCount} record{state.importedCount !== 1 ? 's' : ''} imported successfully.
+              {state.importedCount} record{state.importedCount !== 1 ? 's' : ''} imported
+              successfully.
             </p>
           </div>
           <button
@@ -578,12 +596,17 @@ function PreviewTable({
   className?: string;
 }) {
   return (
-    <div className={`overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}>
+    <div
+      className={`overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}
+    >
       <table className="min-w-full divide-y divide-gray-200 text-xs dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             {headers.map((h) => (
-              <th key={h} className="px-3 py-1.5 text-left font-semibold text-gray-500 dark:text-gray-400">
+              <th
+                key={h}
+                className="px-3 py-1.5 text-left font-semibold text-gray-500 dark:text-gray-400"
+              >
                 {h}
               </th>
             ))}
@@ -593,7 +616,10 @@ function PreviewTable({
           {rows.map((row, i) => (
             <tr key={i}>
               {headers.map((h) => (
-                <td key={h} className="max-w-xs truncate px-3 py-1.5 text-gray-700 dark:text-gray-300">
+                <td
+                  key={h}
+                  className="max-w-xs truncate px-3 py-1.5 text-gray-700 dark:text-gray-300"
+                >
                   {row[h]}
                 </td>
               ))}
@@ -618,7 +644,8 @@ function SummaryCard({
 }) {
   const colorMap = {
     gray: 'border-gray-200 bg-gray-50 text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
-    green: 'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200',
+    green:
+      'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200',
     red: 'border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200',
   };
   return (
@@ -646,7 +673,10 @@ function ErrorTable({
       <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
         Rows with errors ({records.length})
       </div>
-      <ul className="max-h-72 divide-y divide-red-100 overflow-y-auto dark:divide-red-900" role="list">
+      <ul
+        className="max-h-72 divide-y divide-red-100 overflow-y-auto dark:divide-red-900"
+        role="list"
+      >
         {records.map((record) => {
           const isExpanded = expandedRow === record.rowIndex;
           const errorKeys = Object.keys(record.errors);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { VideoPlayer } from './components/video/VideoPlayer';
+import { DUMMY_VIDEO_URL } from '@/constants/media';
 
 // Sample transcript data
 const sampleTranscript = [
@@ -78,7 +79,7 @@ function App() {
 
         <div className="p-6 bg-white rounded-lg shadow-lg">
           <VideoPlayer
-            src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
+            src={DUMMY_VIDEO_URL}
             poster="https://via.placeholder.com/1280x720/2563eb/ffffff?text=Video+Player+Demo"
             transcript={sampleTranscript}
             onProgress={handleProgress}

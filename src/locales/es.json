@@ -29,7 +29,8 @@
     "notifications": "Notificaciones",
     "logout": "Cerrar sesión",
     "login": "Iniciar sesión",
-    "signup": "Registrarse"
+    "signup": "Registrarse",
+    "teach": "[MISSING TRANSLATION] Teach"
   },
   "course": {
     "title": "Curso",
@@ -43,7 +44,8 @@
     "rating": "Calificación",
     "description": "Descripción",
     "syllabus": "Programa",
-    "resources": "Recursos"
+    "resources": "Recursos",
+    "previewTitle": "[MISSING TRANSLATION] Course Preview"
   },
   "dashboard": {
     "welcome": "Bienvenido",
@@ -52,7 +54,20 @@
     "upcomingDeadlines": "Próximas Fechas Límite",
     "recommendedCourses": "Cursos Recomendados",
     "learningStreak": "Racha de Aprendizaje",
-    "progressSummary": "Resumen de Progreso"
+    "progressSummary": "Resumen de Progreso",
+    "learningProgress": "[MISSING TRANSLATION] Learning Progress",
+    "progressStatus": "[MISSING TRANSLATION] {{percent}}% complete • {{remaining}} remaining",
+    "quickActions": "[MISSING TRANSLATION] Quick Actions",
+    "continueLearning": "[MISSING TRANSLATION] Continue Learning",
+    "downloadCourse": "[MISSING TRANSLATION] Download Course",
+    "offlineAccess": "[MISSING TRANSLATION] For offline access",
+    "viewProgress": "[MISSING TRANSLATION] View Progress",
+    "trackLearning": "[MISSING TRANSLATION] Track your learning",
+    "completedLesson": "[MISSING TRANSLATION] Completed lesson",
+    "downloadedCourse": "[MISSING TRANSLATION] Downloaded course",
+    "activityEntry": "[MISSING TRANSLATION] {{course}} • {{time}}",
+    "timeHoursAgo": "[MISSING TRANSLATION] {{count}} hours ago",
+    "timeDayAgo": "[MISSING TRANSLATION] {{count}} day ago"
   },
   "profile": {
     "editProfile": "Editar Perfil",
@@ -84,5 +99,27 @@
     "unauthorized": "No autorizado",
     "forbidden": "Prohibido",
     "serverError": "Error del servidor"
+  },
+  "home": {
+    "heroTitlePrefix": "Welcome to",
+    "heroSubtitle": "Learn anytime, anywhere with our comprehensive platform",
+    "navDesktopTitle": "Desktop Dashboard",
+    "navDesktopDescription": "Full-featured learning platform with advanced tools",
+    "navMobileTitle": "Mobile App",
+    "navMobileDescription": "Touch-optimized learning experience for on-the-go",
+    "navCatalogTitle": "Course Catalog",
+    "navCatalogDescription": "Browse and explore available courses",
+    "featuredTitle": "Featured Courses",
+    "whyTitle": "Why TeachLink?",
+    "featureOfflineTitle": "Offline Learning",
+    "featureOfflineDescription": "Download courses and learn without internet connection",
+    "featureCrossPlatformTitle": "Cross-Platform",
+    "featureCrossPlatformDescription": "Seamless experience across desktop, mobile, and tablet",
+    "featureWeb3Title": "Web3 Integration",
+    "featureWeb3Description": "Decentralized platform with blockchain-based features",
+    "ctaTitle": "Ready to start learning?",
+    "ctaSubtitle": "Join thousands of learners on TeachLink today",
+    "ctaPrimary": "Get Started",
+    "ctaSecondary": "Sign In"
   }
 }

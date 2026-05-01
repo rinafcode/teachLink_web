@@ -7,7 +7,7 @@
 import { useState, useMemo } from 'react';
 import { useInternationalization } from '@/hooks/useInternationalization';
 import { getAvailableLanguages } from '@/locales/config';
-import { getMissingTranslations, hasTranslation } from '@/locales/translationManager';
+import { hasTranslation } from '@/locales/translationManager';
 import { AlertCircle, CheckCircle2, XCircle, Search, Download } from 'lucide-react';
 import type { LanguageCode, Translations } from '@/locales/types';
 

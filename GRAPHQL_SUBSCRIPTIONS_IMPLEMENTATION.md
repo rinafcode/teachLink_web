@@ -1,6 +1,7 @@
 # GraphQL Subscriptions Implementation - Complete Guide
 
 ## Issue Reference
+
 **#266 GraphQL Subscriptions** - Real-time data updates via WebSocket
 
 ---
@@ -97,6 +98,7 @@ src/
 **Location**: `src/lib/graphql/subscriptions.ts` (347 lines)
 
 **Exports**:
+
 - `SubscriptionConfig` - Configuration interface
 - `ConnectionState` - Enum for connection states
 - `ConnectionEvent` - Connection lifecycle events
@@ -109,6 +111,7 @@ src/
 - `formatSubscriptionError()` - User-friendly error messages
 
 **Key Features**:
+
 - ✅ Exponential backoff for reconnection
 - ✅ Connection lifecycle management
 - ✅ Event-driven state changes
@@ -119,11 +122,13 @@ src/
 **Location**: `src/hooks/useSubscription.ts` (360 lines)
 
 **Exports**:
+
 - `useSubscription<TData, TVariables>()` - Main hook
 - `useSubscriptionConnection()` - Connection state listener
 - `usePollableSubscription<TData, TVariables>()` - With polling fallback
 
 **Features**:
+
 - ✅ TypeScript generics for type safety
 - ✅ Connection state tracking
 - ✅ Error handling with retry logic
@@ -133,6 +138,7 @@ src/
 - ✅ Polling fallback mechanism
 
 **Result Object**:
+
 ```typescript
 interface UseSubscriptionResult<TData> {
   data: TData | undefined;
@@ -150,6 +156,7 @@ interface UseSubscriptionResult<TData> {
 **Location**: `src/lib/graphql/subscriptionQueries.ts` (190 lines)
 
 **Includes 15+ subscription definitions**:
+
 - NEW_POSTS_SUBSCRIPTION
 - POST_COMMENTS_SUBSCRIPTION
 - USER_NOTIFICATIONS_SUBSCRIPTION
@@ -170,11 +177,13 @@ interface UseSubscriptionResult<TData> {
 **Location**: `src/components/SubscriptionProvider.tsx` (92 lines)
 
 **Exports**:
+
 - `SubscriptionProvider` - Wrapper component
 - `useSubscriptionClient()` - Access Apollo client
 - `useHasSubscriptionClient()` - Check availability
 
 **Features**:
+
 - ✅ React Context for Apollo client
 - ✅ Configuration merging
 - ✅ Custom client support
@@ -185,6 +194,7 @@ interface UseSubscriptionResult<TData> {
 **Location**: `src/components/subscription/SubscriptionUI.tsx` (270 lines)
 
 **Components**:
+
 - `ConnectionStatusIndicator` - Status dot with label
 - `ConnectionStatusBanner` - Prominent status banner
 - `SubscriptionLoadingState` - Loading wrapper
@@ -192,6 +202,7 @@ interface UseSubscriptionResult<TData> {
 - `SubscriptionSkeleton` - Loading skeleton
 
 **Styling**:
+
 - ✅ Tailwind CSS
 - ✅ Dark mode support
 - ✅ Responsive design
@@ -202,6 +213,7 @@ interface UseSubscriptionResult<TData> {
 **Location**: `src/app/subscriptions-demo/page.tsx` (340 lines)
 
 **Features**:
+
 - Live connection status display
 - Example subscriptions showcase
 - Code examples
@@ -215,6 +227,7 @@ interface UseSubscriptionResult<TData> {
 ### Step 1: Dependencies Already Added
 
 Check `package.json` - these are already included:
+
 ```json
 {
   "@apollo/client": "^3.8.0",
@@ -225,6 +238,7 @@ Check `package.json` - these are already included:
 ```
 
 Install if needed:
+
 ```bash
 npm install
 ```
@@ -232,6 +246,7 @@ npm install
 ### Step 2: Environment Variables
 
 Create `.env.local`:
+
 ```bash
 # GraphQL Subscription Endpoints
 NEXT_PUBLIC_GRAPHQL_WS_URL=wss://api.teachlink.com/graphql
@@ -253,11 +268,7 @@ NEXT_PUBLIC_SUBSCRIPTION_TIMEOUT=5000
 
 import { SubscriptionProvider } from '@/components/SubscriptionProvider';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html>
       <body>
@@ -291,12 +302,9 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { NEW_POSTS_SUBSCRIPTION } from '@/lib/graphql/subscriptionQueries';
 
 export function PostFeed() {
-  const { data, loading, error, connectionState } = useSubscription(
-    NEW_POSTS_SUBSCRIPTION,
-    {
-      variables: { topicId: 'web3' },
-    },
-  );
+  const { data, loading, error, connectionState } = useSubscription(NEW_POSTS_SUBSCRIPTION, {
+    variables: { topicId: 'web3' },
+  });
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -318,20 +326,17 @@ export function PostFeed() {
 
 ```tsx
 export function NotificationCenter() {
-  const { data, connectionState, resubscribe } = useSubscription(
-    USER_NOTIFICATIONS_SUBSCRIPTION,
-    {
-      variables: { userId: 'user-123' },
-      onData: (notification) => {
-        showToast(notification.message);
-      },
+  const { data, connectionState, resubscribe } = useSubscription(USER_NOTIFICATIONS_SUBSCRIPTION, {
+    variables: { userId: 'user-123' },
+    onData: (notification) => {
+      showToast(notification.message);
     },
-  );
+  });
 
   return (
     <div>
       <ConnectionStatusIndicator showLabel />
-      
+
       {connectionState === ConnectionState.ERROR && (
         <button onClick={resubscribe}>Retry Connection</button>
       )}
@@ -346,17 +351,14 @@ export function NotificationCenter() {
 
 ```tsx
 export function LiveResults() {
-  const { data, loading } = usePollableSubscription(
-    LIVE_QUIZ_RESPONSES_SUBSCRIPTION,
-    {
-      variables: { quizId: 'quiz-123' },
-      pollFn: async () => {
-        const res = await fetch(`/api/quiz/quiz-123/responses`);
-        return res.json();
-      },
-      pollIntervalMs: 5000,
+  const { data, loading } = usePollableSubscription(LIVE_QUIZ_RESPONSES_SUBSCRIPTION, {
+    variables: { quizId: 'quiz-123' },
+    pollFn: async () => {
+      const res = await fetch(`/api/quiz/quiz-123/responses`);
+      return res.json();
     },
-  );
+    pollIntervalMs: 5000,
+  });
 
   return (
     <div>
@@ -375,10 +377,10 @@ export function LiveResults() {
 
 ```typescript
 enum ConnectionState {
-  CONNECTING = 'CONNECTING',      // Initial connection
-  CONNECTED = 'CONNECTED',        // Ready for data
-  DISCONNECTED = 'DISCONNECTED',  // Offline
-  ERROR = 'ERROR',               // Connection error
+  CONNECTING = 'CONNECTING', // Initial connection
+  CONNECTED = 'CONNECTED', // Ready for data
+  DISCONNECTED = 'DISCONNECTED', // Offline
+  ERROR = 'ERROR', // Connection error
   RECONNECTING = 'RECONNECTING', // Retry attempt
 }
 ```
@@ -438,18 +440,15 @@ SubscriptionError {
 ### Handle Errors
 
 ```tsx
-const { error, errorMessage, resubscribe } = useSubscription(
-  SUBSCRIPTION,
-  {
-    onError: (error) => {
-      if (isConnectionError(error)) {
-        console.log('Network error, will retry...');
-      } else {
-        console.log('Subscription error:', error.message);
-      }
-    },
+const { error, errorMessage, resubscribe } = useSubscription(SUBSCRIPTION, {
+  onError: (error) => {
+    if (isConnectionError(error)) {
+      console.log('Network error, will retry...');
+    } else {
+      console.log('Subscription error:', error.message);
+    }
   },
-);
+});
 
 if (error) {
   return (
@@ -464,11 +463,13 @@ if (error) {
 ### Error Recovery
 
 Automatic:
+
 - ✅ Exponential backoff reconnection
 - ✅ Max 5 retry attempts (configurable)
 - ✅ Delay: 1000ms → 2000ms → 4000ms...
 
 Manual:
+
 - ✅ `resubscribe()` function
 - ✅ User-triggered refresh button
 
@@ -479,11 +480,13 @@ Manual:
 ### Optimizations
 
 1. **Memoization**: Use `useMemo` for variables
+
    ```tsx
    const variables = useMemo(() => ({ topicId }), [topicId]);
    ```
 
 2. **Conditional Subscriptions**: Skip when not needed
+
    ```tsx
    const { data } = useSubscription(SUBSCRIPTION, {
      skip: !isOpen,
@@ -491,10 +494,11 @@ Manual:
    ```
 
 3. **Multiple Subscriptions**: Subscribe to what you need
+
    ```tsx
    // ✓ Good: Subscribe only to needed data
    const posts = useSubscription(NEW_POSTS, { variables: {...} });
-   
+
    // ✗ Bad: Subscribe to everything
    const all = useSubscription(ALL_DATA, {});
    ```
@@ -524,9 +528,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 
 describe('useSubscription', () => {
   it('should handle subscription data', async () => {
-    const { result } = renderHook(() =>
-      useSubscription(SUBSCRIPTION)
-    );
+    const { result } = renderHook(() => useSubscription(SUBSCRIPTION));
 
     await waitFor(() => {
       expect(result.current.data).toBeDefined();
@@ -537,16 +539,14 @@ describe('useSubscription', () => {
 
   it('should retry on error', async () => {
     const onError = vi.fn();
-    const { result, rerender } = renderHook(
-      () => useSubscription(SUBSCRIPTION, { onError })
-    );
+    const { result, rerender } = renderHook(() => useSubscription(SUBSCRIPTION, { onError }));
 
     await waitFor(() => {
       expect(onError).toHaveBeenCalled();
     });
 
     result.current.resubscribe();
-    
+
     expect(result.current.loading).toBe(true);
   });
 });
@@ -557,22 +557,24 @@ describe('useSubscription', () => {
 ```tsx
 import { MockedProvider } from '@apollo/client/testing';
 
-const mocks = [{
-  request: {
-    query: SUBSCRIPTION,
-    variables: { id: '1' },
-  },
-  result: {
-    data: {
-      onUpdate: { id: '1', data: 'test' },
+const mocks = [
+  {
+    request: {
+      query: SUBSCRIPTION,
+      variables: { id: '1' },
+    },
+    result: {
+      data: {
+        onUpdate: { id: '1', data: 'test' },
+      },
     },
   },
-}];
+];
 
 render(
   <MockedProvider mocks={mocks}>
     <Component />
-  </MockedProvider>
+  </MockedProvider>,
 );
 ```
 
@@ -586,6 +588,7 @@ render(
 ✅ Mobile browsers (iOS Safari 15+, Chrome Android)
 
 **Requirements**:
+
 - WebSocket support
 - ES2020 JavaScript features
 - Secure context (HTTPS, except localhost)
@@ -610,18 +613,16 @@ const config: SubscriptionConfig = {
 
   // Reconnection strategy
   reconnect: {
-    maxRetries: 10,        // Max retry attempts
-    initialDelayMs: 500,   // Starting delay
-    maxDelayMs: 60000,     // Max delay cap
+    maxRetries: 10, // Max retry attempts
+    initialDelayMs: 500, // Starting delay
+    maxDelayMs: 60000, // Max delay cap
   },
 
   // Connection timeout
   connectionTimeoutMs: 10000,
 };
 
-<SubscriptionProvider config={config}>
-  {children}
-</SubscriptionProvider>
+<SubscriptionProvider config={config}>{children}</SubscriptionProvider>;
 ```
 
 ---
@@ -629,22 +630,26 @@ const config: SubscriptionConfig = {
 ## Acceptance Criteria - ✅ All Met
 
 - ✅ **Real-time data updates without polling**
+
   - WebSocket subscriptions working
   - Instant data delivery
   - Demo page at `/subscriptions-demo`
 
 - ✅ **WebSocket link setup**
+
   - Apollo Client configured
   - GraphQL-ws integration
   - Automatic connection management
 
 - ✅ **useSubscription hook**
+
   - Full lifecycle management
   - Error handling & recovery
   - Connection state tracking
   - Callbacks for events
 
 - ✅ **Connection lifecycle handling**
+
   - Connection state enum
   - State change notifications
   - Proper cleanup
@@ -660,6 +665,7 @@ const config: SubscriptionConfig = {
 ## Files Changed
 
 ### New Files
+
 ```
 src/lib/graphql/subscriptions.ts              (347 lines)
 src/lib/graphql/subscriptionQueries.ts        (190 lines)
@@ -672,6 +678,7 @@ GRAPHQL_SUBSCRIPTIONS_GUIDE.md                (500+ lines)
 ```
 
 ### Modified Files
+
 ```
 package.json                                  (+3 dependencies)
 ```
@@ -718,6 +725,7 @@ package.json                                  (+3 dependencies)
 ## Troubleshooting
 
 ### WebSocket not connecting
+
 ```
 Check:
 1. WSS URL is correct and HTTPS
@@ -727,6 +735,7 @@ Check:
 ```
 
 ### Data not updating
+
 ```
 Check:
 1. Subscription is not skipped
@@ -736,6 +745,7 @@ Check:
 ```
 
 ### Memory leaks
+
 ```
 Check:
 1. Components unmounting properly

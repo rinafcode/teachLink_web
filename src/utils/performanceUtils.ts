@@ -2,6 +2,7 @@
  * Performance utilities: Core Web Vitals (web-vitals), trends, suggestions, and helpers.
  */
 
+import { STORAGE_KEYS, MAX_TREND_POINTS, DEFAULT_IDLE_TIMEOUT_MS } from '@/constants/app.constants';
 import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
 
 export interface PerformanceMetric {
@@ -37,8 +38,7 @@ export interface OptimizationSuggestion {
   metric?: string;
 }
 
-const TREND_STORAGE_KEY = 'teachlink:perf:trends';
-const MAX_TREND_POINTS = 200;
+const TREND_STORAGE_KEY = STORAGE_KEYS.PERF_TRENDS;
 
 const vitalListeners = new Set<(metric: PerformanceMetric) => void>();
 let vitalsStarted = false;
@@ -312,7 +312,7 @@ export function measurePerformancePhase(
 }
 
 /** Run work during browser idle time when available. */
-export function runWhenIdle(callback: () => void, timeoutMs = 2000): void {
+export function runWhenIdle(callback: () => void, timeoutMs = DEFAULT_IDLE_TIMEOUT_MS): void {
   if (typeof window === 'undefined') {
     callback();
     return;
@@ -350,7 +350,7 @@ export async function reportVitalToAnalytics(metric: PerformanceMetric): Promise
         userAgent: navigator.userAgent,
       });
 
-      const response = await fetch('/api/performance/vitals', {
+      const response = await fetch('/api/v1/performance/vitals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,

@@ -41,3 +41,4 @@ jest-coverage/
 
 # Misc
 *.log
+package-lock.json

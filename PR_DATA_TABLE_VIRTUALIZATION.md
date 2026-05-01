@@ -1,6 +1,7 @@
 # Pull Request: Data Table Virtualization (Close #258)
 
 ## PR Title
+
 ✨ feat: Add Data Table Virtualization with Sticky Headers and Resizable Columns (Close #258)
 
 ## Description
@@ -8,9 +9,11 @@
 This PR implements virtualization for large TeachLink data tables, enabling smooth rendering for datasets with 10k+ rows. The feature integrates a lightweight virtualization library, supports variable row heights, sticky headers, and column resizing to improve performance and usability.
 
 ### Problem Statement
+
 Tables with 1000+ rows become slow and unresponsive. The current table rendering strategy does not scale for large datasets, causing poor UX on dashboards and analytics views.
 
 ### Solution Overview
+
 - Integrate `react-window` for list virtualization
 - Add support for variable row heights
 - Keep table headers sticky during scroll
@@ -23,7 +26,9 @@ Tables with 1000+ rows become slow and unresponsive. The current table rendering
 ## Changes Made
 
 ### New/Updated Components
+
 - `src/components/DataTable.tsx`
+
   - Refactored table rendering to use virtualization
   - Added sticky header behavior
   - Added responsive column sizing and resize handles
@@ -35,16 +40,19 @@ Tables with 1000+ rows become slow and unresponsive. The current table rendering
   - Integrates with `react-window` and custom measurement logic
 
 ### Dependencies
+
 - Added `react-window` or similar virtualization library
 - (Optional) Added utility package for resize handling if needed
 
 ### Performance Improvements
+
 - Smooth scrolling with 10k+ rows
 - Reduced DOM node count dramatically
 - Lower memory usage and rendering overhead
 - Responsive sticky headers with stable layout behavior
 
 ### Accessibility and UX
+
 - Sticky header remains visible on vertical scroll
 - Column resize controls keyboard accessible
 - Table cells maintain focus and row highlight behavior
@@ -68,10 +76,12 @@ Tables with 1000+ rows become slow and unresponsive. The current table rendering
 ## Files Changed
 
 ### Primary
+
 - `src/components/DataTable.tsx`
 - `src/components/VirtualList.tsx`
 
 ### Possible supporting changes
+
 - `src/components/TableHeader.tsx` (if header logic is extracted)
 - `src/components/TableRow.tsx` (if row rendering is modularized)
 - `src/lib/tableUtils.ts` or `src/utils/tableUtils.ts` (for resize/virtualization helpers)
@@ -82,6 +92,7 @@ Tables with 1000+ rows become slow and unresponsive. The current table rendering
 ## Usage Example
 
 ### Basic Virtualized Table
+
 ```tsx
 import { DataTable } from '@/components/DataTable';
 
@@ -100,6 +111,7 @@ export function ReportsPage() {
 ```
 
 ### Column Resizing
+
 ```tsx
 <DataTable
   columns={columns}
@@ -115,6 +127,7 @@ export function ReportsPage() {
 ## Testing
 
 ### Manual QA
+
 - Load a dataset with 10k+ rows
 - Confirm smooth vertical scrolling and row virtualization
 - Verify header remains sticky while scrolling
@@ -124,6 +137,7 @@ export function ReportsPage() {
 - Verify no console warnings or errors
 
 ### Suggested Tests
+
 - `DataTable` renders column headers correctly
 - Virtual list only renders visible rows
 - Sticky header remains in DOM during scroll
@@ -135,15 +149,19 @@ export function ReportsPage() {
 ## Integration Notes
 
 ### Environment
+
 No new environment variables are required.
 
 ### Packaging
+
 Add `react-window` to `package.json` and run:
+
 ```bash
 npm install
 ```
 
 ### Migration
+
 - Existing table usage should continue working after refactor
 - Keep default behavior unchanged for small row sets
 - Virtualization should be opt-in if necessary
@@ -173,4 +191,5 @@ npm install
 ---
 
 ## Summary
+
 This PR introduces a scalable table rendering approach for TeachLink, ensuring large datasets are handled efficiently and that table layouts remain responsive and usable. The change improves performance and UX for dashboards, analytics pages, and any view that displays thousands of rows.

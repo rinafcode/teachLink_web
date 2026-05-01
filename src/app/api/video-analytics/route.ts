@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { SuccessResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 type AnalyticsEvent = {
   userId?: string;
@@ -17,6 +20,7 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
 };
 
 export async function POST(request: Request) {
+  edgeLog('info', '/api/video-analytics', 'POST request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse as NextResponse<SuccessResponse>;

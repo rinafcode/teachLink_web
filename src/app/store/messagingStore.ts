@@ -1,6 +1,6 @@
+import { DEFAULT_SOCKET_URL } from '@/constants/app.constants';
 import { create } from 'zustand';
-import { io } from 'socket.io-client';
-import type { Socket } from 'socket.io-client';
+import io from 'socket.io-client';
 
 export interface Attachment {
   id: string;
@@ -615,7 +615,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     get().loadConversations();
 
     try {
-      const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001', {
+      const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || DEFAULT_SOCKET_URL, {
         autoConnect: false, // Don't auto-connect for demo
       });
 

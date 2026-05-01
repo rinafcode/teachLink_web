@@ -34,7 +34,7 @@ export const DEFAULT_QR_OPTIONS: QRCodeOptions = {
  */
 export function isValidQRUrl(url: string): boolean {
   if (!url || typeof url !== 'string') return false;
-  
+
   try {
     // Check if it's a valid URL or a path
     new URL(url, 'http://example.com');
@@ -112,7 +112,7 @@ export async function printQRCode(canvas: HTMLCanvasElement) {
 export async function copyQRCodeToClipboard(canvas: HTMLCanvasElement) {
   try {
     const url = canvas.toDataURL('image/png');
-    const blob = await fetch(url).then(res => res.blob());
+    const blob = await fetch(url).then((res) => res.blob());
     await navigator.clipboard.write([
       new ClipboardItem({
         'image/png': blob,
@@ -133,7 +133,7 @@ export function generateQRCodeUrl(text: string): string {
   if (!isValidQRUrl(text)) {
     throw new Error('Invalid URL or text for QR code generation');
   }
-  
+
   // Using a QR code API service as fallback
   // You can replace with your preferred QR code generation endpoint
   const encodedText = encodeURIComponent(text);

@@ -86,7 +86,14 @@ function paramsToQueryPatch(
     text,
     sortBy,
     page,
-    filters: { types, topics, difficulty, priceRange: [priceMin, priceMax], rating, dateRange: null },
+    filters: {
+      types,
+      topics,
+      difficulty,
+      priceRange: [priceMin, priceMax],
+      rating,
+      dateRange: null,
+    },
   };
 }
 
@@ -163,10 +170,9 @@ export const useSearchState = () => {
     if (nextSearch === currentSearch) return;
 
     isSyncingToUrl.current = true;
-    router.replace(
-      nextSearch ? `${pathname ?? ''}?${nextSearch}` : (pathname ?? '/'),
-      { scroll: false },
-    );
+    router.replace(nextSearch ? `${pathname ?? ''}?${nextSearch}` : pathname ?? '/', {
+      scroll: false,
+    });
   }, [query, pathname, router, searchParams]);
 
   // -------------------------------------------------------------------------
@@ -195,9 +201,7 @@ export const useSearchState = () => {
   const getShareableUrl = useCallback((): string => {
     const params = filtersToParams(query);
     const base =
-      typeof window !== 'undefined'
-        ? `${window.location.origin}${pathname ?? ''}`
-        : pathname ?? '';
+      typeof window !== 'undefined' ? `${window.location.origin}${pathname ?? ''}` : pathname ?? '';
     return params.toString() ? `${base}?${params.toString()}` : base;
   }, [query, pathname]);
 
