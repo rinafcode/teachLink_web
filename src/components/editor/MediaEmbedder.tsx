@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image as ImageIcon, Youtube as YoutubeIcon, Link as LinkIcon } from 'lucide-react';
+import { Image as ImageIcon, Youtube as YoutubeIcon } from 'lucide-react';
 import { sanitizeUrl } from '@/utils/sanitize';
 
 interface MediaEmbedderProps {

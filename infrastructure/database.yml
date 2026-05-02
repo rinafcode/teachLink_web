@@ -1,0 +1,44 @@
+# Database Infrastructure Configuration
+# Optimized for high concurrency and resource efficiency
+
+# PgBouncer Configuration
+pgbouncer:
+  # Pool mode: transaction (recommended for Next.js/serverless)
+  # This allows connections to be returned to the pool after each transaction
+  pool_mode: transaction
+  
+  # Connection limits
+  max_client_conn: 1000
+  default_pool_size: 20
+  reserve_pool_size: 5
+  reserve_pool_timeout: 2.0
+  
+  # Timeouts
+  server_idle_timeout: 600
+  server_connect_timeout: 15
+  server_login_timeout: 15
+  query_timeout: 0
+  query_wait_timeout: 120
+  
+  # Security
+  auth_type: md5
+  ignore_startup_parameters: extra_float_digits
+
+# Database Resource Limits
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+
+# Monitoring
+monitoring:
+  enabled: true
+  interval: 15s
+  metrics:
+    - total_connections
+    - active_connections
+    - idle_connections
+    - waiting_clients

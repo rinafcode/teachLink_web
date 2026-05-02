@@ -66,7 +66,9 @@ export default function QRCodeDemoPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">QR Code Generator Demo</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            QR Code Generator Demo
+          </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
             Generate, customize, and share QR codes for TeachLink content
           </p>
@@ -76,7 +78,9 @@ export default function QRCodeDemoPage() {
           {/* Left Column - QR Preview */}
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">QR Code Preview</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                QR Code Preview
+              </h2>
 
               {/* QR Display */}
               <div className="flex justify-center mb-8 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
@@ -138,7 +142,9 @@ export default function QRCodeDemoPage() {
           {/* Right Column - Controls */}
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Configuration</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                Configuration
+              </h2>
 
               {/* URL Input */}
               <div className="mb-6">
@@ -281,7 +287,8 @@ export default function QRCodeDemoPage() {
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
               <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Tip</h3>
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                Use this demo to test QR code generation, customization, and sharing features. The QR codes can be downloaded, printed, or shared via the modal dialog.
+                Use this demo to test QR code generation, customization, and sharing features. The
+                QR codes can be downloaded, printed, or shared via the modal dialog.
               </p>
             </div>
           </div>

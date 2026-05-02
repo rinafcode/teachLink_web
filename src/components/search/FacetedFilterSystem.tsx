@@ -1,17 +1,7 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import {
-  BarChart,
-  DollarSign,
-  Tag as TagIcon,
-  Star,
-  Calendar,
-  Filter,
-  RotateCcw,
-  Check,
-  ChevronDown,
-} from 'lucide-react';
+import { BarChart, DollarSign, Tag as TagIcon, Star, Filter, RotateCcw, Check } from 'lucide-react';
 import { SearchFilters, SearchContentType } from '../../utils/searchUtils';
 import { MultiSelect } from '../ui/MultiSelect';
 import { RangeSlider } from '../ui/RangeSlider';

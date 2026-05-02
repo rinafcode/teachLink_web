@@ -50,7 +50,7 @@ describe('generate-qr utilities', () => {
     beforeEach(() => {
       mockCanvas = document.createElement('canvas');
       mockCanvas.toDataURL = vi.fn(() => 'data:image/png;base64,test');
-      
+
       // Mock DOM methods
       vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
         if (tag === 'a') {

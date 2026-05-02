@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download, Check, X, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Download, Check, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
 import { apiService } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
 import { Course, OfflineContent } from '../types/mobile';
@@ -13,7 +13,7 @@ interface DownloadProgress {
 
 export default function OfflineContentManager() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(false);
   const [storageUsed, setStorageUsed] = useState(0);
   const [storageTotal, setStorageTotal] = useState(5000 * 1024 * 1024);
   const [loading, setLoading] = useState(true);

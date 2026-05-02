@@ -20,10 +20,7 @@ interface FlagState {
  * const { isEnabled } = useFeatureFlag('flag_new_dashboard', { userId: user.id });
  * if (isEnabled) return <NewDashboard />;
  */
-export function useFeatureFlag(
-  flagId: string,
-  context: Record<string, string> = {},
-): FlagState {
+export function useFeatureFlag(flagId: string, context: Record<string, string> = {}): FlagState {
   const [state, setState] = useState<FlagState>({
     flag: null,
     isEnabled: false,

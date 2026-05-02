@@ -3,6 +3,7 @@
 ## 🚀 Five-Minute Setup
 
 ### 1. Install Dependencies
+
 The required package `qrcode.react` has already been added to `package.json`. Just run:
 
 ```bash
@@ -54,10 +55,7 @@ export function TopicCard({ topicSlug }) {
   return (
     <div className="border rounded-lg p-4">
       <h2>Share via QR</h2>
-      <QRCodeComponent
-        value={`https://teachlink.com/topics/${topicSlug}`}
-        size={200}
-      />
+      <QRCodeComponent value={`https://teachlink.com/topics/${topicSlug}`} size={200} />
     </div>
   );
 }
@@ -66,6 +64,7 @@ export function TopicCard({ topicSlug }) {
 ## 📚 Common Patterns
 
 ### Pattern 1: Profile Sharing
+
 ```tsx
 export function ProfileCard({ username }) {
   const [showShare, setShowShare] = useState(false);
@@ -86,15 +85,13 @@ export function ProfileCard({ username }) {
 ```
 
 ### Pattern 2: Resource Card with QR
+
 ```tsx
 export function ResourceCard({ resourceId, title }) {
   return (
     <div className="card">
       <h3>{title}</h3>
-      <QRCodeComponent
-        value={`https://teachlink.com/resource/${resourceId}`}
-        size={150}
-      />
+      <QRCodeComponent value={`https://teachlink.com/resource/${resourceId}`} size={150} />
       <p className="text-xs text-gray-500 mt-2">Scan to access</p>
     </div>
   );
@@ -102,6 +99,7 @@ export function ResourceCard({ resourceId, title }) {
 ```
 
 ### Pattern 3: Full Page Share
+
 ```tsx
 export function SharePage({ item }) {
   const [showShare, setShowShare] = useState(false);
@@ -129,16 +127,18 @@ export function SharePage({ item }) {
 ## 🎨 Customization
 
 ### Custom Colors
+
 ```tsx
 <ShareModal
   shareUrl={url}
   title="Share"
-  fgColor="#dc2626"      // Red QR code
-  bgColor="#fef2f2"      // Light red background
+  fgColor="#dc2626" // Red QR code
+  bgColor="#fef2f2" // Light red background
 />
 ```
 
 ### Different Sizes
+
 ```tsx
 // Mobile
 <QRCodeComponent value={url} size={128} />
@@ -148,6 +148,7 @@ export function SharePage({ item }) {
 ```
 
 ### Themed QR Code
+
 ```tsx
 // Dark mode
 <QRCodeComponent
@@ -167,6 +168,7 @@ export function SharePage({ item }) {
 ## ✅ Accepted Use Cases
 
 ### ✅ Do Use For:
+
 - Post/article sharing
 - Profile links
 - Topic pages
@@ -177,6 +179,7 @@ export function SharePage({ item }) {
 - Mobile deeplinks
 
 ### ❌ Don't Use For:
+
 - Private/sensitive content
 - Authentication tokens
 - Large data payloads (QR codes have limits)
@@ -185,18 +188,16 @@ export function SharePage({ item }) {
 ## 🔧 Common Customizations
 
 ### Custom Share URL Format
+
 ```tsx
 // Your custom URL scheme
 const shareUrl = `teachlink://post/${postId}?utm_source=qr&utm_medium=share`;
 
-<ShareModal
-  isOpen={showShare}
-  onClose={() => setShowShare(false)}
-  shareUrl={shareUrl}
-/>
+<ShareModal isOpen={showShare} onClose={() => setShowShare(false)} shareUrl={shareUrl} />;
 ```
 
 ### Conditional Rendering
+
 ```tsx
 export function ShareButton({ isLoggedIn, itemId }) {
   const [showShare, setShowShare] = useState(false);
@@ -219,6 +220,7 @@ export function ShareButton({ isLoggedIn, itemId }) {
 ```
 
 ### With Error Boundaries
+
 ```tsx
 import { ErrorBoundarySystem } from '@/components';
 
@@ -238,17 +240,20 @@ export function SafeShare({ itemId }) {
 ## 🧪 Testing in Development
 
 ### View the Demo Page
+
 ```
 http://localhost:3000/qr-code-demo
 ```
 
 ### Test Different URLs
+
 1. Open `/qr-code-demo`
 2. Modify the URL input
 3. Use the QR preview
 4. Test download, print, and copy
 
 ### Test on Mobile
+
 1. Use browser DevTools mobile view
 2. Or access demo on actual mobile device
 3. Scan QR with phone camera
@@ -269,6 +274,7 @@ http://localhost:3000/qr-code-demo
 ## 🐛 Troubleshooting
 
 ### QR Code not showing?
+
 ```tsx
 // ❌ Wrong
 <QRCodeComponent value="" />
@@ -278,16 +284,19 @@ http://localhost:3000/qr-code-demo
 ```
 
 ### Copy not working?
+
 - Check browser is HTTPS (or localhost)
 - Test in a different browser
 - Check browser permissions
 
 ### Share Modal styling issues?
+
 - Verify Tailwind CSS is loaded
 - Check dark mode context is available
 - Inspect Modal parent styling
 
 ### Download not working?
+
 - Check browser popup blocking
 - Try a different file format
 - Browser might not support canvas download

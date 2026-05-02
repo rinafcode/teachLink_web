@@ -2,7 +2,7 @@
  * Async Validation Manager - Handles asynchronous validation with loading states and retry logic
  */
 
-import { ValidationResult, ValidationError, FormState, ValidationFunction } from '../types/core.js';
+import { ValidationResult, FormState, ValidationFunction } from '../types/core.js';
 
 export interface AsyncValidationState {
   isLoading: boolean;

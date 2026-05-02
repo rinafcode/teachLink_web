@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ConnectionStatusIndicator, ConnectionStatusBanner } from '@/components/subscription/SubscriptionUI';
+import {
+  ConnectionStatusIndicator,
+  ConnectionStatusBanner,
+} from '@/components/subscription/SubscriptionUI';
 import { useSubscriptionConnection } from '@/hooks/useSubscription';
 import { ConnectionState } from '@/lib/graphql/subscriptions';
 import { RefreshCw } from 'lucide-react';
@@ -12,8 +15,10 @@ import { RefreshCw } from 'lucide-react';
  */
 export default function SubscriptionsDemoPage() {
   const connectionState = useSubscriptionConnection();
-  const [selectedExample, setSelectedExample] = useState<'posts' | 'notifications' | 'tips'>('posts');
-  
+  const [selectedExample, setSelectedExample] = useState<'posts' | 'notifications' | 'tips'>(
+    'posts',
+  );
+
   const examples = [
     {
       id: 'posts' as const,
@@ -96,15 +101,12 @@ return (
     },
   ];
 
-  const currentExample = examples.find(e => e.id === selectedExample)!;
+  const currentExample = examples.find((e) => e.id === selectedExample)!;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 p-6">
       {/* Connection Banner */}
-      <ConnectionStatusBanner 
-        position="top"
-        showOnSuccess={false}
-      />
+      <ConnectionStatusBanner position="top" showOnSuccess={false} />
 
       <div className="max-w-7xl mx-auto pt-4">
         {/* Header */}
@@ -155,9 +157,7 @@ return (
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
               Update Frequency
             </h3>
-            <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-              Real-time
-            </p>
+            <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">Real-time</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Zero polling, instant updates
             </p>
@@ -169,9 +169,7 @@ return (
           {/* Example Selector */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                Examples
-              </h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Examples</h2>
 
               <div className="space-y-2">
                 {examples.map((example) => (
@@ -184,14 +182,14 @@ return (
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    <div className="font-semibold text-sm">
-                      {example.title}
-                    </div>
-                    <div className={`text-xs mt-1 ${
-                      selectedExample === example.id
-                        ? 'text-indigo-100'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}>
+                    <div className="font-semibold text-sm">{example.title}</div>
+                    <div
+                      className={`text-xs mt-1 ${
+                        selectedExample === example.id
+                          ? 'text-indigo-100'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}
+                    >
                       {example.description}
                     </div>
                   </button>
@@ -204,7 +202,8 @@ return (
                   💡 Tip
                 </h3>
                 <p className="text-xs text-blue-800 dark:text-blue-300">
-                  Connect to your GraphQL API endpoint to see real-time updates. All subscriptions are automatically managed and reconnected on failure.
+                  Connect to your GraphQL API endpoint to see real-time updates. All subscriptions
+                  are automatically managed and reconnected on failure.
                 </p>
               </div>
             </div>
@@ -229,7 +228,10 @@ return (
                 </h3>
                 <ul className="grid grid-cols-2 gap-2">
                   {currentExample.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+                    >
                       <span className="text-indigo-600">✓</span>
                       {feature}
                     </li>
@@ -263,9 +265,7 @@ return (
 
         {/* Setup Steps */}
         <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Quick Setup
-          </h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Setup</h2>
 
           <div className="grid md:grid-cols-3 gap-6">
             <div>
@@ -284,11 +284,11 @@ return (
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm mb-3">
                 2
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Set Environment
-              </h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Set Environment</h3>
               <pre className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs text-gray-900 dark:text-gray-100 overflow-x-auto">
-                NEXT_PUBLIC_GRAPHQL_WS_URL=<br/>wss://api.teachlink.com/graphql
+                NEXT_PUBLIC_GRAPHQL_WS_URL=
+                <br />
+                wss://api.teachlink.com/graphql
               </pre>
             </div>
 
@@ -309,7 +309,8 @@ return (
         {/* Documentation Link */}
         <div className="mt-8 text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            For detailed documentation, see <span className="font-mono text-sm">GRAPHQL_SUBSCRIPTIONS_GUIDE.md</span>
+            For detailed documentation, see{' '}
+            <span className="font-mono text-sm">GRAPHQL_SUBSCRIPTIONS_GUIDE.md</span>
           </p>
           <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
             View Full Documentation

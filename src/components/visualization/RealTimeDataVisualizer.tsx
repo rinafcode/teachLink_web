@@ -8,7 +8,7 @@
 import React, { useEffect, useState } from 'react';
 import { InteractiveChartLibrary } from './InteractiveChartLibrary';
 import { useDataVisualization } from '@/hooks/useDataVisualization';
-import { ChartData, ChartType, generateSampleData } from '@/utils/visualizationUtils';
+import { ChartType } from '@/utils/visualizationUtils';
 import { Activity, Wifi, WifiOff, RefreshCw, Pause, Play } from 'lucide-react';
 
 export interface RealTimeDataVisualizerProps {
