@@ -101,12 +101,10 @@ export function validateWeb3Env(): EnvValidationResult {
   const network = process.env.NEXT_PUBLIC_STARKNET_NETWORK || DEFAULT_STARKNET_NETWORK;
   const customRpcUrl = process.env.NEXT_PUBLIC_STARKNET_RPC_URL;
 
-  // Validate network
   if (!Object.keys(NETWORKS).includes(network)) {
     warnings.push(`Unknown network "${network}", defaulting to ${DEFAULT_STARKNET_NETWORK}`);
   }
 
-  // Check for custom RPC in production
   if (process.env.NODE_ENV === 'production' && !customRpcUrl) {
     warnings.push('Consider setting NEXT_PUBLIC_STARKNET_RPC_URL for production');
   }
@@ -152,7 +150,6 @@ export function formatAddress(address: string | null): string {
  */
 export function isValidStarknetAddress(address: string): boolean {
   if (!address) return false;
-  // Starknet addresses are 66 chars (0x + 64 hex chars) or shorter
   const cleanAddress = address.toLowerCase();
   return /^0x[a-f0-9]{1,64}$/i.test(cleanAddress);
 }

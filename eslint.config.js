@@ -2,6 +2,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
 import prettierPlugin from 'eslint-plugin-prettier';
+import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import prettierConfig from 'eslint-config-prettier';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,10 +27,8 @@ const eslintConfig = [
       'build/**',
     ],
   },
-
   // 2. Base Configs (Next.js & TypeScript)
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
-
   // 3. Custom Rules and Plugins
   {
     plugins: {
@@ -43,19 +42,15 @@ const eslintConfig = [
       '@typescript-eslint/ban-ts-comment': 'warn',
       '@typescript-eslint/no-unsafe-function-type': 'warn',
       '@typescript-eslint/no-unused-expressions': 'warn',
-
       // React Rules
       'react/no-unescaped-entities': 'warn',
       'react/display-name': 'warn',
-
       // Import Rules
       'import/no-anonymous-default-export': 'off',
-
       // Prettier Integration
       'prettier/prettier': 'error',
     },
   },
-
   // 4. Disable ESLint rules that might conflict with Prettier
   prettierConfig,
 ];

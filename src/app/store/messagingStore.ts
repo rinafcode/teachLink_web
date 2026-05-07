@@ -140,9 +140,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   markConversationAsRead: (conversationId) => {
     set((state) => ({
       conversations: state.conversations.map((conv) =>
-        conv.id === conversationId
-          ? { ...conv, unreadCount: 0 }
-          : conv
+        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
       ),
     }));
   },
@@ -171,7 +169,6 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     set((state) => {
       const updated = new Set(state.typingUsers);
       updated.delete(userId);
-
       return { typingUsers: updated };
     });
   },
@@ -181,49 +178,25 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
 
     try {
       const socket = wsManager.connect('messaging', {
-        url:
-          process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
-          DEFAULT_SOCKET_URL,
+        url: process.env.NEXT_PUBLIC_WEBSOCKET_URL || DEFAULT_SOCKET_URL,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         heartbeatInterval: 30000,
       });
 
-      socket.on('connect', () => {
-        set({ isConnected: true });
-      });
-
-      socket.on('disconnect', () => {
-        set({ isConnected: false });
-      });
-
-      socket.on('message', (message: Message) => {
-        get().addMessage(message);
-      });
-
-      socket.on(
-        'typing',
-        ({
-          userId,
-          isTyping,
-        }: {
-          userId: string;
-          isTyping: boolean;
-        }) => {
-          if (isTyping) {
-            get().addTypingUser(userId);
-          } else {
-            get().removeTypingUser(userId);
-          }
+      socket.on('connect', () => set({ isConnected: true }));
+      socket.on('disconnect', () => set({ isConnected: false }));
+      socket.on('message', (message: Message) => get().addMessage(message));
+      socket.on('typing', ({ userId, isTyping }: { userId: string; isTyping: boolean }) => {
+        if (isTyping) {
+          get().addTypingUser(userId);
+        } else {
+          get().removeTypingUser(userId);
         }
-      );
-
-      socket.on(
-        'read',
-        ({ messageId }: { messageId: string }) => {
-          get().markMessageAsRead(messageId);
-        }
-      );
+      });
+      socket.on('read', ({ messageId }: { messageId: string }) => {
+        get().markMessageAsRead(messageId);
+      });
 
       set({ socket });
     } catch {
@@ -233,10 +206,6 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
 
   disconnectSocket: () => {
     wsManager.disconnect('messaging');
-
-    set({
-      socket: null,
-      isConnected: false,
-    });
+    set({ socket: null, isConnected: false });
   },
 }));

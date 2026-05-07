@@ -2,7 +2,7 @@
 
 import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { errorReportingService } from '@/services/errorReporting';
-import { UserFriendlyErrorDisplay } from './UserFriendlyErrorDisplay';
+import UserFriendlyErrorDisplay from './UserFriendlyErrorDisplay';
 
 export type ErrorBoundaryState = {
   hasError: boolean;

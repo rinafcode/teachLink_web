@@ -72,26 +72,33 @@ globals.css → Tailwind directives
 ```bash
 git clone https://github.com/teachlink/frontend.git
 cd frontend
-Install dependencies
+pnpm install
+```
 
-bash
-Copy
-Edit
-npm install
-Set up environment variables
-Create a .env.local with:
+2. **Set up environment variables**
 
-ini
-Copy
-Edit
+Create a `.env.local` with:
+
+```ini
 NEXT_PUBLIC_STARKNET_NETWORK=testnet
 NEXT_PUBLIC_INDEXER_API_URL=https://indexer.teachlink.xyz
-Run the development server
+```
 
-bash
-Copy
-Edit
-npm run dev
+3. **Run the development server**
+
+```bash
+pnpm run dev
+```
+
+## 🧩 Monorepo Tooling Decision
+
+The project now uses **pnpm workspaces** as the monorepo/dependency strategy.
+
+- **Evaluated:** Nx, Turborepo, pnpm workspaces
+- **Chosen:** pnpm workspaces (lowest migration risk, strict dependency graph, fast installs)
+- **Single source of truth:** `pnpm-lock.yaml` + root `pnpm.overrides`
+- **Shared tooling config:** `packages/tooling` (base ESLint + TypeScript config)
+
 🏗️ Development Milestones
 ✅ Tailwind CSS Integration
 

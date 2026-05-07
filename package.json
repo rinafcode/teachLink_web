@@ -2,31 +2,44 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.33.2",
   "type": "module",
+  "workspaces": [
+    ".",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "type-check": "tsc --noEmit",
+    "type-check:all": "pnpm -r --if-present run type-check",
     "lint": "next lint --max-warnings=0",
     "lint:fix": "eslint --ext .ts,.tsx,.js,.jsx . --fix",
+    "lint:all": "pnpm -r --if-present run lint",
     "format": "prettier --write .",
     "prepare": "husky install",
+
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
-    "validate:ui": "node scripts/validate-ui.cjs",
-    "validate:web3": "node scripts/validate-web3.cjs",
-    "check-i18n": "node scripts/check-i18n.cjs",
-    "check-locales": "node scripts/check-locales.mjs",
-    "prebuild": "npm run check-locales && npm run check-i18n",
-    "validate": "npm run validate:ui && npm run validate:web3",
-    "generate:sitemap": "npx tsx scripts/generate-sitemap.ts",
+    "test:all": "pnpm -r --if-present run test",
+
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+
+    "validate:ui": "node scripts/validate-ui.cjs",
+    "validate:web3": "node scripts/validate-web3.cjs",
+    "validate": "pnpm run validate:ui && pnpm run validate:web3",
+
+    "check-i18n": "node scripts/check-i18n.cjs",
+    "check-locales": "node scripts/check-locales.mjs",
+    "prebuild": "pnpm run check-locales && pnpm run check-i18n",
+
+    "generate:sitemap": "npx tsx scripts/generate-sitemap.ts"
   },
   "dependencies": {
     "@apollo/client": "^3.8.0",
@@ -84,6 +97,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@teachlink/tooling": "workspace:*",
     "@eslint/eslintrc": "^3.3.5",
     "@playwright/test": "^1.54.0",
     "@tailwindcss/postcss": "^4.0.0",
@@ -119,5 +133,15 @@
     "typescript": "^5.8.3",
     "vite": "^5.4.19",
     "vitest": "^2.1.9"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1",
+      "next": "15.3.1",
+      "typescript": "^5.8.3",
+      "eslint": "^9",
+      "prettier": "^2.8.8"
+    }
   }
 }
