@@ -12,8 +12,10 @@ export function useMetrics() {
       setMetrics(data);
     };
 
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 5000); // real-time updates
+    void fetchMetrics();
+    const interval = setInterval(() => {
+      void fetchMetrics();
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
