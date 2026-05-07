@@ -12,7 +12,6 @@ import {
   FormState,
   ValidationResult,
   SaveStatus,
-  FieldDescriptor,
 } from '@/form-management/types/core';
 
 interface UseAdvancedFormsOptions {

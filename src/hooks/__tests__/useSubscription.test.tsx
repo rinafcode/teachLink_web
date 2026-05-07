@@ -77,13 +77,17 @@ describe('useSubscription hook', () => {
     expect(typeof result.current.resubscribe).toBe('function');
   });
 
-  it('should allow manual data update', () => {
+  it('should allow manual data update', async () => {
     const { result } = renderHook(() => useSubscription(MOCK_SUBSCRIPTION, {}, mockClient));
 
     const newData = { id: '1', data: 'test' };
-    result.current.updateData(newData);
+    await waitFor(() => {
+      result.current.updateData(newData);
+    });
 
-    expect(result.current.data).toEqual(newData);
+    await waitFor(() => {
+      expect(result.current.data).toEqual(newData);
+    });
   });
 
   it('should return error message when error occurs', () => {

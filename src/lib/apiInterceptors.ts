@@ -1,5 +1,18 @@
-import { apiClient, RequestInterceptor, ResponseInterceptor, ErrorInterceptor } from './api';
-import { RequestConfig } from './api';
+import {
+  API_TIMEOUT_UPLOAD,
+  API_TIMEOUT_DOWNLOAD,
+  API_TIMEOUT_SEARCH,
+  STORAGE_KEYS,
+} from '@/constants/app.constants';
+
+import {
+  apiClient,
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor,
+  RequestConfig,
+} from './api';
+
 import { createLogger } from '@/lib/logging';
 
 declare global {
@@ -11,9 +24,7 @@ declare global {
 const apiLogger = createLogger('api-client');
 
 function safeBody(body: RequestConfig['body']): unknown {
-  if (!body || typeof body !== 'string') {
-    return undefined;
-  }
+  if (!body || typeof body !== 'string') return undefined;
 
   try {
     return JSON.parse(body);
@@ -22,7 +33,7 @@ function safeBody(body: RequestConfig['body']): unknown {
   }
 }
 
-export const loggingRequestInterceptor: RequestInterceptor = async (config: RequestConfig) => {
+export const loggingRequestInterceptor: RequestInterceptor = async (config) => {
   if (process.env.NODE_ENV === 'development') {
     apiLogger.debug('API request started', {
       context: {
@@ -36,12 +47,10 @@ export const loggingRequestInterceptor: RequestInterceptor = async (config: Requ
   return config;
 };
 
-export const loggingResponseInterceptor: ResponseInterceptor = async (response: unknown) => {
+export const loggingResponseInterceptor: ResponseInterceptor = async (response) => {
   if (process.env.NODE_ENV === 'development') {
     apiLogger.debug('API response received', {
-      context: {
-        response,
-      },
+      context: { response },
     });
   }
   return response;
@@ -52,25 +61,26 @@ export const loggingErrorInterceptor: ErrorInterceptor = async (error: Error) =>
 };
 
 export const authRefreshInterceptor: ErrorInterceptor = async (error: Error) => {
-  if (error.message && error.message.includes('401')) {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
+  const isUnauthorized =
+    error.message?.includes('401') || error.message?.includes('Unauthorized');
+
+  if (isUnauthorized && typeof window !== 'undefined') {
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    window.location.href = '/login';
   }
 };
 
-export const timeoutInterceptor: RequestInterceptor = async (config: RequestConfig) => {
-  const urlPatterns: Array<{ pattern: string | RegExp; timeout: number }> = [
-    { pattern: /\/upload/, timeout: 60000 },
-    { pattern: /\/download/, timeout: 60000 },
-    { pattern: /\/search/, timeout: 15000 },
+export const timeoutInterceptor: RequestInterceptor = async (config) => {
+  const urlPatterns: Array<{ pattern: RegExp; timeout: number }> = [
+    { pattern: /\/upload/, timeout: API_TIMEOUT_UPLOAD },
+    { pattern: /\/download/, timeout: API_TIMEOUT_DOWNLOAD },
+    { pattern: /\/search/, timeout: API_TIMEOUT_SEARCH },
   ];
 
   const url = config.url;
+
   for (const { pattern, timeout } of urlPatterns) {
-    const regex = typeof pattern === 'string' ? new RegExp(pattern) : pattern;
-    if (regex.test(url)) {
+    if (pattern.test(url)) {
       config.timeout = timeout;
       break;
     }
@@ -79,8 +89,8 @@ export const timeoutInterceptor: RequestInterceptor = async (config: RequestConf
   return config;
 };
 
-export const headerEnhancementInterceptor: RequestInterceptor = async (config: RequestConfig) => {
-  const headers = (config.headers as Record<string, string>) || {};
+export const headerEnhancementInterceptor: RequestInterceptor = async (config) => {
+  const headers: Record<string, string> = (config.headers as Record<string, string>) || {};
 
   headers['X-Request-ID'] = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
@@ -96,7 +106,9 @@ export function setupApiInterceptors(): void {
   apiClient.addRequestInterceptor(loggingRequestInterceptor);
   apiClient.addRequestInterceptor(timeoutInterceptor);
   apiClient.addRequestInterceptor(headerEnhancementInterceptor);
+
   apiClient.addResponseInterceptor(loggingResponseInterceptor);
+
   apiClient.addErrorInterceptor(loggingErrorInterceptor);
   apiClient.addErrorInterceptor(authRefreshInterceptor);
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { DEFAULT_TOAST_DURATION } from '@/constants/app.constants';
 import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { Toast, ToastType } from '@/components/ui/Toast';
 
@@ -29,7 +30,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addToast = useCallback(
-    (message: string, type: ToastType = 'info', duration = 5000) => {
+    (message: string, type: ToastType = 'info', duration = DEFAULT_TOAST_DURATION) => {
       const id = Math.random().toString(36).substr(2, 9);
       setToasts((prev) => [...prev, { id, type, message, duration }]);
 

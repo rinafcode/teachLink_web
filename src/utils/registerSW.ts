@@ -4,7 +4,9 @@ export type UpdateCallback = (registration: ServiceWorkerRegistration) => void;
  * Registers /sw.js and calls `onUpdate` whenever a new service worker is
  * waiting to activate (i.e. an update is available).
  */
-export async function registerSW(onUpdate?: UpdateCallback): Promise<ServiceWorkerRegistration | null> {
+export async function registerSW(
+  onUpdate?: UpdateCallback,
+): Promise<ServiceWorkerRegistration | null> {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return null;
 
   try {

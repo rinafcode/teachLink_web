@@ -16,5 +16,5 @@ export async function generatePDF(html: string): Promise<Buffer> {
 
   await browser.close();
 
-  return pdfBuffer;
+  return Buffer.from(pdfBuffer);
 }

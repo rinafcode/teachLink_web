@@ -29,7 +29,8 @@
     "notifications": "Notifications",
     "logout": "Logout",
     "login": "Login",
-    "signup": "Sign Up"
+    "signup": "Sign Up",
+    "teach": "Teach"
   },
   "course": {
     "title": "Course",
@@ -43,7 +44,8 @@
     "rating": "Rating",
     "description": "Description",
     "syllabus": "Syllabus",
-    "resources": "Resources"
+    "resources": "Resources",
+    "previewTitle": "Course Preview"
   },
   "dashboard": {
     "welcome": "Welcome",
@@ -52,7 +54,20 @@
     "upcomingDeadlines": "Upcoming Deadlines",
     "recommendedCourses": "Recommended Courses",
     "learningStreak": "Learning Streak",
-    "progressSummary": "Progress Summary"
+    "progressSummary": "Progress Summary",
+    "learningProgress": "Learning Progress",
+    "progressStatus": "{{percent}}% complete • {{remaining}} remaining",
+    "quickActions": "Quick Actions",
+    "continueLearning": "Continue Learning",
+    "downloadCourse": "Download Course",
+    "offlineAccess": "For offline access",
+    "viewProgress": "View Progress",
+    "trackLearning": "Track your learning",
+    "completedLesson": "Completed lesson",
+    "downloadedCourse": "Downloaded course",
+    "activityEntry": "{{course}} • {{time}}",
+    "timeHoursAgo": "{{count}} hours ago",
+    "timeDayAgo": "{{count}} day ago"
   },
   "profile": {
     "editProfile": "Edit Profile",
@@ -84,5 +99,27 @@
     "unauthorized": "Unauthorized",
     "forbidden": "Forbidden",
     "serverError": "Server error"
+  },
+  "home": {
+    "heroTitlePrefix": "Welcome to",
+    "heroSubtitle": "Learn anytime, anywhere with our comprehensive platform",
+    "navDesktopTitle": "Desktop Dashboard",
+    "navDesktopDescription": "Full-featured learning platform with advanced tools",
+    "navMobileTitle": "Mobile App",
+    "navMobileDescription": "Touch-optimized learning experience for on-the-go",
+    "navCatalogTitle": "Course Catalog",
+    "navCatalogDescription": "Browse and explore available courses",
+    "featuredTitle": "Featured Courses",
+    "whyTitle": "Why TeachLink?",
+    "featureOfflineTitle": "Offline Learning",
+    "featureOfflineDescription": "Download courses and learn without internet connection",
+    "featureCrossPlatformTitle": "Cross-Platform",
+    "featureCrossPlatformDescription": "Seamless experience across desktop, mobile, and tablet",
+    "featureWeb3Title": "Web3 Integration",
+    "featureWeb3Description": "Decentralized platform with blockchain-based features",
+    "ctaTitle": "Ready to start learning?",
+    "ctaSubtitle": "Join thousands of learners on TeachLink today",
+    "ctaPrimary": "Get Started",
+    "ctaSecondary": "Sign In"
   }
 }

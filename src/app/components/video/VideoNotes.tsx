@@ -141,7 +141,7 @@ export function VideoNotes() {
       });
 
       // DELETE with JSON payload (apiClient.delete doesn't support request body).
-      void fetch('/api/notes', {
+      void fetch('/api/v1/notes', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, lessonId, id }),

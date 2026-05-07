@@ -1,19 +1,7 @@
 'use client';
 
 import React, { useCallback, useState, useEffect } from 'react';
-import {
-  TrendingUp,
-  Lock,
-  AlertCircle,
-  ChevronDown,
-  Loader2,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Zap,
-  Info,
-  Check,
-  X,
-} from 'lucide-react';
+import { TrendingUp, Lock, Loader2, ArrowUpRight, Zap, Info, Check } from 'lucide-react';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
 
 interface StakingPosition {
@@ -47,23 +35,6 @@ interface DeFiInterfaceProps {
 
 type Tab = 'protocols' | 'positions' | 'rewards';
 
-/**
- * DeFiInterface Component
- *
- * Comprehensive DeFi interaction platform:
- * - Browse staking protocols
- * - Manage staking positions
- * - Track rewards
- * - Real-time APY updates
- * - Risk assessment
- *
- * Modern DeFi UX with:
- * - Multiple staking protocols
- * - Position management
- * - Reward tracking
- * - Risk indicators
- * - Responsive design
- */
 export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
   className = '',
   onStake,
@@ -78,7 +49,6 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
   const [stakeDuration, setStakeDuration] = useState('30');
   const [isStaking, setIsStaking] = useState(false);
 
-  // Mock DeFi protocols
   const protocols: DeFiProtocol[] = [
     {
       id: 'aave',
@@ -110,31 +80,15 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
       minStake: '0.01',
       tokens: ['ETH'],
     },
-    {
-      id: 'convex',
-      name: 'Convex Finance',
-      description: 'Boost Curve Finance liquidity pool yields',
-      apy: 12.3,
-      tvl: '$8.4B',
-      riskLevel: 'medium',
-      minStake: '100',
-      tokens: ['CVX', 'CRV'],
-    },
   ];
 
-  /**
-   * Fetch user staking positions
-   */
   const fetchPositions = useCallback(async () => {
     if (!wallet.isConnected || !wallet.address) {
       setStakingPositions([]);
       return;
     }
-
     setIsLoading(true);
-
     try {
-      // Mock staking positions
       const positions: StakingPosition[] = [
         {
           id: '1',
@@ -148,7 +102,6 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
           endDate: Date.now() + 365 * 24 * 60 * 60 * 1000,
         },
       ];
-
       await new Promise((resolve) => setTimeout(resolve, 300));
       setStakingPositions(positions);
     } catch (error) {
@@ -158,43 +111,30 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
     }
   }, [wallet.isConnected, wallet.address]);
 
-  /**
-   * Load positions on mount and when wallet changes
-   */
   useEffect(() => {
     fetchPositions();
   }, [fetchPositions]);
 
-  /**
-   * Handle staking submission
-   */
   const handleStake = useCallback(async () => {
     if (!selectedProtocol || !stakeAmount) return;
-
     setIsStaking(true);
-
     try {
-      // Simulate staking transaction
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      const duration = parseInt(stakeDuration, 10);
       const newPosition: StakingPosition = {
         id: `${Date.now()}`,
         token: selectedProtocol.tokens[0],
         amount: stakeAmount,
         apy: selectedProtocol.apy,
-        lockPeriod: parseInt(stakeDuration),
+        lockPeriod: duration,
         rewards: '0',
         unrealizedRewards: '0',
         startDate: Date.now(),
-        endDate: Date.now() + parseInt(stakeDuration) * 24 * 60 * 60 * 1000,
+        endDate: Date.now() + duration * 24 * 60 * 60 * 1000,
       };
-
-      setStakingPositions([...stakingPositions, newPosition]);
-      onStake?.(selectedProtocol.id, stakeAmount, parseInt(stakeDuration));
-
-      // Reset form
+      setStakingPositions((prev) => [...prev, newPosition]);
+      onStake?.(selectedProtocol.id, stakeAmount, duration);
       setStakeAmount('');
-      setStakeDuration('30');
       setSelectedProtocol(null);
       setActiveTab('positions');
     } catch (error) {
@@ -202,38 +142,29 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
     } finally {
       setIsStaking(false);
     }
-  }, [selectedProtocol, stakeAmount, stakeDuration, stakingPositions, onStake]);
+  }, [selectedProtocol, stakeAmount, stakeDuration, onStake]);
 
-  /**
-   * Handle unstaking
-   */
   const handleUnstake = useCallback(
     async (positionId: string) => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 800));
-
-        setStakingPositions(stakingPositions.filter((p) => p.id !== positionId));
+        setStakingPositions((prev) => prev.filter((p) => p.id !== positionId));
         onUnstake?.(positionId);
       } catch (error) {
         console.error('[DeFiInterface] Unstaking failed:', error);
       }
     },
-    [stakingPositions, onUnstake],
+    [onUnstake],
   );
 
-  /**
-   * Calculate total staked value
-   */
   const totalStaked = stakingPositions.reduce((sum, pos) => sum + parseFloat(pos.amount), 0);
-
-  /**
-   * Calculate total rewards
-   */
   const totalRewards = stakingPositions.reduce((sum, pos) => sum + parseFloat(pos.rewards), 0);
 
   if (!wallet.isConnected) {
     return (
-      <div className={`p-8 text-center bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg ${className}`}>
+      <div
+        className={`p-8 text-center bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg ${className}`}
+      >
         <TrendingUp className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-3 opacity-50" />
         <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
           Connect wallet to access DeFi protocols
@@ -244,10 +175,8 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Summary cards */}
       {stakingPositions.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Total staked */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
@@ -255,11 +184,11 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               </p>
               <Lock className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalStaked.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {totalStaked.toFixed(2)}
+            </p>
             <p className="text-xs text-gray-500 mt-1">Across {stakingPositions.length} positions</p>
           </div>
-
-          {/* Total rewards */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
@@ -267,11 +196,11 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               </p>
               <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalRewards.toFixed(4)}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {totalRewards.toFixed(4)}
+            </p>
             <p className="text-xs text-gray-500 mt-1">Earned to date</p>
           </div>
-
-          {/* Average APY */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
@@ -285,12 +214,10 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               ).toFixed(1)}
               %
             </p>
-            <p className="text-xs text-gray-500 mt-1">Weighted average</p>
           </div>
         </div>
       )}
 
-      {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
         {(['protocols', 'positions', 'rewards'] as const).map((tab) => (
           <button
@@ -298,8 +225,8 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors capitalize -mb-[2px] ${
               activeTab === tab
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600'
             }`}
           >
             {tab}
@@ -307,26 +234,27 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         ))}
       </div>
 
-      {/* Protocols tab */}
       {activeTab === 'protocols' && (
         <div className="space-y-3">
           {protocols.map((protocol) => (
             <div
               key={protocol.id}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-400 transition-colors"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-bold text-gray-900 dark:text-white">{protocol.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{protocol.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {protocol.description}
+                  </p>
                 </div>
                 <span
                   className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                     protocol.riskLevel === 'low'
                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                       : protocol.riskLevel === 'medium'
-                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                   }`}
                 >
                   {protocol.riskLevel}
@@ -337,7 +265,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                   <p className="text-xs text-gray-500 dark:text-gray-400">APY</p>
-                  <p className="text-lg font-bold text-green-600 dark:text-green-400">{protocol.apy}%</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                    {protocol.apy}%
+                  </p>
                 </div>
                 <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                   <p className="text-xs text-gray-500 dark:text-gray-400">TVL</p>
@@ -348,26 +278,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                   <p className="font-medium text-gray-900 dark:text-white">{protocol.minStake}</p>
                 </div>
               </div>
-
-              {/* Supported tokens */}
-              <div className="mb-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Supported Tokens</p>
-                <div className="flex flex-wrap gap-1">
-                  {protocol.tokens.map((token) => (
-                    <span
-                      key={token}
-                      className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
-                    >
-                      {token}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Stake button */}
               <button
                 onClick={() => setSelectedProtocol(protocol)}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg flex items-center justify-center gap-2"
               >
                 <ArrowUpRight className="w-4 h-4" />
                 Stake
@@ -377,23 +290,16 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         </div>
       )}
 
-      {/* Positions tab */}
       {activeTab === 'positions' && (
         <div className="space-y-3">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
             </div>
           ) : stakingPositions.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600 dark:text-gray-400">No active staking positions</p>
-              <button
-                onClick={() => setActiveTab('protocols')}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline mt-2"
-              >
-                Explore protocols
-              </button>
+              <p className="text-gray-600">No active staking positions</p>
             </div>
           ) : (
             stakingPositions.map((position) => (
@@ -401,16 +307,11 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                 key={position.id}
                 className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white">
-                      {position.amount} {position.token}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      APY: {position.apy}% • Lock: {position.lockPeriod} days
-                    </p>
-                  </div>
-                  <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                <div className="flex justify-between mb-3">
+                  <p className="font-bold text-gray-900 dark:text-white">
+                    {position.amount} {position.token}
+                  </p>
+                  <span className="text-lg font-bold text-green-600">
                     +{position.unrealizedRewards}
                   </span>
                 </div>
@@ -418,7 +319,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                 <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                   <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Harvested</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{position.rewards} {position.token}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {position.rewards} {position.token}
+                    </p>
                   </div>
                   <div className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Unlocks</p>
@@ -430,9 +333,8 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
 
                 <button
                   onClick={() => handleUnstake(position.id)}
-                  className="w-full px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 font-medium text-sm rounded-lg"
                 >
-                  <ArrowDownLeft className="w-4 h-4" />
                   Unstake
                 </button>
               </div>
@@ -446,7 +348,9 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <Zap className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
           <p className="text-gray-600 dark:text-gray-400">Reward tracking coming soon</p>
-          <p className="text-xs text-gray-500 mt-2">Monitor all your staking rewards in one place</p>
+          <p className="text-xs text-gray-500 mt-2">
+            Monitor all your staking rewards in one place
+          </p>
         </div>
       )}
 
@@ -457,83 +361,40 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
           onClick={() => setSelectedProtocol(null)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full"
+            className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                Stake in {selectedProtocol.name}
-              </h3>
-              <button
-                onClick={() => setSelectedProtocol(null)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              {/* Amount input */}
+            <h3 className="text-xl font-bold mb-4">Stake in {selectedProtocol.name}</h3>
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium mb-2">
                   Amount ({selectedProtocol.tokens[0]})
                 </label>
                 <input
                   type="number"
                   value={stakeAmount}
                   onChange={(e) => setStakeAmount(e.target.value)}
-                  placeholder="0.0"
-                  min={parseFloat(selectedProtocol.minStake)}
-                  disabled={isStaking}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700"
                 />
-                <p className="text-xs text-gray-500 mt-1">Min: {selectedProtocol.minStake}</p>
               </div>
-
-              {/* Duration select */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Lock Duration
-                </label>
-                <select
-                  value={stakeDuration}
-                  onChange={(e) => setStakeDuration(e.target.value)}
-                  disabled={isStaking}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                >
-                  <option value="30">30 days</option>
-                  <option value="90">90 days</option>
-                  <option value="180">6 months</option>
-                  <option value="365">1 year</option>
-                </select>
-              </div>
-
-              {/* Info */}
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex gap-2">
-                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 rounded-lg flex gap-2">
+                <Info className="w-4 h-4 text-blue-600 mt-0.5" />
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  Your funds will be locked for the selected duration. You'll earn{' '}
+                  {"It's time to put your assets to work. Your funds will be locked at "}
                   <span className="font-semibold">{selectedProtocol.apy}% APY</span>.
                 </p>
               </div>
-
-              {/* Submit button */}
               <button
                 onClick={handleStake}
                 disabled={!stakeAmount || isStaking}
-                className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-lg flex items-center justify-center gap-2"
               >
                 {isStaking ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Staking...
-                  </>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Confirm Stake
-                  </>
+                  <Check className="w-4 h-4" />
                 )}
+                Confirm Stake
               </button>
             </div>
           </div>

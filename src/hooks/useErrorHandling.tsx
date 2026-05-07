@@ -12,7 +12,6 @@ import {
   getUserFriendlyMessage,
   getActionSuggestion,
   retryWithBackoff,
-  classifyError,
 } from '@/utils/errorUtils';
 import { useToast } from '@/context/ToastContext';
 

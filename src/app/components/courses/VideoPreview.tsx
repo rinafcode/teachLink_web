@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { DUMMY_VIDEO_URL } from '@/constants/media';
 
 interface VideoPreviewProps {
   videoUrl?: string;
@@ -10,11 +11,18 @@ interface VideoPreviewProps {
 }
 
 export default function VideoPreview({
-  videoUrl = 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+  videoUrl = DUMMY_VIDEO_URL,
   thumbnailUrl = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3',
   duration = '5:30',
 }: VideoPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const isYouTube =
+    videoUrl.includes('youtube.com/watch') ||
+    videoUrl.includes('youtu.be/') ||
+    videoUrl.includes('youtube.com/embed/');
+  const embedUrl = videoUrl.includes('youtube.com/watch')
+    ? videoUrl.replace('watch?v=', 'embed/')
+    : videoUrl;
 
   return (
     <>
@@ -55,7 +63,17 @@ export default function VideoPreview({
                 />
               </svg>
             </button>
-            <video src={videoUrl} controls autoPlay className="aspect-video w-full rounded-xl" />
+            {isYouTube ? (
+              <iframe
+                src={embedUrl}
+                className="aspect-video w-full rounded-xl"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                title="Video preview"
+              />
+            ) : (
+              <video src={videoUrl} controls autoPlay className="aspect-video w-full rounded-xl" />
+            )}
           </div>
         </div>
       )}
