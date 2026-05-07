@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play,
@@ -17,6 +17,8 @@ import { PlaybackControls } from './PlaybackControls';
 import { BookmarkManager } from './BookmarkManager';
 import { TranscriptView } from './TranscriptView';
 import { NotesTaker } from './NotesTaker';
+import { VideoPlayerContext } from './VideoPlayerContext';
+import type { VideoPlayerContextValue } from './VideoPlayerContext';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
 
@@ -279,6 +281,25 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     toggleFullscreen,
   ]);
 
+  const videoPlayerContextValue = useMemo<VideoPlayerContextValue>(
+    () => ({
+      lessonId: 'video-player',
+      transcript,
+      currentTime,
+      duration,
+      playbackRate,
+      autoQuality: false,
+      selectedQualityValue: 'auto',
+      seekToLearning: seekTo,
+      setPlaybackRateLearning: setPlaybackRate,
+      setQualityLearning: () => undefined,
+      setAutoQualityLearning: () => undefined,
+      onBookmark: onBookmark ?? (() => undefined),
+      onNote: onNote ?? (() => undefined),
+    }),
+    [transcript, currentTime, duration, playbackRate, seekTo, setPlaybackRate, onBookmark, onNote],
+  );
+
   if (error) {
     return (
       <div className={`flex items-center justify-center h-64 bg-gray-100 rounded-lg ${className}`}>
@@ -361,263 +382,265 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative bg-black rounded-lg overflow-hidden group ${className}`}
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => {
-        if (isPlaying) setShowControls(false);
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      role="region"
-      aria-label="Video player"
-      tabIndex={0}
-    >
-      {/* Visually hidden screen reader announcements */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {announcement}
-      </div>
-      {/* Video Element */}
-      <video
-        ref={videoRef}
-        src={isLoaded ? src : undefined}
-        poster={poster}
-        preload="metadata"
-        className="w-full h-full object-contain"
-        onDoubleClick={toggleFullscreen}
-        aria-label="Course video content"
-        role="img"
-      />
+    <VideoPlayerContext.Provider value={videoPlayerContextValue}>
+      <div
+        ref={containerRef}
+        className={`relative bg-black rounded-lg overflow-hidden group ${className}`}
+        onMouseEnter={() => setShowControls(true)}
+        onMouseLeave={() => {
+          if (isPlaying) setShowControls(false);
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        role="region"
+        aria-label="Video player"
+        tabIndex={0}
+      >
+        {/* Visually hidden screen reader announcements */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {announcement}
+        </div>
+        {/* Video Element */}
+        <video
+          ref={videoRef}
+          src={isLoaded ? src : undefined}
+          poster={poster}
+          preload="metadata"
+          className="w-full h-full object-contain"
+          onDoubleClick={toggleFullscreen}
+          aria-label="Course video content"
+          role="img"
+        />
 
-      {/* Loading Overlay */}
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-          >
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Loading Overlay */}
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            >
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Controls Overlay */}
-      <AnimatePresence>
-        {showControls && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4"
-          >
-            {/* Progress Bar */}
-            <div className="mb-4">
-              <div
-                className="relative h-1 bg-white/30 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black"
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const clickX = e.clientX - rect.left;
-                  const percentage = clickX / rect.width;
-                  seekTo(percentage * duration);
-                }}
-                role="slider"
-                aria-label="Video progress"
-                aria-valuemin={0}
-                aria-valuemax={duration}
-                aria-valuenow={currentTime}
-                aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    seekTo(Math.max(0, currentTime - 10));
-                  } else if (e.key === 'ArrowRight') {
-                    e.preventDefault();
-                    seekTo(Math.min(duration, currentTime + 10));
-                  }
-                }}
-              >
+        {/* Controls Overlay */}
+        <AnimatePresence>
+          {showControls && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4"
+            >
+              {/* Progress Bar */}
+              <div className="mb-4">
                 <div
-                  className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all duration-150"
-                  style={{ width: `${(currentTime / duration) * 100}%` }}
-                />
-                <div
-                  className="absolute top-0 h-full bg-white/50 rounded-full transition-all duration-150"
-                  style={{ width: `${(buffered / duration) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Main Controls */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={isPlaying ? pause : play}
-                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors md:p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                  className="relative h-1 bg-white/30 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black"
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const percentage = clickX / rect.width;
+                    seekTo(percentage * duration);
+                  }}
+                  role="slider"
+                  aria-label="Video progress"
+                  aria-valuemin={0}
+                  aria-valuemax={duration}
+                  aria-valuenow={currentTime}
+                  aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowLeft') {
+                      e.preventDefault();
+                      seekTo(Math.max(0, currentTime - 10));
+                    } else if (e.key === 'ArrowRight') {
+                      e.preventDefault();
+                      seekTo(Math.min(duration, currentTime + 10));
+                    }
+                  }}
                 >
-                  {isPlaying ? (
-                    <Pause size={24} className="md:w-5 md:h-5" />
-                  ) : (
-                    <Play size={24} className="md:w-5 md:h-5" />
-                  )}
-                </button>
+                  <div
+                    className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all duration-150"
+                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                  />
+                  <div
+                    className="absolute top-0 h-full bg-white/50 rounded-full transition-all duration-150"
+                    style={{ width: `${(buffered / duration) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Main Controls */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={isPlaying ? pause : play}
+                    className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors md:p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                  >
+                    {isPlaying ? (
+                      <Pause size={24} className="md:w-5 md:h-5" />
+                    ) : (
+                      <Play size={24} className="md:w-5 md:h-5" />
+                    )}
+                  </button>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={toggleMute}
+                      className="p-2 rounded hover:bg-white/20 transition-colors md:p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
+                    >
+                      {isMuted ? (
+                        <VolumeX size={20} className="md:w-4 md:h-4" />
+                      ) : (
+                        <Volume2 size={20} className="md:w-4 md:h-4" />
+                      )}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={volume}
+                      onChange={(e) => setVolume(parseFloat(e.target.value))}
+                      className="w-20 h-1 bg-white/30 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Volume control"
+                    />
+                  </div>
+
+                  <span className="text-white text-sm">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </span>
+                </div>
 
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={toggleMute}
-                    className="p-2 rounded hover:bg-white/20 transition-colors md:p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
-                  >
-                    {isMuted ? (
-                      <VolumeX size={20} className="md:w-4 md:h-4" />
-                    ) : (
-                      <Volume2 size={20} className="md:w-4 md:h-4" />
-                    )}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={(e) => setVolume(parseFloat(e.target.value))}
-                    className="w-20 h-1 bg-white/30 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Volume control"
-                  />
-                </div>
-
-                <span className="text-white text-sm">
-                  {formatTime(currentTime)} / {formatTime(duration)}
-                </span>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setShowBookmarks(!showBookmarks)}
-                  className={`p-3 rounded ${
-                    showBookmarks ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
-                  } transition-colors md:p-2 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  title="Bookmarks"
-                  aria-label={showBookmarks ? 'Hide bookmarks panel' : 'Show bookmarks panel'}
-                  aria-expanded={showBookmarks}
-                >
-                  <Bookmark size={20} className="md:w-4 md:h-4" />
-                </button>
-
-                <button
-                  onClick={() => setShowTranscript(!showTranscript)}
-                  className={`p-3 rounded ${
-                    showTranscript ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
-                  } transition-colors md:p-2`}
-                  title="Transcript"
-                  aria-label={showTranscript ? 'Hide transcript panel' : 'Show transcript panel'}
-                  aria-expanded={showTranscript}
-                >
-                  <FileText size={20} className="md:w-4 md:h-4" />
-                </button>
-
-                <button
-                  onClick={() => setShowNotes(!showNotes)}
-                  className={`p-3 rounded ${
-                    showNotes ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
-                  } transition-colors md:p-2`}
-                  title="Notes"
-                  aria-label={showNotes ? 'Hide notes panel' : 'Show notes panel'}
-                  aria-expanded={showNotes}
-                >
-                  <MessageSquare size={20} className="md:w-4 md:h-4" />
-                </button>
-
-                {document.pictureInPictureEnabled && (
-                  <button
-                    onClick={togglePiP}
+                    onClick={() => setShowBookmarks(!showBookmarks)}
                     className={`p-3 rounded ${
-                      isPiP ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
-                    } transition-colors md:p-2`}
-                    title="Picture-in-Picture"
-                    aria-label={isPiP ? 'Exit Picture-in-Picture' : 'Enter Picture-in-Picture'}
+                      showBookmarks ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                    } transition-colors md:p-2 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    title="Bookmarks"
+                    aria-label={showBookmarks ? 'Hide bookmarks panel' : 'Show bookmarks panel'}
+                    aria-expanded={showBookmarks}
                   >
-                    {isPiP ? (
-                      <PictureInPicture2 size={20} className="md:w-4 md:h-4" />
+                    <Bookmark size={20} className="md:w-4 md:h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => setShowTranscript(!showTranscript)}
+                    className={`p-3 rounded ${
+                      showTranscript ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                    } transition-colors md:p-2`}
+                    title="Transcript"
+                    aria-label={showTranscript ? 'Hide transcript panel' : 'Show transcript panel'}
+                    aria-expanded={showTranscript}
+                  >
+                    <FileText size={20} className="md:w-4 md:h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => setShowNotes(!showNotes)}
+                    className={`p-3 rounded ${
+                      showNotes ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                    } transition-colors md:p-2`}
+                    title="Notes"
+                    aria-label={showNotes ? 'Hide notes panel' : 'Show notes panel'}
+                    aria-expanded={showNotes}
+                  >
+                    <MessageSquare size={20} className="md:w-4 md:h-4" />
+                  </button>
+
+                  {document.pictureInPictureEnabled && (
+                    <button
+                      onClick={togglePiP}
+                      className={`p-3 rounded ${
+                        isPiP ? 'bg-blue-500' : 'bg-white/20 hover:bg-white/30'
+                      } transition-colors md:p-2`}
+                      title="Picture-in-Picture"
+                      aria-label={isPiP ? 'Exit Picture-in-Picture' : 'Enter Picture-in-Picture'}
+                    >
+                      {isPiP ? (
+                        <PictureInPicture2 size={20} className="md:w-4 md:h-4" />
+                      ) : (
+                        <PictureInPicture size={20} className="md:w-4 md:h-4" />
+                      )}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={toggleFullscreen}
+                    className="p-3 rounded bg-white/20 hover:bg-white/30 transition-colors md:p-2"
+                    title="Fullscreen"
+                    aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                  >
+                    {isFullscreen ? (
+                      <Minimize size={20} className="md:w-4 md:h-4" />
                     ) : (
-                      <PictureInPicture size={20} className="md:w-4 md:h-4" />
+                      <Maximize size={20} className="md:w-4 md:h-4" />
                     )}
                   </button>
-                )}
-
-                <button
-                  onClick={toggleFullscreen}
-                  className="p-3 rounded bg-white/20 hover:bg-white/30 transition-colors md:p-2"
-                  title="Fullscreen"
-                  aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                >
-                  {isFullscreen ? (
-                    <Minimize size={20} className="md:w-4 md:h-4" />
-                  ) : (
-                    <Maximize size={20} className="md:w-4 md:h-4" />
-                  )}
-                </button>
+                </div>
               </div>
-            </div>
 
-            {/* Playback Controls */}
-            <PlaybackControls playbackRate={playbackRate} onPlaybackRateChange={setPlaybackRate} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Side Panels */}
-      <div className="absolute top-0 right-0 h-full flex">
-        <AnimatePresence>
-          {showBookmarks && (
-            <motion.div
-              initial={{ x: 300 }}
-              animate={{ x: 0 }}
-              exit={{ x: 300 }}
-              className="w-80 bg-white shadow-lg"
-            >
-              <BookmarkManager
-                currentTime={currentTime}
-                duration={duration}
-                onSeek={seekTo}
-                onBookmark={onBookmark}
-              />
+              {/* Playback Controls */}
+              <PlaybackControls />
             </motion.div>
           )}
         </AnimatePresence>
 
-        <AnimatePresence>
-          {showTranscript && (
-            <motion.div
-              initial={{ x: 300 }}
-              animate={{ x: 0 }}
-              exit={{ x: 300 }}
-              className="w-80 bg-white shadow-lg"
-            >
-              <TranscriptView transcript={transcript} currentTime={currentTime} onSeek={seekTo} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Side Panels */}
+        <div className="absolute top-0 right-0 h-full flex">
+          <AnimatePresence>
+            {showBookmarks && (
+              <motion.div
+                initial={{ x: 300 }}
+                animate={{ x: 0 }}
+                exit={{ x: 300 }}
+                className="w-80 bg-white shadow-lg"
+              >
+                <BookmarkManager
+                  currentTime={currentTime}
+                  duration={duration}
+                  onSeek={seekTo}
+                  onBookmark={onBookmark}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <AnimatePresence>
-          {showNotes && (
-            <motion.div
-              initial={{ x: 300 }}
-              animate={{ x: 0 }}
-              exit={{ x: 300 }}
-              className="w-80 bg-white shadow-lg"
-            >
-              <NotesTaker currentTime={currentTime} onNote={onNote} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <AnimatePresence>
+            {showTranscript && (
+              <motion.div
+                initial={{ x: 300 }}
+                animate={{ x: 0 }}
+                exit={{ x: 300 }}
+                className="w-80 bg-white shadow-lg"
+              >
+                <TranscriptView />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showNotes && (
+              <motion.div
+                initial={{ x: 300 }}
+                animate={{ x: 0 }}
+                exit={{ x: 300 }}
+                className="w-80 bg-white shadow-lg"
+              >
+                <NotesTaker currentTime={currentTime} onNote={onNote} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </VideoPlayerContext.Provider>
   );
 };
 

@@ -18,6 +18,6 @@ export function isEnabled(flag: FeatureFlag): boolean {
 export function getAllFlags(): Record<FeatureFlag, boolean> {
   return (Object.keys(FLAGS) as FeatureFlag[]).reduce(
     (acc, key) => ({ ...acc, [key]: isEnabled(key) }),
-    {} as Record<FeatureFlag, boolean>
+    {} as Record<FeatureFlag, boolean>,
   );
 }

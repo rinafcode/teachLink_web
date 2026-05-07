@@ -5,9 +5,10 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AutoSaveManagerImpl } from '@/form-management/auto-save/auto-save-manager';
 import { FormState, SaveStatus } from '@/form-management/types/core';
+import { useNotification } from '@/hooks/use-notification';
 
 interface AutoSaveManagerProps {
   formId: string;
@@ -30,12 +31,24 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
   onSaveError,
   className = '',
 }) => {
+  const { success, error: notifyError } = useNotification();
   const [autoSaveManager] = useState(() => new AutoSaveManagerImpl());
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({
     status: 'idle',
     queuedSaves: 0,
   });
   const [lastSavedTime, setLastSavedTime] = useState<string>('');
+  const isSavingRef = useRef(false);
+  const onSaveSuccessRef = useRef(onSaveSuccess);
+  const onSaveErrorRef = useRef(onSaveError);
+
+  useEffect(() => {
+    onSaveSuccessRef.current = onSaveSuccess;
+  }, [onSaveSuccess]);
+
+  useEffect(() => {
+    onSaveErrorRef.current = onSaveError;
+  }, [onSaveError]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -49,13 +62,10 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
 
       if (status.status === 'saved') {
         setLastSavedTime(new Date().toLocaleTimeString());
-        if (onSaveSuccess) {
-          onSaveSuccess();
-        }
+        onSaveSuccessRef.current?.();
       } else if (status.status === 'error' && status.error) {
-        if (onSaveError) {
-          onSaveError(status.error);
-        }
+        notifyError(`Auto-save Error: ${status.error.message}`);
+        onSaveErrorRef.current?.(status.error);
       }
     });
 
@@ -69,21 +79,25 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
       subscription.unsubscribe();
       autoSaveManager.destroy();
     };
-  }, [formId, enabled, interval, autoSaveManager, onSaveSuccess, onSaveError]);
+  }, [formId, enabled, interval, autoSaveManager, notifyError]);
 
-  // Save on form state changes
+  // Save on form state changes (debounced; guard against concurrent saves)
   useEffect(() => {
     if (!enabled) return;
 
     const saveData = async () => {
+      if (isSavingRef.current) return;
+      isSavingRef.current = true;
       try {
         await autoSaveManager.saveNow(formId, formState);
       } catch (error) {
         console.error('Auto-save failed:', error);
+      } finally {
+        isSavingRef.current = false;
       }
     };
 
-    const timer = setTimeout(saveData, 500); // Debounce saves
+    const timer = setTimeout(saveData, 500);
     return () => clearTimeout(timer);
   }, [formState, formId, enabled, autoSaveManager]);
 

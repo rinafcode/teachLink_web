@@ -14,13 +14,14 @@ const FeatureFlagContext = createContext<{
 export function FeatureFlagProvider({ children }: { children: React.ReactNode }) {
   const [flags, setFlags] = useState<FlagState>(getAllFlags);
 
-  const toggle = (flag: FeatureFlag) =>
-    setFlags((prev) => ({ ...prev, [flag]: !prev[flag] }));
+  const toggle = (flag: FeatureFlag) => setFlags((prev) => ({ ...prev, [flag]: !prev[flag] }));
 
   return (
     <FeatureFlagContext.Provider value={{ flags, toggle }}>
       {children}
-      {process.env.NODE_ENV === 'development' && <FeatureFlagAdminPanel flags={flags} toggle={toggle} />}
+      {process.env.NODE_ENV === 'development' && (
+        <FeatureFlagAdminPanel flags={flags} toggle={toggle} />
+      )}
     </FeatureFlagContext.Provider>
   );
 }
@@ -45,7 +46,9 @@ function FeatureFlagAdminPanel({
       {open ? (
         <div className="w-72 rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900">
           <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">Feature Flags</span>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+              Feature Flags
+            </span>
             <button onClick={() => setOpen(false)} aria-label="Close feature flags panel">
               <X className="h-4 w-4 text-gray-500 hover:text-gray-900 dark:hover:text-white" />
             </button>
@@ -53,7 +56,9 @@ function FeatureFlagAdminPanel({
           <ul className="divide-y divide-gray-100 dark:divide-gray-800">
             {(Object.keys(flags) as FeatureFlag[]).map((flag) => (
               <li key={flag} className="flex items-center justify-between px-4 py-2.5">
-                <span className="text-xs text-gray-700 dark:text-gray-300">{flag.replace(/_/g, ' ')}</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">
+                  {flag.replace(/_/g, ' ')}
+                </span>
                 <button
                   role="switch"
                   aria-checked={flags[flag]}

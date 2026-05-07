@@ -37,14 +37,17 @@ eg:
 #### General Evaluation Criteria
 
 1. **Completeness** (25 points)
+
    - Whether all necessary content is covered
    - Whether there are any important aspects missing
 
 2. **Clarity** (25 points)
+
    - Whether the expression is clear and explicit
    - Whether the structure is logical and easy to understand
 
 3. **Feasibility** (25 points)
+
    - Whether the solution is practical and feasible
    - Whether implementation difficulty has been considered
 
@@ -92,7 +95,7 @@ def evaluate_documents(documents):
             'weaknesses': identify_weaknesses(doc)
         }
         scores.append(score)
-    
+
     return select_best_or_combine(scores)
 ```
 
@@ -102,7 +105,7 @@ def evaluate_documents(documents):
    - Requirements: Refer to user's original requirement description (feature_name, feature_description)
    - Design: Refer to approved requirements.md
    - Tasks: Refer to approved requirements.md and design.md
-2. Read candidate documents (requirements:requirements_v*.md, design:design_v*.md, tasks:tasks_v*.md)
+2. Read candidate documents (requirements:requirements_v*.md, design:design_v*.md, tasks:tasks_v\*.md)
 3. Score based on reference documents and Specific Type Criteria
 4. Select the best solution or combine strengths from x solutions
 5. Copy the final solution to a new path with a random 4-digit suffix (e.g., requirements_v1234.md)

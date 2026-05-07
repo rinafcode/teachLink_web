@@ -1,17 +1,39 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
+
+// Languages supported at startup — extend as new locale files are added.
+const VALID_LOCALES = new Set([
+  'en',
+  'es',
+  'ar',
+  'fr',
+  'de',
+  'he',
+  'ja',
+  'zh',
+  'pt',
+  'ru',
+  'it',
+  'ko',
+]);
+const RTL_LOCALES = new Set(['ar', 'he']);
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+  display: 'swap',
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+  display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -28,6 +50,12 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get('theme');
   const defaultTheme = themeCookie ? themeCookie.value : 'system';
+
+  // Read persisted locale to server-render the correct lang/dir on <html> —
+  // avoids a hydration flash for RTL users.
+  const rawLocale = cookieStore.get('i18n:language')?.value ?? 'en';
+  const locale = VALID_LOCALES.has(rawLocale) ? rawLocale : 'en';
+  const dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
 
   const themeScript = `
     (function() {
@@ -48,18 +76,35 @@ export default async function RootLayout({
   `;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
       >
-        <RootProviders defaultTheme={defaultTheme}>
+        <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
           {children}
         </RootProviders>
+
+        {/* Non-essential analytics — loaded after page is interactive */}
+        {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_ANALYTICS_ID}`}
+            strategy="lazyOnload"
+          />
+        )}
+        {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
+          <Script id="analytics-init" strategy="lazyOnload">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${process.env.NEXT_PUBLIC_ANALYTICS_ID}');
+            `}
+          </Script>
+        )}
       </body>
     </html>
   );
 }
-

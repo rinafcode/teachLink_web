@@ -6,3 +6,4 @@ export { InternationalizationEngine } from './InternationalizationEngine';
 export { CulturalAdaptationManager, useCulturalPreferences } from './CulturalAdaptationManager';
 export { DynamicLanguageSwitcher } from './DynamicLanguageSwitcher';
 export { LocalizationTester } from './LocalizationTester';
+export { LanguageManager } from './LanguageManager';
