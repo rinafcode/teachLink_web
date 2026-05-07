@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bookmark, Clock, Edit2, Trash2, Plus } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { formatTime, generateId, getVideoStorageKey } from '@/utils/videoUtils';
+import { useVideoPlayerContext } from './VideoPlayerContext';
 
 type PersistedVideoBookmark = {
   id: string;
@@ -15,15 +16,15 @@ type PersistedVideoBookmark = {
   updatedAt: string; // ISO
 };
 
-export function VideoBookmarks(props: {
-  lessonId: string;
-  userId?: string;
-  currentTime: number;
-  duration: number;
-  onSeek: (time: number) => void;
-  onBookmark?: (bookmark: { time: number; title: string; note?: string }) => void;
-}) {
-  const { lessonId, userId, currentTime, duration, onSeek, onBookmark } = props;
+export function VideoBookmarks() {
+  const {
+    lessonId,
+    userId,
+    currentTime,
+    duration,
+    seekToLearning: onSeek,
+    onBookmark,
+  } = useVideoPlayerContext();
 
   const storageKey = useMemo(
     () => getVideoStorageKey({ kind: 'bookmarks', userId, lessonId }),
@@ -170,7 +171,7 @@ export function VideoBookmarks(props: {
         return next;
       });
 
-      void fetch('/api/bookmarks', {
+      void fetch('/api/v1/bookmarks', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, lessonId, id }),

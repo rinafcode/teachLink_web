@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Star, Clock, User, ArrowRight } from 'lucide-react';
+import { Star, Clock, User, ArrowRight, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
+import { EmptyState } from '@/components';
 
 export interface CourseResult {
   id: string;
@@ -45,11 +46,11 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
   if (!results || results.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400 text-lg">
-          No courses found matching your criteria
-        </p>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title="No courses found"
+        description="Try adjusting your search or filters"
+      />
     );
   }
 

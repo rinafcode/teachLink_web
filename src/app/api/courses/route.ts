@@ -1,15 +1,24 @@
 import { NextResponse } from 'next/server';
-import type { Course, PaginatedResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog, CDN_CACHE_HEADERS } from '@/../infra/edge-config';
+import { validateQuery } from '@/lib/validation';
+import { CourseListQuerySchema } from '@/types/api/courses.dto';
+import type { CourseListResponseDTO } from '@/types/api/courses.dto';
 
-export async function GET(request: Request): Promise<NextResponse<PaginatedResponse<Course>>> {
+export const runtime = 'edge';
+
+export async function GET(request: Request): Promise<NextResponse<CourseListResponseDTO>> {
+  edgeLog('info', '/api/courses', 'GET request received');
+
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse<PaginatedResponse<Course>>;
+    return rateLimitResponse as NextResponse<CourseListResponseDTO>;
   }
 
   const { searchParams } = new URL(request.url);
-  const limit = searchParams.get('limit') || '10';
+  const result = validateQuery(CourseListQuerySchema, searchParams);
+  if (!result.ok) return addHeaders(result.error) as NextResponse<CourseListResponseDTO>;
+  const { limit, cursor } = result.data as { limit: number; cursor?: string };
 
   const courses = [
     {
@@ -20,6 +29,7 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
       duration: '24 hours',
       totalLessons: 12,
       progress: 68,
+      category: 'Design',
       size: '250MB',
       thumbnailUrl:
         'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
@@ -33,6 +43,7 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
       duration: '36 hours',
       totalLessons: 18,
       progress: 45,
+      category: 'Security',
       size: '380MB',
       thumbnailUrl:
         'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
@@ -46,6 +57,7 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
       duration: '48 hours',
       totalLessons: 24,
       progress: 12,
+      category: 'Engineering',
       size: '520MB',
       thumbnailUrl:
         'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',
@@ -53,10 +65,18 @@ export async function GET(request: Request): Promise<NextResponse<PaginatedRespo
     },
   ];
 
-  return addHeaders(
+  const startIndex = cursor ? parseInt(cursor, 10) : 0;
+  const page = courses.slice(startIndex, startIndex + limit);
+  const nextIndex = startIndex + limit;
+  const nextCursor = nextIndex < courses.length ? String(nextIndex) : undefined;
+
+  const response = addHeaders(
     NextResponse.json({
-      data: courses.slice(0, parseInt(limit)),
+      data: page,
       total: courses.length,
+      nextCursor,
     }),
   );
+  response.headers.set('Cache-Control', CDN_CACHE_HEADERS.public);
+  return response;
 }

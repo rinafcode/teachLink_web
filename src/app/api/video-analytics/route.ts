@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { SuccessResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 type AnalyticsEvent = {
   userId?: string;
@@ -16,10 +19,11 @@ const keyFor = (userId: string | undefined, lessonId: string) => {
   return `${safeUserId}::${encodeURIComponent(lessonId)}`;
 };
 
-export async function POST(request: Request): Promise<NextResponse<SuccessResponse>> {
+export async function POST(request: Request) {
+  edgeLog('info', '/api/video-analytics', 'POST request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse;
+    return rateLimitResponse as NextResponse<SuccessResponse>;
   }
 
   const body = (await request.json()) as {
@@ -30,7 +34,9 @@ export async function POST(request: Request): Promise<NextResponse<SuccessRespon
   };
 
   if (!body?.lessonId || !body?.eventType) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 }),
+    );
   }
 
   const event: AnalyticsEvent = {

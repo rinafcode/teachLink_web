@@ -9,6 +9,9 @@ import React, { useState, useEffect } from 'react';
 import { WizardStep, WizardProgress, FormState } from '@/form-management/types/core';
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
+import { useNotification } from '@/hooks/use-notification';
+import { useMutation } from '@/hooks/useMutation';
+import { SubmitButton } from '@/components/forms/SubmitButton';
 
 interface FormWizardControllerProps {
   steps: WizardStep[];
@@ -37,8 +40,26 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [validationEngine] = useState(() => new ValidationEngineImpl());
   const [isValidating, setIsValidating] = useState(false);
+  const { error, success } = useNotification();
 
   const currentStep = steps[currentStepIndex];
+
+  // ── Submission mutation ────────────────────────────────────────────────────
+  const completeMutation = useMutation(
+    async (values: Record<string, any>) => {
+      if (onComplete) {
+        await onComplete(values);
+      }
+    },
+    {
+      onSuccess: () => {
+        success('Form submitted successfully!');
+      },
+      onError: (err) => {
+        error(err instanceof Error ? err.message : 'Failed to complete the form.');
+      },
+    },
+  );
 
   const progress: WizardProgress = {
     currentStep: currentStepIndex,
@@ -60,7 +81,6 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
     setIsValidating(true);
 
     try {
-      // Validate all fields in current step
       const stepFields = currentStep.fields;
       let allValid = true;
 
@@ -72,6 +92,10 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
         if (!result.isValid) {
           allValid = false;
         }
+      }
+
+      if (!allValid) {
+        error('Please fix the errors in this step before continuing.');
       }
 
       return allValid;
@@ -90,12 +114,10 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
       return;
     }
 
-    // Mark current step as completed
     if (!completedSteps.includes(currentStepIndex)) {
       setCompletedSteps([...completedSteps, currentStepIndex]);
     }
 
-    // Check for conditional routing
     if (currentStep.conditionalNext) {
       const nextStepIndex = currentStep.conditionalNext(formState);
       setCurrentStepIndex(nextStepIndex);
@@ -111,7 +133,6 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
 
   const handleGoToStep = async (stepIndex: number) => {
     if (!allowNonLinearNavigation) {
-      // Only allow navigation to completed steps
       if (!completedSteps.includes(stepIndex) && stepIndex !== currentStepIndex) {
         console.warn('Cannot navigate to incomplete step');
         return;
@@ -128,15 +149,9 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
 
   const handleComplete = async () => {
     const isValid = await validateCurrentStep();
+    if (!isValid) return;
 
-    if (!isValid) {
-      console.warn('Final step validation failed');
-      return;
-    }
-
-    if (onComplete) {
-      await onComplete(formState.values);
-    }
+    await completeMutation.mutate(formState.values);
   };
 
   const isStepAccessible = (stepIndex: number): boolean => {
@@ -162,6 +177,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
         onPrevious={handlePrevious}
         onComplete={handleComplete}
         isValidating={isValidating}
+        isSubmitting={completeMutation.isLoading}
         isLastStep={currentStepIndex === steps.length - 1}
       />
     </div>
@@ -213,6 +229,8 @@ interface WizardNavigationProps {
   onPrevious: () => void;
   onComplete: () => void;
   isValidating: boolean;
+  /** True while the final submission mutation is in-flight. */
+  isSubmitting: boolean;
   isLastStep: boolean;
 }
 
@@ -222,11 +240,18 @@ const WizardNavigation: React.FC<WizardNavigationProps> = ({
   onPrevious,
   onComplete,
   isValidating,
+  isSubmitting,
   isLastStep,
 }) => {
+  const isBusy = isValidating || isSubmitting;
+
   return (
     <div className="wizard-navigation">
-      <button onClick={onPrevious} disabled={!progress.canGoPrevious} className="btn-previous">
+      <button
+        onClick={onPrevious}
+        disabled={!progress.canGoPrevious || isBusy}
+        className="btn-previous"
+      >
         ← Previous
       </button>
 
@@ -235,15 +260,18 @@ const WizardNavigation: React.FC<WizardNavigationProps> = ({
       </div>
 
       {isLastStep ? (
-        <button onClick={onComplete} disabled={isValidating} className="btn-complete">
-          {isValidating ? 'Validating...' : 'Complete'}
-        </button>
-      ) : (
-        <button
-          onClick={onNext}
-          disabled={!progress.canGoNext || isValidating}
-          className="btn-next"
+        <SubmitButton
+          type="button"
+          onClick={onComplete}
+          isLoading={isSubmitting}
+          loadingText="Submitting…"
+          disabled={isValidating}
+          className="btn-complete"
         >
+          {isValidating ? 'Validating...' : 'Complete'}
+        </SubmitButton>
+      ) : (
+        <button onClick={onNext} disabled={!progress.canGoNext || isBusy} className="btn-next">
           {isValidating ? 'Validating...' : 'Next →'}
         </button>
       )}

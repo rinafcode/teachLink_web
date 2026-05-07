@@ -40,8 +40,8 @@ export function useKeyboardNavigation(enabled: boolean = true) {
     if (!enabled || !containerRef.current) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Skip links (Ctrl/Cmd + K)
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      // Skip links (Alt + S)
+      if (event.altKey && event.key.toLowerCase() === 's') {
         event.preventDefault();
         const skipLink = document.querySelector<HTMLElement>('[data-skip-link]');
         skipLink?.focus();
@@ -244,4 +244,24 @@ export function useReducedMotion() {
   }, []);
 
   return prefersReducedMotion;
+}
+
+/**
+ * Hook that moves focus to the main content landmark on every route change.
+ * Call once inside a client component that has access to the pathname
+ * (e.g. a RouteChangeAnnouncer rendered inside the layout).
+ */
+export function useFocusOnRouteChange(pathname: string) {
+  useEffect(() => {
+    const main = document.querySelector<HTMLElement>('main, [role="main"]');
+    if (!main) return;
+    // Make main focusable if it isn't already, then focus it
+    const hadTabIndex = main.hasAttribute('tabindex');
+    if (!hadTabIndex) main.setAttribute('tabindex', '-1');
+    main.focus({ preventScroll: true });
+    if (!hadTabIndex) {
+      // Remove the temporary tabindex after focus so it doesn't appear in tab order
+      main.addEventListener('blur', () => main.removeAttribute('tabindex'), { once: true });
+    }
+  }, [pathname]);
 }

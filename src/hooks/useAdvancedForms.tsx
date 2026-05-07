@@ -12,7 +12,6 @@ import {
   FormState,
   ValidationResult,
   SaveStatus,
-  FieldDescriptor,
 } from '@/form-management/types/core';
 
 interface UseAdvancedFormsOptions {
@@ -77,6 +76,10 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
   const stateManagerRef = useRef<FormStateManager>();
   const validationEngineRef = useRef<ValidationEngineImpl>();
   const autoSaveManagerRef = useRef<AutoSaveManagerImpl>();
+  const onSubmitRef = useRef(onSubmit);
+  const onFieldChangeRef = useRef(onFieldChange);
+  const onValidationChangeRef = useRef(onValidationChange);
+  const configSignatureRef = useRef<string>('');
 
   if (!stateManagerRef.current) {
     stateManagerRef.current = new FormStateManager(formId);
@@ -92,6 +95,10 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
   const validationEngine = validationEngineRef.current;
   const autoSaveManager = autoSaveManagerRef.current;
 
+  onSubmitRef.current = onSubmit;
+  onFieldChangeRef.current = onFieldChange;
+  onValidationChangeRef.current = onValidationChange;
+
   // State
   const [formState, setFormState] = useState<FormState>(stateManager.getState());
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({
@@ -102,8 +109,32 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
 
   // Initialize dependencies
   useEffect(() => {
+    const nextSignature = JSON.stringify({
+      fields: config.fields,
+      conditionalLogic: config.conditionalLogic || [],
+    });
+
+    if (configSignatureRef.current === nextSignature) {
+      return;
+    }
+
+    configSignatureRef.current = nextSignature;
     stateManager.initializeDependencies(config.fields, config.conditionalLogic || []);
- }, [config.fields, config.conditionalLogic, stateManager]);
+  }, [config.fields, config.conditionalLogic, stateManager]);
+
+  // Internal validation function
+  const validateFieldInternal = useCallback(
+    async (fieldId: string): Promise<ValidationResult> => {
+      const value = stateManager.getFieldValue(fieldId);
+      const result = await validationEngine.validateField(fieldId, value, stateManager.getState());
+
+      stateManager.setValidationState(fieldId, result);
+      onValidationChangeRef.current?.(fieldId, result);
+
+      return result;
+    },
+    [stateManager, validationEngine],
+  );
 
   // Subscribe to state changes
   useEffect(() => {
@@ -111,26 +142,36 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
       setFormState(stateManager.getState());
 
       if (event.type === 'field-change' && event.fieldId) {
-        if (onFieldChange) {
-          onFieldChange(event.fieldId, event.newValue);
-        }
+        onFieldChangeRef.current?.(event.fieldId, event.newValue);
 
         if (validateOnChange) {
-          validateField(event.fieldId);
+          void validateFieldInternal(event.fieldId);
         }
 
         if (autoSave) {
-          autoSaveManager.saveNow(formId, stateManager.getState());
+          void autoSaveManager.saveNow(formId, stateManager.getState());
         }
       }
     });
 
     return () => subscription.unsubscribe();
-   }, [stateManager, validateOnChange, autoSave, formId, onFieldChange, autoSaveManager]);
+  }, [stateManager, validateOnChange, autoSave, formId, autoSaveManager, validateFieldInternal]);
+
+  // Load draft function
+  const loadDraft = useCallback(async () => {
+    const draft = await autoSaveManager.loadDraft(formId);
+    if (draft) {
+      Object.entries(draft.values).forEach(([fieldId, value]) => {
+        stateManager.updateField(fieldId, value);
+      });
+    }
+  }, [autoSaveManager, formId, stateManager]);
 
   // Setup auto-save
   useEffect(() => {
-    if (!autoSave) return;
+    if (!autoSave) {
+      return undefined;
+    }
 
     autoSaveManager.enableAutoSave(formId, autoSaveInterval);
 
@@ -139,12 +180,12 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     });
 
     // Load draft on mount
-    loadDraft();
+    void loadDraft();
 
     return () => {
       subscription.unsubscribe();
     };
-    }, [autoSave, autoSaveInterval, formId, autoSaveManager, loadDraft]);
+  }, [autoSave, autoSaveInterval, formId, autoSaveManager, loadDraft]);
 
   // Field operations
   const getFieldValue = useCallback(
@@ -199,18 +240,9 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
   // Validation operations
   const validateField = useCallback(
     async (fieldId: string): Promise<ValidationResult> => {
-      const value = stateManager.getFieldValue(fieldId);
-      const result = await validationEngine.validateField(fieldId, value, stateManager.getState());
-
-      stateManager.setValidationState(fieldId, result);
-
-      if (onValidationChange) {
-        onValidationChange(fieldId, result);
-      }
-
-      return result;
+      return validateFieldInternal(fieldId);
     },
-    [stateManager, validationEngine, onValidationChange],
+    [validateFieldInternal],
   );
 
   const validateForm = useCallback(async (): Promise<boolean> => {
@@ -229,6 +261,10 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     stateManager.resetForm();
   }, [stateManager]);
 
+  const clearDraft = useCallback(async () => {
+    await autoSaveManager.clearDraft(formId);
+  }, [autoSaveManager, formId]);
+
   const submitForm = useCallback(async () => {
     setIsSubmitting(true);
     stateManager.setSubmitting(true);
@@ -241,8 +277,8 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
         return;
       }
 
-      if (onSubmit) {
-        await onSubmit(formState.values);
+      if (onSubmitRef.current) {
+        await onSubmitRef.current(stateManager.getState().values);
       }
 
       // Clear draft after successful submission
@@ -258,25 +294,12 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
     } finally {
       setIsSubmitting(false);
     }
-   }, [stateManager, validateForm, onSubmit, formState.values, autoSave, clearDraft]);
+  }, [stateManager, validateForm, autoSave, clearDraft]);
 
   // Auto-save operations
   const saveNow = useCallback(async () => {
     await autoSaveManager.saveNow(formId, stateManager.getState());
   }, [autoSaveManager, formId, stateManager]);
-
-  const loadDraft = useCallback(async () => {
-    const draft = await autoSaveManager.loadDraft(formId);
-    if (draft) {
-      Object.entries(draft.values).forEach(([fieldId, value]) => {
-        stateManager.updateField(fieldId, value);
-      });
-    }
-  }, [autoSaveManager, formId, stateManager]);
-
-  const clearDraft = useCallback(async () => {
-    await autoSaveManager.clearDraft(formId);
-  }, [autoSaveManager, formId]);
 
   // Computed values
   const isValid = stateManager.isFormValid();
@@ -316,7 +339,6 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
 };
 
 // Additional utility hooks
-
 export const useFormField = (formHook: UseAdvancedFormsReturn, fieldId: string) => {
   const value = formHook.getFieldValue(fieldId);
   const validation = formHook.getFieldValidation(fieldId);

@@ -15,9 +15,7 @@ import {
   FormState,
   StateChangeCallback,
   Subscription,
-  SaveStatus,
   SaveStatusCallback,
-  DraftData,
   WizardStep,
   WizardProgress,
 } from './core';

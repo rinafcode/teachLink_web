@@ -21,6 +21,30 @@ export function ScreenReaderSupport({
   const mainLabelId = useId();
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const main = document.querySelector('main');
+    if (!main) return;
+    const priorId = main.getAttribute('id');
+    const priorRole = main.getAttribute('role');
+
+    if (!priorId) {
+      main.setAttribute('id', 'main-content');
+    }
+    if (!priorRole) {
+      main.setAttribute('role', 'main');
+    }
+
+    return () => {
+      if (!priorId && main.getAttribute('id') === 'main-content') {
+        main.removeAttribute('id');
+      }
+      if (!priorRole && main.getAttribute('role') === 'main') {
+        main.removeAttribute('role');
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!pageLabel || typeof document === 'undefined') return;
     const main = document.querySelector('main');
     if (!main) return;

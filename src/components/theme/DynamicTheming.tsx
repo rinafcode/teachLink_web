@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useThemeCustomization } from '@/hooks/useThemeCustomization';
 
 export default function DynamicTheming() {

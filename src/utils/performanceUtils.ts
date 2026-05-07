@@ -2,6 +2,7 @@
  * Performance utilities: Core Web Vitals (web-vitals), trends, suggestions, and helpers.
  */
 
+import { STORAGE_KEYS, MAX_TREND_POINTS, DEFAULT_IDLE_TIMEOUT_MS } from '@/constants/app.constants';
 import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
 
 export interface PerformanceMetric {
@@ -37,8 +38,7 @@ export interface OptimizationSuggestion {
   metric?: string;
 }
 
-const TREND_STORAGE_KEY = 'teachlink:perf:trends';
-const MAX_TREND_POINTS = 200;
+const TREND_STORAGE_KEY = STORAGE_KEYS.PERF_TRENDS;
 
 const vitalListeners = new Set<(metric: PerformanceMetric) => void>();
 let vitalsStarted = false;
@@ -312,7 +312,7 @@ export function measurePerformancePhase(
 }
 
 /** Run work during browser idle time when available. */
-export function runWhenIdle(callback: () => void, timeoutMs = 2000): void {
+export function runWhenIdle(callback: () => void, timeoutMs = DEFAULT_IDLE_TIMEOUT_MS): void {
   if (typeof window === 'undefined') {
     callback();
     return;
@@ -323,4 +323,48 @@ export function runWhenIdle(callback: () => void, timeoutMs = 2000): void {
   } else {
     window.setTimeout(callback, 1);
   }
+}
+
+/**
+ * Report a performance metric to the analytics service.
+ */
+export async function reportVitalToAnalytics(metric: PerformanceMetric): Promise<void> {
+  if (typeof window === 'undefined') return;
+
+  // Only report in production or if explicitly enabled
+  const shouldReport =
+    process.env.NODE_ENV === 'production' ||
+    process.env.NEXT_PUBLIC_ENABLE_PERF_ANALYTICS === 'true';
+
+  if (!shouldReport) {
+    console.debug(`[Performance Analytics] Skipping report for ${metric.name} in development`);
+    return;
+  }
+
+  runWhenIdle(async () => {
+    try {
+      const body = JSON.stringify({
+        ...metric,
+        timestamp: Date.now(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+      });
+
+      const response = await fetch('/api/v1/performance/vitals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        // Use keepalive to ensure the request is sent even if the page is closed
+        keepalive: true,
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `[Performance Analytics] Failed to send ${metric.name}: ${response.statusText}`,
+        );
+      }
+    } catch (err) {
+      console.error(`[Performance Analytics] Error sending ${metric.name}:`, err);
+    }
+  });
 }

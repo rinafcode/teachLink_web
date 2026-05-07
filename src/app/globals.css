@@ -1,4 +1,11 @@
 @import 'tailwindcss';
+@import '../styles/print.css';
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
 
 :root {
   --background: #ffffff;
@@ -7,6 +14,20 @@
     'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'Cascadia Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Monaco,
     monospace;
+}
+
+html {
+  font-size: calc(100% * var(--a11y-font-scale, 1));
+}
+
+html.a11y-high-contrast {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+html.a11y-high-contrast body {
+  background: var(--background);
+  color: var(--foreground);
 }
 
 @media (prefers-color-scheme: dark) {

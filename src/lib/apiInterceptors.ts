@@ -1,3 +1,9 @@
+import {
+  API_TIMEOUT_UPLOAD,
+  API_TIMEOUT_DOWNLOAD,
+  API_TIMEOUT_SEARCH,
+  STORAGE_KEYS,
+} from '@/constants/app.constants';
 import { apiClient, RequestInterceptor, ResponseInterceptor, ErrorInterceptor } from './api';
 import { RequestConfig } from './api';
 
@@ -45,7 +51,7 @@ export const authRefreshInterceptor: ErrorInterceptor = async (error: Error) => 
   if (error.message && error.message.includes('401')) {
     // Clear invalid token
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       // Optionally redirect to login
       window.location.href = '/login';
     }
@@ -59,9 +65,9 @@ export const authRefreshInterceptor: ErrorInterceptor = async (error: Error) => 
 export const timeoutInterceptor: RequestInterceptor = async (config: RequestConfig) => {
   // You can customize timeout per endpoint
   const urlPatterns: Array<{ pattern: string | RegExp; timeout: number }> = [
-    { pattern: /\/upload/, timeout: 60000 }, // 60s for uploads
-    { pattern: /\/download/, timeout: 60000 }, // 60s for downloads
-    { pattern: /\/search/, timeout: 15000 }, // 15s for search
+    { pattern: /\/upload/, timeout: API_TIMEOUT_UPLOAD },
+    { pattern: /\/download/, timeout: API_TIMEOUT_DOWNLOAD },
+    { pattern: /\/search/, timeout: API_TIMEOUT_SEARCH },
   ];
 
   const url = config.url;

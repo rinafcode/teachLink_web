@@ -5,11 +5,10 @@ import { FaCheck, FaTimes } from 'react-icons/fa';
 
 interface TrueFalseQuestionProps {
   question: Question;
-  isReviewMode: boolean;
 }
 
-export default function TrueFalseQuestion({ question, isReviewMode }: TrueFalseQuestionProps) {
-  const { answers, setAnswer } = useQuizStore();
+export default function TrueFalseQuestion({ question }: TrueFalseQuestionProps) {
+  const { answers, setAnswer, isReviewMode } = useQuizStore();
   const selectedAnswer = answers[question.id];
   const correctAnswer = question.correctAnswer;
 

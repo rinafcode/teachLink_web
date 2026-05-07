@@ -7,14 +7,10 @@ import { FaCheck, FaTimes, FaPlay } from 'react-icons/fa';
 
 interface CodeChallengeQuestionProps {
   question: Question;
-  isReviewMode: boolean;
 }
 
-export default function CodeChallengeQuestion({
-  question,
-  isReviewMode,
-}: CodeChallengeQuestionProps) {
-  const { answers, setAnswer } = useQuizStore();
+export default function CodeChallengeQuestion({ question }: CodeChallengeQuestionProps) {
+  const { answers, setAnswer, isReviewMode } = useQuizStore();
   const [code, setCode] = useState(answers[question.id] || question.codeTemplate || '');
   const [testResults, setTestResults] = useState<boolean[]>([]);
   const [isRunning, setIsRunning] = useState(false);

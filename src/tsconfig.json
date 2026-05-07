@@ -14,7 +14,7 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
-    "typeRoots": ["../node_modules/@types"],
+    "ignoreDeprecations": "6.0",
     "plugins": [
       {
         "name": "next"

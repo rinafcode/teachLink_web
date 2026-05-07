@@ -1,45 +1,59 @@
+import { z } from 'zod';
+import { validateData } from './validation/validator';
 import { ApiError, parseApiError } from '@/utils/error-handler';
 import { ErrorType, ErrorInfo } from '@/utils/errorUtils';
+import { API_VERSION_HEADER, DEFAULT_API_VERSION, getVersionedApiPath } from './apiVersioning';
+import {
+  API_TIMEOUT_DEFAULT,
+  MAX_RETRIES,
+  RECONNECT_DELAY_MS,
+  STORAGE_KEYS,
+  API_CACHE_TTL_DEFAULT,
+} from '@/constants/app.constants';
 
 export type { ErrorInfo };
 
-const DEFAULT_TIMEOUT_MS = 10_000;
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 1000;
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
 
-/**
- * Request interceptor function type
- */
+const DEFAULT_TIMEOUT_MS = API_TIMEOUT_DEFAULT;
+const API_MAX_RETRIES = MAX_RETRIES;
+const RETRY_DELAY_MS = RECONNECT_DELAY_MS;
+const DEFAULT_TTL_MS = API_CACHE_TTL_DEFAULT;
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
 export type RequestInterceptor = (config: RequestConfig) => Promise<RequestConfig> | RequestConfig;
-
-/**
- * Response interceptor function type
- */
 export type ResponseInterceptor<T = any> = (response: T) => Promise<T> | T;
-
-/**
- * Error interceptor function type
- */
 export type ErrorInterceptor = (error: Error) => Promise<void> | void;
 
-/**
- * Request configuration for the API client
- */
 export interface RequestConfig extends RequestInit {
   url: string;
   retries?: number;
   timeout?: number;
+  schema?: z.ZodSchema;
 }
 
-/**
- * API Client configuration options
- */
 export interface ApiClientConfig {
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
   retryDelay?: number;
+  apiVersion?: string;
+  defaultTTL?: number;
 }
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function statusToErrorType(status: number): ErrorType {
   if (status === 401) return ErrorType.AUTHENTICATION;
@@ -51,172 +65,127 @@ function statusToErrorType(status: number): ErrorType {
 
 function statusToUserMessage(status: number): string {
   if (status === 401) return 'Please log in again.';
-  if (status === 403) return 'You do not have permission to access this resource.';
-  if (status === 404) return 'The resource you are looking for does not exist.';
-  if (status >= 500) return 'The server is having trouble. Please try again later.';
-  return 'There was a problem with your request.';
+  if (status === 403) return 'You do not have permission.';
+  if (status === 404) return 'Resource not found.';
+  if (status >= 500) return 'Server error. Try again later.';
+  return 'Request failed.';
 }
 
-/**
- * Should retry on specific status codes
- */
 function shouldRetry(status: number, attempt: number, maxRetries: number): boolean {
   if (attempt >= maxRetries) return false;
-  // Retry on 408, 429, 500, 502, 503, 504
   return [408, 429, 500, 502, 503, 504].includes(status);
 }
 
-/**
- * Calculate exponential backoff delay
- */
 function getRetryDelay(attempt: number, baseDelay: number): number {
   return baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
 }
 
-/**
- * Unified API Client with interceptors and retry logic
- */
+// ---------------------------------------------------------------------------
+// API CLIENT
+// ---------------------------------------------------------------------------
+
 class ApiClientImpl {
   private config: Required<ApiClientConfig>;
+  private cache = new Map<string, CacheEntry<any>>();
   private requestInterceptors: RequestInterceptor[] = [];
-  private responseInterceptors: ResponseInterceptor<unknown>[] = [];
+  private responseInterceptors: ResponseInterceptor[] = [];
   private errorInterceptors: ErrorInterceptor[] = [];
 
   constructor(config: ApiClientConfig = {}) {
     this.config = {
       baseURL: config.baseURL || process.env.NEXT_PUBLIC_API_URL || '',
       timeout: config.timeout || DEFAULT_TIMEOUT_MS,
-      maxRetries: config.maxRetries || MAX_RETRIES,
+      maxRetries: config.maxRetries || API_MAX_RETRIES,
       retryDelay: config.retryDelay || RETRY_DELAY_MS,
+      apiVersion: config.apiVersion || DEFAULT_API_VERSION,
+      defaultTTL: config.defaultTTL || DEFAULT_TTL_MS,
     };
   }
 
-  /**
-   * Add a request interceptor
-   */
-  addRequestInterceptor(interceptor: RequestInterceptor): void {
-    this.requestInterceptors.push(interceptor);
-  }
-
-  /**
-   * Add a response interceptor
-   */
-  addResponseInterceptor(interceptor: ResponseInterceptor<unknown>): void {
-    this.responseInterceptors.push(interceptor);
-  }
-
-  /**
-   * Add an error interceptor
-   */
-  addErrorInterceptor(interceptor: ErrorInterceptor): void {
-    this.errorInterceptors.push(interceptor);
-  }
-
-  /**
-   * Apply all request interceptors
-   */
-  private async applyRequestInterceptors(config: RequestConfig): Promise<RequestConfig> {
-    let processedConfig = config;
-    for (const interceptor of this.requestInterceptors) {
-      processedConfig = await interceptor(processedConfig);
-    }
-    return processedConfig;
-  }
-
-  /**
-   * Apply all response interceptors
-   */
-  private async applyResponseInterceptors<T>(response: T): Promise<T> {
-    let processedResponse: any = response;
-    for (const interceptor of this.responseInterceptors) {
-      processedResponse = (await interceptor(processedResponse)) as T;
-    }
-    return processedResponse as T;
-  }
-
-  /**
-   * Apply all error interceptors
-   */
-  private async applyErrorInterceptors(error: Error): Promise<void> {
-    for (const interceptor of this.errorInterceptors) {
-      await interceptor(error);
-    }
-  }
-
-  /**
-   * Get authentication token
-   */
   private getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('token');
+    return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
   }
 
-  /**
-   * Make HTTP request with retry logic
-   */
+  invalidateCache(url?: string) {
+    if (url) this.cache.delete(url);
+    else this.cache.clear();
+  }
+
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
+    const token = this.getToken();
+
+    const baseURL = this.config.baseURL.replace(/\/+$/, '');
+    const resolvedUrl = getVersionedApiPath(config.url);
+    const url = baseURL ? `${baseURL}${resolvedUrl}` : resolvedUrl;
+
+    const cacheKey = `${url}:${token || 'anon'}`;
+
+    // CACHE
+    if (config.method === 'GET' && config.useCache && !config._bypassCacheRead) {
+      const cached = this.cache.get(cacheKey);
+      if (cached) {
+        const ttl = config.ttl ?? this.config.defaultTTL;
+        if (Date.now() - cached.timestamp < ttl) return cached.data;
+
+        this.requestWithRetry<T>({ ...config, _bypassCacheRead: true }).catch(() => {});
+        return cached.data;
+      }
+    }
+
     const controller = new AbortController();
     const timeout = config.timeout || this.config.timeout;
-    const timer = setTimeout(() => controller.abort(), timeout);
-    const maxRetries = config.retries ?? this.config.maxRetries;
 
-    const token = this.getToken();
+    const timer = setTimeout(() => controller.abort(), timeout);
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(config.headers as Record<string, string>),
+      ...(config.headers || {}),
+      [API_VERSION_HEADER]: this.config.apiVersion,
     };
 
     try {
-      // Apply request interceptors
-      const processedConfig = await this.applyRequestInterceptors({
+      const response = await fetch(url, {
         ...config,
         headers,
         signal: controller.signal,
       });
 
-      const url = this.config.baseURL ? `${this.config.baseURL}${config.url}` : config.url;
-
-      const response = await fetch(url, processedConfig);
       clearTimeout(timer);
 
       if (!response.ok) {
-        // Check if we should retry
-        if (shouldRetry(response.status, attempt, maxRetries)) {
-          const delay = getRetryDelay(attempt, this.config.retryDelay);
-          await new Promise((resolve) => setTimeout(resolve, delay));
+        if (shouldRetry(response.status, attempt, this.config.maxRetries)) {
+          await new Promise((r) => setTimeout(r, getRetryDelay(attempt, this.config.retryDelay)));
           return this.requestWithRetry<T>(config, attempt + 1);
         }
 
-        let message = response.statusText;
-        try {
-          const body = await response.json();
-          message = body?.message ?? message;
-        } catch {
-          // ignore parse errors
-        }
+        const body = await response.json().catch(() => ({}));
+
         throw new ApiError(
           statusToErrorType(response.status),
-          message,
+          body?.message || response.statusText,
           statusToUserMessage(response.status),
           response.status,
         );
       }
 
-      const data = (await response.json()) as T;
+      const data = await response.json();
 
-      // Apply response interceptors
-      const processedResponse = await this.applyResponseInterceptors(data);
-      return processedResponse;
+      if (config.method === 'GET' && config.useCache) {
+        this.cache.set(cacheKey, { data, timestamp: Date.now() });
+      }
+
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method || '')) {
+        this.invalidateCache(cacheKey);
+      }
+
+      return data;
     } catch (err) {
       clearTimeout(timer);
 
-      const error = err instanceof Error ? err : new Error('Unknown error occurred');
-
-      // Apply error interceptors
-      await this.applyErrorInterceptors(error);
-
       if (err instanceof ApiError) throw err;
+
       throw parseApiError(err);
     }
   }
@@ -224,7 +193,7 @@ class ApiClientImpl {
   /**
    * GET request
    */
-  async get<T>(url: string, options?: RequestInit): Promise<T> {
+  async get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -235,7 +204,20 @@ class ApiClientImpl {
   /**
    * POST request
    */
-  async post<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  async post<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
+  // ---------------------------------------------------------------------------
+  // METHODS
+  // ---------------------------------------------------------------------------
+
+  get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>) {
+    return this.requestWithRetry<T>({ ...options, url, method: 'GET' });
+  }
+
+  post<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -244,10 +226,7 @@ class ApiClientImpl {
     });
   }
 
-  /**
-   * PATCH request
-   */
-  async patch<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  patch<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -256,10 +235,7 @@ class ApiClientImpl {
     });
   }
 
-  /**
-   * PUT request
-   */
-  async put<T>(url: string, body?: unknown, options?: RequestInit): Promise<T> {
+  put<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -271,7 +247,7 @@ class ApiClientImpl {
   /**
    * DELETE request
    */
-  async delete<T>(url: string, options?: RequestInit): Promise<T> {
+  async delete<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -280,8 +256,6 @@ class ApiClientImpl {
   }
 }
 
-// Create singleton instance
+// Singleton
 export const apiClient = new ApiClientImpl();
-
-// Export types for external use
 export type { ApiClientImpl };

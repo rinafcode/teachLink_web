@@ -125,7 +125,6 @@ export class IntegratedValidationSystem {
       name: 'minimum-age',
       description: 'Validate minimum age requirement',
       isAsync: false,
-      validationFunction: (value, formState, context) => {
       validationFunction: (value) => {
         const age = parseInt(String(value));
         const minAge = 18;
