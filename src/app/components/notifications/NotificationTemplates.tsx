@@ -9,10 +9,8 @@ import {
   Copy,
   Eye,
   Search,
-  Filter,
   ChevronDown,
   ChevronUp,
-  Check,
   X,
   AlertCircle,
 } from 'lucide-react';

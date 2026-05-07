@@ -16,7 +16,9 @@ import { z } from 'zod';
  */
 export const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum address');
 
-export const starknetAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{60,66}$/, 'Invalid Starknet address');
+export const starknetAddressSchema = z
+  .string()
+  .regex(/^0x[a-fA-F0-9]{60,66}$/, 'Invalid Starknet address');
 
 /**
  * Transaction security checks result
@@ -69,7 +71,10 @@ export function isValidStarknetAddress(address: string): boolean {
 /**
  * Validate any blockchain address
  */
-export function isValidAddress(address: string, chainType: 'ethereum' | 'starknet' = 'ethereum'): boolean {
+export function isValidAddress(
+  address: string,
+  chainType: 'ethereum' | 'starknet' = 'ethereum',
+): boolean {
   if (chainType === 'starknet') {
     return isValidStarknetAddress(address);
   }
@@ -262,7 +267,9 @@ export function toChecksumAddress(address: string): string {
   }
 
   const addr = address.slice(2);
-  const hash = Array.from(addr).map((char) => (`0${char.charCodeAt(0).toString(16)}`).slice(-2)).join('');
+  const hash = Array.from(addr)
+    .map((char) => `0${char.charCodeAt(0).toString(16)}`.slice(-2))
+    .join('');
 
   let checksum = '0x';
   for (let i = 0; i < addr.length; i++) {
@@ -292,9 +299,11 @@ export type ValidatedTransaction = z.infer<typeof transactionSchema>;
 /**
  * Safely validate and parse transaction
  */
-export function validateTransaction(
-  tx: unknown,
-): { valid: boolean; data?: ValidatedTransaction; error?: string } {
+export function validateTransaction(tx: unknown): {
+  valid: boolean;
+  data?: ValidatedTransaction;
+  error?: string;
+} {
   try {
     const validated = transactionSchema.parse(tx);
     return { valid: true, data: validated };

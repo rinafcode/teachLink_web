@@ -2,17 +2,22 @@ name: Branch Protection
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches:
+      - main
+      - develop
 
 jobs:
-  ci:
+  type-check:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -27,14 +32,15 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -49,14 +55,15 @@ jobs:
 
   validate:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -66,23 +73,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate UI (icons, responsive)
+      - name: Validate UI
         run: pnpm run validate:ui
 
-      - name: Validate Web3 (wallet, env)
+      - name: Validate Web3
         run: pnpm run validate:web3
 
   build:
     runs-on: ubuntu-latest
     needs: [type-check, lint, validate]
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -97,7 +105,7 @@ jobs:
         env:
           NEXT_PUBLIC_STARKNET_NETWORK: goerli-alpha
 
-      - name: Check for build errors
+      - name: Verify Build Output
         run: |
           if [ -f .next/build-manifest.json ]; then
             echo "✅ Build completed successfully"
@@ -109,14 +117,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: [build]
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4

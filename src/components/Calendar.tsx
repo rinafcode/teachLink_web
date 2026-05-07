@@ -2,14 +2,7 @@
 
 import { useCallback } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, SlotInfo, Views } from 'react-big-calendar';
-import {
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  addWeeks,
-  addDays,
-} from 'date-fns';
+import { format, parse, startOfWeek, getDay, addWeeks, addDays } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import type { CalendarEvent } from '@/types/event';
@@ -35,7 +28,8 @@ function expandRecurring(event: CalendarEvent): CalendarEvent[] {
 
   let current = event.start;
   for (let i = 1; i < 52; i++) {
-    current = freq === 'DAILY' ? addDays(current, 1) : addWeeks(current, freq === 'MONTHLY' ? 4 : 1);
+    current =
+      freq === 'DAILY' ? addDays(current, 1) : addWeeks(current, freq === 'MONTHLY' ? 4 : 1);
     if (current > windowEnd) break;
     instances.push({
       ...event,
@@ -56,15 +50,18 @@ interface CalendarProps {
 export default function Calendar({ events, onSelectSlot, onSelectEvent }: CalendarProps) {
   const expanded = events.flatMap(expandRecurring);
 
-  const eventStyleGetter = useCallback((event: CalendarEvent) => ({
-    style: {
-      backgroundColor: event.recurring ? '#7c3aed' : '#2563eb',
-      borderRadius: '4px',
-      border: 'none',
-      color: '#fff',
-      fontSize: '0.8rem',
-    },
-  }), []);
+  const eventStyleGetter = useCallback(
+    (event: CalendarEvent) => ({
+      style: {
+        backgroundColor: event.recurring ? '#7c3aed' : '#2563eb',
+        borderRadius: '4px',
+        border: 'none',
+        color: '#fff',
+        fontSize: '0.8rem',
+      },
+    }),
+    [],
+  );
 
   return (
     <div className="h-[600px] bg-gray-800 rounded-xl p-4 text-white [&_.rbc-calendar]:text-gray-100 [&_.rbc-toolbar]:text-gray-100 [&_.rbc-toolbar_button]:text-gray-100 [&_.rbc-toolbar_button]:bg-gray-700 [&_.rbc-toolbar_button]:border-gray-600 [&_.rbc-header]:bg-gray-700 [&_.rbc-header]:text-gray-200 [&_.rbc-today]:bg-gray-700/50 [&_.rbc-off-range-bg]:bg-gray-900/30 [&_.rbc-day-bg]:border-gray-700 [&_.rbc-month-view]:border-gray-700 [&_.rbc-time-view]:border-gray-700 [&_.rbc-agenda-view_table]:border-gray-700">

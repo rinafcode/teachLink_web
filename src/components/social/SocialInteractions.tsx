@@ -1,5 +1,5 @@
 'use client';
-
+import Image from 'next/image';
 import { useState } from 'react';
 import { Heart, MessageCircle, Share2, UserCircle } from 'lucide-react';
 import { useSocialInteractions } from '@/hooks/useSocialFeatures';
@@ -95,16 +95,20 @@ export default function SocialInteractions({ contentId, contentUrl }: SocialInte
             {comments.map((c) => (
               <div key={c.id} className="flex gap-2">
                 {c.authorAvatar ? (
-                  <img
+                  <Image
                     src={c.authorAvatar}
                     alt={c.authorName}
+                    width={28}
+                    height={28}
                     className="w-7 h-7 rounded-full object-cover shrink-0"
                   />
                 ) : (
                   <UserCircle className="w-7 h-7 text-gray-400 shrink-0" />
                 )}
                 <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-                  <p className="text-xs font-medium text-gray-900 dark:text-white">{c.authorName}</p>
+                  <p className="text-xs font-medium text-gray-900 dark:text-white">
+                    {c.authorName}
+                  </p>
                   <p className="text-sm text-gray-700 dark:text-gray-300">{c.body}</p>
                   <p className="text-xs text-gray-400 mt-1">{getRelativeTime(c.createdAt)}</p>
                 </div>

@@ -5,9 +5,7 @@ import {
   Send,
   AlertCircle,
   CheckCircle2,
-  XCircle,
   Loader2,
-  Copy,
   ExternalLink,
   ChevronDown,
   Eye,
@@ -33,18 +31,6 @@ interface TransactionHistory {
 
 type TransactionStatus = 'idle' | 'pending' | 'success' | 'error';
 
-/**
- * TransactionManager Component
- *
- * Provides comprehensive transaction management:
- * - Build and sign transactions
- * - Track transaction status
- * - View transaction history
- * - Manage gas settings
- * - Handle transaction errors gracefully
- *
- * Supports both EVM and Starknet chains
- */
 export const TransactionManager: React.FC<TransactionManagerProps> = ({
   className = '',
   onTransactionSent,
@@ -64,11 +50,9 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   const [txHash, setTxHash] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  /**
-   * Load transaction history from localStorage
-   */
+  // Load history on mount
   useEffect(() => {
-    if (typeof localStorage === 'undefined') return;
+    if (typeof localStorage === 'undefined' || !wallet.address) return;
 
     const saved = localStorage.getItem(`tx_history_${wallet.address}`);
     if (saved) {
@@ -80,9 +64,13 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
     }
   }, [wallet.address]);
 
-  /**
-   * Save transaction to history
-   */
+  // Sync history to localStorage
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined' && wallet.address && txHistory.length > 0) {
+      localStorage.setItem(`tx_history_${wallet.address}`, JSON.stringify(txHistory.slice(0, 50)));
+    }
+  }, [txHistory, wallet.address]);
+
   const saveToHistory = useCallback(
     (hash: string, tx: Partial<TransactionDetails>, status: 'pending' | 'success' | 'failed') => {
       const newTx: TransactionHistory = {
@@ -94,25 +82,20 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
         value: tx.value || '0',
       };
 
-      const updated = [newTx, ...txHistory];
-      setTxHistory(updated);
-
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(`tx_history_${wallet.address}`, JSON.stringify(updated.slice(0, 50)));
-      }
+      setTxHistory((prev) => [newTx, ...prev]);
     },
-    [wallet.address, txHistory],
+    [wallet.address],
   );
 
   /**
    * Validate transaction form
    */
-  const validateForm = (): string | null => {
+  const validateForm = useCallback((): string | null => {
     if (!toAddress.trim()) return 'Recipient address is required';
     if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
     if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) return 'Invalid Ethereum address format';
     return null;
-  };
+  }, [toAddress, amount]);
 
   /**
    * Handle transaction submission
@@ -121,8 +104,14 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      // Validation
-      const validationError = validateForm();
+      // Inline validation logic to resolve exhaustive-deps
+      const validationError = (() => {
+        if (!toAddress.trim()) return 'Recipient address is required';
+        if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
+        if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) return 'Invalid Ethereum address format';
+        return null;
+      })();
+
       if (validationError) {
         setTxError(validationError);
         return;
@@ -138,17 +127,14 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       setTxHash(null);
 
       try {
-        // Convert amount to Wei (for ETH)
         const valueInWei = (parseFloat(amount) * Math.pow(10, 18)).toString(16);
-
         const tx: Partial<TransactionDetails> = {
           to: toAddress,
           value: `0x${valueInWei}`,
-          gasLimit: `0x${parseInt(gasLimit).toString(16)}`,
+          gasLimit: `0x${(parseInt(gasLimit, 10) || 21000).toString(16)}`,
           data: '0x',
         };
 
-        // Send transaction
         const hash = await wallet.sendTransaction(tx);
 
         setTxHash(hash);
@@ -156,11 +142,9 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
         saveToHistory(hash, tx, 'pending');
         onTransactionSent?.(hash);
 
-        // Reset form
         setTimeout(() => {
           setToAddress('');
           setAmount('');
-          setGasLimit('21000');
           setShowForm(false);
           setTxStatus('idle');
         }, 2000);
@@ -169,45 +153,31 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
         setTxError(message);
         setTxStatus('error');
         onTransactionError?.(error instanceof Error ? error : new Error(message));
-
-        if (txHash) {
-          saveToHistory(txHash, { to: toAddress, value: amount }, 'failed');
-        }
       }
     },
     [wallet, toAddress, amount, gasLimit, onTransactionSent, onTransactionError, saveToHistory],
   );
 
-  /**
-   * Format transaction amount
-   */
-  const formatAmount = (value: string): string => {
-    const num = parseFloat(value);
-    if (isNaN(num)) return '0';
-    return num.toFixed(4);
-  };
-
-  /**
-   * Get explorer URL for transaction
-   */
   const getExplorerUrl = (hash: string): string => {
-    const chain = wallet.supportedChains[wallet.chainId || '0x1'];
-    if (!chain) return '';
-    return `${chain.explorerUrl}/tx/${hash}`;
+    const chain = wallet.supportedChains?.[wallet.chainId || '0x1'];
+    return chain ? `${chain.explorerUrl}/tx/${hash}` : '';
   };
 
   if (!wallet.isConnected) {
     return (
-      <div className={`p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-center ${className}`}>
+      <div
+        className={`p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-center ${className}`}
+      >
         <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-        <p className="text-sm text-blue-700 dark:text-blue-300">Connect wallet to manage transactions</p>
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          Connect wallet to manage transactions
+        </p>
       </div>
     );
   }
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Transaction form */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <button
           onClick={() => setShowForm(!showForm)}
@@ -217,24 +187,24 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
             <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span className="font-semibold text-gray-900 dark:text-white">Send Transaction</span>
           </div>
-          <ChevronDown
-            className={`w-5 h-5 transition-transform ${showForm ? 'rotate-180' : ''}`}
-          />
+          <ChevronDown className={`w-5 h-5 transition-transform ${showForm ? 'rotate-180' : ''}`} />
         </button>
 
         {showForm && (
-          <form onSubmit={handleSubmitTransaction} className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
+          <form
+            onSubmit={handleSubmitTransaction}
+            className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4"
+          >
             {/* Error message */}
             {txError && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                <p className="text-sm text-red-700 dark:text-red-300">{txError}</p>
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                <p className="text-sm text-red-700">{txError}</p>
               </div>
             )}
 
-            {/* Recipient address */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 To Address
               </label>
               <input
@@ -243,13 +213,12 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                 onChange={(e) => setToAddress(e.target.value)}
                 placeholder="0x..."
                 disabled={txStatus === 'pending'}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            {/* Amount */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Amount (ETH)
               </label>
               <input
@@ -259,11 +228,10 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.0"
                 disabled={txStatus === 'pending'}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            {/* Advanced settings */}
             <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
@@ -275,7 +243,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
 
             {showAdvanced && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   Gas Limit
                 </label>
                 <input
@@ -283,77 +251,50 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                   value={gasLimit}
                   onChange={(e) => setGasLimit(e.target.value)}
                   disabled={txStatus === 'pending'}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
                 />
               </div>
             )}
 
-            {/* Submit button */}
             <button
               type="submit"
-              disabled={txStatus === 'pending' || !wallet.isConnected}
-              className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+              disabled={txStatus === 'pending'}
+              className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors disabled:bg-blue-400"
             >
               {txStatus === 'pending' ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Confirming...</span>
-                </>
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span>Send Transaction</span>
-                </>
+                <Send className="w-4 h-4" />
               )}
+              {txStatus === 'pending' ? 'Confirming...' : 'Send Transaction'}
             </button>
-
-            {/* Success message */}
-            {txStatus === 'success' && txHash && (
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <span className="font-medium text-green-700 dark:text-green-300">
-                    Transaction submitted!
-                  </span>
-                </div>
-                <a
-                  href={getExplorerUrl(txHash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-green-600 dark:text-green-400 hover:underline flex items-center gap-1"
-                >
-                  View on Explorer
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            )}
           </form>
         )}
       </div>
 
-      {/* Transaction history */}
       {txHistory.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="px-4 py-3 border-b dark:border-gray-700">
             <h3 className="font-semibold text-gray-900 dark:text-white">Recent Transactions</h3>
           </div>
-
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="divide-y dark:divide-gray-700">
             {txHistory.map((tx) => (
               <div key={tx.hash} className="p-4">
                 <button
                   onClick={() => setExpandedTx(expandedTx === tx.hash ? null : tx.hash)}
-                  className="w-full text-left flex items-center justify-between hover:opacity-75 transition-opacity"
+                  className="w-full text-left flex items-center justify-between"
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    {tx.status === 'pending' && (
-                      <Loader2 className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin flex-shrink-0" />
+                  <div className="flex items-center gap-3">
+                    {tx.status === 'pending' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
                     )}
                     {tx.status === 'success' && (
                       <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                     )}
                     {tx.status === 'failed' && (
-                      <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
                     )}
 
                     <div className="min-w-0 flex-1">
@@ -367,45 +308,30 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                   </div>
 
                   <div className="text-right ml-2">
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {formatAmount(tx.value)} ETH
-                    </p>
+                    <p className="font-medium text-gray-900 dark:text-white">{tx.value} ETH</p>
                     <span
                       className={`text-xs font-medium capitalize ${
                         tx.status === 'success'
                           ? 'text-green-600 dark:text-green-400'
                           : tx.status === 'pending'
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-red-600 dark:text-red-400'
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-red-600 dark:text-red-400'
                       }`}
                     >
                       {tx.status}
                     </span>
                   </div>
                 </button>
-
                 {expandedTx === tx.hash && (
-                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">From:</span>
-                      <span className="font-mono text-gray-700 dark:text-gray-300">
-                        {tx.from.slice(0, 10)}...
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">To:</span>
-                      <span className="font-mono text-gray-700 dark:text-gray-300">
-                        {tx.to.slice(0, 10)}...
-                      </span>
-                    </div>
+                  <div className="mt-2 text-xs text-gray-500 space-y-1">
+                    <p>To: {tx.to}</p>
                     <a
                       href={getExplorerUrl(tx.hash)}
                       target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 pt-2"
+                      rel="noreferrer"
+                      className="text-blue-500 flex items-center gap-1 hover:underline"
                     >
-                      View Full Details
-                      <ExternalLink className="w-3 h-3" />
+                      View on Explorer <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 )}

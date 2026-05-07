@@ -1,21 +1,15 @@
 'use client';
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  DependencyList,
-  Dispatch,
-  SetStateAction,
-} from 'react';
-import { ApolloClient, DocumentNode, ApolloError, OperationVariables, gql } from '@apollo/client';
+import { useEffect, useRef, useState, useCallback, Dispatch, SetStateAction } from 'react';
+import { ApolloClient, DocumentNode, ApolloError, OperationVariables } from '@apollo/client';
 import {
   ConnectionState,
   getConnectionManager,
   isConnectionError,
   formatSubscriptionError,
 } from '@/lib/graphql/subscriptions';
+
+export { ConnectionState, getConnectionManager, isConnectionError, formatSubscriptionError };
 
 /**
  * Subscription variable constraints
@@ -195,7 +189,11 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
    */
   const cleanup = useCallback(() => {
     if (unsubscribeRef.current) {
-      unsubscribeRef.current();
+      if (typeof unsubscribeRef.current === 'function') {
+        (unsubscribeRef.current as any)();
+      } else if ((unsubscribeRef.current as any).unsubscribe) {
+        (unsubscribeRef.current as any).unsubscribe();
+      }
       unsubscribeRef.current = null;
     }
 
@@ -248,7 +246,7 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
       ? error.message || 'Subscription error'
       : error instanceof SubscriptionError
       ? formatSubscriptionError(error)
-      : error?.message || null;
+      : (error as any)?.message || null;
 
   return {
     data,
@@ -352,13 +350,7 @@ export function usePollableSubscription<TData = any, TVariables extends Operatio
         pollTimeoutRef.current = null;
       }
     };
-  }, [
-    pollFn,
-    pollIntervalMs,
-    subscriptionResult.connectionState,
-    subscriptionResult.updateData,
-    subscriptionResult,
-  ]);
+  }, [pollFn, pollIntervalMs, connectionState, updateData]);
 
   return {
     ...subscriptionResult,

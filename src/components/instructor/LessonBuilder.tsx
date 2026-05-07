@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { GripVertical, Trash2, Edit, Plus, Video, FileText, FileCheck } from 'lucide-react';
 import { Lesson } from '@/hooks/useCourseCreation';

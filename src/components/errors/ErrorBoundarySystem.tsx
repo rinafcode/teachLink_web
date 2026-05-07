@@ -57,19 +57,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       });
     }
 
-    // Hook for reporting system
-    this.setState((prevState) => ({
-      errorInfo,
-      errorCount: (prevState.errorCount ?? 0) + 1,
-    }));
-
-    errorReportingService.addBreadcrumb('errorBoundary', {
-      isolationId: this.props.isolationId,
-      isolationLevel: this.props.isolationLevel,
-      errorMessage: error.message,
-      componentStack: errorInfo.componentStack,
-    });
-
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -92,7 +79,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
             <div style={{ padding: '20px' }}>
               <h2>Something went wrong.</h2>
               <p>{this.state.error?.message}</p>
-
               <button onClick={this.resetError}>Try Again</button>
             </div>
             <UserFriendlyErrorDisplay

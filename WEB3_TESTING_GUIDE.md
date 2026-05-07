@@ -43,6 +43,7 @@ ls -la src/utils/web3/
 ```
 
 Expected output:
+
 ```
 src/hooks/useWeb3Wallet.ts (exists)
 src/components/web3/
@@ -67,6 +68,7 @@ wc -l src/components/web3/*.tsx src/hooks/useWeb3Wallet.ts src/utils/web3/*.ts
 ```
 
 Expected minimum lines:
+
 - `WalletConnector.tsx`: ~350 lines
 - `TransactionManager.tsx`: ~400 lines
 - `NFTGallery.tsx`: ~500 lines
@@ -85,6 +87,7 @@ npm run type-check
 **Expected Result**: No errors (may have warnings)
 
 **If errors occur**:
+
 ```bash
 # Get detailed error output
 npx tsc --noEmit 2>&1 | head -50
@@ -157,7 +160,7 @@ Visit http://localhost:3000
 ✓ Shows provider options (MetaMask, Starknet)
 ✓ Displays error message if wallet not installed
 
-// Test 2: Connected state  
+// Test 2: Connected state
 ✓ Shows address (shortened and full versions)
 ✓ Displays connected indicator (green dot)
 ✓ Shows provider and network info
@@ -230,7 +233,7 @@ Visit http://localhost:3000
 ✓ Confirm button works
 ✓ Modal closes after confirmation
 
-// Test 3: Positions tab  
+// Test 3: Positions tab
 ✓ Shows active staking positions
 ✓ Displays amount, APY, lock period
 ✓ Shows earned rewards
@@ -267,7 +270,7 @@ const result = performSecurityChecks(
   '0x0000000000000000000000000000000000000000', // zero address
   '1000', // large amount
   '0x...',
-  '0x1'
+  '0x1',
 );
 console.log(result.warnings); // Should include warnings
 ```
@@ -361,7 +364,7 @@ Test in browsers:
 ```bash
 - Chrome/Chromium (latest)
 - Firefox (latest)
-- Safari (latest)  
+- Safari (latest)
 - Edge (latest)
 ```
 
@@ -382,12 +385,7 @@ grep -r "WalletConnector\|TransactionManager\|NFTGallery\|DeFiInterface" src/ --
 
 ```tsx
 // In any component, this should work:
-import {
-  WalletConnector,
-  TransactionManager,
-  NFTGallery,
-  DeFiInterface,
-} from '@/components/web3';
+import { WalletConnector, TransactionManager, NFTGallery, DeFiInterface } from '@/components/web3';
 
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
 import { performSecurityChecks } from '@/utils/web3';
@@ -505,25 +503,25 @@ Open DevTools > Network tab:
 
 ## Common Issues & Solutions
 
-| Issue | Solution |
-|-------|----------|
-| "Wallet not detected" | Install MetaMask extension |
-| "Network mismatch" | Use `wallet.switchChain()` |
-| "Transaction failed" | Check address and balance |
-| "Type errors on build" | Run `npm run type-check` |
+| Issue                      | Solution                          |
+| -------------------------- | --------------------------------- |
+| "Wallet not detected"      | Install MetaMask extension        |
+| "Network mismatch"         | Use `wallet.switchChain()`        |
+| "Transaction failed"       | Check address and balance         |
+| "Type errors on build"     | Run `npm run type-check`          |
 | "Components not importing" | Check barrel export in `index.ts` |
-| "Styles not applying" | Verify Tailwind CSS is working |
+| "Styles not applying"      | Verify Tailwind CSS is working    |
 
 ## Performance Benchmarks
 
 Target metrics:
 
-| Metric | Target | Actual |
-|--------|--------|--------|
-| First Paint | < 1s | - |
-| Component Load | < 500ms | - |
-| Transaction Submit | < 1s | - |
-| Page Interactive | < 3s | - |
+| Metric             | Target  | Actual |
+| ------------------ | ------- | ------ |
+| First Paint        | < 1s    | -      |
+| Component Load     | < 500ms | -      |
+| Transaction Submit | < 1s    | -      |
+| Page Interactive   | < 3s    | -      |
 
 ## Final Verification
 
@@ -534,7 +532,7 @@ Run final QA checklist:
 npm run type-check
 
 # Build
-npm run build  
+npm run build
 
 # Lint
 npm run lint

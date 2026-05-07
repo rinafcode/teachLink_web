@@ -1,21 +1,8 @@
 'use client';
 
 import React from 'react';
-import {
-  Heart,
-  MessageSquare,
-  Eye,
-  Share2,
-  User,
-  Clock,
-  Tag as TagIcon,
-  Star,
-  ArrowUpRight,
-  ChevronDown,
-} from 'lucide-react';
+import { Eye, User, Clock, Star, ArrowUpRight, ChevronDown } from 'lucide-react';
 import { SearchResult } from '../../utils/searchUtils';
-
-import { Skeleton } from '../ui/Skeleton';
 
 interface SearchResultsVisualizerProps {
   results: SearchResult[];

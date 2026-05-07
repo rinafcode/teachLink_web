@@ -59,7 +59,7 @@ export const Header: React.FC = () => {
               href="/instructor"
               className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              Teach
+              {t('navigation.teach')}
             </Link>
             <Link
               href="/settings"
@@ -146,7 +146,7 @@ export const Header: React.FC = () => {
               className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Teach
+              {t('navigation.teach')}
             </Link>
             <Link
               href="/settings"

@@ -1,5 +1,5 @@
 'use client';
-
+import Image from 'next/image';
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   Image as ImageIcon,
@@ -8,7 +8,6 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   Plus,
   Grid3x3,
   List,
@@ -92,7 +91,8 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
           id: '1',
           name: 'TeachLink Badge #001',
           description: 'Proof of knowledge sharing on TeachLink',
-          image: 'https://images.unsplash.com/photo-1618005182384-a83a8e7ad06f?w=500&h=500&fit=crop',
+          image:
+            'https://images.unsplash.com/photo-1618005182384-a83a8e7ad06f?w=500&h=500&fit=crop',
           tokenId: '1',
           contractAddress: '0x1234...5678',
           chainId: wallet.chainId || '0x1',
@@ -106,7 +106,8 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
           id: '2',
           name: 'Knowledge Token #042',
           description: 'Earned through course completion',
-          image: 'https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=500&h=500&fit=crop',
+          image:
+            'https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=500&h=500&fit=crop',
           tokenId: '42',
           contractAddress: '0x1234...5678',
           chainId: wallet.chainId || '0x1',
@@ -120,7 +121,8 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
           id: '3',
           name: 'Community Contributor',
           description: 'Recognized for helping others learn',
-          image: 'https://images.unsplash.com/photo-1520763185298-1b434c919c37?w=500&h=500&fit=crop',
+          image:
+            'https://images.unsplash.com/photo-1520763185298-1b434c919c37?w=500&h=500&fit=crop',
           tokenId: '123',
           contractAddress: '0x1234...5678',
           chainId: wallet.chainId || '0x1',
@@ -152,14 +154,19 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
   /**
    * Handle NFT selection
    */
-  const handleSelectNFT = useCallback((nft: NFT) => {
-    setSelectedNFT(nft);
-    onNFTSelect?.(nft);
-  }, [onNFTSelect]);
+  const handleSelectNFT = useCallback(
+    (nft: NFT) => {
+      setSelectedNFT(nft);
+      onNFTSelect?.(nft);
+    },
+    [onNFTSelect],
+  );
 
   if (!wallet.isConnected) {
     return (
-      <div className={`p-8 text-center bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg ${className}`}>
+      <div
+        className={`p-8 text-center bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg ${className}`}
+      >
         <ImageIcon className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-3 opacity-50" />
         <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
           Connect your wallet to view NFTs
@@ -171,7 +178,9 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
   // Error state
   if (error) {
     return (
-      <div className={`p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg ${className}`}>
+      <div
+        className={`p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg ${className}`}
+      >
         <div className="flex gap-3">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
           <div>
@@ -204,7 +213,9 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
   // Empty state
   if (nfts.length === 0) {
     return (
-      <div className={`p-8 text-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg ${className}`}>
+      <div
+        className={`p-8 text-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg ${className}`}
+      >
         <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
         <p className="text-gray-600 dark:text-gray-400 font-medium mb-4">No NFTs yet</p>
         <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
@@ -289,12 +300,15 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
             >
               {/* Image */}
               <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
-                <img
+                <Image
                   src={nft.image}
                   alt={nft.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover group-hover:scale-105 transition-transform"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
+                    (e.target as HTMLImageElement).src =
+                      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
                   }}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -309,8 +323,8 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
                       nft.rarity === 'rare'
                         ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
                         : nft.rarity === 'uncommon'
-                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     {nft.rarity}
@@ -329,12 +343,15 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
               onClick={() => handleSelectNFT(nft)}
               className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
             >
-              <img
+              <Image
                 src={nft.image}
                 alt={nft.name}
+                width={64}
+                height={64}
                 className="w-16 h-16 object-cover rounded"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
+                  (e.target as HTMLImageElement).src =
+                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
                 }}
               />
               <div className="flex-1">
@@ -390,7 +407,9 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedNFT.name}</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                {selectedNFT.name}
+              </h3>
               <button
                 onClick={() => setSelectedNFT(null)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -398,17 +417,24 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
                 ✕
               </button>
             </div>
-
             <div className="p-6 space-y-4">
-              <img
+              <Image
                 src={selectedNFT.image}
                 alt={selectedNFT.name}
+                width={640}
+                height={640}
                 className="w-full aspect-square object-cover rounded-lg"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
+                }}
               />
 
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Description</h4>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">{selectedNFT.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  {selectedNFT.description}
+                </p>
               </div>
 
               {selectedNFT.attributes && selectedNFT.attributes.length > 0 && (
@@ -416,8 +442,13 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Attributes</h4>
                   <div className="grid grid-cols-2 gap-2">
                     {selectedNFT.attributes.map((attr) => (
-                      <div key={attr.trait_type} className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{attr.trait_type}</p>
+                      <div
+                        key={attr.trait_type}
+                        className="p-2 bg-gray-50 dark:bg-gray-700 rounded"
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {attr.trait_type}
+                        </p>
                         <p className="font-medium text-gray-900 dark:text-white">{attr.value}</p>
                       </div>
                     ))}

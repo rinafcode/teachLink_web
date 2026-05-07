@@ -1,121 +1,98 @@
 'use client';
 
-/**
- * IntelligentProgress – visualises user progress with AI-generated insights
- *
- * API: GET /api/user/progress → ApiResponse<UserProgress>
- */
-
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { Skeleton } from '@/components/ui/Skeleton';
-import type { ApiResponse, UserProgress } from '@/types/api';
 
-function buildInsights(p: UserProgress): string[] {
-  const insights: string[] = [];
-  const pct = p.totalCourses > 0 ? Math.round((p.completedCourses / p.totalCourses) * 100) : 0;
-  insights.push(`You're ${pct}% through your enrolled courses.`);
-  if (p.streak >= 7) insights.push(`🔥 ${p.streak}-day streak – keep it up!`);
-  if (p.totalTimeSpent > 0) {
-    const hours = Math.floor(p.totalTimeSpent / 60);
-    insights.push(`Total time spent: ${hours}h ${p.totalTimeSpent % 60}m`);
-  }
-  const remaining = p.dailyGoal - (p.totalTimeSpent % p.dailyGoal || 0);
-  if (remaining > 0 && remaining < p.dailyGoal) {
-    insights.push(`${remaining} min left to hit today's daily goal.`);
-  }
-  return insights;
+// GET /api/ai/progress → { courses: CourseProgress[]; insights: string[] }
+
+interface CourseProgress {
+  id: string;
+  title: string;
+  percent: number;
+}
+
+interface ProgressData {
+  courses: CourseProgress[];
+  insights: string[];
+}
+
+function ProgressBar({ percent }: { percent: number }) {
+  const clamped = Math.min(100, Math.max(0, percent));
+  return (
+    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+      <div
+        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+        style={{ width: `${clamped}%` }}
+        role="progressbar"
+        aria-valuenow={clamped}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      />
+    </div>
+  );
 }
 
 export default function IntelligentProgress() {
-  const [progress, setProgress] = useState<UserProgress | null>(null);
+  const [data, setData] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
     apiClient
-      .get<ApiResponse<UserProgress>>('/api/user/progress')
-      .then((res) => {
-        if (!cancelled) setProgress(res.data);
-      })
-      .catch(() => {
-        if (!cancelled) setError('Could not load progress data.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .get<ProgressData>('/api/ai/progress')
+      .then(setData)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
 
-  const pct =
-    progress && progress.totalCourses > 0
-      ? Math.round((progress.completedCourses / progress.totalCourses) * 100)
-      : 0;
-
   return (
-    <section
-      className="bg-white dark:bg-[#1E293B] rounded-xl border border-[#E2E8F0] dark:border-[#334155] shadow-sm p-5"
-      aria-label="Intelligent Progress"
-    >
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-5 h-5 text-[#0066FF] dark:text-[#00C2FF]" aria-hidden="true" />
-        <h2 className="font-semibold text-[#0F172A] dark:text-white">Your Progress</h2>
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <TrendingUp className="w-5 h-5 text-green-500" />
+        <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Your Progress</h2>
       </div>
 
-      {loading && (
-        <div className="space-y-3">
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-3 w-full" />
-          <Skeleton className="h-3 w-2/3" />
-        </div>
-      )}
-
-      {error && (
-        <p className="text-sm text-red-500 dark:text-red-400" role="alert">
-          {error}
-        </p>
-      )}
-
-      {!loading && !error && progress && (
-        <>
-          {/* Progress bar */}
-          <div className="mb-4">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-[#64748B] dark:text-[#94A3B8]">
-                {progress.completedCourses} / {progress.totalCourses} courses
-              </span>
-              <span className="font-bold text-[#0066FF] dark:text-[#00C2FF]">{pct}%</span>
-            </div>
-            <div
-              className="w-full h-3 bg-[#E2E8F0] dark:bg-[#334155] rounded-full overflow-hidden"
-              role="progressbar"
-              aria-valuenow={pct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Course completion"
-            >
-              <div
-                className="h-full bg-gradient-to-r from-[#0066FF] to-[#00C2FF] rounded-full transition-all duration-500"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Insights */}
-          <ul className="space-y-1">
-            {buildInsights(progress).map((insight, i) => (
-              <li key={i} className="text-sm text-[#64748B] dark:text-[#94A3B8] flex gap-2">
-                <span aria-hidden="true">•</span>
-                {insight}
-              </li>
+      <div className="p-4 space-y-4">
+        {loading && (
+          <div className="animate-pulse space-y-3">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
             ))}
-          </ul>
-        </>
-      )}
-    </section>
+          </div>
+        )}
+
+        {error && <p className="text-sm text-center text-red-500 py-4">Failed to load progress.</p>}
+
+        {data && (
+          <>
+            <div className="space-y-3">
+              {data.courses.map((course) => (
+                <div key={course.id} className="space-y-1">
+                  <div className="flex justify-between text-xs text-gray-700 dark:text-gray-300">
+                    <span className="truncate max-w-[75%]">{course.title}</span>
+                    <span className="font-medium">{course.percent}%</span>
+                  </div>
+                  <ProgressBar percent={course.percent} />
+                </div>
+              ))}
+            </div>
+
+            {data.insights.length > 0 && (
+              <div className="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-1">
+                {data.insights.map((insight, i) => (
+                  <p key={i} className="text-xs text-gray-500 dark:text-gray-400">
+                    💡 {insight}
+                  </p>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }

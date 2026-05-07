@@ -68,7 +68,11 @@ export function useApi<T>(
       }
     } catch (err) {
       if (mountedRef.current) {
-        setState({ data: null, loading: false, error: err instanceof Error ? err : new Error(String(err)) });
+        setState({
+          data: null,
+          loading: false,
+          error: err instanceof Error ? err : new Error(String(err)),
+        });
       }
     }
   }, [url, method, body]); // eslint-disable-line react-hooks/exhaustive-deps
