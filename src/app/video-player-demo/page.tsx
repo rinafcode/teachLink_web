@@ -1,14 +1,26 @@
 'use client';
 
 import React from 'react';
-import { AdvancedVideoPlayer } from '../components/video/AdvancedVideoPlayer';
+import { VideoPlayer } from '@/components/video/VideoPlayer';
+import type { TranscriptCue } from '@/components/video/types';
+import { DUMMY_VIDEO_URL } from '@/constants/media';
 
-const sampleTranscript = [
-  { time: 0, text: 'Welcome to the lesson.' },
-  { time: 5, text: 'This segment introduces the core concept.' },
-  { time: 12, text: 'Take notes as you learn key ideas.' },
-  { time: 18, text: 'Bookmark moments you want to revisit later.' },
-  { time: 28, text: 'Speed up to improve your learning flow.' },
+const sampleTranscript: TranscriptCue[] = [
+  { id: 'cue-1', start: 0, end: 6, text: 'Welcome to the advanced learning module.' },
+  { id: 'cue-2', start: 6, end: 14, text: 'This player supports transcript based navigation.' },
+  { id: 'cue-3', start: 14, end: 22, text: 'Create bookmarks with thumbnails for quick revision.' },
+  {
+    id: 'cue-4',
+    start: 22,
+    end: 31,
+    text: 'Share collaborative annotations in real time with peers.',
+  },
+  {
+    id: 'cue-5',
+    start: 31,
+    end: 40,
+    text: 'Adjust playback speed and quality for your learning pace.',
+  },
 ];
 
 export default function VideoPlayerDemoPage() {
@@ -23,40 +35,30 @@ export default function VideoPlayerDemoPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <AdvancedVideoPlayer
-            lessonId="demo-lesson-1"
+        <div className="rounded-lg bg-white p-4 shadow">
+          <VideoPlayer
+            videoId="demo-lesson-1"
             userId="demo-user-1"
+            userName="Demo Student"
             poster="https://via.placeholder.com/1280x720/2563eb/ffffff?text=Advanced+Video+Player"
-            src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
-            qualities={[
+            sources={[
               {
-                label: '1080p',
-                value: '1080p',
-                src: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-                width: 1920,
-                height: 1080,
-                bitrate: 5000,
+                label: '1080p HD',
+                src: DUMMY_VIDEO_URL,
+                type: 'video/youtube',
               },
               {
                 label: '720p',
-                value: '720p',
-                src: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-                width: 1280,
-                height: 720,
-                bitrate: 2500,
+                src: DUMMY_VIDEO_URL,
+                type: 'video/youtube',
               },
               {
                 label: '480p',
-                value: '480p',
-                src: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-                width: 854,
-                height: 480,
-                bitrate: 1000,
+                src: DUMMY_VIDEO_URL,
+                type: 'video/youtube',
               },
             ]}
             transcript={sampleTranscript}
-            className="aspect-video"
           />
         </div>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useScreenReaderAnnouncement, useFocusTrap } from '@/hooks/useAccessibility';
+import { useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
 import { AccessibleError, AccessibleSuccess } from '../ScreenReaderOptimizer';
 
 /**

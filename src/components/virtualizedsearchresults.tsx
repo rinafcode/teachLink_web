@@ -1,9 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useCallback, memo, useMemo } from 'react';
 import { VariableSizeList as List, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { SearchX } from 'lucide-react';
 import { EmptyState } from '@/components';
-import Image from 'next/image';
 
 export type SearchResultType = 'course' | 'user' | 'post' | 'file';
 
@@ -41,7 +41,7 @@ const SearchResultItem = memo(({ result, style, onSelect }: SearchResultItemProp
   >
     <div className="search-result-icon">
       {result.icon ? (
-        <Image src={result.icon} alt="" aria-hidden="true" width={40} height={40} />
+        <img src={result.icon} alt="" aria-hidden="true" />
       ) : (
         <span className="search-result-type-badge">{result.type[0].toUpperCase()}</span>
       )}

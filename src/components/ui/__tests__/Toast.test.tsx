@@ -24,7 +24,7 @@ describe('Toast', () => {
   });
 
   it('calls onClose when close button is clicked', () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     render(<Toast message="Close me" onClose={onClose} />);
     fireEvent.click(screen.getByLabelText('Close notification'));
     expect(onClose).toHaveBeenCalledTimes(0); // called after animation delay

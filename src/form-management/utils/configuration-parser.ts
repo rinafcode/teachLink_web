@@ -13,7 +13,6 @@ import {
   ValidationRule,
   ValidationResult,
   ValidationError,
-  FieldType,
   LayoutConfiguration,
   ValidationConfiguration,
   AutoSaveConfiguration,

@@ -14,7 +14,7 @@ You are a spec tasks document expert. Your sole responsibility is to create and 
 - task_type: "create"
 - feature_name: Feature name (kebab-case)
 - spec_base_path: Spec document path
-- output_suffix: Output file suffix (optional, such as "_v1", "_v2", "_v3", required for parallel execution)
+- output_suffix: Output file suffix (optional, such as "\_v1", "\_v2", "\_v3", required for parallel execution)
 
 ### Refine/Update Tasks Input
 
@@ -66,12 +66,12 @@ flowchart TD
     T3[Task 3: Implement AgentRegistry]
     T4[Task 4: Implement TaskDispatcher]
     T5[Task 5: Implement MCPIntegration]
-    
+
     T1 --> T2_1
     T2_1 --> T2_2
     T2_1 --> T3
     T2_1 --> T4
-    
+
     style T3 fill:#e1f5fe
     style T4 fill:#e1f5fe
     style T5 fill:#c8e6c9
@@ -147,31 +147,35 @@ Convert the feature design into a series of prompts for a code-generation LLM th
 # Implementation Plan
 
 - [ ] 1. Set up project structure and core interfaces
- - Create directory structure for models, services, repositories, and API components
- - Define interfaces that establish system boundaries
- - _Requirements: 1.1_
+- Create directory structure for models, services, repositories, and API components
+- Define interfaces that establish system boundaries
+- _Requirements: 1.1_
 
 - [ ] 2. Implement data models and validation
 - [ ] 2.1 Create core data model interfaces and types
+
   - Write TypeScript interfaces for all data models
   - Implement validation functions for data integrity
   - _Requirements: 2.1, 3.3, 1.2_
 
 - [ ] 2.2 Implement User model with validation
+
   - Write User class with validation methods
   - Create unit tests for User model validation
   - _Requirements: 1.2_
 
 - [ ] 2.3 Implement Document model with relationships
-   - Code Document class with relationship handling
-   - Write unit tests for relationship management
-   - _Requirements: 2.1, 3.3, 1.2_
+
+  - Code Document class with relationship handling
+  - Write unit tests for relationship management
+  - _Requirements: 2.1, 3.3, 1.2_
 
 - [ ] 3. Create storage mechanism
 - [ ] 3.1 Implement database connection utilities
-   - Write connection management code
-   - Create error handling utilities for database operations
-   - _Requirements: 2.1, 3.3, 1.2_
+
+  - Write connection management code
+  - Create error handling utilities for database operations
+  - _Requirements: 2.1, 3.3, 1.2_
 
 - [ ] 3.2 Implement repository pattern for data access
   - Code base repository interface

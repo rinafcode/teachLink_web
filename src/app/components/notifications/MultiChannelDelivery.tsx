@@ -11,7 +11,6 @@ import {
   AlertCircle,
   Loader2,
   Send,
-  Settings,
 } from 'lucide-react';
 import { useNotifications } from '@/app/hooks/useNotifications';
 import {

@@ -169,10 +169,7 @@ class SubscriptionConnectionManager {
 /**
  * Calculate exponential backoff delay for reconnection
  */
-function calculateBackoffDelay(
-  retryCount: number,
-  config: SubscriptionConfig,
-): number {
+function calculateBackoffDelay(retryCount: number, config: SubscriptionConfig): number {
   const { reconnect } = { ...DEFAULT_SUBSCRIPTION_CONFIG, ...config };
   if (!reconnect) return 0;
 
@@ -206,7 +203,11 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
         manager.resetRetryCount();
       },
       error: (error) => {
-        manager.setState(ConnectionState.ERROR, error);
+        const normalizedError =
+          error instanceof Error
+            ? error
+            : new Error(typeof error === 'string' ? error : 'Unknown error');
+        manager.setState(ConnectionState.ERROR, normalizedError);
       },
       closed: () => {
         manager.setState(ConnectionState.DISCONNECTED);
@@ -275,10 +276,7 @@ export function isSubscription(document: DocumentNode): boolean {
  * Subscription error handler
  */
 export class SubscriptionError extends Error {
-  constructor(
-    public code: string,
-    public details?: Record<string, any>,
-  ) {
+  constructor(public code: string, public details?: Record<string, any>) {
     super(`Subscription error: ${code}`);
     this.name = 'SubscriptionError';
   }

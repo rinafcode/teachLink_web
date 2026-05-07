@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useCallback, useEffect, useRef, memo, useMemo } from 'react';
 import { VariableSizeList as List, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import Image from 'next/image';
 
 export interface Message {
   id: string;
@@ -43,7 +43,7 @@ const MessageBubble = memo(({ message, style }: MessageBubbleProps) => {
         {!message.isOwn && (
           <div className="message-avatar">
             {message.senderAvatar ? (
-              <Image src={message.senderAvatar} alt={message.senderName} width={32} height={32} />
+              <img src={message.senderAvatar} alt={message.senderName} />
             ) : (
               <span className="message-avatar-initials">{message.senderName[0]}</span>
             )}

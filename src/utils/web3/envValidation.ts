@@ -1,4 +1,6 @@
+import { DEFAULT_STARKNET_NETWORK } from '@/constants/app.constants';
 import { z } from 'zod';
+
 /**
  * Web3 Environment Validation
  * Validates required environment variables for Starknet integration
@@ -6,8 +8,8 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NEXT_PUBLIC_STARKNET_NETWORK: z
-    .enum(['mainnet-alpha', 'goerli-alpha', 'sepolia-alpha'])
-    .default('goerli-alpha'),
+    .enum(['mainnet-alpha', 'goerli-alpha', 'sepolia-alpha', 'testnet', 'mainnet', 'sepolia'])
+    .default(DEFAULT_STARKNET_NETWORK as any),
   NEXT_PUBLIC_STARKNET_RPC_URL: z.string().url().optional(),
   NEXT_PUBLIC_API_URL: z.string().url().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -33,11 +35,23 @@ const NETWORKS = {
     rpcUrl: 'https://starknet-mainnet.public.blastapi.io',
     explorerUrl: 'https://starkscan.co',
   },
+  mainnet: {
+    rpcUrl: 'https://starknet-mainnet.public.blastapi.io',
+    explorerUrl: 'https://starkscan.co',
+  },
   'goerli-alpha': {
     rpcUrl: 'https://starknet-testnet.public.blastapi.io',
     explorerUrl: 'https://testnet.starkscan.co',
   },
+  testnet: {
+    rpcUrl: 'https://starknet-testnet.public.blastapi.io',
+    explorerUrl: 'https://testnet.starkscan.co',
+  },
   'sepolia-alpha': {
+    rpcUrl: 'https://starknet-sepolia.public.blastapi.io',
+    explorerUrl: 'https://sepolia.starkscan.co',
+  },
+  sepolia: {
     rpcUrl: 'https://starknet-sepolia.public.blastapi.io',
     explorerUrl: 'https://sepolia.starkscan.co',
   },
@@ -84,20 +98,19 @@ export function validateWeb3Env(): EnvValidationResult {
     errors.push(validation.error || 'Environment validation failed');
   }
 
-  const network = process.env.NEXT_PUBLIC_STARKNET_NETWORK || 'goerli-alpha';
+  const network = process.env.NEXT_PUBLIC_STARKNET_NETWORK || DEFAULT_STARKNET_NETWORK;
   const customRpcUrl = process.env.NEXT_PUBLIC_STARKNET_RPC_URL;
 
-  // Validate network
   if (!Object.keys(NETWORKS).includes(network)) {
-    warnings.push(`Unknown network "${network}", defaulting to goerli-alpha`);
+    warnings.push(`Unknown network "${network}", defaulting to ${DEFAULT_STARKNET_NETWORK}`);
   }
 
-  // Check for custom RPC in production
   if (process.env.NODE_ENV === 'production' && !customRpcUrl) {
     warnings.push('Consider setting NEXT_PUBLIC_STARKNET_RPC_URL for production');
   }
 
-  const networkConfig = NETWORKS[network as NetworkType] || NETWORKS['goerli-alpha'];
+  const networkConfig =
+    NETWORKS[network as NetworkType] || NETWORKS[DEFAULT_STARKNET_NETWORK as NetworkType];
 
   return {
     isValid: errors.length === 0,
@@ -137,7 +150,6 @@ export function formatAddress(address: string | null): string {
  */
 export function isValidStarknetAddress(address: string): boolean {
   if (!address) return false;
-  // Starknet addresses are 66 chars (0x + 64 hex chars) or shorter
   const cleanAddress = address.toLowerCase();
   return /^0x[a-f0-9]{1,64}$/i.test(cleanAddress);
 }
@@ -148,5 +160,5 @@ export function validateStarknetEnv(): { valid: boolean; missing: string[] } {
 }
 
 export function getStarknetNetwork(): string {
-  return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? 'goerli-alpha';
+  return process.env.NEXT_PUBLIC_STARKNET_NETWORK ?? DEFAULT_STARKNET_NETWORK;
 }

@@ -94,7 +94,7 @@ export function useSubscriptionClient(): ApolloClient<any> {
   if (!client) {
     throw new Error(
       'useSubscriptionClient must be used within a SubscriptionProvider. ' +
-      'Make sure your component is wrapped with <SubscriptionProvider>.',
+        'Make sure your component is wrapped with <SubscriptionProvider>.',
     );
   }
 

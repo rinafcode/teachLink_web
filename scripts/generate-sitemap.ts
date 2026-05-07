@@ -34,7 +34,7 @@ async function fetchAllCourseIds(): Promise<string[]> {
       if (!res.ok) break;
 
       const json = await res.json();
-      const page: { id: string }[] = Array.isArray(json) ? json : (json.data ?? []);
+      const page: { id: string }[] = Array.isArray(json) ? json : json.data ?? [];
       ids.push(...page.map((c) => c.id));
       cursor = json.nextCursor;
     } while (cursor);

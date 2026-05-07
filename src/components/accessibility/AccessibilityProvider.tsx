@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityContext, type AnnouncePriority } from './AccessibilityContext';
 import { AccessibilityAudit } from './AccessibilityAudit';
+import { AccessibilitySettings } from './AccessibilitySettings';
 import { ScreenReaderSupport } from './ScreenReaderSupport';
 import { KeyboardNavigation, type KeyboardShortcutHelpItem } from './KeyboardNavigation';
+import { VoiceControl } from './VoiceControl';
 import { announceToScreenReader, checkAccessibilityIssues } from '@/utils/accessibilityUtils';
 import { useFocusVisible } from '@/hooks/useAccessibility';
 
@@ -20,6 +22,10 @@ interface AccessibilityProviderProps {
   keyboardShortcuts?: KeyboardShortcutHelpItem[];
   /** Render dev audit panel (defaults to true in development) */
   enableDevAudit?: boolean;
+  /** Render accessibility settings panel (defaults to true) */
+  enableSettingsPanel?: boolean;
+  /** Enable voice control listener (defaults to true) */
+  enableVoiceControl?: boolean;
 }
 
 function subscribeReducedMotion(callback: (matches: boolean) => void): () => void {
@@ -40,6 +46,8 @@ export function AccessibilityProvider({
   verboseLiveRegions = false,
   keyboardShortcuts,
   enableDevAudit = process.env.NODE_ENV === 'development',
+  enableSettingsPanel = true,
+  enableVoiceControl = true,
 }: AccessibilityProviderProps) {
   const politeLiveRef = useRef<HTMLDivElement | null>(null);
   const assertiveLiveRef = useRef<HTMLDivElement | null>(null);
@@ -95,6 +103,8 @@ export function AccessibilityProvider({
         pageLabel={pageLabel}
       />
       <KeyboardNavigation extraShortcuts={keyboardShortcuts} />
+      {enableSettingsPanel ? <AccessibilitySettings /> : null}
+      {enableVoiceControl ? <VoiceControl /> : null}
       {enableDevAudit ? <AccessibilityAudit /> : null}
       {children}
     </AccessibilityContext.Provider>

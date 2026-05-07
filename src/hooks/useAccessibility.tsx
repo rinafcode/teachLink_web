@@ -40,8 +40,8 @@ export function useKeyboardNavigation(enabled: boolean = true) {
     if (!enabled || !containerRef.current) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Skip links (Ctrl/Cmd + K)
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      // Skip links (Alt + S)
+      if (event.altKey && event.key.toLowerCase() === 's') {
         event.preventDefault();
         const skipLink = document.querySelector<HTMLElement>('[data-skip-link]');
         skipLink?.focus();

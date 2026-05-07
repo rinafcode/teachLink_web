@@ -6,12 +6,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import {
-  ErrorType,
-  getUserFriendlyMessage,
-  getActionSuggestion,
-  classifyError,
-} from '@/utils/errorUtils';
+import { getUserFriendlyMessage, getActionSuggestion, classifyError } from '@/utils/errorUtils';
 
 export interface ErrorDisplayProps {
   error?: any;

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withRateLimit } from '@/lib/ratelimit';
 import { appSettingsSchema, createDefaultSettings, type AppSettings } from '@/lib/settings/types';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 /**
  * Ephemeral server-side store for syncing settings across devices for a given sync key.
@@ -16,6 +19,7 @@ const putBodySchema = z.object({
 });
 
 export async function GET(request: Request) {
+  edgeLog('info', '/api/user/settings', 'GET request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
   if (rateLimitResponse) {
     return rateLimitResponse;
@@ -60,6 +64,7 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  edgeLog('info', '/api/user/settings', 'PUT request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse;

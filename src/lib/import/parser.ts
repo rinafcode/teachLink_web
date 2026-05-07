@@ -137,10 +137,7 @@ function readZipEntries(data: Uint8Array): Record<string, string> | null {
 
   while (offset < data.length - 4) {
     const sig =
-      data[offset] |
-      (data[offset + 1] << 8) |
-      (data[offset + 2] << 16) |
-      (data[offset + 3] << 24);
+      data[offset] | (data[offset + 1] << 8) | (data[offset + 2] << 16) | (data[offset + 3] << 24);
 
     // Local file header signature: 0x04034b50
     if (sig !== 0x04034b50) break;

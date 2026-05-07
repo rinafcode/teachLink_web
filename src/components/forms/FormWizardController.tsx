@@ -247,7 +247,11 @@ const WizardNavigation: React.FC<WizardNavigationProps> = ({
 
   return (
     <div className="wizard-navigation">
-      <button onClick={onPrevious} disabled={!progress.canGoPrevious || isBusy} className="btn-previous">
+      <button
+        onClick={onPrevious}
+        disabled={!progress.canGoPrevious || isBusy}
+        className="btn-previous"
+      >
         ← Previous
       </button>
 
@@ -267,11 +271,7 @@ const WizardNavigation: React.FC<WizardNavigationProps> = ({
           {isValidating ? 'Validating...' : 'Complete'}
         </SubmitButton>
       ) : (
-        <button
-          onClick={onNext}
-          disabled={!progress.canGoNext || isBusy}
-          className="btn-next"
-        >
+        <button onClick={onNext} disabled={!progress.canGoNext || isBusy} className="btn-next">
           {isValidating ? 'Validating...' : 'Next →'}
         </button>
       )}
