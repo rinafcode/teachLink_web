@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Home, Search, BookOpen, User } from 'lucide-react';
 
@@ -6,6 +8,38 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
 }
+
+const railNavClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:top-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:bottom-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:left-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:right-auto',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:h-dvh',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:w-20',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:border-t-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:border-r',
+].join(' ');
+const railListClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:h-full',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:flex-col',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:justify-start',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:space-y-6',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:px-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:pt-8',
+].join(' ');
+const railListItemClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:flex-none',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:px-2',
+].join(' ');
+const railButtonClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:mx-auto',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:h-14',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:w-14',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:max-w-none',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:py-0',
+].join(' ');
+const railHiddenClass = '[@media_(min-width:640px)_and_(orientation:landscape)]:hidden';
+const railBlockClass = '[@media_(min-width:640px)_and_(orientation:landscape)]:block';
 
 export const MobileNavigation: React.FC<{
   initialActive?: string;
@@ -53,9 +87,9 @@ export const MobileNavigation: React.FC<{
 
   return (
     <nav
-      className="fixed z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border-gray-200 dark:border-gray-800 transition-all duration-300 lg:hidden
-        bottom-0 left-0 right-0 border-t h-16 w-full
-        sm:top-0 sm:bottom-0 sm:left-0 sm:right-auto sm:h-full sm:w-20 sm:border-t-0 sm:border-r"
+      className={`fixed z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border-gray-200 dark:border-gray-800 transition-all duration-300 lg:hidden
+        bottom-0 left-0 right-0 border-t min-h-16 w-full
+        ${railNavClasses}`}
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
         paddingLeft: 'env(safe-area-inset-left)',
@@ -65,8 +99,8 @@ export const MobileNavigation: React.FC<{
       aria-label="Mobile Navigation"
     >
       <ul
-        className="flex justify-around items-center h-full w-full px-2
-          sm:flex-col sm:justify-start sm:space-y-6 sm:px-0 sm:pt-8"
+        className={`flex min-h-16 w-full items-center justify-around px-2
+          ${railListClasses}`}
         role="tablist"
         aria-label="Navigation Tabs"
       >
@@ -75,7 +109,7 @@ export const MobileNavigation: React.FC<{
           return (
             <li
               key={item.id}
-              className="flex-1 w-full flex justify-center sm:flex-none sm:px-2"
+              className={`flex w-full flex-1 justify-center ${railListItemClasses}`}
               role="presentation"
             >
               <button
@@ -89,7 +123,7 @@ export const MobileNavigation: React.FC<{
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => handleTabClick(item.id)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
-                className={`w-full max-w-[72px] sm:max-w-none flex flex-col items-center justify-center py-1.5 rounded-xl transition-all duration-300 relative focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950 sm:h-14 sm:w-14 sm:mx-auto sm:py-0
+                className={`relative flex w-full max-w-[72px] flex-col items-center justify-center rounded-xl py-1.5 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-gray-950 ${railButtonClasses}
                   ${
                     isActive
                       ? 'text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-900/20 font-semibold'
@@ -105,20 +139,20 @@ export const MobileNavigation: React.FC<{
                 >
                   {item.icon}
                 </div>
-                <span className="text-[10px] font-medium mt-0.5 sm:hidden">
+                <span className={`mt-0.5 text-[10px] font-medium ${railHiddenClass}`}>
                   {item.label}
                 </span>
 
                 {/* Active Indicator Dot (Portrait) */}
                 <div
-                  className={`absolute bottom-1 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 sm:hidden transition-all duration-300 ${
+                  className={`absolute bottom-1 h-1 w-1 rounded-full bg-blue-600 transition-all duration-300 dark:bg-blue-400 ${railHiddenClass} ${
                     isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
                   }`}
                 />
 
                 {/* Active Indicator Bar (Landscape/Tablet) */}
                 <div
-                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 dark:bg-blue-400 rounded-r-full hidden sm:block transition-all duration-300 ${
+                  className={`absolute left-0 top-1/2 hidden h-8 w-1 -translate-y-1/2 rounded-r-full bg-blue-600 transition-all duration-300 dark:bg-blue-400 ${railBlockClass} ${
                     isActive ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'
                   }`}
                 />

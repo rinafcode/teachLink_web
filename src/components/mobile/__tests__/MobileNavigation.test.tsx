@@ -112,25 +112,32 @@ describe('MobileNavigation Component', () => {
   });
 
   describe('Responsive Design Styling', () => {
-    it('applies classes for both portrait bottom bar and landscape/tablet rail', () => {
+    it('applies bottom bar classes by default for compact portrait screens', () => {
       render(<MobileNavigation />);
 
       const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
-      
-      // Verify portrait (bottom bar default) and landscape/tablet classes are present
       const classList = nav.className;
+
       expect(classList).toContain('bottom-0');
       expect(classList).toContain('left-0');
       expect(classList).toContain('right-0');
-      expect(classList).toContain('h-16');
-      
-      // Vertical rail classes
-      expect(classList).toContain('sm:top-0');
-      expect(classList).toContain('sm:h-full');
-      expect(classList).toContain('sm:w-20');
-      
-      // Hidden on desktop screens breakpoint
+      expect(classList).toContain('min-h-16');
+      expect(classList).toContain('w-full');
+      expect(classList).toContain('border-t');
       expect(classList).toContain('lg:hidden');
+    });
+
+    it('only switches to a side rail at landscape mobile/tablet dimensions', () => {
+      render(<MobileNavigation />);
+
+      const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
+      const classList = nav.className;
+      const responsiveRailPrefix = '[@media_(min-width:640px)_and_(orientation:landscape)]';
+      
+      expect(classList).toContain(`${responsiveRailPrefix}:top-0`);
+      expect(classList).toContain(`${responsiveRailPrefix}:h-dvh`);
+      expect(classList).toContain(`${responsiveRailPrefix}:w-20`);
+      expect(classList).toContain(`${responsiveRailPrefix}:border-r`);
     });
 
     it('has standard safe-area padding for notches and interactive boundaries', () => {
@@ -141,6 +148,16 @@ describe('MobileNavigation Component', () => {
       expect(nav.style.paddingBottom).toBe('env(safe-area-inset-bottom)');
       expect(nav.style.paddingLeft).toBe('env(safe-area-inset-left)');
       expect(nav.style.paddingRight).toBe('env(safe-area-inset-right)');
+    });
+
+    it('keeps labels visible in the bottom bar and hides them in the side rail', () => {
+      render(<MobileNavigation />);
+
+      const label = screen.getByText('Home');
+      const responsiveRailPrefix = '[@media_(min-width:640px)_and_(orientation:landscape)]';
+
+      expect(label.className).toContain('text-[10px]');
+      expect(label.className).toContain(`${responsiveRailPrefix}:hidden`);
     });
   });
 });
