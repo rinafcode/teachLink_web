@@ -1,3 +1,24 @@
+export interface Topic {
+  slug: string;
+  name: string;
+  description?: string;
+  postCount: number;
+  followerCount: number;
+}
+
+export interface TopicPost {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string;
+  title: string;
+  body: string;
+  topicSlug: string;
+  likes: number;
+  commentCount: number;
+  createdAt: Date;
+}
+
 export interface Activity {
   id: string;
   actorId: string;
