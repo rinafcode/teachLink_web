@@ -137,10 +137,15 @@ export const highlightMatch = (text: string, query: string) => {
 export const trackSearch = (analytics: SearchAnalytics) => {
   if (typeof window === 'undefined') return;
 
-  const history = JSON.parse(localStorage.getItem('search_analytics') || '[]') as SearchAnalytics[];
-  history.unshift(analytics);
-  // Keep last 100 entries for analysis
-  localStorage.setItem('search_analytics', JSON.stringify(history.slice(0, 100)));
+  try {
+    const raw = localStorage.getItem('search_analytics');
+    const history = raw ? (JSON.parse(raw) as SearchAnalytics[]) : [];
+    history.unshift(analytics);
+    // Keep last 100 entries for analysis
+    localStorage.setItem('search_analytics', JSON.stringify(history.slice(0, 100)));
+  } catch (error) {
+    console.error('Failed to track search analytics', error);
+  }
 };
 
 /**
@@ -148,18 +153,25 @@ export const trackSearch = (analytics: SearchAnalytics) => {
  */
 export const getPopularQueries = (): { query: string; count: number }[] => {
   if (typeof window === 'undefined') return [];
-  const history = JSON.parse(localStorage.getItem('search_analytics') || '[]') as SearchAnalytics[];
-  const counts: Record<string, number> = {};
+  
+  try {
+    const raw = localStorage.getItem('search_analytics');
+    const history = raw ? (JSON.parse(raw) as SearchAnalytics[]) : [];
+    const counts: Record<string, number> = {};
 
-  history.forEach((entry: SearchAnalytics) => {
-    if (!entry.query) return;
-    counts[entry.query] = (counts[entry.query] || 0) + 1;
-  });
+    history.forEach((entry: SearchAnalytics) => {
+      if (!entry || !entry.query) return;
+      counts[entry.query] = (counts[entry.query] || 0) + 1;
+    });
 
-  return Object.entries(counts)
-    .map(([query, count]) => ({ query, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10);
+    return Object.entries(counts)
+      .map(([query, count]) => ({ query, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  } catch (error) {
+    console.error('Failed to get popular queries', error);
+    return [];
+  }
 };
 
 /**
@@ -167,15 +179,22 @@ export const getPopularQueries = (): { query: string; count: number }[] => {
  */
 export const getSearchGaps = (): string[] => {
   if (typeof window === 'undefined') return [];
-  const history = JSON.parse(localStorage.getItem('search_analytics') || '[]') as SearchAnalytics[];
+  
+  try {
+    const raw = localStorage.getItem('search_analytics');
+    const history = raw ? (JSON.parse(raw) as SearchAnalytics[]) : [];
 
-  return Array.from(
-    new Set(
-      history
-        .filter((entry: SearchAnalytics) => entry.resultsCount === 0)
-        .map((entry: SearchAnalytics) => entry.query),
-    ),
-  ).slice(0, 10);
+    return Array.from(
+      new Set(
+        history
+          .filter((entry: SearchAnalytics) => entry && entry.resultsCount === 0)
+          .map((entry: SearchAnalytics) => entry.query),
+      ),
+    ).slice(0, 10);
+  } catch (error) {
+    console.error('Failed to get search gaps', error);
+    return [];
+  }
 };
 
 /**

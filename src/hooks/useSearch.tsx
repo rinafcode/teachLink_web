@@ -26,6 +26,11 @@ export function useSearch<T extends SearchResult>(
   const [hasMore, setHasMore] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const fetchFnRef = useRef(fetchFn);
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  }, [fetchFn]);
+
   const search = useCallback(
     async (searchQuery: string, cursor?: string) => {
       if (!searchQuery.trim()) {
@@ -39,7 +44,7 @@ export function useSearch<T extends SearchResult>(
       setError(null);
 
       try {
-        const { items, nextCursor: next } = await fetchFn(searchQuery, cursor);
+        const { items, nextCursor: next } = await fetchFnRef.current(searchQuery, cursor);
         setResults((prev) => (cursor ? [...prev, ...items] : items));
         setNextCursor(next);
         setHasMore(!!next);
@@ -49,7 +54,7 @@ export function useSearch<T extends SearchResult>(
         setIsLoading(false);
       }
     },
-    [fetchFn],
+    [],
   );
 
   const updateQuery = useCallback(

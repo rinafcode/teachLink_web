@@ -18,6 +18,7 @@ export const useSearchFilters = () => {
   const router = useRouter();
   const pathname = usePathname();
   const isInternalNavigationRef = useRef(false);
+  const lastSyncedSearchRef = useRef(searchParams?.toString() || '');
 
   const filtersFromSearchParams = useMemo<FilterState>(
     () => ({
@@ -40,6 +41,12 @@ export const useSearchFilters = () => {
       return;
     }
 
+    const currentSearch = searchParams?.toString() || '';
+    if (currentSearch === lastSyncedSearchRef.current) {
+      return;
+    }
+    lastSyncedSearchRef.current = currentSearch;
+
     setFiltersState((prev) => {
       const next = filtersFromSearchParams;
       const hasChanged =
@@ -53,44 +60,63 @@ export const useSearchFilters = () => {
 
       return hasChanged ? next : prev;
     });
-  }, [filtersFromSearchParams]);
+  }, [filtersFromSearchParams, searchParams]);
+
+  const routerRef = useRef(router);
+  const pathnameRef = useRef(pathname);
+  const searchParamsRef = useRef(searchParams);
 
   useEffect(() => {
-    const params = new URLSearchParams();
+    routerRef.current = router;
+    pathnameRef.current = pathname;
+    searchParamsRef.current = searchParams;
+  }, [router, pathname, searchParams]);
 
-    if (filters.difficulty && filters.difficulty.length > 0) {
-      params.set('difficulty', filters.difficulty.join(','));
-    }
-    if (filters.topics && filters.topics.length > 0) {
-      params.set('topics', filters.topics.join(','));
-    }
-    if (filters.duration !== 100) {
-      params.set('duration', filters.duration.toString());
-    }
-    if (filters.priceRange !== 200) {
-      params.set('price', filters.priceRange.toString());
-    }
-    if (filters.sort && filters.sort !== 'relevance') {
-      params.set('sort', filters.sort);
-    }
-    if (filters.instructor) {
-      params.set('instructor', filters.instructor);
-    }
-    if (filters.searchTerm) {
-      params.set('q', filters.searchTerm);
-    }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
 
-    const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '/';
-    const currentSearch = searchParams?.toString() || '';
-    const nextSearch = params.toString();
+      if (filters.difficulty && filters.difficulty.length > 0) {
+        params.set('difficulty', filters.difficulty.join(','));
+      }
+      if (filters.topics && filters.topics.length > 0) {
+        params.set('topics', filters.topics.join(','));
+      }
+      if (filters.duration !== 100) {
+        params.set('duration', filters.duration.toString());
+      }
+      if (filters.priceRange !== 200) {
+        params.set('price', filters.priceRange.toString());
+      }
+      if (filters.sort && filters.sort !== 'relevance') {
+        params.set('sort', filters.sort);
+      }
+      if (filters.instructor) {
+        params.set('instructor', filters.instructor);
+      }
+      if (filters.searchTerm) {
+        params.set('q', filters.searchTerm);
+      }
 
-    if (currentSearch === nextSearch) {
-      return;
-    }
+      const pPathname = pathnameRef.current;
+      const pSearchParams = searchParamsRef.current;
+      const pRouter = routerRef.current;
 
-    isInternalNavigationRef.current = true;
-    router.replace(newUrl, { scroll: false });
-  }, [filters, pathname, router, searchParams]);
+      const newUrl = params.toString() ? `${pPathname ?? ''}?${params.toString()}` : pPathname ?? '/';
+      const currentSearch = pSearchParams?.toString() || '';
+      const nextSearch = params.toString();
+
+      if (currentSearch === nextSearch) {
+        return;
+      }
+
+      lastSyncedSearchRef.current = nextSearch;
+      isInternalNavigationRef.current = true;
+      pRouter.replace(newUrl, { scroll: false });
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [filters]);
 
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
     setFiltersState((prev) => ({
