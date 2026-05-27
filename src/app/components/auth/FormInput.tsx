@@ -2,13 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
-import { useState, InputHTMLAttributes, forwardRef } from 'react';
+import { useId, useState, InputHTMLAttributes, forwardRef } from 'react';
 import { FieldError } from '../../../components/forms/FormError';
 
 interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
   icon?: React.ReactNode;
+  helperText?: React.ReactNode;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
@@ -18,6 +19,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       error,
       icon,
       type,
+      id,
+      required,
+      helperText,
+      'aria-describedby': ariaDescribedBy,
       onDrag,
       onDragStart,
       onDragEnd,
@@ -32,10 +37,16 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     void onDragEnd;
     void onAnimationStart;
     void onAnimationEnd;
+    const generatedId = useId();
     const [showPassword, setShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
 
     const inputType = type === 'password' && showPassword ? 'text' : type;
+    const inputId = id ?? `auth-input-${generatedId}`;
+    const helperTextId = helperText ? `${inputId}-helper` : undefined;
+    const errorId = error ? `${inputId}-error` : undefined;
+    const describedBy =
+      [ariaDescribedBy, helperTextId, errorId].filter(Boolean).join(' ') || undefined;
 
     return (
       <motion.div
@@ -44,16 +55,29 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         transition={{ duration: 0.3 }}
         className="w-full"
       >
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          htmlFor={inputId}
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
           {label}
         </label>
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>
+            <div
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            >
+              {icon}
+            </div>
           )}
           <motion.input
             ref={ref}
+            id={inputId}
             type={inputType}
+            required={required}
+            aria-invalid={!!error}
+            aria-required={required}
+            aria-describedby={describedBy}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             animate={{
@@ -72,13 +96,25 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? `Hide ${label}` : `Show ${label}`}
+              aria-pressed={showPassword}
+              aria-controls={inputId}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? (
+                <EyeOff size={20} aria-hidden="true" />
+              ) : (
+                <Eye size={20} aria-hidden="true" />
+              )}
             </button>
           )}
         </div>
-        <FieldError error={error} />
+        {helperText && (
+          <p id={helperTextId} className="mt-1.5 text-sm text-gray-500 dark:text-gray-400 ml-1">
+            {helperText}
+          </p>
+        )}
+        <FieldError error={error} id={errorId} />
       </motion.div>
     );
   },
