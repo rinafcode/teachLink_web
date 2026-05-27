@@ -153,7 +153,7 @@ export const trackSearch = (analytics: SearchAnalytics) => {
  */
 export const getPopularQueries = (): { query: string; count: number }[] => {
   if (typeof window === 'undefined') return [];
-  
+
   try {
     const raw = localStorage.getItem('search_analytics');
     const history = raw ? (JSON.parse(raw) as SearchAnalytics[]) : [];
@@ -179,7 +179,7 @@ export const getPopularQueries = (): { query: string; count: number }[] => {
  */
 export const getSearchGaps = (): string[] => {
   if (typeof window === 'undefined') return [];
-  
+
   try {
     const raw = localStorage.getItem('search_analytics');
     const history = raw ? (JSON.parse(raw) as SearchAnalytics[]) : [];

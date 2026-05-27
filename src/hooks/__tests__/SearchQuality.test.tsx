@@ -92,13 +92,13 @@ describe('Search Quality and Performance Improvements', () => {
 
     it('loads existing history from localStorage on initialization', async () => {
       localStorage.setItem('search_history_terms', JSON.stringify(['cairo', 'starknet']));
-      
+
       const { result } = renderHook(() => useAdvancedSearch());
-      
+
       await act(async () => {
         await vi.runAllTimersAsync();
       });
-      
+
       expect(result.current.history).toEqual(['cairo', 'starknet']);
     });
   });
@@ -125,7 +125,9 @@ describe('Search Quality and Performance Improvements', () => {
         vi.advanceTimersByTime(150);
       });
       expect(replaceMock).toHaveBeenCalledTimes(1);
-      expect(replaceMock).toHaveBeenCalledWith(expect.stringContaining('price=50'), { scroll: false });
+      expect(replaceMock).toHaveBeenCalledWith(expect.stringContaining('price=50'), {
+        scroll: false,
+      });
     });
   });
 

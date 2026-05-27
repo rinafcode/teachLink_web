@@ -1,11 +1,4 @@
-export type ExportFilterOperator =
-  | 'eq'
-  | 'neq'
-  | 'contains'
-  | 'gt'
-  | 'gte'
-  | 'lt'
-  | 'lte';
+export type ExportFilterOperator = 'eq' | 'neq' | 'contains' | 'gt' | 'gte' | 'lt' | 'lte';
 
 export interface ExportFilter {
   field: string;

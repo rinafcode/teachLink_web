@@ -43,7 +43,8 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
   const [sharingScreen, setSharingScreen] = useState(false);
   const [status, setStatus] = useState('Idle');
 
-  const signalingUrl = websocketUrl || process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001';
+  const signalingUrl =
+    websocketUrl || process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001';
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -132,7 +133,10 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
     };
 
     peerConnection.onconnectionstatechange = () => {
-      if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
+      if (
+        peerConnection.connectionState === 'disconnected' ||
+        peerConnection.connectionState === 'failed'
+      ) {
         setStatus('Remote connection lost');
       }
     };
@@ -257,21 +261,38 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
     <div className="rounded-3xl border border-gray-200 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Video conference</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Peer-to-peer WebRTC audio/video with screen sharing and signaling.</p>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Video conference
+          </h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Peer-to-peer WebRTC audio/video with screen sharing and signaling.
+          </p>
         </div>
-        <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">{status}</div>
+        <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+          {status}
+        </div>
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
         <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="overflow-hidden rounded-3xl bg-slate-900">
-              <video ref={localVideoRef} autoPlay muted playsInline className="h-72 w-full object-cover" />
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                playsInline
+                className="h-72 w-full object-cover"
+              />
               <div className="p-3 text-sm text-slate-200">Your camera</div>
             </div>
             <div className="overflow-hidden rounded-3xl bg-slate-900">
-              <video ref={remoteVideoRef} autoPlay playsInline className="h-72 w-full object-cover" />
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className="h-72 w-full object-cover"
+              />
               <div className="p-3 text-sm text-slate-200">Remote participant</div>
             </div>
           </div>

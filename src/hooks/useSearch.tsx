@@ -31,31 +31,28 @@ export function useSearch<T extends SearchResult>(
     fetchFnRef.current = fetchFn;
   }, [fetchFn]);
 
-  const search = useCallback(
-    async (searchQuery: string, cursor?: string) => {
-      if (!searchQuery.trim()) {
-        setResults([]);
-        setNextCursor(undefined);
-        setHasMore(false);
-        return;
-      }
+  const search = useCallback(async (searchQuery: string, cursor?: string) => {
+    if (!searchQuery.trim()) {
+      setResults([]);
+      setNextCursor(undefined);
+      setHasMore(false);
+      return;
+    }
 
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const { items, nextCursor: next } = await fetchFnRef.current(searchQuery, cursor);
-        setResults((prev) => (cursor ? [...prev, ...items] : items));
-        setNextCursor(next);
-        setHasMore(!!next);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Search failed');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [],
-  );
+    try {
+      const { items, nextCursor: next } = await fetchFnRef.current(searchQuery, cursor);
+      setResults((prev) => (cursor ? [...prev, ...items] : items));
+      setNextCursor(next);
+      setHasMore(!!next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const updateQuery = useCallback(
     (value: string) => {

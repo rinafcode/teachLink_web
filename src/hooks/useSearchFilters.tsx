@@ -102,7 +102,9 @@ export const useSearchFilters = () => {
       const pSearchParams = searchParamsRef.current;
       const pRouter = routerRef.current;
 
-      const newUrl = params.toString() ? `${pPathname ?? ''}?${params.toString()}` : pPathname ?? '/';
+      const newUrl = params.toString()
+        ? `${pPathname ?? ''}?${params.toString()}`
+        : pPathname ?? '/';
       const currentSearch = pSearchParams?.toString() || '';
       const nextSearch = params.toString();
 
