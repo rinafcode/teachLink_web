@@ -8,7 +8,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const SRC_DIR = path.join(__dirname, '../src');
 const COMPONENT_DIRS = ['components', 'app', 'pages'];
@@ -18,12 +17,6 @@ const DISALLOWED_ICONS = [
   { pattern: /from ['"]@heroicons\/react/g, name: '@heroicons/react' },
   { pattern: /from ['"]@fortawesome/g, name: '@fortawesome' },
   { pattern: /from ['"]react-feather/g, name: 'react-feather' },
-];
-
-// Required responsive breakpoints for key layout patterns
-const RESPONSIVE_PATTERNS = [
-  { pattern: /\bflex\b/, shouldHave: ['sm:', 'md:', 'lg:'], context: 'flex layouts' },
-  { pattern: /\bgrid\b/, shouldHave: ['sm:', 'md:', 'lg:'], context: 'grid layouts' },
 ];
 
 let errors = [];
@@ -65,13 +58,6 @@ function checkIconUsage(content, filePath) {
 
 function checkResponsiveTailwind(content, filePath) {
   // Only check component files that have className
-  if (!content.includes('className')) return;
-
-  // Check for common layout patterns without responsive variants
-  const lines = content.split('\n');
-
-  lines.forEach((line, index) => {
-    // Check for grid/flex without any responsive classes
   if (!content.includes('className')) return;
 
   const lines = content.split('\n');
@@ -134,19 +120,5 @@ function printResults() {
 }
 
 // Run validation
-    console.log('\n[WARN] UI Validation Warnings:');
-    warnings.forEach((warning) => console.warn(`  - ${warning}`));
-  }
-
-  if (errors.length > 0) {
-    console.error('\n[ERROR] UI Validation Errors:');
-    errors.forEach((error) => console.error(`  - ${error}`));
-    process.exit(1);
-  }
-
-  console.log('\n[OK] UI validation passed');
-  process.exit(0);
-}
-
 validateFiles();
 printResults();
