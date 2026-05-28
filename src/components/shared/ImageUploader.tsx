@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import Image from 'next/image';
 
 interface ImageUploaderProps {
@@ -17,18 +17,67 @@ export default function ImageUploader({
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Create local preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
-      // Pass file to parent
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type.startsWith('video/')) {
+      try {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.crossOrigin = 'anonymous';
+        video.muted = true;
+
+        await new Promise<void>((resolve, reject) => {
+          video.onloadeddata = () => {
+            // Seek to 1s or midway if shorter
+            video.currentTime = Math.min(1, video.duration / 2);
+          };
+          video.onseeked = () => resolve();
+          video.onerror = () => reject(new Error('Failed to load video'));
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const objectUrl = URL.createObjectURL(blob);
+                setPreviewUrl(objectUrl);
+                const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                  type: 'image/jpeg',
+                });
+                onImageSelect(optimizedFile);
+              }
+            },
+            'image/jpeg',
+            0.85,
+          );
+        }
+        URL.revokeObjectURL(video.src);
+      } catch (error) {
+        console.error('Video optimization failed:', error);
+      }
+    } else if (file.type.startsWith('image/')) {
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
       onImageSelect(file);
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -48,7 +97,7 @@ export default function ImageUploader({
             alt="Profile Preview"
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
-            unoptimized={previewUrl.startsWith('data:')}
+            unoptimized={previewUrl.startsWith('data:') || previewUrl.startsWith('blob:')}
             className="object-cover"
           />
         ) : (
@@ -80,7 +129,7 @@ export default function ImageUploader({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         onChange={handleFileChange}
         className="hidden"
       />
