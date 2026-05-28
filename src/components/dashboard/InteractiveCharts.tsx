@@ -21,8 +21,8 @@ import {
 import { InteractiveChartLibrary } from '@/components/visualization/InteractiveChartLibrary';
 import { getDrillDownData } from '@/utils/chartUtils';
 import type { ChartData, ChartType } from '@/utils/visualizationUtils';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useInternationalization } from '@/hooks/useInternationalization';
+import { getDashboardChartTypeLabel, translateWithFallback } from './dashboardI18n';
 
 export interface InteractiveChartsProps {
   panelId: string;
@@ -36,18 +36,14 @@ export interface InteractiveChartsProps {
   className?: string;
 }
 
-// ─── Chart type toolbar config ────────────────────────────────────────────────
-
-const CHART_TYPE_BUTTONS: { type: ChartType; Icon: React.ElementType; label: string }[] = [
-  { type: 'line', Icon: TrendingUp, label: 'Line chart' },
-  { type: 'bar', Icon: BarChart3, label: 'Bar chart' },
-  { type: 'area', Icon: AreaChart, label: 'Area chart' },
-  { type: 'pie', Icon: PieChart, label: 'Pie chart' },
-  { type: 'scatter', Icon: ScatterChart, label: 'Scatter chart' },
-  { type: 'radar', Icon: Radar, label: 'Radar chart' },
+const CHART_TYPE_BUTTONS: { type: ChartType; Icon: React.ElementType }[] = [
+  { type: 'line', Icon: TrendingUp },
+  { type: 'bar', Icon: BarChart3 },
+  { type: 'area', Icon: AreaChart },
+  { type: 'pie', Icon: PieChart },
+  { type: 'scatter', Icon: ScatterChart },
+  { type: 'radar', Icon: Radar },
 ];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export const InteractiveCharts = React.memo<InteractiveChartsProps>(
   ({
@@ -61,23 +57,31 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
     onClearDrillDown,
     className = '',
   }) => {
+    const { t } = useInternationalization();
     const isDrillDown = drillDownIndex !== null;
     const drillDownData = isDrillDown ? getDrillDownData(data, drillDownIndex) : null;
-    const drillDownLabel = isDrillDown ? data.labels[drillDownIndex] ?? 'Selected' : null;
+    const drillDownLabel =
+      isDrillDown
+        ? data.labels[drillDownIndex] ??
+          translateWithFallback(t, 'dashboard.analytics.drillDown.selected', 'Selected')
+        : null;
 
     return (
       <div className={`flex flex-col gap-4 ${className}`}>
-        {/* Chart type toolbar */}
         <div
           className="flex items-center gap-1 flex-wrap"
           role="toolbar"
-          aria-label="Chart type selector"
+          aria-label={translateWithFallback(
+            t,
+            'dashboard.analytics.chartTypeSelector',
+            'Chart type selector',
+          )}
         >
-          {CHART_TYPE_BUTTONS.map(({ type, Icon, label }) => (
+          {CHART_TYPE_BUTTONS.map(({ type, Icon }) => (
             <button
               key={type}
               onClick={() => onChartTypeChange(type)}
-              aria-label={label}
+              aria-label={getDashboardChartTypeLabel(type, t)}
               aria-pressed={chartType === type}
               className={`p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                 chartType === type
@@ -90,7 +94,6 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
           ))}
         </div>
 
-        {/* Main chart */}
         <AnimatePresence mode="wait">
           {!isDrillDown ? (
             <motion.div
@@ -108,8 +111,8 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
                 showLegend
                 showGrid
                 animated
-                onDataPointClick={(data: any) =>
-                  onDrillDown(data?.activeTooltipIndex ?? data?.index ?? 0)
+                onDataPointClick={(clickedPoint: any) =>
+                  onDrillDown(clickedPoint?.activeTooltipIndex ?? clickedPoint?.index ?? 0)
                 }
               />
             </motion.div>
@@ -122,14 +125,17 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-3"
             >
-              {/* Breadcrumb */}
               <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                 <button
                   onClick={onClearDrillDown}
                   className="text-blue-600 dark:text-blue-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                  aria-label="Back to all data"
+                  aria-label={translateWithFallback(
+                    t,
+                    'dashboard.analytics.drillDown.backToAllDataAria',
+                    'Back to all data',
+                  )}
                 >
-                  All Data
+                  {translateWithFallback(t, 'dashboard.analytics.drillDown.allData', 'All Data')}
                 </button>
                 <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="font-medium text-gray-700 dark:text-gray-200">
@@ -137,12 +143,16 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
                 </span>
               </div>
 
-              {/* Drill-down chart */}
               {drillDownData && (
                 <InteractiveChartLibrary
                   data={drillDownData}
                   chartType="bar"
-                  title={`Detail — ${drillDownLabel}`}
+                  title={translateWithFallback(
+                    t,
+                    'dashboard.analytics.drillDown.detailTitle',
+                    `Detail - ${drillDownLabel}`,
+                    { label: drillDownLabel ?? '' },
+                  )}
                   height={280}
                   showLegend
                   showGrid
@@ -150,14 +160,21 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
                 />
               )}
 
-              {/* Back button */}
               <button
                 onClick={onClearDrillDown}
                 className="self-start flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                aria-label="Back to overview"
+                aria-label={translateWithFallback(
+                  t,
+                  'dashboard.analytics.drillDown.backToOverview',
+                  'Back to overview',
+                )}
               >
                 <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-                Back to overview
+                {translateWithFallback(
+                  t,
+                  'dashboard.analytics.drillDown.backToOverview',
+                  'Back to overview',
+                )}
               </button>
             </motion.div>
           )}

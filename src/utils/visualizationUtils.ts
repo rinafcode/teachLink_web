@@ -95,6 +95,7 @@ export const formatPercentage = (value: number, decimals = 1): string => {
 export const generateDateLabels = (
   range: TimeRange,
   format: 'short' | 'long' = 'short',
+  locale = 'en-US',
 ): string[] => {
   const now = new Date();
   const labels: string[] = [];
@@ -122,9 +123,9 @@ export const generateDateLabels = (
     date.setDate(date.getDate() - i);
 
     if (format === 'short') {
-      labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      labels.push(date.toLocaleDateString(locale, { month: 'short', day: 'numeric' }));
     } else {
-      labels.push(date.toLocaleDateString('en-US'));
+      labels.push(date.toLocaleDateString(locale));
     }
   }
 
@@ -249,11 +250,11 @@ export const calculateTrend = (
 /**
  * Export chart data to CSV
  */
-export const exportToCSV = (data: ChartData, filename: string): void => {
+export const exportToCSV = (data: ChartData, filename: string, headerLabel = 'Label'): void => {
   const rows: string[] = [];
 
   // Header row
-  rows.push(['Label', ...data.datasets.map((d) => d.label)].join(','));
+  rows.push([headerLabel, ...data.datasets.map((d) => d.label)].join(','));
 
   // Data rows
   data.labels.forEach((label, index) => {

@@ -67,7 +67,130 @@
     "downloadedCourse": "Downloaded course",
     "activityEntry": "{{course}} • {{time}}",
     "timeHoursAgo": "{{count}} hours ago",
-    "timeDayAgo": "{{count}} day ago"
+    "timeDayAgo": "{{count}} day ago",
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "subtitle": "Interactive data visualization and real-time insights",
+      "chartTypeSelector": "Chart type selector",
+      "actions": {
+        "exportAll": "Export All",
+        "exportAllAria": "Export all panels as CSV",
+        "share": "Share",
+        "shareAria": "Copy shareable dashboard link",
+        "copied": "Copied!",
+        "exportPanel": "Export {{panel}} as CSV"
+      },
+      "toasts": {
+        "shareSuccess": "Dashboard link copied to clipboard!",
+        "shareError": "Could not copy to clipboard",
+        "exportAllSuccess": "Panels exported as CSV"
+      },
+      "exports": {
+        "labelColumn": "Label"
+      },
+      "filters": {
+        "show": "Show Filters",
+        "hide": "Hide Filters",
+        "activeFilters": "Active filters",
+        "removeTimeRange": "Remove time range filter",
+        "removeCategory": "Remove {{category}} filter",
+        "resetAll": "Reset All",
+        "resetAllAria": "Reset all filters",
+        "timeRange": "Time Range",
+        "aggregation": "Aggregation",
+        "metric": "Metric",
+        "categories": "Categories",
+        "categoryFilters": "Category filters",
+        "timeRangeOptions": {
+          "7d": "Last 7 Days",
+          "30d": "Last 30 Days",
+          "90d": "Last 90 Days",
+          "1y": "Last Year",
+          "all": "All Time"
+        },
+        "aggregationOptions": {
+          "sum": "Sum",
+          "average": "Average",
+          "count": "Count",
+          "min": "Min",
+          "max": "Max"
+        },
+        "metrics": {
+          "enrollments": "Enrollments",
+          "revenue": "Revenue",
+          "completions": "Completions",
+          "views": "Views"
+        },
+        "categoriesOptions": {
+          "webDev": "Web Dev",
+          "dataScience": "Data Science",
+          "design": "Design",
+          "marketing": "Marketing",
+          "mobile": "Mobile"
+        }
+      },
+      "panels": {
+        "enrollments": {
+          "title": "Course Enrollments"
+        },
+        "revenue": {
+          "title": "Revenue"
+        },
+        "completions": {
+          "title": "Completions"
+        },
+        "realtime": {
+          "title": "Live Activity"
+        }
+      },
+      "datasets": {
+        "enrollments": "Course Enrollments",
+        "revenue": "Revenue",
+        "completions": "Completions",
+        "realtime": "Live Data",
+        "views": "Course Views"
+      },
+      "chartTypes": {
+        "line": "Line chart",
+        "bar": "Bar chart",
+        "area": "Area chart",
+        "pie": "Pie chart",
+        "scatter": "Scatter chart",
+        "radar": "Radar chart"
+      },
+      "drillDown": {
+        "selected": "Selected",
+        "allData": "All Data",
+        "backToAllDataAria": "Back to all data",
+        "detailTitle": "Detail - {{label}}",
+        "backToOverview": "Back to overview"
+      },
+      "realtime": {
+        "status": {
+          "paused": "Paused",
+          "connected": "Connected",
+          "simulating": "Simulating",
+          "disconnected": "Disconnected"
+        },
+        "pointsCount": "{{count}} pts",
+        "updateSpeed": "Update speed",
+        "pause": "Pause live updates",
+        "resume": "Resume live updates",
+        "reset": "Reset data",
+        "loadingData": "Loading data...",
+        "waitingForData": "Waiting for data...",
+        "stats": {
+          "mean": "Mean",
+          "median": "Median",
+          "trend": "Trend"
+        },
+        "trendDirections": {
+          "up": "Up",
+          "down": "Down",
+          "neutral": "Flat"
+        }
+      }
+    }
   },
   "profile": {
     "editProfile": "Edit Profile",
