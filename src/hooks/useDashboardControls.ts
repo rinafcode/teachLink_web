@@ -3,6 +3,8 @@ import { useSensor, useSensors, PointerSensor, KeyboardSensor, DragEndEvent } fr
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import toast from 'react-hot-toast';
 import { DashboardPanel } from '@/hooks/useDashboardData';
+import { useInternationalization } from '@/hooks/useInternationalization';
+import { translateWithFallback } from '@/components/dashboard/dashboardI18n';
 
 interface UseDashboardControlsProps {
   panels: DashboardPanel[];
@@ -17,6 +19,7 @@ export const useDashboardControls = ({
   generateShareURL,
   exportPanel,
 }: UseDashboardControlsProps) => {
+  const { t } = useInternationalization();
   const [shareSuccess, setShareSuccess] = useState(false);
 
   // DnD sensors
@@ -48,12 +51,25 @@ export const useDashboardControls = ({
     try {
       await navigator.clipboard.writeText(url);
       setShareSuccess(true);
-      toast.success('Dashboard link copied to clipboard!', { duration: 2500 });
+      toast.success(
+        translateWithFallback(
+          t,
+          'dashboard.analytics.toasts.shareSuccess',
+          'Dashboard link copied to clipboard!',
+        ),
+        { duration: 2500 },
+      );
       setTimeout(() => setShareSuccess(false), 2500);
     } catch {
-      toast.error('Could not copy to clipboard');
+      toast.error(
+        translateWithFallback(
+          t,
+          'dashboard.analytics.toasts.shareError',
+          'Could not copy to clipboard',
+        ),
+      );
     }
-  }, [generateShareURL]);
+  }, [generateShareURL, t]);
 
   const handleExportAll = useCallback(() => {
     panels.forEach((panel) => {
@@ -61,8 +77,14 @@ export const useDashboardControls = ({
         exportPanel(panel.id, 'csv');
       }
     });
-    toast.success('Panels exported as CSV');
-  }, [panels, exportPanel]);
+    toast.success(
+      translateWithFallback(
+        t,
+        'dashboard.analytics.toasts.exportAllSuccess',
+        'Panels exported as CSV',
+      ),
+    );
+  }, [exportPanel, panels, t]);
 
   return {
     sensors,

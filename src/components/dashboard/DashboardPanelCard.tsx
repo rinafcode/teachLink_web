@@ -5,6 +5,8 @@ import { DashboardPanel } from '@/hooks/useDashboardData';
 import { ChartType } from '@/utils/visualizationUtils';
 import { InteractiveCharts } from './InteractiveCharts';
 import { RealTimeUpdater } from './RealTimeUpdater';
+import { useInternationalization } from '@/hooks/useInternationalization';
+import { translateWithFallback } from './dashboardI18n';
 
 interface DashboardPanelCardProps {
   panel: DashboardPanel;
@@ -23,6 +25,8 @@ export const DashboardPanelCard: React.FC<DashboardPanelCardProps> = ({
   onDrillDown,
   onClearDrillDown,
 }) => {
+  const { t } = useInternationalization();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -36,7 +40,12 @@ export const DashboardPanelCard: React.FC<DashboardPanelCardProps> = ({
         <h2 className="text-base font-semibold text-gray-900 dark:text-white">{panel.title}</h2>
         <button
           onClick={() => onExport(panel.id, 'csv')}
-          aria-label={`Export ${panel.title} as CSV`}
+          aria-label={translateWithFallback(
+            t,
+            'dashboard.analytics.actions.exportPanel',
+            `Export ${panel.title} as CSV`,
+            { panel: panel.title },
+          )}
           className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
         >
           <Download className="w-3.5 h-3.5" aria-hidden="true" />

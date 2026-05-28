@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Home, Search, BookOpen, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -9,6 +9,38 @@ interface NavItem {
   label: string;
   icon: (size: number) => React.ReactNode;
 }
+
+const railNavClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:top-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:bottom-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:left-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:right-auto',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:h-dvh',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:w-20',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:border-t-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:border-r',
+].join(' ');
+const railListClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:h-full',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:flex-col',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:justify-start',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:space-y-6',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:px-0',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:pt-8',
+].join(' ');
+const railListItemClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:flex-none',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:px-2',
+].join(' ');
+const railButtonClasses = [
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:mx-auto',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:h-14',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:w-14',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:max-w-none',
+  '[@media_(min-width:640px)_and_(orientation:landscape)]:py-0',
+].join(' ');
+const railHiddenClass = '[@media_(min-width:640px)_and_(orientation:landscape)]:hidden';
+const railBlockClass = '[@media_(min-width:640px)_and_(orientation:landscape)]:block';
 
 export const MobileNavigation: React.FC<{
   initialActive?: string;
@@ -36,6 +68,11 @@ export const MobileNavigation: React.FC<{
     { id: 'courses', label: 'Courses', icon: (size) => <BookOpen size={size} /> },
     { id: 'profile', label: 'Profile', icon: (size) => <User size={size} /> },
   ];
+
+  // Sync state with prop
+  useEffect(() => {
+    setActiveTab(initialActive);
+  }, [initialActive]);
 
   const handleTabClick = (id: string) => {
     setActiveTab(id);
@@ -122,17 +159,23 @@ export const MobileNavigation: React.FC<{
                 >
                   {item.icon(iconSize)}
                 </div>
-                <span className="text-[10px] landscape:text-xs font-medium leading-none">
+                <span className={`mt-0.5 text-[10px] font-medium ${railHiddenClass}`}>
                   {item.label}
                 </span>
 
-                {isActive && (
-                  <motion.div
-                    layoutId="active-nav-indicator"
-                    className="absolute inset-0 bg-blue-50 dark:bg-blue-950/40 rounded-xl -z-10 border border-blue-100/50 dark:border-blue-900/30"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
+                {/* Active Indicator Dot (Portrait) */}
+                <div
+                  className={`absolute bottom-1 h-1 w-1 rounded-full bg-blue-600 transition-all duration-300 dark:bg-blue-400 ${railHiddenClass} ${
+                    isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                  }`}
+                />
+
+                {/* Active Indicator Bar (Landscape/Tablet) */}
+                <div
+                  className={`absolute left-0 top-1/2 hidden h-8 w-1 -translate-y-1/2 rounded-r-full bg-blue-600 transition-all duration-300 dark:bg-blue-400 ${railBlockClass} ${
+                    isActive ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'
+                  }`}
+                />
               </button>
             </li>
           );

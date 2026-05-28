@@ -1,6 +1,6 @@
 {
   "common": {
-    "loading": "جاري التحميل...",
+    "loading": "جار التحميل...",
     "error": "خطأ",
     "success": "نجاح",
     "cancel": "إلغاء",
@@ -67,7 +67,130 @@
     "downloadedCourse": "تم تنزيل الدورة",
     "activityEntry": "{{course}} • {{time}}",
     "timeHoursAgo": "قبل {{count}} ساعات",
-    "timeDayAgo": "قبل {{count}} يوم"
+    "timeDayAgo": "قبل {{count}} يوم",
+    "analytics": {
+      "title": "لوحة التحليلات",
+      "subtitle": "تصور تفاعلي للبيانات ورؤى في الوقت الحقيقي",
+      "chartTypeSelector": "محدد نوع المخطط",
+      "actions": {
+        "exportAll": "تصدير الكل",
+        "exportAllAria": "تصدير جميع اللوحات كملف CSV",
+        "share": "مشاركة",
+        "shareAria": "نسخ رابط لوحة التحكم القابل للمشاركة",
+        "copied": "تم النسخ",
+        "exportPanel": "تصدير {{panel}} كملف CSV"
+      },
+      "toasts": {
+        "shareSuccess": "تم نسخ رابط لوحة التحكم إلى الحافظة",
+        "shareError": "تعذر النسخ إلى الحافظة",
+        "exportAllSuccess": "تم تصدير اللوحات كملف CSV"
+      },
+      "exports": {
+        "labelColumn": "التسمية"
+      },
+      "filters": {
+        "show": "إظهار المرشحات",
+        "hide": "إخفاء المرشحات",
+        "activeFilters": "المرشحات النشطة",
+        "removeTimeRange": "إزالة مرشح نطاق الوقت",
+        "removeCategory": "إزالة مرشح {{category}}",
+        "resetAll": "إعادة تعيين الكل",
+        "resetAllAria": "إعادة تعيين جميع المرشحات",
+        "timeRange": "نطاق الوقت",
+        "aggregation": "التجميع",
+        "metric": "المقياس",
+        "categories": "الفئات",
+        "categoryFilters": "مرشحات الفئات",
+        "timeRangeOptions": {
+          "7d": "آخر 7 أيام",
+          "30d": "آخر 30 يوما",
+          "90d": "آخر 90 يوما",
+          "1y": "العام الماضي",
+          "all": "كل الوقت"
+        },
+        "aggregationOptions": {
+          "sum": "المجموع",
+          "average": "المتوسط",
+          "count": "العدد",
+          "min": "الأدنى",
+          "max": "الأقصى"
+        },
+        "metrics": {
+          "enrollments": "التسجيلات",
+          "revenue": "الإيرادات",
+          "completions": "الإكمالات",
+          "views": "المشاهدات"
+        },
+        "categoriesOptions": {
+          "webDev": "تطوير الويب",
+          "dataScience": "علم البيانات",
+          "design": "التصميم",
+          "marketing": "التسويق",
+          "mobile": "الجوال"
+        }
+      },
+      "panels": {
+        "enrollments": {
+          "title": "تسجيلات الدورات"
+        },
+        "revenue": {
+          "title": "الإيرادات"
+        },
+        "completions": {
+          "title": "الإكمالات"
+        },
+        "realtime": {
+          "title": "النشاط المباشر"
+        }
+      },
+      "datasets": {
+        "enrollments": "تسجيلات الدورات",
+        "revenue": "الإيرادات",
+        "completions": "الإكمالات",
+        "realtime": "بيانات حية",
+        "views": "مشاهدات الدورة"
+      },
+      "chartTypes": {
+        "line": "مخطط خطي",
+        "bar": "مخطط أعمدة",
+        "area": "مخطط مساحة",
+        "pie": "مخطط دائري",
+        "scatter": "مخطط تبعثر",
+        "radar": "مخطط رادار"
+      },
+      "drillDown": {
+        "selected": "العنصر المحدد",
+        "allData": "كل البيانات",
+        "backToAllDataAria": "العودة إلى كل البيانات",
+        "detailTitle": "تفاصيل - {{label}}",
+        "backToOverview": "العودة إلى النظرة العامة"
+      },
+      "realtime": {
+        "status": {
+          "paused": "متوقف",
+          "connected": "متصل",
+          "simulating": "محاكاة",
+          "disconnected": "غير متصل"
+        },
+        "pointsCount": "{{count}} نقطة",
+        "updateSpeed": "سرعة التحديث",
+        "pause": "إيقاف التحديثات المباشرة",
+        "resume": "استئناف التحديثات المباشرة",
+        "reset": "إعادة ضبط البيانات",
+        "loadingData": "جار تحميل البيانات...",
+        "waitingForData": "بانتظار البيانات...",
+        "stats": {
+          "mean": "المتوسط",
+          "median": "الوسيط",
+          "trend": "الاتجاه"
+        },
+        "trendDirections": {
+          "up": "ارتفاع",
+          "down": "انخفاض",
+          "neutral": "ثابت"
+        }
+      }
+    }
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
