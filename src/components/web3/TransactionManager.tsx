@@ -93,9 +93,16 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   const validateForm = useCallback((): string | null => {
     if (!toAddress.trim()) return 'Recipient address is required';
     if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
-    if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) return 'Invalid Ethereum address format';
+    const isValid = wallet.provider === 'starknet'
+      ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
+      : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+    if (!isValid) {
+      return wallet.provider === 'starknet'
+        ? 'Invalid Starknet address format'
+        : 'Invalid Ethereum address format';
+    }
     return null;
-  }, [toAddress, amount]);
+  }, [toAddress, amount, wallet.provider]);
 
   /**
    * Handle transaction submission
@@ -108,7 +115,14 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       const validationError = (() => {
         if (!toAddress.trim()) return 'Recipient address is required';
         if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
-        if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) return 'Invalid Ethereum address format';
+        const isValid = wallet.provider === 'starknet'
+          ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
+          : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+        if (!isValid) {
+          return wallet.provider === 'starknet'
+            ? 'Invalid Starknet address format'
+            : 'Invalid Ethereum address format';
+        }
         return null;
       })();
 
@@ -127,7 +141,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       setTxHash(null);
 
       try {
-        const valueInWei = (parseFloat(amount) * Math.pow(10, 18)).toString(16);
+        const valueInWei = BigInt(Math.round(parseFloat(amount) * Math.pow(10, 18))).toString(16);
         const tx: Partial<TransactionDetails> = {
           to: toAddress,
           value: `0x${valueInWei}`,

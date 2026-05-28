@@ -170,14 +170,12 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm text-red-700 dark:text-red-300">{wallet.error}</p>
-              {wallet.error.includes('not installed') && (
-                <button
-                  onClick={() => wallet.clearError()}
-                  className="text-xs text-red-600 dark:text-red-400 hover:underline mt-1"
-                >
-                  Dismiss
-                </button>
-              )}
+              <button
+                onClick={() => wallet.clearError()}
+                className="text-xs text-red-600 dark:text-red-400 hover:underline mt-1 block"
+              >
+                Dismiss
+              </button>
             </div>
           </div>
         )}
