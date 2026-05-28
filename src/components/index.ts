@@ -4,6 +4,10 @@
  * Import from '@/components' rather than '@/app/components' for shared pieces.
  */
 
+export { Button, buttonVariants } from './ui/Button';
+export type { ButtonProps } from './ui/Button';
+export { ButtonGroup } from './ui/ButtonGroup';
+export type { ButtonGroupProps } from './ui/ButtonGroup';
 export * from './ui/Modal';
 export * from './ui/Toast';
 export * from './ui/EmptyState';
