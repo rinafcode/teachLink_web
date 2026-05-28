@@ -80,6 +80,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     addNotification,
     markAsRead: storeMarkAsRead,
     markAllAsRead: storeMarkAllAsRead,
+    removeNotification: storeRemoveNotification,
     clearRead: storeClearRead,
   } = useNotificationStore();
 
@@ -199,11 +200,9 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   // Clear single notification
   const clearNotification = useCallback(
     (id: string) => {
-      const next = notifications.filter((n) => n.id !== id);
-      useNotificationStore.setState({ notifications: next });
-      localStorage.setItem('notifications_v1', JSON.stringify(next));
+      storeRemoveNotification(id);
     },
-    [notifications],
+    [storeRemoveNotification],
   );
 
   // Clear all read notifications
@@ -297,8 +296,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       // Simulate delivery success/failure
       const success = Math.random() < deliveryRates[channel];
 
-      if (success) {
-      } else {
+      if (!success) {
         console.warn(`Failed to deliver notification ${notification.id} via ${channel}`);
       }
 
