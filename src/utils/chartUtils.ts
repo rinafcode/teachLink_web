@@ -67,6 +67,10 @@ const PANEL_DATA_CONFIG: Record<
 export const generateDashboardSampleData = (
   panelId: string,
   timeRange: TimeRange = '30d',
+  options?: {
+    locale?: string;
+    datasetLabel?: string;
+  },
 ): ChartData => {
   const cfg = PANEL_DATA_CONFIG[panelId] ?? {
     label: 'Metric',
@@ -76,14 +80,14 @@ export const generateDashboardSampleData = (
     max: 100,
   };
 
-  const labels = generateDateLabels(timeRange);
+  const labels = generateDateLabels(timeRange, 'short', options?.locale);
   const data = generateSampleData(labels.length, cfg.min, cfg.max);
 
   return {
     labels,
     datasets: [
       {
-        label: cfg.label,
+        label: options?.datasetLabel ?? cfg.label,
         data,
         borderColor: cfg.color,
         backgroundColor: cfg.bgColor,
