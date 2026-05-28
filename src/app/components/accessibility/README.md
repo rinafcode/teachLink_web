@@ -286,6 +286,14 @@ console.log(issues);
 9. **Test with real assistive technologies**
 10. **Include focus indicators** for all interactive elements
 
+### Form Input Screen Reader Support
+
+- Use the shared `FormInput` components for new text fields, selects, and textareas where possible.
+- Pass visible `label` text so the component can create an explicit `label`/`id` relationship.
+- Pass `helperText` for persistent instructions; validation errors are linked to fields automatically.
+- Use `required` for required fields so both browser validation and `aria-required` stay in sync.
+- Keep decorative icons non-interactive; password visibility controls expose their current state to assistive technology.
+
 ## Browser Support
 
 - Chrome/Edge 90+
