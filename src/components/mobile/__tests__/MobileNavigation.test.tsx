@@ -144,10 +144,11 @@ describe('MobileNavigation Component', () => {
       render(<MobileNavigation />);
 
       const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
-      
-      expect(nav.style.paddingBottom).toBe('env(safe-area-inset-bottom)');
-      expect(nav.style.paddingLeft).toBe('env(safe-area-inset-left)');
-      expect(nav.style.paddingRight).toBe('env(safe-area-inset-right)');
+      const styleAttr = nav.getAttribute('style') || '';
+
+      expect(styleAttr).toContain('padding-bottom: env(safe-area-inset-bottom)');
+      expect(styleAttr).toContain('padding-left: env(safe-area-inset-left)');
+      expect(styleAttr).toContain('padding-right: env(safe-area-inset-right)');
     });
 
     it('keeps labels visible in the bottom bar and hides them in the side rail', () => {
