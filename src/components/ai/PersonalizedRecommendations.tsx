@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import type { ApiResponse } from '@/types/api';
 
-// GET /api/ai/recommendations → { items: Recommendation[] }
+// GET /api/ai/recommendations → ApiResponse<Recommendation[]>
 
 interface Recommendation {
   id: string;
@@ -30,8 +31,8 @@ export default function PersonalizedRecommendations() {
 
   useEffect(() => {
     apiClient
-      .get<{ items: Recommendation[] }>('/api/ai/recommendations')
-      .then((r) => setItems(r.items))
+      .get<ApiResponse<Recommendation[]>>('/api/ai/recommendations')
+      .then((r) => setItems(r.data))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
@@ -44,10 +45,18 @@ export default function PersonalizedRecommendations() {
       </div>
 
       <div className="p-4 space-y-3">
-        {loading && Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+        {loading && (
+          <div aria-label="Loading recommendations">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        )}
 
         {error && (
-          <p className="text-sm text-center text-red-500 py-4">Failed to load recommendations.</p>
+          <p className="text-sm text-center text-red-500 py-4" role="alert">
+            Could not load recommendations. Please try again.
+          </p>
         )}
 
         {!loading && !error && items.length === 0 && (

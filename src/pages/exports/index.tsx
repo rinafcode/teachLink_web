@@ -132,7 +132,8 @@ export default function ExportsPage() {
                 <div>
                   <h2 className="text-xl font-semibold">Export Templates</h2>
                   <p className="text-sm text-gray-500">
-                    Exports keep template filters and apply a deterministic sort before generating files.
+                    Exports keep template filters and apply a deterministic sort before generating
+                    files.
                   </p>
                 </div>
                 <button

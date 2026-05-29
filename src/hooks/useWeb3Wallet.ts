@@ -379,31 +379,62 @@ export function useWeb3Wallet() {
    */
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (state.provider !== 'metamask') return;
 
-    const ethereum = (window as Window & { ethereum?: any }).ethereum;
-    if (!ethereum) return;
+    if (state.provider === 'metamask') {
+      const ethereum = (window as Window & { ethereum?: any }).ethereum;
+      if (!ethereum) return;
 
-    const handleAccountsChanged = (accounts: string[]) => {
-      if (accounts.length === 0) {
-        disconnect();
-      } else if (accounts[0] !== state.address) {
-        setState((prev) => ({ ...prev, address: accounts[0] }));
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length === 0) {
+          disconnect();
+        } else if (accounts[0] !== state.address) {
+          setState((prev) => ({ ...prev, address: accounts[0] }));
+        }
+      };
+
+      const handleChainChanged = (chainId: string) => {
+        setState((prev) => ({ ...prev, chainId }));
+        window.location.reload(); // Reload on chain change to update contract references
+      };
+
+      ethereum.on('accountsChanged', handleAccountsChanged);
+      ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    } else if (state.provider === 'starknet') {
+      const starknet = (window as Window & { starknet?: any }).starknet;
+      if (!starknet) return;
+
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length === 0) {
+          disconnect();
+        } else if (accounts[0] !== state.address) {
+          setState((prev) => ({ ...prev, address: accounts[0] }));
+        }
+      };
+
+      const handleNetworkChanged = () => {
+        window.location.reload(); // Reload on network change to update contract references
+      };
+
+      if (typeof starknet.on === 'function') {
+        starknet.on('accountsChanged', handleAccountsChanged);
+        starknet.on('networkChanged', handleNetworkChanged);
       }
-    };
 
-    const handleChainChanged = (chainId: string) => {
-      setState((prev) => ({ ...prev, chainId }));
-      window.location.reload(); // Reload on chain change to update contract references
-    };
-
-    ethereum.on('accountsChanged', handleAccountsChanged);
-    ethereum.on('chainChanged', handleChainChanged);
-
-    return () => {
-      ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      ethereum.removeListener('chainChanged', handleChainChanged);
-    };
+      return () => {
+        if (typeof starknet.off === 'function') {
+          starknet.off('accountsChanged', handleAccountsChanged);
+          starknet.off('networkChanged', handleNetworkChanged);
+        } else if (typeof starknet.removeListener === 'function') {
+          starknet.removeListener('accountsChanged', handleAccountsChanged);
+          starknet.removeListener('networkChanged', handleNetworkChanged);
+        }
+      };
+    }
   }, [state.address, state.provider, disconnect]);
 
   return {

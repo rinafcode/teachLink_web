@@ -155,4 +155,35 @@ describe('useWeb3Wallet', () => {
     expect(result.current.provider).toBe('starknet');
     expect(result.current.address).toBe('0xstarkaddress');
   });
+
+  it('should update Starknet connection state when Starknet accountsChanged event is fired', async () => {
+    let mockAccountListener: ((accounts: string[]) => void) | null = null;
+    mockStarknet.on.mockImplementation((event: string, callback: any) => {
+      if (event === 'accountsChanged') {
+        mockAccountListener = callback;
+      }
+    });
+
+    mockStarknet.enable.mockResolvedValue(['0xstarkaddress']);
+
+    const { result } = renderHook(() => useWeb3Wallet());
+
+    // Connect to Starknet
+    await act(async () => {
+      await result.current.connect('starknet');
+    });
+
+    expect(result.current.provider).toBe('starknet');
+    expect(result.current.address).toBe('0xstarkaddress');
+
+    // Trigger accountsChanged event on Starknet with empty accounts
+    await act(async () => {
+      if (mockAccountListener) {
+        mockAccountListener([]);
+      }
+    });
+
+    expect(result.current.isConnected).toBe(false);
+    expect(result.current.address).toBeNull();
+  });
 });

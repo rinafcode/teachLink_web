@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { checkRoutePermission } from './middleware/rbac';
 import { applySecurityHeaders } from './middleware/security';
 import { applyCspHeaders } from './middleware/csp';
+import { handleRedirects } from './middleware/redirectManagement';
 import { UserRole } from './types/api';
 import {
   API_DEPRECATION_HEADER,
@@ -14,6 +15,12 @@ import {
 } from './lib/apiVersioning';
 
 export function middleware(request: NextRequest) {
+  // Handle redirects first (early in the chain)
+  const redirectResponse = handleRedirects(request);
+  if (redirectResponse) {
+    return redirectResponse;
+  }
+
   // In a real application, you would verify the JWT or session here.
   const roleCookie = request.cookies.get('user-role')?.value as UserRole | undefined;
   const userRole = roleCookie || null;

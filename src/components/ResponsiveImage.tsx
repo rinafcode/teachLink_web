@@ -2,10 +2,14 @@
 
 import Image, { type ImageProps } from 'next/image';
 import { useState } from 'react';
-import { SIZES, type CDNProvider, type ImageOptimizerOptions, getOptimizedUrl } from '@/lib/image-optimizer';
+import {
+  SIZES,
+  type CDNProvider,
+  type ImageOptimizerOptions,
+  getOptimizedUrl,
+} from '@/lib/image-optimizer';
 
-export interface ResponsiveImageProps
-  extends Omit<ImageProps, 'src' | 'onError'> {
+export interface ResponsiveImageProps extends Omit<ImageProps, 'src' | 'onError'> {
   src: string;
   fallbackSrc?: string;
   /** CDN provider for URL transformation (default: 'next') */
@@ -40,13 +44,13 @@ export function ResponsiveImage({
   ...props
 }: ResponsiveImageProps) {
   const [imgSrc, setImgSrc] = useState(() =>
-    provider !== 'next' ? getOptimizedUrl(src, optimizerOptions, provider) : src
+    provider !== 'next' ? getOptimizedUrl(src, optimizerOptions, provider) : src,
   );
 
   const resolvedSizes =
     sizes ??
     (responsiveSizes
-      ? (SIZES[responsiveSizes as keyof typeof SIZES] ?? responsiveSizes)
+      ? SIZES[responsiveSizes as keyof typeof SIZES] ?? responsiveSizes
       : SIZES.full);
 
   return (
