@@ -140,6 +140,7 @@ export function AdaptiveNavigation({ links, brandName = 'TeachLink' }: AdaptiveN
       {/* Mobile Drawer Clickable Backdrop Backdrop */}
       {isOpen && (
         <div
+          data-testid="backdrop"
           className="fixed inset-0 top-[65px] bg-black/20 dark:bg-black/40 backdrop-blur-xs z-30 md:hidden transition-opacity"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
