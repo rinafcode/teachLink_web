@@ -54,11 +54,6 @@ const PrefetchingEngine = dynamic(() => import('@/components/performance/Prefetc
 
 const DynamicTheming = dynamic(() => import('@/components/theme/DynamicTheming'), { ssr: false });
 
-const CookieConsentBanner = dynamic(
-  () => import('@/components/consent/CookieConsentBanner').then((mod) => mod.CookieConsentBanner),
-  { ssr: false },
-);
-
 interface RootProvidersProps {
   children: React.ReactNode;
   defaultTheme: string;
@@ -106,7 +101,6 @@ export function RootProviders({
                             <ErrorBoundary>
                               <Suspense fallback={<Loading />}>{children}</Suspense>
                             </ErrorBoundary>
-                            <CookieConsentBanner />
                           </ToastProvider>
                         </OfflineModeProvider>
                       </PerformanceMonitoringProvider>
