@@ -1,0 +1,471 @@
+/**
+ * SettingsService – unit tests
+ */
+import { describe, it, expect, beforeEach } from 'vitest';
+import { SettingsService } from '../service';
+import { createDefaultSettings, type AppSettings, type SettingsStorePersistedShape } from '../types';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function createMockSettings(overrides: Partial<AppSettings> = {}): AppSettings {
+  const defaults = createDefaultSettings();
+  return {
+    ...defaults,
+    ...overrides,
+  };
+}
+
+function createMockStoreState(overrides: Partial<SettingsStorePersistedShape> = {}): SettingsStorePersistedShape {
+  return {
+    settings: createDefaultSettings(),
+    updatedAt: Date.now(),
+    lastSyncedAt: null,
+    ...overrides,
+  };
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+describe('SettingsService', () => {
+  // ── validateSettings ──────────────────────────────────────────────────────
+
+  describe('validateSettings', () => {
+    it('validates correct settings', () => {
+      const settings = createDefaultSettings();
+      const result = SettingsService.validateSettings(settings);
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+      expect(result.data).toEqual(settings);
+    });
+
+    it('rejects invalid settings with missing fields', () => {
+      const invalidSettings = { theme: 'light' }; // Missing required fields
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.data).toBeUndefined();
+    });
+
+    it('rejects invalid theme values', () => {
+      const invalidSettings = { ...createDefaultSettings(), theme: 'invalid' as any };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('theme'))).toBe(true);
+    });
+
+    it('rejects language strings that are too long', () => {
+      const invalidSettings = { ...createDefaultSettings(), language: 'a'.repeat(25) };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('language'))).toBe(true);
+    });
+
+    it('rejects non-boolean notification settings', () => {
+      const invalidSettings = { ...createDefaultSettings(), notificationsEnabled: 'true' as any };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('notificationsEnabled'))).toBe(true);
+    });
+  });
+
+  // ── createStoreState ──────────────────────────────────────────────────────
+
+  describe('createStoreState', () => {
+    it('creates store state with current timestamp', () => {
+      const settings = createDefaultSettings();
+      const state = SettingsService.createStoreState(settings);
+
+      expect(state.settings).toEqual(settings);
+      expect(state.updatedAt).toBeGreaterThan(Date.now() - 1000);
+      expect(state.lastSyncedAt).toBeNull();
+    });
+
+    it('includes all required fields', () => {
+      const settings = createDefaultSettings();
+      const state = SettingsService.createStoreState(settings);
+
+      expect(state).toHaveProperty('settings');
+      expect(state).toHaveProperty('updatedAt');
+      expect(state).toHaveProperty('lastSyncedAt');
+    });
+  });
+
+  // ── mergeSettings ─────────────────────────────────────────────────────────
+
+  describe('mergeSettings', () => {
+    it('merges local state when it is newer', () => {
+      const localState = createMockStoreState({
+        updatedAt: Date.now() + 1000,
+        settings: { ...createDefaultSettings(), theme: 'dark' },
+      });
+      const remoteState = createMockStoreState({
+        updatedAt: Date.now(),
+        settings: { ...createDefaultSettings(), theme: 'light' },
+      });
+
+      const result = SettingsService.mergeSettings(localState, remoteState);
+
+      expect(result.settings.theme).toBe('dark');
+      expect(result.updatedAt).toBe(localState.updatedAt);
+      expect(result.lastSyncedAt).toBeGreaterThan(Date.now() - 1000);
+    });
+
+    it('merges remote state when it is newer', () => {
+      const localState = createMockStoreState({
+        updatedAt: Date.now(),
+        settings: { ...createDefaultSettings(), theme: 'light' },
+      });
+      const remoteState = createMockStoreState({
+        updatedAt: Date.now() + 1000,
+        settings: { ...createDefaultSettings(), theme: 'dark' },
+      });
+
+      const result = SettingsService.mergeSettings(localState, remoteState);
+
+      expect(result.settings.theme).toBe('dark');
+      expect(result.updatedAt).toBe(remoteState.updatedAt);
+      expect(result.lastSyncedAt).toBeGreaterThan(Date.now() - 1000);
+    });
+
+    it('handles null local state', () => {
+      const remoteState = createMockStoreState({
+        settings: { ...createDefaultSettings(), theme: 'dark' },
+      });
+
+      const result = SettingsService.mergeSettings(null, remoteState);
+
+      expect(result.settings).toEqual(remoteState.settings);
+      expect(result.lastSyncedAt).toBeGreaterThan(Date.now() - 1000);
+    });
+
+    it('handles null remote state', () => {
+      const localState = createMockStoreState({
+        settings: { ...createDefaultSettings(), theme: 'light' },
+      });
+
+      const result = SettingsService.mergeSettings(localState, null);
+
+      expect(result.settings).toEqual(localState.settings);
+      expect(result.lastSyncedAt).toBeGreaterThan(Date.now() - 1000);
+    });
+
+    it('uses defaults when both states are null', () => {
+      const result = SettingsService.mergeSettings(null, null);
+
+      expect(result.settings).toEqual(createDefaultSettings());
+      expect(result.lastSyncedAt).toBeGreaterThan(Date.now() - 1000);
+    });
+  });
+
+  // ── needsSync ─────────────────────────────────────────────────────────────
+
+  describe('needsSync', () => {
+    it('returns true when no local state exists', () => {
+      const result = SettingsService.needsSync(null);
+      expect(result).toBe(true);
+    });
+
+    it('returns true when lastSyncedAt is null', () => {
+      const state = createMockStoreState({ lastSyncedAt: null });
+      const result = SettingsService.needsSync(state);
+      expect(result).toBe(true);
+    });
+
+    it('returns true when updatedAt is greater than lastSyncedAt', () => {
+      const state = createMockStoreState({
+        updatedAt: Date.now() + 1000,
+        lastSyncedAt: Date.now(),
+      });
+      const result = SettingsService.needsSync(state);
+      expect(result).toBe(true);
+    });
+
+    it('returns false when sync is up to date', () => {
+      const now = Date.now();
+      const state = createMockStoreState({
+        updatedAt: now,
+        lastSyncedAt: now + 1000,
+      });
+      const result = SettingsService.needsSync(state);
+      expect(result).toBe(false);
+    });
+  });
+
+  // ── validatePartialUpdate ─────────────────────────────────────────────────
+
+  describe('validatePartialUpdate', () => {
+    it('validates correct partial update', () => {
+      const currentSettings = createDefaultSettings();
+      const partialUpdate = { theme: 'dark' as const };
+
+      const result = SettingsService.validatePartialUpdate(currentSettings, partialUpdate);
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('rejects invalid partial update', () => {
+      const currentSettings = createDefaultSettings();
+      const partialUpdate = { theme: 'invalid' as any };
+
+      const result = SettingsService.validatePartialUpdate(currentSettings, partialUpdate);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it('merges partial update with current settings', () => {
+      const currentSettings = createDefaultSettings();
+      const partialUpdate = { theme: 'dark' as const };
+
+      const result = SettingsService.validatePartialUpdate(currentSettings, partialUpdate);
+
+      expect(result.data?.theme).toBe('dark');
+      expect(result.data?.language).toBe(currentSettings.language);
+    });
+  });
+
+  // ── validateSettingValue ───────────────────────────────────────────────────
+
+  describe('validateSettingValue', () => {
+    it('validates correct theme value', () => {
+      const result = SettingsService.validateSettingValue('theme', 'dark');
+      expect(result.valid).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    it('rejects invalid theme value', () => {
+      const result = SettingsService.validateSettingValue('theme', 'invalid');
+      expect(result.valid).toBe(false);
+      expect(result.error).toBeDefined();
+    });
+
+    it('validates correct boolean value', () => {
+      const result = SettingsService.validateSettingValue('notificationsEnabled', true);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid boolean value', () => {
+      const result = SettingsService.validateSettingValue('notificationsEnabled', 'true');
+      expect(result.valid).toBe(false);
+    });
+
+    it('validates correct language value', () => {
+      const result = SettingsService.validateSettingValue('language', 'en');
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid language value (too long)', () => {
+      const result = SettingsService.validateSettingValue('language', 'a'.repeat(25));
+      expect(result.valid).toBe(false);
+    });
+  });
+
+  // ── exportSettings ───────────────────────────────────────────────────────
+
+  describe('exportSettings', () => {
+    it('exports settings with metadata', () => {
+      const state = createMockStoreState();
+      const exported = SettingsService.exportSettings(state);
+
+      expect(exported).toHaveProperty('version');
+      expect(exported).toHaveProperty('exportedAt');
+      expect(exported).toHaveProperty('settings');
+      expect(exported).toHaveProperty('updatedAt');
+      expect(exported.settings).toEqual(state.settings);
+      expect(exported.updatedAt).toBe(state.updatedAt);
+    });
+
+    it('includes ISO timestamp', () => {
+      const state = createMockStoreState();
+      const exported = SettingsService.exportSettings(state);
+
+      expect(exported.exportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    });
+  });
+
+  // ── importSettings ───────────────────────────────────────────────────────
+
+  describe('importSettings', () => {
+    it('imports valid exported settings', () => {
+      const state = createMockStoreState();
+      const exported = SettingsService.exportSettings(state);
+
+      const result = SettingsService.importSettings(exported);
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+      expect(result.data).toEqual(state.settings);
+    });
+
+    it('rejects invalid data format', () => {
+      const result = SettingsService.importSettings('invalid');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Invalid import data format');
+    });
+
+    it('rejects settings with wrong version', () => {
+      const invalidData = {
+        version: 999,
+        exportedAt: new Date().toISOString(),
+        settings: createDefaultSettings(),
+        updatedAt: Date.now(),
+      };
+
+      const result = SettingsService.importSettings(invalidData);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('version mismatch'))).toBe(true);
+    });
+
+    it('rejects data with missing settings', () => {
+      const invalidData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        updatedAt: Date.now(),
+      };
+
+      const result = SettingsService.importSettings(invalidData);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Missing settings data');
+    });
+
+    it('rejects invalid settings', () => {
+      const invalidData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        settings: { invalid: 'data' },
+        updatedAt: Date.now(),
+      };
+
+      const result = SettingsService.importSettings(invalidData);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ── resetToDefaults ──────────────────────────────────────────────────────
+
+  describe('resetToDefaults', () => {
+    it('returns default settings', () => {
+      const defaults = SettingsService.resetToDefaults();
+      const expected = createDefaultSettings();
+
+      expect(defaults).toEqual(expected);
+    });
+
+    it('maintains correct version', () => {
+      const defaults = SettingsService.resetToDefaults();
+      expect(defaults.version).toBeDefined();
+    });
+  });
+
+  // ── getCapabilities ──────────────────────────────────────────────────────
+
+  describe('getCapabilities', () => {
+    it('returns all capability flags', () => {
+      const capabilities = SettingsService.getCapabilities();
+
+      expect(capabilities).toHaveProperty('canEditTheme');
+      expect(capabilities).toHaveProperty('canEditLanguage');
+      expect(capabilities).toHaveProperty('canEditNotifications');
+      expect(capabilities).toHaveProperty('canEditEmail');
+      expect(capabilities).toHaveProperty('canEditPrefetching');
+      expect(capabilities).toHaveProperty('canEditReducedMotion');
+      expect(capabilities).toHaveProperty('canExportSettings');
+      expect(capabilities).toHaveProperty('canImportSettings');
+      expect(capabilities).toHaveProperty('canSyncSettings');
+    });
+
+    it('all capabilities are enabled by default', () => {
+      const capabilities = SettingsService.getCapabilities();
+
+      Object.values(capabilities).forEach((capability) => {
+        expect(capability).toBe(true);
+      });
+    });
+  });
+
+  // ── canEditSetting ───────────────────────────────────────────────────────
+
+  describe('canEditSetting', () => {
+    it('allows editing theme', () => {
+      const result = SettingsService.canEditSetting('theme');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing language', () => {
+      const result = SettingsService.canEditSetting('language');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing notificationsEnabled', () => {
+      const result = SettingsService.canEditSetting('notificationsEnabled');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing emailNotifications', () => {
+      const result = SettingsService.canEditSetting('emailNotifications');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing prefetchingEnabled', () => {
+      const result = SettingsService.canEditSetting('prefetchingEnabled');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing reducedMotion', () => {
+      const result = SettingsService.canEditSetting('reducedMotion');
+      expect(result).toBe(true);
+    });
+
+    it('handles version field', () => {
+      const result = SettingsService.canEditSetting('version');
+      expect(result).toBeDefined(); // Should map to a capability
+    });
+  });
+
+  // ── migrateSettings ──────────────────────────────────────────────────────
+
+  describe('migrateSettings', () => {
+    it('returns unchanged settings when version matches', () => {
+      const settings = createDefaultSettings();
+      const migrated = SettingsService.migrateSettings(settings);
+
+      expect(migrated).toEqual(settings);
+    });
+
+    it('updates version when outdated', () => {
+      const outdatedSettings: AppSettings = {
+        ...createDefaultSettings(),
+        version: 0 as any, // Outdated version
+      };
+
+      const migrated = SettingsService.migrateSettings(outdatedSettings);
+
+      expect(migrated.version).toBe(createDefaultSettings().version);
+    });
+
+    it('preserves user settings during migration', () => {
+      const outdatedSettings: AppSettings = {
+        ...createDefaultSettings(),
+        version: 0 as any,
+        theme: 'dark',
+        language: 'fr',
+      };
+
+      const migrated = SettingsService.migrateSettings(outdatedSettings);
+
+      expect(migrated.theme).toBe('dark');
+      expect(migrated.language).toBe('fr');
+    });
+  });
+});
