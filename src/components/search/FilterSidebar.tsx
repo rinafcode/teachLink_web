@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { BarChart2, Clock, Tag, Users, Search, RotateCcw } from 'lucide-react';
+import { BarChart2, Clock, Tag, Users, Search, RotateCcw, LifeBuoy } from 'lucide-react';
 import { FilterState } from '../../hooks/useSearchFilters';
 import { RangeSlider } from '../ui/RangeSlider';
 import { MultiSelect } from '../ui/MultiSelect';
+import { FilterHelpPopover } from './FilterHelpPopover';
+import { FilterSupportGuide } from './FilterSupportGuide';
+import { useFilterCustomerSupport } from '../../hooks/useFilterCustomerSupport';
 
 interface FilterSidebarProps {
   filters: FilterState;
@@ -16,6 +19,8 @@ const TOPIC_OPTIONS = ['Design', 'Coding', 'Business', 'Marketing', 'Health'];
 
 export const FilterSidebar = React.memo<FilterSidebarProps>(
   ({ filters, onFilterChange, onReset }) => {
+    const support = useFilterCustomerSupport();
+
     const handleDifficultyChange = useCallback(
       (input: string) => {
         const current = filters.difficulty || [];
@@ -43,6 +48,12 @@ export const FilterSidebar = React.memo<FilterSidebarProps>(
         <div className="glass-panel p-5 rounded-xl">
           <h3 className="flex items-center gap-2 text-xs font-mono font-bold text-tech-text uppercase tracking-widest mb-4">
             <BarChart2 className="w-3 h-3" /> Level
+            <FilterHelpPopover
+              content={support.FILTER_HELP_CONTENT.difficulty}
+              isOpen={support.activeHelpId === 'difficulty'}
+              onToggle={() => support.toggleHelp('difficulty')}
+              onClose={support.closeHelp}
+            />
           </h3>
           <div className="space-y-3">
             {[
@@ -74,6 +85,12 @@ export const FilterSidebar = React.memo<FilterSidebarProps>(
         <div className="glass-panel p-5 rounded-xl">
           <h3 className="flex items-center gap-2 text-xs font-mono font-bold text-tech-text uppercase tracking-widest mb-4">
             <Clock className="w-3 h-3" /> Duration
+            <FilterHelpPopover
+              content={support.FILTER_HELP_CONTENT.duration}
+              isOpen={support.activeHelpId === 'duration'}
+              onToggle={() => support.toggleHelp('duration')}
+              onClose={support.closeHelp}
+            />
           </h3>
           <RangeSlider
             min={0}
@@ -93,6 +110,12 @@ export const FilterSidebar = React.memo<FilterSidebarProps>(
         <div className="glass-panel p-5 rounded-xl">
           <h3 className="flex items-center gap-2 text-xs font-mono font-bold text-tech-text uppercase tracking-widest mb-4">
             <Clock className="w-3 h-3" /> Price
+            <FilterHelpPopover
+              content={support.FILTER_HELP_CONTENT.price}
+              isOpen={support.activeHelpId === 'price'}
+              onToggle={() => support.toggleHelp('price')}
+              onClose={support.closeHelp}
+            />
           </h3>
           <RangeSlider
             min={0}
@@ -113,6 +136,12 @@ export const FilterSidebar = React.memo<FilterSidebarProps>(
         <div className="glass-panel p-5 rounded-xl">
           <h3 className="flex items-center gap-2 text-xs font-mono font-bold text-tech-text uppercase tracking-widest mb-4">
             <Tag className="w-3 h-3" /> Topics
+            <FilterHelpPopover
+              content={support.FILTER_HELP_CONTENT.topics}
+              isOpen={support.activeHelpId === 'topics'}
+              onToggle={() => support.toggleHelp('topics')}
+              onClose={support.closeHelp}
+            />
           </h3>
           <MultiSelect
             options={TOPIC_OPTIONS}
@@ -125,6 +154,12 @@ export const FilterSidebar = React.memo<FilterSidebarProps>(
         <div className="glass-panel p-5 rounded-xl">
           <h3 className="flex items-center gap-2 text-xs font-mono font-bold text-tech-text uppercase tracking-widest mb-4">
             <Users className="w-3 h-3" /> Instructor
+            <FilterHelpPopover
+              content={support.FILTER_HELP_CONTENT.instructor}
+              isOpen={support.activeHelpId === 'instructor'}
+              onToggle={() => support.toggleHelp('instructor')}
+              onClose={support.closeHelp}
+            />
           </h3>
           <div className="relative group mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-primary" />
@@ -175,6 +210,21 @@ export const FilterSidebar = React.memo<FilterSidebarProps>(
           <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
           Reset Parameters
         </button>
+
+        <button
+          type="button"
+          onClick={support.openGuide}
+          className="w-full py-3 px-4 bg-blue-50 border border-blue-200 text-blue-700 font-mono text-xs uppercase tracking-wider rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
+        >
+          <LifeBuoy className="w-4 h-4" />
+          Need Help?
+        </button>
+
+        <FilterSupportGuide
+          isOpen={support.guideOpen}
+          onClose={support.closeGuide}
+          helpContent={support.FILTER_HELP_CONTENT}
+        />
       </aside>
     );
   },
