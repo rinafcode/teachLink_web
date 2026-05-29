@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Star, Clock, Users, Settings } from 'lucide-react';
+import { getAllCourses } from '@/lib/course-config';
 
 interface Course {
   id: string;
@@ -26,6 +27,62 @@ interface RecommendedCoursesWidgetProps {
   size: 'small' | 'medium' | 'large';
   onChangeSize: (size: 'small' | 'medium' | 'large') => void;
   onUpdateTitle: (title: string) => void;
+}
+
+function buildRecommendedCourses() {
+  const configCourses = getAllCourses();
+  if (configCourses.length >= 3) {
+    return configCourses.slice(0, 3).map((c, i) => ({
+      id: c.id,
+      title: c.title,
+      instructor: c.instructor,
+      rating: (4.5 + i * 0.2) as 4.7 | 4.8 | 4.9,
+      students: [12450, 8920, 15680][i] ?? 10000,
+      duration: c.duration,
+      level: (i === 2 ? 'beginner' : i === 1 ? 'intermediate' : 'advanced') as 'beginner' | 'intermediate' | 'advanced',
+      category: c.category,
+      image: c.thumbnailUrl ?? `https://via.placeholder.com/300x200/${['3B82F6', '10B981', '8B5CF6'][i]}/ffffff?text=${encodeURIComponent(c.title.split(' ')[0])}`,
+      price: [89, 129, 69][i] ?? 99,
+    }));
+  }
+  return [
+    {
+      id: '1',
+      title: 'Advanced React Patterns',
+      instructor: 'Sarah Johnson',
+      rating: 4.8 as const,
+      students: 12450,
+      duration: '8 hours',
+      level: 'advanced' as const,
+      category: 'Web Development',
+      image: 'https://via.placeholder.com/300x200/3B82F6/ffffff?text=React',
+      price: 89,
+    },
+    {
+      id: '2',
+      title: 'Machine Learning Fundamentals',
+      instructor: 'Dr. Michael Chen',
+      rating: 4.9 as const,
+      students: 8920,
+      duration: '12 hours',
+      level: 'intermediate' as const,
+      category: 'Data Science',
+      image: 'https://via.placeholder.com/300x200/10B981/ffffff?text=ML',
+      price: 129,
+    },
+    {
+      id: '3',
+      title: 'UI/UX Design Principles',
+      instructor: 'Emma Davis',
+      rating: 4.7 as const,
+      students: 15680,
+      duration: '6 hours',
+      level: 'beginner' as const,
+      category: 'Design',
+      image: 'https://via.placeholder.com/300x200/8B5CF6/ffffff?text=Design',
+      price: 69,
+    },
+  ];
 }
 
 export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> = ({
@@ -68,44 +125,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
     };
   }, [id]);
 
-  const recommendedCourses: Course[] = [
-    {
-      id: '1',
-      title: 'Advanced React Patterns',
-      instructor: 'Sarah Johnson',
-      rating: 4.8,
-      students: 12450,
-      duration: '8 hours',
-      level: 'advanced',
-      category: 'Web Development',
-      image: 'https://via.placeholder.com/300x200/3B82F6/ffffff?text=React',
-      price: 89,
-    },
-    {
-      id: '2',
-      title: 'Machine Learning Fundamentals',
-      instructor: 'Dr. Michael Chen',
-      rating: 4.9,
-      students: 8920,
-      duration: '12 hours',
-      level: 'intermediate',
-      category: 'Data Science',
-      image: 'https://via.placeholder.com/300x200/10B981/ffffff?text=ML',
-      price: 129,
-    },
-    {
-      id: '3',
-      title: 'UI/UX Design Principles',
-      instructor: 'Emma Davis',
-      rating: 4.7,
-      students: 15680,
-      duration: '6 hours',
-      level: 'beginner',
-      category: 'Design',
-      image: 'https://via.placeholder.com/300x200/8B5CF6/ffffff?text=Design',
-      price: 69,
-    },
-  ];
+  const recommendedCourses = buildRecommendedCourses();
 
   const getLevelColor = (level: string) => {
     switch (level) {
