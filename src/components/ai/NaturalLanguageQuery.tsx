@@ -3,8 +3,9 @@
 import { useState, useCallback } from 'react';
 import { Search, ExternalLink } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import type { ApiResponse } from '@/types/api';
 
-// POST /api/ai/search — { query: string } → { results: SearchResult[] }
+// POST /api/ai/search — { query: string } → ApiResponse<SearchResult[]>
 
 interface SearchResult {
   id: string;
@@ -25,10 +26,10 @@ export default function NaturalLanguageQuery() {
     setLoading(true);
     setError(false);
     try {
-      const { results: res } = await apiClient.post<{ results: SearchResult[] }>('/api/ai/search', {
+      const response = await apiClient.post<ApiResponse<SearchResult[]>>('/api/ai/search', {
         query: q,
       });
-      setResults(res);
+      setResults(response.data);
     } catch {
       setError(true);
       setResults(null);
@@ -41,10 +42,20 @@ export default function NaturalLanguageQuery() {
     if (e.key === 'Enter') search();
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    search();
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="relative flex gap-2">
+        <form
+          role="search"
+          aria-label="Search"
+          className="relative flex gap-2"
+          onSubmit={handleSubmit}
+        >
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -53,24 +64,23 @@ export default function NaturalLanguageQuery() {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask anything, e.g. 'intro to machine learning'…"
-              aria-label="Natural language search"
+              aria-label="Search query"
               className="w-full pl-9 pr-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
             />
           </div>
           <button
-            onClick={search}
+            type="submit"
             disabled={loading || !query.trim()}
-            aria-label="Search"
+            aria-label="Submit search"
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors"
           >
-            {loading ? '…' : 'Search'}
+            {loading ? 'Searching…' : 'Search'}
           </button>
-        </div>
-      </div>
-
-      <div className="p-4 space-y-3">
+        </form>
         {error && (
-          <p className="text-sm text-center text-red-500">Search failed. Please try again.</p>
+          <p className="text-sm text-center text-red-500" role="alert">
+            Search failed. Please try again.
+          </p>
         )}
 
         {results !== null && results.length === 0 && (

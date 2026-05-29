@@ -11,7 +11,7 @@ import {
   Area,
   BarChart,
   Bar,
-  Legend
+  Legend,
 } from 'recharts';
 
 export type ChartType = 'line' | 'area' | 'bar';
@@ -55,7 +55,12 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
             <XAxis dataKey={xKey} tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '8px',
+                border: 'none',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+              }}
             />
             <Legend />
             {yKeys.map((yConfig) => (
@@ -79,7 +84,12 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
             <XAxis dataKey={xKey} tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '8px',
+                border: 'none',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+              }}
             />
             <Legend />
             {yKeys.map((yConfig) => (
@@ -101,7 +111,12 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
             <XAxis dataKey={xKey} tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '8px',
+                border: 'none',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+              }}
             />
             <Legend />
             {yKeys.map((yConfig) => (
@@ -124,7 +139,9 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
 
   return (
     <div className={`w-full flex flex-col ${className}`}>
-      {title && <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">{title}</h3>}
+      {title && (
+        <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">{title}</h3>
+      )}
       <div style={{ width: '100%', height }}>
         <ResponsiveContainer width="100%" height="100%">
           {renderChart()}

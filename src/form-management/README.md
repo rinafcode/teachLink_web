@@ -12,6 +12,7 @@ A comprehensive TypeScript solution for creating, managing, and processing compl
 - **Accessibility Support**: Full WCAG compliance and screen reader support
 - **Performance Optimized**: Virtual scrolling and lazy loading for large forms
 - **Property-Based Testing**: Comprehensive testing with fast-check
+- **Image Optimization**: Client-side image compression and dimension validation
 
 ## Project Structure
 

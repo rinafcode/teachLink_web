@@ -29,7 +29,7 @@ export interface UseWebSocketReturn {
 
 export function useWebSocket(
   connectionKey: string,
-  options: UseWebSocketOptions = {}
+  options: UseWebSocketOptions = {},
 ): UseWebSocketReturn {
   const {
     url = process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001',
