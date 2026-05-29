@@ -27,7 +27,9 @@ function asSort(value: unknown): ExportSort[] | undefined {
 }
 
 function asColumns(value: unknown): string[] | undefined {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : undefined;
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : undefined;
 }
 
 export async function POST(request: NextRequest) {
