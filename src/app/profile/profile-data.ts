@@ -1,4 +1,4 @@
-export type ProfileTabId = 'profile' | 'settings' | 'achievements';
+export type ProfileTabId = 'profile' | 'settings' | 'achievements' | 'support';
 
 export interface ProfileUser {
   initials: string;
@@ -42,6 +42,84 @@ export const profileTabs: Array<{ id: ProfileTabId; label: string }> = [
   { id: 'profile', label: 'Profile' },
   { id: 'settings', label: 'Settings' },
   { id: 'achievements', label: 'Achievements' },
+  { id: 'support', label: 'Customer Support' },
+];
+
+// ── Customer Support ──────────────────────────────────────────────────────────
+
+export interface SupportFaq {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface SupportContactOption {
+  id: string;
+  label: string;
+  description: string;
+  href: string;
+  icon: string;
+  ariaLabel: string;
+}
+
+export const supportFaqs: SupportFaq[] = [
+  {
+    id: 'reset-password',
+    question: 'How do I reset my password?',
+    answer:
+      'Go to the login page and click "Forgot password". Enter your registered email address and we will send you a reset link within a few minutes. Check your spam folder if you do not see it.',
+  },
+  {
+    id: 'offline-access',
+    question: 'How does offline learning work?',
+    answer:
+      'Enable Offline Mode in your Settings tab, then open any course and click the download icon. Downloaded content is available in the app even without an internet connection. Your progress syncs automatically when you reconnect.',
+  },
+  {
+    id: 'certificate',
+    question: 'How do I get my course certificate?',
+    answer:
+      'Certificates are issued automatically once you complete all lessons and pass the final assessment with a score of 70% or higher. You can download your certificate from the Achievements tab.',
+  },
+  {
+    id: 'billing',
+    question: 'How do I update my billing information?',
+    answer:
+      'Navigate to Settings → Billing (available for paid plans). You can update your payment method, view invoices, and manage your subscription from there.',
+  },
+  {
+    id: 'progress-sync',
+    question: 'My learning progress is not syncing. What should I do?',
+    answer:
+      'First, ensure you have a stable internet connection. Then try refreshing the page. If the issue persists, sign out and sign back in. Your progress is saved locally and will sync once connectivity is restored.',
+  },
+];
+
+export const supportContactOptions: SupportContactOption[] = [
+  {
+    id: 'email',
+    label: 'Email Support',
+    description: 'Response within 24 hours',
+    href: 'mailto:support@teachlink.com',
+    icon: 'email',
+    ariaLabel: 'Email our support team at support@teachlink.com',
+  },
+  {
+    id: 'chat',
+    label: 'Live Chat',
+    description: 'Mon–Fri, 9 am–6 pm UTC',
+    href: 'https://teachlink.com/chat',
+    icon: 'chat',
+    ariaLabel: 'Open live chat with support',
+  },
+  {
+    id: 'phone',
+    label: 'Phone Support',
+    description: '+1 (800) 123-4567',
+    href: 'tel:+18001234567',
+    icon: 'phone',
+    ariaLabel: 'Call our support line at +1 800 123 4567',
+  },
 ];
 
 export const learningGoalOptions: SelectOption[] = [

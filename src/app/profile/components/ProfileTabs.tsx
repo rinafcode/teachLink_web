@@ -15,6 +15,10 @@ const AchievementsPanel = dynamic(() => import('./AchievementsPanel'), {
   loading: () => <ProfilePanelSkeleton label="achievements" />,
 });
 
+const CustomerSupportPanel = dynamic(() => import('./CustomerSupportPanel'), {
+  loading: () => <ProfilePanelSkeleton label="support" />,
+});
+
 export default function ProfileTabs() {
   const [activeTab, setActiveTab] = useState<ProfileTabId>('profile');
 
@@ -51,6 +55,7 @@ export default function ProfileTabs() {
       {activeTab === 'profile' && <ProfileInfoPanel />}
       {activeTab === 'settings' && <SettingsPanel />}
       {activeTab === 'achievements' && <AchievementsPanel />}
+      {activeTab === 'support' && <CustomerSupportPanel />}
     </>
   );
 }
