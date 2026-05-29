@@ -27,6 +27,7 @@ import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
 import { clearTrendHistory, type PerformanceTrendPoint } from '@/utils/performanceUtils';
 import { CoreWebVitals } from './CoreWebVitals';
 import { OptimizationSuggestions } from './OptimizationSuggestions';
+import { Breadcrumbs, type BreadcrumbItem } from '@/components/ui/Breadcrumbs';
 
 const VITAL_NAMES = ['LCP', 'INP', 'CLS', 'FCP', 'TTFB'] as const;
 
@@ -75,13 +76,14 @@ export const PerformanceDashboard: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-8" role="main">
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-2"
-            >
-              <ArrowLeft className="w-4 h-4" aria-hidden />
-              Back
-            </Link>
+            <Breadcrumbs
+              items={[
+                { label: 'Home', href: '/' },
+                { label: 'Performance Dashboard', current: true },
+              ]}
+              ariaLabel="Performance dashboard navigation"
+              className="mb-2"
+            />
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
               <Activity className="w-7 h-7 text-indigo-600 dark:text-indigo-400" aria-hidden />
               Performance dashboard
