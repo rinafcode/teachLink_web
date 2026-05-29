@@ -88,6 +88,7 @@ export default function HomeContent() {
               author="Sarah Johnson"
               progress={68}
               timeRemaining="12h remaining"
+              courseHref="/courses/web3-ux-design"
               imageUrl="https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg"
             />
 
@@ -97,6 +98,7 @@ export default function HomeContent() {
               author="Michael Chen"
               progress={45}
               timeRemaining="12h remaining"
+              courseHref="/courses/smart-contract-security"
               imageUrl="https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png"
             />
 
@@ -106,6 +108,7 @@ export default function HomeContent() {
               author="Alex Rivera"
               progress={12}
               timeRemaining="12h remaining"
+              courseHref="/courses/scaling-dapps-starknet"
               imageUrl="https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg"
             />
           </div>
