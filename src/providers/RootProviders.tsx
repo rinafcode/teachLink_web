@@ -19,6 +19,7 @@ import { EnvGuard } from '@/components/shared/EnvGuard';
 import { FeatureFlagProvider } from '@/components/shared/FeatureFlagProvider';
 import { ToastProvider } from '@/context/ToastContext';
 import { Loading } from '@/components/ui/Loading';
+import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import i18n from '@/lib/i18n/config';
 
 // Lazy load heavy/non-critical providers/components to improve initial render time
@@ -93,6 +94,7 @@ export function RootProviders({ children, defaultTheme, defaultLocale = 'en' }: 
                         <ErrorBoundary>
                           <Suspense fallback={<Loading />}>{children}</Suspense>
                         </ErrorBoundary>
+                        <CookieConsentBanner />
                       </ToastProvider>
                     </OfflineModeProvider>
                   </PerformanceMonitoringProvider>
