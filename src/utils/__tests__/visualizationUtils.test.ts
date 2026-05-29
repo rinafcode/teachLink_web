@@ -62,6 +62,16 @@ describe('visualizationUtils', () => {
       const labels = generateDateLabels('7d', 'short');
       expect(labels[0]).toMatch(/^[A-Z][a-z]{2} \d{1,2}$/);
     });
+
+    it('should support locale-specific date labels', () => {
+      const labels = generateDateLabels('7d', 'short', 'es-ES');
+      const expectedDate = new Date();
+      expectedDate.setDate(expectedDate.getDate() - 6);
+
+      expect(labels[0]).toBe(
+        expectedDate.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
+      );
+    });
   });
 
   describe('calculateMovingAverage', () => {

@@ -4,6 +4,44 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { RealTimeUpdater } from '../RealTimeUpdater';
 
+vi.mock('@/hooks/useInternationalization', async () => {
+  const translations = (await import('@/locales/en.json')).default;
+  const read = (key: string) =>
+    key.split('.').reduce<unknown>((value, part) => {
+      if (value && typeof value === 'object' && part in (value as Record<string, unknown>)) {
+        return (value as Record<string, unknown>)[part];
+      }
+      return key;
+    }, translations);
+
+  const t = (key: string, params?: Record<string, string | number>) => {
+    const value = read(key);
+    if (typeof value !== 'string') {
+      return key;
+    }
+    if (!params) {
+      return value;
+    }
+
+    return value.replace(/\{\{(\w+)\}\}/g, (_, paramKey) => String(params[paramKey] ?? ''));
+  };
+
+  return {
+    useInternationalization: () => ({
+      language: 'en',
+      t,
+      formatNumber: (value: number, options?: Intl.NumberFormatOptions) =>
+        new Intl.NumberFormat('en-US', options).format(value),
+      formatPercentage: (value: number, decimals = 0) =>
+        new Intl.NumberFormat('en-US', {
+          style: 'percent',
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        }).format(value / 100),
+    }),
+  };
+});
+
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 global.ResizeObserver = class {

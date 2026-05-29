@@ -67,7 +67,130 @@
     "downloadedCourse": "[MISSING TRANSLATION] Downloaded course",
     "activityEntry": "[MISSING TRANSLATION] {{course}} • {{time}}",
     "timeHoursAgo": "[MISSING TRANSLATION] {{count}} hours ago",
-    "timeDayAgo": "[MISSING TRANSLATION] {{count}} day ago"
+    "timeDayAgo": "[MISSING TRANSLATION] {{count}} day ago",
+    "analytics": {
+      "title": "Panel de analiticas",
+      "subtitle": "Visualizacion interactiva de datos e informacion en tiempo real",
+      "chartTypeSelector": "Selector de tipo de grafico",
+      "actions": {
+        "exportAll": "Exportar todo",
+        "exportAllAria": "Exportar todos los paneles como CSV",
+        "share": "Compartir",
+        "shareAria": "Copiar enlace compartible del panel",
+        "copied": "Copiado",
+        "exportPanel": "Exportar {{panel}} como CSV"
+      },
+      "toasts": {
+        "shareSuccess": "Enlace del panel copiado al portapapeles",
+        "shareError": "No se pudo copiar al portapapeles",
+        "exportAllSuccess": "Paneles exportados como CSV"
+      },
+      "exports": {
+        "labelColumn": "Etiqueta"
+      },
+      "filters": {
+        "show": "Mostrar filtros",
+        "hide": "Ocultar filtros",
+        "activeFilters": "Filtros activos",
+        "removeTimeRange": "Quitar filtro de rango de tiempo",
+        "removeCategory": "Quitar filtro de {{category}}",
+        "resetAll": "Restablecer todo",
+        "resetAllAria": "Restablecer todos los filtros",
+        "timeRange": "Rango de tiempo",
+        "aggregation": "Agregacion",
+        "metric": "Metrica",
+        "categories": "Categorias",
+        "categoryFilters": "Filtros de categoria",
+        "timeRangeOptions": {
+          "7d": "Ultimos 7 dias",
+          "30d": "Ultimos 30 dias",
+          "90d": "Ultimos 90 dias",
+          "1y": "Ultimo ano",
+          "all": "Todo el tiempo"
+        },
+        "aggregationOptions": {
+          "sum": "Suma",
+          "average": "Promedio",
+          "count": "Conteo",
+          "min": "Minimo",
+          "max": "Maximo"
+        },
+        "metrics": {
+          "enrollments": "Inscripciones",
+          "revenue": "Ingresos",
+          "completions": "Finalizaciones",
+          "views": "Vistas"
+        },
+        "categoriesOptions": {
+          "webDev": "Desarrollo web",
+          "dataScience": "Ciencia de datos",
+          "design": "Diseno",
+          "marketing": "Marketing",
+          "mobile": "Movil"
+        }
+      },
+      "panels": {
+        "enrollments": {
+          "title": "Inscripciones a cursos"
+        },
+        "revenue": {
+          "title": "Ingresos"
+        },
+        "completions": {
+          "title": "Finalizaciones"
+        },
+        "realtime": {
+          "title": "Actividad en vivo"
+        }
+      },
+      "datasets": {
+        "enrollments": "Inscripciones a cursos",
+        "revenue": "Ingresos",
+        "completions": "Finalizaciones",
+        "realtime": "Datos en vivo",
+        "views": "Vistas del curso"
+      },
+      "chartTypes": {
+        "line": "Grafico de lineas",
+        "bar": "Grafico de barras",
+        "area": "Grafico de area",
+        "pie": "Grafico circular",
+        "scatter": "Grafico de dispersion",
+        "radar": "Grafico radar"
+      },
+      "drillDown": {
+        "selected": "Seleccionado",
+        "allData": "Todos los datos",
+        "backToAllDataAria": "Volver a todos los datos",
+        "detailTitle": "Detalle - {{label}}",
+        "backToOverview": "Volver al resumen"
+      },
+      "realtime": {
+        "status": {
+          "paused": "Pausado",
+          "connected": "Conectado",
+          "simulating": "Simulando",
+          "disconnected": "Desconectado"
+        },
+        "pointsCount": "{{count}} pts",
+        "updateSpeed": "Velocidad de actualizacion",
+        "pause": "Pausar actualizaciones en vivo",
+        "resume": "Reanudar actualizaciones en vivo",
+        "reset": "Restablecer datos",
+        "loadingData": "Cargando datos...",
+        "waitingForData": "Esperando datos...",
+        "stats": {
+          "mean": "Media",
+          "median": "Mediana",
+          "trend": "Tendencia"
+        },
+        "trendDirections": {
+          "up": "Sube",
+          "down": "Baja",
+          "neutral": "Estable"
+        }
+      }
+    }
   },
   "profile": {
     "editProfile": "Editar Perfil",

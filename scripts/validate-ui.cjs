@@ -2,7 +2,7 @@
 
 /**
  * UI Validation Script
- * Checks for consistent icon usage and responsive Tailwind classes
+ * Checks for consistent icon usage and responsive Tailwind classes.
  * Exit code 0 = pass, 1 = fail
  */
 
@@ -12,15 +12,14 @@ const path = require('path');
 const SRC_DIR = path.join(__dirname, '../src');
 const COMPONENT_DIRS = ['components', 'app', 'pages'];
 
-// Disallowed icon libraries (should use lucide-react)
 const DISALLOWED_ICONS = [
   { pattern: /from ['"]@heroicons\/react/g, name: '@heroicons/react' },
   { pattern: /from ['"]@fortawesome/g, name: '@fortawesome' },
   { pattern: /from ['"]react-feather/g, name: 'react-feather' },
 ];
 
-let errors = [];
-let warnings = [];
+const warnings = [];
+const errors = [];
 
 function getAllFiles(dir, extensions = ['.tsx', '.jsx', '.ts', '.js']) {
   let files = [];
@@ -35,7 +34,10 @@ function getAllFiles(dir, extensions = ['.tsx', '.jsx', '.ts', '.js']) {
 
     if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
       files = files.concat(getAllFiles(fullPath, extensions));
-    } else if (stat.isFile() && extensions.some((ext) => item.endsWith(ext))) {
+      continue;
+    }
+
+    if (stat.isFile() && extensions.some((ext) => item.endsWith(ext))) {
       files.push(fullPath);
     }
   }
@@ -50,14 +52,12 @@ function checkIconUsage(content, filePath) {
     }
   }
 
-  // Check for react-icons usage (warning, not error)
   if (/from ['"]react-icons/g.test(content)) {
     warnings.push(`[ICON] ${filePath}: Uses react-icons - prefer lucide-react for consistency`);
   }
 }
 
 function checkResponsiveTailwind(content, filePath) {
-  // Only check component files that have className
   if (!content.includes('className')) return;
 
   const lines = content.split('\n');
@@ -75,7 +75,6 @@ function checkResponsiveTailwind(content, filePath) {
 }
 
 function checkForConsoleStatements(content, filePath) {
-  // Allow console.warn and console.error, flag console.log
   const matches = content.match(/console\.log\(/g);
   if (matches && matches.length > 0) {
     warnings.push(`[CONSOLE] ${filePath}: Contains ${matches.length} console.log statement(s)`);
@@ -83,7 +82,7 @@ function checkForConsoleStatements(content, filePath) {
 }
 
 function validateFiles() {
-  console.log('🔍 Running UI validation checks...\n');
+  console.log('Running UI validation checks...\n');
 
   for (const dir of COMPONENT_DIRS) {
     const fullDir = path.join(SRC_DIR, dir);
@@ -102,23 +101,22 @@ function validateFiles() {
 
 function printResults() {
   if (warnings.length > 0) {
-    console.log('⚠️  Warnings:\n');
-    warnings.forEach((w) => console.log(`  ${w}`));
+    console.log('Warnings:\n');
+    warnings.forEach((warning) => console.log(`  ${warning}`));
     console.log('');
   }
 
   if (errors.length > 0) {
-    console.log('❌ Errors:\n');
-    errors.forEach((e) => console.log(`  ${e}`));
+    console.log('Errors:\n');
+    errors.forEach((error) => console.log(`  ${error}`));
     console.log('');
-    console.log(`\n❌ UI validation failed with ${errors.length} error(s)`);
+    console.log(`UI validation failed with ${errors.length} error(s)`);
     process.exit(1);
   }
 
-  console.log(`✅ UI validation passed (${warnings.length} warning(s))`);
+  console.log(`UI validation passed (${warnings.length} warning(s))`);
   process.exit(0);
 }
 
-// Run validation
 validateFiles();
 printResults();

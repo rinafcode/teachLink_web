@@ -184,8 +184,9 @@ export function useWeb3Wallet() {
       setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
       try {
-        if (!walletInteractionRef.current.canInteract) {
-          throw new Error(walletInteractionRef.current.reason || 'Wallet interactions disabled');
+        const interaction = validateWalletInteraction();
+        if (!interaction.canInteract) {
+          throw new Error(interaction.reason || 'Wallet interactions disabled');
         }
 
         let result;
@@ -378,6 +379,7 @@ export function useWeb3Wallet() {
    */
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (state.provider !== 'metamask') return;
 
     const ethereum = (window as Window & { ethereum?: any }).ethereum;
     if (!ethereum) return;
@@ -402,7 +404,7 @@ export function useWeb3Wallet() {
       ethereum.removeListener('accountsChanged', handleAccountsChanged);
       ethereum.removeListener('chainChanged', handleChainChanged);
     };
-  }, [state.address, disconnect]);
+  }, [state.address, state.provider, disconnect]);
 
   return {
     ...state,
