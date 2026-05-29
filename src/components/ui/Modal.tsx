@@ -3,6 +3,7 @@
 import { useEffect, useId } from 'react';
 import { X } from 'lucide-react';
 import { useFocusTrap, useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
+import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -78,7 +79,11 @@ export function Modal({ isOpen, onClose, title, children, className = '' }: Moda
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4">{children}</div>
+          <div className="px-6 py-4">
+            <ErrorBoundary isolationId="modal-dialog" isolationLevel="component">
+              {children}
+            </ErrorBoundary>
+          </div>
         </div>
       </div>
     </>
