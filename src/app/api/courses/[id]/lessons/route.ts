@@ -1,14 +1,36 @@
 import { NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/ratelimit';
 import { DUMMY_VIDEO_URL } from '@/constants/media';
+import {
+  withSecurityHeaders,
+  validateQuerySafety,
+  createSecurityErrorResponse,
+  sanitizeObject,
+} from '@/lib/security';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
-  if (rateLimitResponse) {
-    return rateLimitResponse;
+  const rawParams = await params;
+
+  // Security: Validate parameter and query safety for injection attempts
+  const { searchParams } = new URL(request.url);
+  const paramCheck = new URLSearchParams();
+  if (rawParams.id) paramCheck.set('id', rawParams.id);
+  for (const [key, val] of searchParams.entries()) {
+    paramCheck.set(key, val);
   }
 
-  await params;
+  const safetyCheck = validateQuerySafety(paramCheck);
+  if (!safetyCheck.safe) {
+    return withSecurityHeaders(
+      createSecurityErrorResponse(safetyCheck.reason || 'Invalid request'),
+    );
+  }
+
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
+  if (rateLimitResponse) {
+    return withSecurityHeaders(rateLimitResponse);
+  }
+
   const lessons = [
     {
       id: '1',
@@ -36,10 +58,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     },
   ];
 
-  return addHeaders(
-    NextResponse.json({
-      data: lessons,
-      success: true,
-    }),
+  const sanitizedLessons = sanitizeObject(lessons);
+
+  return withSecurityHeaders(
+    addHeaders(
+      NextResponse.json({
+        data: sanitizedLessons,
+        success: true,
+      }),
+    ),
   );
 }
