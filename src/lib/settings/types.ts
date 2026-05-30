@@ -5,6 +5,9 @@ import { SETTINGS_SCHEMA_VERSION } from './constants';
 export const themePreferenceSchema = z.enum(['light', 'dark', 'system']);
 export type ThemePreference = z.infer<typeof themePreferenceSchema>;
 
+export const virtualBackgroundTypeSchema = z.enum(['none', 'blur', 'image', 'color']);
+export type VirtualBackgroundType = z.infer<typeof virtualBackgroundTypeSchema>;
+
 /**
  * Validated schema for all user-configurable application settings.
  *
@@ -19,6 +22,11 @@ export type ThemePreference = z.infer<typeof themePreferenceSchema>;
  * - `electronicSignatureEnabled`      — Master toggle for electronic signature on authenticated actions.
  * - `signatureName`                   — Full name used as the typed electronic signature (max 100 chars).
  * - `requireSignatureOnCertificates`  — Prompt the user to confirm their signature before a certificate is issued.
+ * - `virtualBackgroundEnabled`        — Master toggle for virtual background in video calls.
+ * - `virtualBackgroundType`           — Type of virtual background: `'none'`, `'blur'`, `'image'`, or `'color'`.
+ * - `virtualBackgroundImage`         — URL or data URI for custom background image (max 500 chars).
+ * - `virtualBackgroundBlur`          — Blur intensity for background (0-100).
+ * - `virtualBackgroundColor`         — Hex color for solid color background (max 7 chars, e.g. '#RRGGBB').
  */
 export const appSettingsSchema = z.object({
   version: z.literal(SETTINGS_SCHEMA_VERSION),
@@ -31,6 +39,11 @@ export const appSettingsSchema = z.object({
   electronicSignatureEnabled: z.boolean(),
   signatureName: z.string().max(100),
   requireSignatureOnCertificates: z.boolean(),
+  virtualBackgroundEnabled: z.boolean(),
+  virtualBackgroundType: virtualBackgroundTypeSchema,
+  virtualBackgroundImage: z.string().max(500),
+  virtualBackgroundBlur: z.number().min(0).max(100),
+  virtualBackgroundColor: z.string().max(7),
 });
 
 /** Fully typed representation of all user settings. Inferred from `appSettingsSchema`. */
@@ -70,6 +83,7 @@ export type ExportedSettingsEnvelope = z.infer<typeof exportedSettingsEnvelopeSc
  * - `theme` defaults to `'system'` so the OS preference is respected out of the box.
  * - `language` is read from `navigator.language` when available, falling back to `'en'`.
  * - All notification and UX toggles default to their most permissive value.
+ * - Virtual background is disabled by default with 'none' type.
  */
 export function createDefaultSettings(): AppSettings {
   return {
@@ -83,5 +97,10 @@ export function createDefaultSettings(): AppSettings {
     electronicSignatureEnabled: false,
     signatureName: '',
     requireSignatureOnCertificates: false,
+    virtualBackgroundEnabled: false,
+    virtualBackgroundType: 'none',
+    virtualBackgroundImage: '',
+    virtualBackgroundBlur: 10,
+    virtualBackgroundColor: '#000000',
   };
 }

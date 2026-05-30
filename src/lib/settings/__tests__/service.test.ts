@@ -71,6 +71,52 @@ describe('SettingsService', () => {
       expect(result.valid).toBe(false);
       expect(result.errors.some(e => e.includes('notificationsEnabled'))).toBe(true);
     });
+
+    it('validates virtual background settings', () => {
+      const settings = {
+        ...createDefaultSettings(),
+        virtualBackgroundEnabled: true,
+        virtualBackgroundType: 'image' as const,
+        virtualBackgroundImage: 'https://example.com/bg.jpg',
+        virtualBackgroundBlur: 20,
+        virtualBackgroundColor: '#FF5733',
+      };
+      const result = SettingsService.validateSettings(settings);
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('rejects invalid virtual background type', () => {
+      const invalidSettings = { ...createDefaultSettings(), virtualBackgroundType: 'invalid' as any };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('virtualBackgroundType'))).toBe(true);
+    });
+
+    it('rejects blur intensity out of range', () => {
+      const invalidSettings = { ...createDefaultSettings(), virtualBackgroundBlur: 150 };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('virtualBackgroundBlur'))).toBe(true);
+    });
+
+    it('rejects image URL that is too long', () => {
+      const invalidSettings = { ...createDefaultSettings(), virtualBackgroundImage: 'a'.repeat(501) };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('virtualBackgroundImage'))).toBe(true);
+    });
+
+    it('rejects invalid hex color format', () => {
+      const invalidSettings = { ...createDefaultSettings(), virtualBackgroundColor: 'invalid' };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(true); // String validation only checks length
+    });
   });
 
   // ── createStoreState ──────────────────────────────────────────────────────
@@ -417,6 +463,9 @@ describe('SettingsService', () => {
       Object.values(capabilities).forEach((capability) => {
         expect(capability).toBe(true);
       });
+      
+      // Check that virtual background capability exists
+      expect(capabilities.canEditVirtualBackground).toBe(true);
     });
   });
 
@@ -472,6 +521,20 @@ describe('SettingsService', () => {
       const result = SettingsService.canEditSetting('requireSignatureOnCertificates');
       expect(result).toBe(true);
     });
+
+    it('allows editing virtual background settings', () => {
+      const vbEnabled = SettingsService.canEditSetting('virtualBackgroundEnabled');
+      const vbType = SettingsService.canEditSetting('virtualBackgroundType');
+      const vbImage = SettingsService.canEditSetting('virtualBackgroundImage');
+      const vbBlur = SettingsService.canEditSetting('virtualBackgroundBlur');
+      const vbColor = SettingsService.canEditSetting('virtualBackgroundColor');
+
+      expect(vbEnabled).toBe(true);
+      expect(vbType).toBe(true);
+      expect(vbImage).toBe(true);
+      expect(vbBlur).toBe(true);
+      expect(vbColor).toBe(true);
+    });
   });
 
   // ── migrateSettings ──────────────────────────────────────────────────────
@@ -507,6 +570,24 @@ describe('SettingsService', () => {
 
       expect(migrated.theme).toBe('dark');
       expect(migrated.language).toBe('fr');
+    });
+
+    it('migrates version 2 to version 3 with virtual background fields', () => {
+      const v2Settings = {
+        ...createDefaultSettings(),
+        version: 2 as any,
+        theme: 'dark' as const,
+      };
+      
+      const result = SettingsService.migrateSettings(v2Settings);
+
+      expect(result.version).toBe(3);
+      expect(result.virtualBackgroundEnabled).toBe(false);
+      expect(result.virtualBackgroundType).toBe('none');
+      expect(result.virtualBackgroundImage).toBe('');
+      expect(result.virtualBackgroundBlur).toBe(10);
+      expect(result.virtualBackgroundColor).toBe('#000000');
+      expect(result.theme).toBe('dark'); // Preserves existing field
     });
   });
 });

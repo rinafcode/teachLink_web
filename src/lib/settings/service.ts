@@ -230,6 +230,7 @@ export class SettingsService {
     canEditPrefetching: boolean;
     canEditReducedMotion: boolean;
     canEditElectronicSignature: boolean;
+    canEditVirtualBackground: boolean;
     canExportSettings: boolean;
     canImportSettings: boolean;
     canSyncSettings: boolean;
@@ -242,6 +243,7 @@ export class SettingsService {
       canEditPrefetching: true,
       canEditReducedMotion: true,
       canEditElectronicSignature: true,
+      canEditVirtualBackground: true,
       canExportSettings: true,
       canImportSettings: true,
       canSyncSettings: true,
@@ -265,6 +267,11 @@ export class SettingsService {
       electronicSignatureEnabled: 'canEditElectronicSignature',
       signatureName: 'canEditElectronicSignature',
       requireSignatureOnCertificates: 'canEditElectronicSignature',
+      virtualBackgroundEnabled: 'canEditVirtualBackground',
+      virtualBackgroundType: 'canEditVirtualBackground',
+      virtualBackgroundImage: 'canEditVirtualBackground',
+      virtualBackgroundBlur: 'canEditVirtualBackground',
+      virtualBackgroundColor: 'canEditVirtualBackground',
     };
 
     return capabilities[permissionMap[key]] || false;
@@ -275,9 +282,21 @@ export class SettingsService {
    */
   static migrateSettings(settings: AppSettings): AppSettings {
     // If settings version is outdated, apply migrations
-    // Currently on version 1, so no migrations needed yet
     if (settings.version !== SETTINGS_SCHEMA_VERSION) {
-      // Future: Add migration logic here when version changes
+      // Migration from version 2 to version 3: Add virtual background fields
+      if (settings.version === 2) {
+        return {
+          ...settings,
+          version: SETTINGS_SCHEMA_VERSION,
+          virtualBackgroundEnabled: false,
+          virtualBackgroundType: 'none',
+          virtualBackgroundImage: '',
+          virtualBackgroundBlur: 10,
+          virtualBackgroundColor: '#000000',
+        };
+      }
+      
+      // For other version mismatches, use defaults but preserve existing fields
       return {
         ...createDefaultSettings(),
         ...settings,

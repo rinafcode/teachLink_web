@@ -2,7 +2,44 @@
 
 ## Overview
 
-This document describes the implementation of Capabilities for User Settings as part of issue #495. This implementation adds a comprehensive service layer, validation, testing infrastructure, and enhanced capabilities to the User Settings system, following the architectural pattern established by the notification system refactoring.
+This document describes the implementation of Capabilities for User Settings as part of issue #495 and Virtual Background support as part of the Backup System enhancement. This implementation adds a comprehensive service layer, validation, testing infrastructure, and enhanced capabilities to the User Settings system, following the architectural pattern established by the notification system refactoring.
+
+## Virtual Background Feature (v3)
+
+### Overview
+The virtual background feature allows users to replace their actual background during video calls with various effects:
+- **Blur**: Applies a blur effect to the background
+- **Image**: Uses a custom image as the background
+- **Color**: Uses a solid color as the background
+- **None**: Disables virtual background (default)
+
+### Implementation Details
+
+#### Settings Schema (v3)
+Added the following fields to `AppSettings`:
+- `virtualBackgroundEnabled`: boolean - Master toggle for virtual background
+- `virtualBackgroundType`: enum ('none' | 'blur' | 'image' | 'color') - Type of background effect
+- `virtualBackgroundImage`: string (max 500 chars) - URL for custom background image
+- `virtualBackgroundBlur`: number (0-100) - Blur intensity
+- `virtualBackgroundColor`: string (max 7 chars) - Hex color for solid color backgrounds
+
+#### UI Components
+- Added Virtual Background section to settings page (`src/pages/settings/index.tsx`)
+- Integrated with video conference component (`src/components/collaboration/VideoConference.tsx`)
+- Created custom hook for virtual background management (`src/hooks/useVirtualBackground.ts`)
+
+#### Utility Functions
+Created `src/utils/virtualBackgroundUtils.ts` with:
+- `applyVirtualBackground()`: Applies virtual background effects to video streams
+- `settingsToVirtualBackgroundConfig()`: Converts settings to config object
+- `isValidImageUrl()`: Validates image URLs
+- `isValidHexColor()`: Validates hex color codes
+- `isValidBlurIntensity()`: Validates blur intensity values
+
+#### Migration
+- Schema version updated from v2 to v3
+- Automatic migration from v2 to v3 adds default virtual background settings
+- Preserves existing user settings during migration
 
 ## Problems Addressed
 
@@ -63,6 +100,7 @@ Business logic layer that handles:
 - **Reset to Defaults**: `resetToDefaults()` - Reverts to default settings
 - **Capabilities**: `getCapabilities()`, `canEditSetting()` - Permission system
 - **Migration**: `migrateSettings()` - Schema version migration
+- **Virtual Background**: Support for video conference virtual backgrounds (NEW in v3)
 
 Example usage:
 
@@ -184,10 +222,14 @@ Service layer has comprehensive unit tests covering:
 - Reset to defaults
 - Capabilities system
 - Migration logic
+- Virtual background settings validation (NEW)
+- Virtual background migration from v2 to v3 (NEW)
 
 Run unit tests:
 ```bash
 pnpm test src/lib/settings/__tests__/service.test.ts
+pnpm test src/utils/__tests__/virtualBackgroundUtils.test.ts
+pnpm test src/hooks/__tests__/useVirtualBackground.test.ts
 ```
 
 ### Integration Tests
@@ -201,6 +243,8 @@ Integration tests verify:
 - Capabilities system integration
 - Migration integration
 - LocalStorage integration
+- Virtual background settings export/import (NEW)
+- Virtual background settings reset to defaults (NEW)
 
 Run integration tests:
 ```bash
@@ -247,6 +291,16 @@ Schema version management:
 - Automatic migration between versions
 - User data preservation during migration
 - Future-proof schema evolution
+
+### 6. Virtual Background (NEW in v3)
+
+Virtual background support for video conferences:
+- Four background types: none, blur, image, color
+- Custom image background support with URL validation
+- Configurable blur intensity (0-100)
+- Solid color background with hex color picker
+- Integrated with video conferencing component
+- Full backup/restore support via export/import
 
 ## Benefits
 

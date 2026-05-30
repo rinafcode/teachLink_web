@@ -334,6 +334,147 @@ export default function SettingsPage() {
 
             <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                Virtual Background
+              </h2>
+
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Configure virtual background effects for video calls and recordings.
+              </p>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  checked={settings.virtualBackgroundEnabled}
+                  onChange={(e) => patchSettings({ virtualBackgroundEnabled: e.target.checked })}
+                />
+                <span>
+                  <span className="font-medium text-gray-900 dark:text-gray-50">
+                    Enable virtual background
+                  </span>
+                  <span className="block text-xs text-gray-500 dark:text-gray-400">
+                    Replace your actual background during video calls.
+                  </span>
+                </span>
+              </label>
+
+              <div
+                className={
+                  settings.virtualBackgroundEnabled ? undefined : 'opacity-50 pointer-events-none'
+                }
+              >
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Background type
+                  </label>
+                  <div className="flex flex-wrap gap-4">
+                    {(['none', 'blur', 'image', 'color'] as const).map((type) => (
+                      <label
+                        key={type}
+                        className="inline-flex items-center gap-2 cursor-pointer capitalize"
+                      >
+                        <input
+                          type="radio"
+                          name="virtualBackgroundType"
+                          checked={settings.virtualBackgroundType === type}
+                          onChange={() => patchSettings({ virtualBackgroundType: type })}
+                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          disabled={!settings.virtualBackgroundEnabled}
+                        />
+                        <span className="text-gray-800 dark:text-gray-200">{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {settings.virtualBackgroundType === 'image' && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="virtualBackgroundImage"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Background image URL
+                    </label>
+                    <input
+                      id="virtualBackgroundImage"
+                      type="text"
+                      maxLength={500}
+                      value={settings.virtualBackgroundImage}
+                      onChange={(e) => patchSettings({ virtualBackgroundImage: e.target.value })}
+                      disabled={!settings.virtualBackgroundEnabled}
+                      placeholder="https://example.com/background.jpg"
+                      className="block w-full max-w-md rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Enter a URL for your custom background image.
+                    </p>
+                  </div>
+                )}
+
+                {settings.virtualBackgroundType === 'blur' && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="virtualBackgroundBlur"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Blur intensity ({settings.virtualBackgroundBlur}%)
+                    </label>
+                    <input
+                      id="virtualBackgroundBlur"
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={settings.virtualBackgroundBlur}
+                      onChange={(e) =>
+                        patchSettings({ virtualBackgroundBlur: Number(e.target.value) })
+                      }
+                      disabled={!settings.virtualBackgroundEnabled}
+                      className="w-full max-w-md"
+                    />
+                  </div>
+                )}
+
+                {settings.virtualBackgroundType === 'color' && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="virtualBackgroundColor"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Background color
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        id="virtualBackgroundColor"
+                        type="color"
+                        value={settings.virtualBackgroundColor}
+                        onChange={(e) =>
+                          patchSettings({ virtualBackgroundColor: e.target.value })
+                        }
+                        disabled={!settings.virtualBackgroundEnabled}
+                        className="h-10 w-16 rounded border border-gray-300 dark:border-gray-700"
+                      />
+                      <input
+                        type="text"
+                        maxLength={7}
+                        value={settings.virtualBackgroundColor}
+                        onChange={(e) =>
+                          patchSettings({ virtualBackgroundColor: e.target.value })
+                        }
+                        disabled={!settings.virtualBackgroundEnabled}
+                        placeholder="#000000"
+                        className="block w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Choose a solid color for your background.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
                 Export / import file
               </h2>
 
