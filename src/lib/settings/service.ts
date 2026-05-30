@@ -229,6 +229,7 @@ export class SettingsService {
     canEditEmail: boolean;
     canEditPrefetching: boolean;
     canEditReducedMotion: boolean;
+    canEditElectronicSignature: boolean;
     canExportSettings: boolean;
     canImportSettings: boolean;
     canSyncSettings: boolean;
@@ -240,6 +241,7 @@ export class SettingsService {
       canEditEmail: true,
       canEditPrefetching: true,
       canEditReducedMotion: true,
+      canEditElectronicSignature: true,
       canExportSettings: true,
       canImportSettings: true,
       canSyncSettings: true,
@@ -260,6 +262,9 @@ export class SettingsService {
       emailNotifications: 'canEditEmail',
       prefetchingEnabled: 'canEditPrefetching',
       reducedMotion: 'canEditReducedMotion',
+      electronicSignatureEnabled: 'canEditElectronicSignature',
+      signatureName: 'canEditElectronicSignature',
+      requireSignatureOnCertificates: 'canEditElectronicSignature',
     };
 
     return capabilities[permissionMap[key]] || false;
