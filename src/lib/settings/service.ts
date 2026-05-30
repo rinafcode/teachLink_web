@@ -9,12 +9,19 @@ import {
   createDefaultSettings,
   appSettingsSchema,
 } from './types';
-import { SETTINGS_SCHEMA_VERSION } from './constants';
+import { SETTINGS_SCHEMA_VERSION, SETTINGS_DOCUMENTATION_VERSION } from './constants';
 
 export interface SettingsValidationResult {
   valid: boolean;
   errors: string[];
   data?: AppSettings;
+}
+
+export interface DocumentationMetadata {
+  version: string;
+  lastUpdated: string;
+  schemaVersion: number;
+  fields: Record<string, string>;
 }
 
 export interface SettingsSyncResult {
@@ -278,14 +285,103 @@ export class SettingsService {
   }
 
   /**
+   * Get documentation metadata for current settings implementation
+   */
+  static getDocumentationMetadata(): DocumentationMetadata {
+    return {
+      version: SETTINGS_DOCUMENTATION_VERSION,
+      lastUpdated: '2025-05-30',
+      schemaVersion: SETTINGS_SCHEMA_VERSION,
+      fields: {
+        version: 'Schema version for settings structure',
+        theme: 'User color scheme preference',
+        language: 'Interface language (BCP-47 locale)',
+        notificationsEnabled: 'Master toggle for in-app notifications',
+        emailNotifications: 'Email notification preferences',
+        prefetchingEnabled: 'Link prefetching for performance',
+        reducedMotion: 'Reduced motion for accessibility',
+        electronicSignatureEnabled: 'Electronic signature feature toggle',
+        signatureName: 'User full name for signatures',
+        requireSignatureOnCertificates: 'Signature confirmation for certificates',
+        virtualBackgroundEnabled: 'Virtual background master toggle',
+        virtualBackgroundType: 'Type of virtual background effect',
+        virtualBackgroundImage: 'Custom background image URL',
+        virtualBackgroundBlur: 'Blur intensity (0-100)',
+        virtualBackgroundColor: 'Hex color for solid background',
+      },
+    };
+  }
+
+  /**
+   * Validate documentation completeness against current schema
+   */
+  static validateDocumentationCompleteness(): {
+    valid: boolean;
+    missingFields: string[];
+    outdatedFields: string[];
+  } {
+    const metadata = this.getDocumentationMetadata();
+    const defaultSettings = createDefaultSettings();
+    const schemaFields = Object.keys(defaultSettings);
+    const documentedFields = Object.keys(metadata.fields);
+
+    const missingFields = schemaFields.filter((field) => !documentedFields.includes(field));
+    const outdatedFields = documentedFields.filter((field) => !schemaFields.includes(field));
+
+    return {
+      valid: missingFields.length === 0 && outdatedFields.length === 0,
+      missingFields,
+      outdatedFields,
+    };
+  }
+
+  /**
+   * Generate documentation update summary
+   */
+  static generateDocumentationUpdate(): {
+    needsUpdate: boolean;
+    summary: string;
+    suggestions: string[];
+  } {
+    const validation = this.validateDocumentationCompleteness();
+    const metadata = this.getDocumentationMetadata();
+
+    if (validation.valid) {
+      return {
+        needsUpdate: false,
+        summary: 'Documentation is up-to-date with current schema',
+        suggestions: [],
+      };
+    }
+
+    const suggestions: string[] = [];
+
+    if (validation.missingFields.length > 0) {
+      suggestions.push(`Add documentation for missing fields: ${validation.missingFields.join(', ')}`);
+    }
+
+    if (validation.outdatedFields.length > 0) {
+      suggestions.push(`Remove documentation for deprecated fields: ${validation.outdatedFields.join(', ')}`);
+    }
+
+    suggestions.push(`Update documentation version to reflect changes`);
+    suggestions.push(`Update lastUpdated timestamp in constants`);
+
+    return {
+      needsUpdate: true,
+      summary: `Documentation update required. ${validation.missingFields.length} missing fields, ${validation.outdatedFields.length} outdated fields.`,
+      suggestions,
+    };
+  }
+
+  /**
    * Apply settings migration if needed (for future version changes)
    */
   static migrateSettings(settings: AppSettings): AppSettings {
     // If settings version is outdated, apply migrations
     if (settings.version !== SETTINGS_SCHEMA_VERSION) {
       // Migration from version 2 to version 3: Add virtual background fields
-      if (settings.version === 2) {
-        return {
+      if (settings.version === 2) {        return {
           ...settings,
           version: SETTINGS_SCHEMA_VERSION,
           virtualBackgroundEnabled: false,
