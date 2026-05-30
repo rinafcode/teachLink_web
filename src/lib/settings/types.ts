@@ -9,13 +9,16 @@ export type ThemePreference = z.infer<typeof themePreferenceSchema>;
  * Validated schema for all user-configurable application settings.
  *
  * Fields:
- * - `version`              — Schema version; bumped when new fields are added (see `SETTINGS_SCHEMA_VERSION`).
- * - `theme`                — Colour scheme: `'light'`, `'dark'`, or `'system'` (follows OS preference).
- * - `language`             — BCP-47 locale tag (e.g. `'en'`, `'fr-CA'`), max 24 chars; defaults to `navigator.language`.
- * - `notificationsEnabled` — Master toggle for in-app push/toast notifications.
- * - `emailNotifications`   — Whether transactional and digest emails should be sent.
- * - `prefetchingEnabled`   — Pre-fetches linked pages on hover for faster navigation; disable on slow connections.
- * - `reducedMotion`        — Suppresses non-essential animations for users who prefer reduced motion.
+ * - `version`                         — Schema version; bumped when new fields are added (see `SETTINGS_SCHEMA_VERSION`).
+ * - `theme`                           — Colour scheme: `'light'`, `'dark'`, or `'system'` (follows OS preference).
+ * - `language`                        — BCP-47 locale tag (e.g. `'en'`, `'fr-CA'`), max 24 chars; defaults to `navigator.language`.
+ * - `notificationsEnabled`            — Master toggle for in-app push/toast notifications.
+ * - `emailNotifications`              — Whether transactional and digest emails should be sent.
+ * - `prefetchingEnabled`              — Pre-fetches linked pages on hover for faster navigation; disable on slow connections.
+ * - `reducedMotion`                   — Suppresses non-essential animations for users who prefer reduced motion.
+ * - `electronicSignatureEnabled`      — Master toggle for electronic signature on authenticated actions.
+ * - `signatureName`                   — Full name used as the typed electronic signature (max 100 chars).
+ * - `requireSignatureOnCertificates`  — Prompt the user to confirm their signature before a certificate is issued.
  */
 export const appSettingsSchema = z.object({
   version: z.literal(SETTINGS_SCHEMA_VERSION),
@@ -25,6 +28,9 @@ export const appSettingsSchema = z.object({
   emailNotifications: z.boolean(),
   prefetchingEnabled: z.boolean(),
   reducedMotion: z.boolean(),
+  electronicSignatureEnabled: z.boolean(),
+  signatureName: z.string().max(100),
+  requireSignatureOnCertificates: z.boolean(),
 });
 
 /** Fully typed representation of all user settings. Inferred from `appSettingsSchema`. */
@@ -74,5 +80,8 @@ export function createDefaultSettings(): AppSettings {
     emailNotifications: true,
     prefetchingEnabled: true,
     reducedMotion: false,
+    electronicSignatureEnabled: false,
+    signatureName: '',
+    requireSignatureOnCertificates: false,
   };
 }

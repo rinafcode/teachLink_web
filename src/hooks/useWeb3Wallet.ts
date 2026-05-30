@@ -6,7 +6,7 @@ import { validateWalletInteraction, safeWalletCall } from '@/utils/web3/walletVa
 /**
  * Supported wallet providers
  */
-export type WalletProvider = 'metamask' | 'starknet' | 'walletconnect' | 'coinbase';
+export type WalletProvider = 'metamask' | 'starknet' | 'walletconnect' | 'coinbase' | 'service';
 
 /**
  * Chain configuration
@@ -177,7 +177,30 @@ export function useWeb3Wallet() {
   }, []);
 
   /**
-   * Connect to specified wallet provider
+   * Connect to service account
+   */
+  const connectServiceAccount = useCallback(async () => {
+    // Service account is a backend-controlled account. We retrieve address from env.
+    if (typeof process !== 'undefined' && process.env.SERVICE_ACCOUNT_ADDRESS) {
+      const address = process.env.SERVICE_ACCOUNT_ADDRESS;
+      setState((prev) => ({
+        ...prev,
+        address,
+        isConnected: true,
+        isConnecting: false,
+        provider: 'service' as WalletProvider,
+        chainId: '0x1', // default to Ethereum Mainnet; can be adjusted
+        error: null,
+      }));
+      return { success: true, data: { address, provider: 'service' as WalletProvider, chainId: '0x1' } };
+    }
+    const message = 'Service account configuration missing';
+    setState((prev) => ({ ...prev, isConnecting: false, error: message }));
+    throw new Error(message);
+  }, []);
+
+  /**
+   * Connect to specified wallet provider, now supports 'service'
    */
   const connect = useCallback(
     async (provider: WalletProvider = 'metamask') => {
@@ -196,6 +219,9 @@ export function useWeb3Wallet() {
             break;
           case 'starknet':
             result = await connectStarknet();
+            break;
+          case 'service':
+            result = await connectServiceAccount();
             break;
           default:
             throw new Error(`Unsupported wallet provider: ${provider}`);
@@ -232,7 +258,7 @@ export function useWeb3Wallet() {
         throw error;
       }
     },
-    [connectMetaMask, connectStarknet],
+    [connectMetaMask, connectStarknet, connectServiceAccount],
   );
 
   /**

@@ -264,6 +264,31 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettingValue('language', 'a'.repeat(25));
       expect(result.valid).toBe(false);
     });
+
+    it('validates correct electronicSignatureEnabled value', () => {
+      const result = SettingsService.validateSettingValue('electronicSignatureEnabled', false);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects non-boolean electronicSignatureEnabled', () => {
+      const result = SettingsService.validateSettingValue('electronicSignatureEnabled', 'yes');
+      expect(result.valid).toBe(false);
+    });
+
+    it('validates correct signatureName value', () => {
+      const result = SettingsService.validateSettingValue('signatureName', 'Jane Doe');
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects signatureName that is too long', () => {
+      const result = SettingsService.validateSettingValue('signatureName', 'a'.repeat(101));
+      expect(result.valid).toBe(false);
+    });
+
+    it('validates correct requireSignatureOnCertificates value', () => {
+      const result = SettingsService.validateSettingValue('requireSignatureOnCertificates', true);
+      expect(result.valid).toBe(true);
+    });
   });
 
   // ── exportSettings ───────────────────────────────────────────────────────
@@ -380,6 +405,7 @@ describe('SettingsService', () => {
       expect(capabilities).toHaveProperty('canEditEmail');
       expect(capabilities).toHaveProperty('canEditPrefetching');
       expect(capabilities).toHaveProperty('canEditReducedMotion');
+      expect(capabilities).toHaveProperty('canEditElectronicSignature');
       expect(capabilities).toHaveProperty('canExportSettings');
       expect(capabilities).toHaveProperty('canImportSettings');
       expect(capabilities).toHaveProperty('canSyncSettings');
@@ -430,6 +456,21 @@ describe('SettingsService', () => {
     it('handles version field', () => {
       const result = SettingsService.canEditSetting('version');
       expect(result).toBeDefined(); // Should map to a capability
+    });
+
+    it('allows editing electronicSignatureEnabled', () => {
+      const result = SettingsService.canEditSetting('electronicSignatureEnabled');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing signatureName', () => {
+      const result = SettingsService.canEditSetting('signatureName');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing requireSignatureOnCertificates', () => {
+      const result = SettingsService.canEditSetting('requireSignatureOnCertificates');
+      expect(result).toBe(true);
     });
   });
 

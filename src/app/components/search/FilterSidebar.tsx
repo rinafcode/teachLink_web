@@ -61,6 +61,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     { id: '03', name: 'Business' },
     { id: '04', name: 'Marketing' },
     { id: '05', name: 'Health' },
+    { id: '06', name: 'Investment' },
   ];
 
   return (

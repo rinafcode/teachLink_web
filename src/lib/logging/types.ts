@@ -14,6 +14,7 @@ export interface LogRecord {
   scope: string;
   timestamp: string;
   requestId?: string;
+  correlationId?: string;
   context?: Record<string, unknown>;
   metrics?: PerformanceMetric[];
   error?: {
@@ -27,6 +28,7 @@ export interface LogQuery {
   level?: LogLevel | LogLevel[];
   scope?: string;
   requestId?: string;
+  correlationId?: string;
   since?: number;
   search?: string;
   limit?: number;

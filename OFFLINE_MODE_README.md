@@ -37,6 +37,7 @@ src/app/
 │   ├── OfflineStatusIndicator.tsx      # Status and sync controls
 │   └── StorageManager.tsx              # Storage management interface
 └── services/
+    ├── offlineApi.ts                   # Remote microservice API for syncing offline data
     └── offlineSync.ts                  # Sync service and conflict resolution
 ```
 
@@ -169,6 +170,12 @@ import { StorageManager } from './components/offline/StorageManager';
 - `getStorageInfo(): Promise<{ used: number; total: number; percentage: number }>` - Get storage usage
 
 ## Sync Strategy
+
+The offline implementation now uses a dedicated remote microservice API layer to sync local progress through the lesson progress endpoint.
+
+- `src/services/offlineApi.ts` encapsulates remote microservice calls
+- Progress sync is sent to `PATCH /api/lessons/:lessonId/progress`
+- Sync operations are orchestrated by `src/services/offlineSync.ts` and persisted locally in IndexedDB
 
 ### Conflict Resolution
 
@@ -304,19 +311,16 @@ Tests are organized into logical groups:
 ### Common Issues
 
 1. **Database Initialization Failed**
-
    - Check browser IndexedDB support
    - Clear browser data and retry
    - Check for storage quota issues
 
 2. **Sync Conflicts**
-
    - Review conflict resolution settings
    - Manually resolve conflicts if needed
    - Check network connectivity
 
 3. **Storage Full**
-
    - Use Storage Manager to clear old data
    - Remove unused courses
    - Check browser storage limits
