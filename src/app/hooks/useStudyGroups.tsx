@@ -362,29 +362,30 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       let updated: GroupChallenge | undefined;
       let challengeTitle: string | undefined;
       let groupId: string | undefined;
-      setChallenges((prev) => {
-        const next = prev.map((c) => {
-          if (c.id !== challengeId) return c;
-          challengeTitle = c.title;
-          groupId = c.groupId;
-          const existing = c.progress.find((p) => p.userId === me.id);
-          const now = new Date().toISOString();
-          const updatedProgress: ChallengeProgress = {
-            userId: me.id,
-            userName: me.name,
-            progress: Math.max(0, Math.min(100, progress)),
-            updatedAt: now,
-          };
-          const newProgress = existing
-            ? c.progress.map((p) => (p.userId === me.id ? updatedProgress : p))
-            : [...c.progress, updatedProgress];
-          updated = { ...c, progress: newProgress };
-          return updated;
-        });
-        save(STORAGE_KEYS.challenges, next);
-        triggerSync();
-        return next;
+      // Operate on persisted storage to avoid stale state between hook instances
+      const persisted = load(STORAGE_KEYS.challenges, [] as GroupChallenge[]);
+      const next = persisted.map((c) => {
+        if (c.id !== challengeId) return c;
+        challengeTitle = c.title;
+        groupId = c.groupId;
+        const existing = c.progress.find((p) => p.userId === me.id);
+        const now = new Date().toISOString();
+        const updatedProgress: ChallengeProgress = {
+          userId: me.id,
+          userName: me.name,
+          progress: Math.max(0, Math.min(100, progress)),
+          updatedAt: now,
+        };
+        const newProgress = existing
+          ? c.progress.map((p) => (p.userId === me.id ? updatedProgress : p))
+          : [...c.progress, updatedProgress];
+        updated = { ...c, progress: newProgress };
+        return updated;
       });
+
+      save(STORAGE_KEYS.challenges, next);
+      triggerSync();
+      setChallenges(next);
       if (updated) {
         try {
           const { addNotification } = useNotificationStore.getState();
