@@ -40,7 +40,10 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const end = messagesEndRef.current;
+    if (typeof end?.scrollIntoView === 'function') {
+      end.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const handlePost = () => {
