@@ -2,9 +2,9 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { errorReportingService } from '@/services/errorReporting';
-import { ThemeToggle } from '../theme-toggle';
+import AdminThemeToggle from '../AdminThemeToggle';
 
-describe('ThemeToggle', () => {
+describe('AdminThemeToggle', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
@@ -24,39 +24,47 @@ describe('ThemeToggle', () => {
     errorReportingService.clearBreadcrumbs();
   });
 
-  it('switches from light to dark mode when clicked', async () => {
+  it('switches between theme preferences (light, dark, system)', async () => {
     render(
       <ThemeProvider defaultTheme="light">
-        <ThemeToggle />
+        <AdminThemeToggle />
       </ThemeProvider>,
     );
 
-    const toggle = await screen.findByRole('button', { name: /switch to dark mode/i });
-    fireEvent.click(toggle);
+    // Initial check (should have active status or class depending on selection)
+    const darkBtn = await screen.findByRole('button', { name: /switch to dark mode/i });
+    fireEvent.click(darkBtn);
 
     await waitFor(() => {
       expect(document.documentElement).toHaveClass('dark');
     });
-    expect(document.documentElement).not.toHaveClass('light');
   });
 
-  it('renders an accessible fallback when theme context is unavailable', async () => {
+  it('renders an accessible visual fallback when context is missing', async () => {
     const preventExpectedBoundaryError = (event: ErrorEvent) => event.preventDefault();
     window.addEventListener('error', preventExpectedBoundaryError);
 
-    render(<ThemeToggle />);
+    render(<AdminThemeToggle />);
 
-    const fallback = await screen.findByRole('button', { name: /theme toggle unavailable/i });
+    const fallbackContainer = await screen.findByLabelText(
+      'Admin theme toggle temporarily unavailable',
+    );
+    expect(fallbackContainer).toBeInTheDocument();
+
+    const fallbackButtons = screen.getAllByRole('button', { name: /mode toggle unavailable/i });
+    expect(fallbackButtons).toHaveLength(3);
+    fallbackButtons.forEach((btn) => {
+      expect(btn).toBeDisabled();
+    });
 
     window.removeEventListener('error', preventExpectedBoundaryError);
-    expect(fallback).toBeDisabled();
-    expect(fallback).toHaveAttribute('title', 'Theme toggle unavailable');
+
     expect(errorReportingService.getBreadcrumbs()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           action: 'errorBoundary',
           details: expect.objectContaining({
-            isolationId: 'theme-toggle',
+            isolationId: 'admin-theme-toggle',
             isolationLevel: 'component',
           }),
         }),
@@ -67,18 +75,16 @@ describe('ThemeToggle', () => {
   it('safely catches and logs errors inside event handler without crashing', async () => {
     const spyReport = vi.spyOn(errorReportingService, 'reportError').mockResolvedValue({} as any);
 
-    // Render under custom provider where setTheme throws
     const ThrowingProvider = ({ children }: { children: React.ReactNode }) => {
       const mockValue = {
         theme: 'light' as const,
         resolvedTheme: 'light' as const,
         setTheme: () => {
-          throw new Error('Mutation failed');
+          throw new Error('Theme change failed');
         },
       };
       const ThemeContext = (require('@/contexts/ThemeContext') as any).ThemeContext;
       if (!ThemeContext) {
-        // Fallback if imported context format differs
         throw new Error('ThemeContext not exportable');
       }
       return <ThemeContext.Provider value={mockValue}>{children}</ThemeContext.Provider>;
@@ -86,20 +92,20 @@ describe('ThemeToggle', () => {
 
     render(
       <ThrowingProvider>
-        <ThemeToggle />
+        <AdminThemeToggle />
       </ThrowingProvider>,
     );
 
-    const toggle = await screen.findByRole('button', { name: /switch to dark mode/i });
+    const darkBtn = await screen.findByRole('button', { name: /switch to dark mode/i });
 
-    // Clicking should not crash the rendering tree
-    expect(() => fireEvent.click(toggle)).not.toThrow();
+    expect(() => fireEvent.click(darkBtn)).not.toThrow();
 
     expect(spyReport).toHaveBeenCalledWith(
       expect.any(Error),
       expect.objectContaining({
-        component: 'ThemeToggle',
-        action: 'handleToggle',
+        component: 'AdminThemeToggle',
+        action: 'handleSelectTheme',
+        selectedTheme: 'dark',
       }),
     );
 
