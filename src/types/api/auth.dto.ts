@@ -20,6 +20,7 @@ export const SignupRequestSchema = z
     confirmPassword: z
       .string({ required_error: 'Confirm password is required' })
       .min(1, 'Confirm password is required'),
+    referralCode: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

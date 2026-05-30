@@ -4,6 +4,14 @@ import { validateBody } from '@/lib/validation';
 import { SignupRequestSchema } from '@/types/api/auth.dto';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
+import { 
+  generateReferralCode, 
+  validateReferralCode, 
+  referralCodeExists, 
+  storeReferralCode, 
+  incrementReferralCount,
+  getReferralCodeOwner 
+} from '@/lib/referral';
 
 export const runtime = 'edge';
 
@@ -27,7 +35,7 @@ export async function POST(
       return addHeaders(result.error) as NextResponse;
     }
 
-    const { name, email, password, confirmPassword } = result.data;
+    const { name, email, password, confirmPassword, referralCode } = result.data;
 
     // Basic validation
     if (!name || !email || !password || !confirmPassword) {
@@ -47,6 +55,28 @@ export async function POST(
       );
     }
 
+    // Validate referral code if provided
+    if (referralCode) {
+      const validation = validateReferralCode(referralCode);
+      if (!validation.isValid) {
+        edgeLog('warn', route, 'Validation failed', { reason: 'invalid_referral_code', error: validation.error });
+        return addHeaders(NextResponse.json({ message: validation.error || 'Invalid referral code' }, { status: 400 }));
+      }
+
+      // Check if referral code exists (mock implementation)
+      if (!referralCodeExists(referralCode)) {
+        edgeLog('warn', route, 'Validation failed', { reason: 'referral_code_not_found' });
+        return addHeaders(NextResponse.json({ message: 'Referral code not found' }, { status: 404 }));
+      }
+
+      // Prevent self-referral (check if the referral code belongs to the same email)
+      const referrerEmail = getReferralCodeOwner(referralCode);
+      if (referrerEmail === email) {
+        edgeLog('warn', route, 'Validation failed', { reason: 'self_referral' });
+        return addHeaders(NextResponse.json({ message: 'Cannot use your own referral code' }, { status: 400 }));
+      }
+    }
+
     // Mock: block already-registered email
     if (email === 'existing@teachlink.com') {
       edgeLog('warn', route, 'Registration conflict', { reason: 'email_exists' });
@@ -56,13 +86,32 @@ export async function POST(
     }
 
     const userId = Math.random().toString(36).substring(2, 9);
-    edgeLog('info', route, 'Account created', { userId });
+    const userReferralCode = generateReferralCode();
+    
+    // Store the referral code for the new user
+    storeReferralCode(email, userReferralCode);
+    
+    // If a referral code was used, increment the referrer's count
+    if (referralCode) {
+      incrementReferralCount(referralCode);
+      edgeLog('info', route, 'Referral used', { referrerCode: referralCode, newUserId: userId });
+    }
+    
+    edgeLog('info', route, 'Account created', { userId, referralCode: userReferralCode });
 
     return addHeaders(
       NextResponse.json(
         {
           message: 'Account created successfully',
-          user: { id: userId, name, email },
+          user: { 
+            id: userId, 
+            name, 
+            email, 
+            referralCode: userReferralCode,
+            referredBy: referralCode || null,
+            referralCount: 0,
+            role: 'STUDENT' 
+          },
           token: `mock-jwt-token-${Date.now()}`,
         },
         { status: 201 },
