@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PurchaseModal } from './PurchaseModal';
+import DiscountProgressBar from './DiscountProgressBar';
 
 interface PricingOption {
   id: string;
@@ -48,11 +49,20 @@ export default function EnrollmentCTA({
 }: EnrollmentCTAProps) {
   const [selectedOption, setSelectedOption] = useState<PricingOption | null>(null);
   const [enrolledPlanId, setEnrolledPlanId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   function handleEnrollClick(option: PricingOption) {
     setSelectedOption(option);
   }
+  const toggleSelect = (optionId: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(optionId) ? prev.filter((id) => id !== optionId) : [...prev, optionId],
+    );
+  };
 
+  const currentSpend = pricingOptions
+    .filter((o) => selectedIds.includes(o.id))
+    .reduce((sum, o) => sum + o.price, 0);
   function handleSuccess(optionId: string) {
     setEnrolledPlanId(optionId);
     onEnroll?.(optionId);
@@ -68,6 +78,7 @@ export default function EnrollmentCTA({
             return (
               <div
                 key={option.id}
+                onClick={() => toggleSelect(option.id)}
                 className={`border rounded-xl p-5 transition-all duration-200 ${
                   option.popular
                     ? 'border-[#0066FF] dark:border-[#00C2FF] bg-[#F0F9FF] dark:bg-[#1E3A8A]/20 shadow-lg shadow-[#0066FF]/10'
@@ -107,7 +118,11 @@ export default function EnrollmentCTA({
                   ))}
                 </ul>
                 <button
-                  onClick={() => handleEnrollClick(option)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleEnrollClick(option);
+                  }}
                   disabled={isEnrolled}
                   className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:cursor-default ${
                     isEnrolled
@@ -123,6 +138,9 @@ export default function EnrollmentCTA({
             );
           })}
         </div>
+        {/* Discount Progress Bar */}
+        <DiscountProgressBar currentSpend={currentSpend} />
+
         <div className="mt-6 text-center text-sm text-[#64748B] dark:text-[#94A3B8] space-y-2">
           <p className="flex items-center justify-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

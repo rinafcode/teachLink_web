@@ -22,11 +22,10 @@ export type VirtualBackgroundType = z.infer<typeof virtualBackgroundTypeSchema>;
  * - `electronicSignatureEnabled`      — Master toggle for electronic signature on authenticated actions.
  * - `signatureName`                   — Full name used as the typed electronic signature (max 100 chars).
  * - `requireSignatureOnCertificates`  — Prompt the user to confirm their signature before a certificate is issued.
- * - `virtualBackgroundEnabled`        — Master toggle for virtual background in video calls.
- * - `virtualBackgroundType`           — Type of virtual background: `'none'`, `'blur'`, `'image'`, or `'color'`.
- * - `virtualBackgroundImage`         — URL or data URI for custom background image (max 500 chars).
- * - `virtualBackgroundBlur`          — Blur intensity for background (0-100).
- * - `virtualBackgroundColor`         — Hex color for solid color background (max 7 chars, e.g. '#RRGGBB').
+ * - `pollCreationEnabled`             — Master toggle for creating interactive polls in classes or study groups.
+ * - `defaultPollDuration`             — Default poll duration in days (1 to 30 days).
+ * - `allowAnonymousVoting`            — Toggle to allow participants to vote anonymously by default.
+ * - `pollResultsVisibility`           — Default visibility of poll results ('always' | 'after_voting' | 'after_ended').
  */
 export const appSettingsSchema = z.object({
   version: z.literal(SETTINGS_SCHEMA_VERSION),
@@ -39,11 +38,10 @@ export const appSettingsSchema = z.object({
   electronicSignatureEnabled: z.boolean(),
   signatureName: z.string().max(100),
   requireSignatureOnCertificates: z.boolean(),
-  virtualBackgroundEnabled: z.boolean(),
-  virtualBackgroundType: virtualBackgroundTypeSchema,
-  virtualBackgroundImage: z.string().max(500),
-  virtualBackgroundBlur: z.number().min(0).max(100),
-  virtualBackgroundColor: z.string().max(7),
+  pollCreationEnabled: z.boolean(),
+  defaultPollDuration: z.number().int().min(1).max(30),
+  allowAnonymousVoting: z.boolean(),
+  pollResultsVisibility: z.enum(['always', 'after_voting', 'after_ended']),
 });
 
 /** Fully typed representation of all user settings. Inferred from `appSettingsSchema`. */
@@ -97,10 +95,9 @@ export function createDefaultSettings(): AppSettings {
     electronicSignatureEnabled: false,
     signatureName: '',
     requireSignatureOnCertificates: false,
-    virtualBackgroundEnabled: false,
-    virtualBackgroundType: 'none',
-    virtualBackgroundImage: '',
-    virtualBackgroundBlur: 10,
-    virtualBackgroundColor: '#000000',
+    pollCreationEnabled: true,
+    defaultPollDuration: 7,
+    allowAnonymousVoting: false,
+    pollResultsVisibility: 'always',
   };
 }

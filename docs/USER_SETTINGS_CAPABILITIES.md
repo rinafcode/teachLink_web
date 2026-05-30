@@ -391,11 +391,19 @@ Settings backup and restore:
 
 Permission-based access control:
 - Per-setting edit permissions
-- Capability flags for different operations
+- Capability flags for different operations (including `canEditPollSettings` for custom poll preferences)
 - Extensible for future features
 - Role-based support (future enhancement)
 
-### 5. Migration Support
+### 5. Poll Creation Preferences
+
+The system includes support for user-configurable default preferences for interactive polls:
+- `pollCreationEnabled`: Master toggle for creating polls in classes, study groups, or discussions.
+- `defaultPollDuration`: Active duration of created polls (1 to 30 days).
+- `allowAnonymousVoting`: Default setting for enabling anonymous votes.
+- `pollResultsVisibility`: Control who can view the voting results ('always' | 'after_voting' | 'after_ended').
+
+### 6. Migration Support
 
 Schema version management:
 - Automatic migration between versions
