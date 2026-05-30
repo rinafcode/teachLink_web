@@ -71,6 +71,30 @@ describe('SettingsService', () => {
       expect(result.valid).toBe(false);
       expect(result.errors.some(e => e.includes('notificationsEnabled'))).toBe(true);
     });
+
+    it('rejects invalid poll duration (below minimum)', () => {
+      const invalidSettings = { ...createDefaultSettings(), defaultPollDuration: 0 };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('defaultPollDuration'))).toBe(true);
+    });
+
+    it('rejects invalid poll duration (above maximum)', () => {
+      const invalidSettings = { ...createDefaultSettings(), defaultPollDuration: 31 };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('defaultPollDuration'))).toBe(true);
+    });
+
+    it('rejects invalid poll results visibility values', () => {
+      const invalidSettings = { ...createDefaultSettings(), pollResultsVisibility: 'none' as any };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('pollResultsVisibility'))).toBe(true);
+    });
   });
 
   // ── createStoreState ──────────────────────────────────────────────────────
@@ -289,6 +313,41 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettingValue('requireSignatureOnCertificates', true);
       expect(result.valid).toBe(true);
     });
+
+    it('validates correct pollCreationEnabled value', () => {
+      const result = SettingsService.validateSettingValue('pollCreationEnabled', true);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid pollCreationEnabled value', () => {
+      const result = SettingsService.validateSettingValue('pollCreationEnabled', 'yes');
+      expect(result.valid).toBe(false);
+    });
+
+    it('validates correct defaultPollDuration value', () => {
+      const result = SettingsService.validateSettingValue('defaultPollDuration', 7);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid defaultPollDuration value', () => {
+      const result = SettingsService.validateSettingValue('defaultPollDuration', 100);
+      expect(result.valid).toBe(false);
+    });
+
+    it('validates correct allowAnonymousVoting value', () => {
+      const result = SettingsService.validateSettingValue('allowAnonymousVoting', false);
+      expect(result.valid).toBe(true);
+    });
+
+    it('validates correct pollResultsVisibility value', () => {
+      const result = SettingsService.validateSettingValue('pollResultsVisibility', 'after_voting');
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid pollResultsVisibility value', () => {
+      const result = SettingsService.validateSettingValue('pollResultsVisibility', 'nobody');
+      expect(result.valid).toBe(false);
+    });
   });
 
   // ── exportSettings ───────────────────────────────────────────────────────
@@ -406,6 +465,7 @@ describe('SettingsService', () => {
       expect(capabilities).toHaveProperty('canEditPrefetching');
       expect(capabilities).toHaveProperty('canEditReducedMotion');
       expect(capabilities).toHaveProperty('canEditElectronicSignature');
+      expect(capabilities).toHaveProperty('canEditPollSettings');
       expect(capabilities).toHaveProperty('canExportSettings');
       expect(capabilities).toHaveProperty('canImportSettings');
       expect(capabilities).toHaveProperty('canSyncSettings');
@@ -470,6 +530,26 @@ describe('SettingsService', () => {
 
     it('allows editing requireSignatureOnCertificates', () => {
       const result = SettingsService.canEditSetting('requireSignatureOnCertificates');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing pollCreationEnabled', () => {
+      const result = SettingsService.canEditSetting('pollCreationEnabled');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing defaultPollDuration', () => {
+      const result = SettingsService.canEditSetting('defaultPollDuration');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing allowAnonymousVoting', () => {
+      const result = SettingsService.canEditSetting('allowAnonymousVoting');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing pollResultsVisibility', () => {
+      const result = SettingsService.canEditSetting('pollResultsVisibility');
       expect(result).toBe(true);
     });
   });

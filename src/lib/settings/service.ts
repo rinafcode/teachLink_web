@@ -35,7 +35,7 @@ export class SettingsService {
       const parsed = appSettingsSchema.safeParse(data);
       
       if (!parsed.success) {
-        parsed.error.errors.forEach((err) => {
+        parsed.error.errors.forEach((err: any) => {
           errors.push(`${err.path.join('.')}: ${err.message}`);
         });
         return {
@@ -131,7 +131,7 @@ export class SettingsService {
       
       return {
         valid: false,
-        error: result.errors.find((e) => e.includes(key)) || 'Invalid value',
+        error: result.errors.find((e) => e.includes(String(key))) || 'Invalid value',
       };
     } catch {
       return {
@@ -230,6 +230,7 @@ export class SettingsService {
     canEditPrefetching: boolean;
     canEditReducedMotion: boolean;
     canEditElectronicSignature: boolean;
+    canEditPollSettings: boolean;
     canExportSettings: boolean;
     canImportSettings: boolean;
     canSyncSettings: boolean;
@@ -242,6 +243,7 @@ export class SettingsService {
       canEditPrefetching: true,
       canEditReducedMotion: true,
       canEditElectronicSignature: true,
+      canEditPollSettings: true,
       canExportSettings: true,
       canImportSettings: true,
       canSyncSettings: true,
@@ -265,6 +267,10 @@ export class SettingsService {
       electronicSignatureEnabled: 'canEditElectronicSignature',
       signatureName: 'canEditElectronicSignature',
       requireSignatureOnCertificates: 'canEditElectronicSignature',
+      pollCreationEnabled: 'canEditPollSettings',
+      defaultPollDuration: 'canEditPollSettings',
+      allowAnonymousVoting: 'canEditPollSettings',
+      pollResultsVisibility: 'canEditPollSettings',
     };
 
     return capabilities[permissionMap[key]] || false;
