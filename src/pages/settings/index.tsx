@@ -333,6 +333,111 @@ export default function SettingsPage() {
             </section>
 
             <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">Poll Creation &amp; Voting</h2>
+
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  Configure default preferences for creating interactive polls in your classes, groups, or discussions.
+                </p>
+
+                <label className="flex items-start gap-3 cursor-pointer mb-4">
+                  <input
+                    id="pollCreationEnabled"
+                    type="checkbox"
+                    className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    checked={settings.pollCreationEnabled}
+                    onChange={(e) =>
+                      patchSettings({ pollCreationEnabled: e.target.checked })
+                    }
+                  />
+                  <span>
+                    <span className="font-medium text-gray-900 dark:text-gray-50">
+                      Enable interactive polls
+                    </span>
+                    <span className="block text-xs text-gray-500 dark:text-gray-400">
+                      When enabled, you can create and manage interactive polls in your study groups and courses.
+                    </span>
+                  </span>
+                </label>
+
+                <div
+                  className={
+                    settings.pollCreationEnabled ? 'space-y-4' : 'opacity-50 pointer-events-none space-y-4'
+                  }
+                >
+                  <div>
+                    <label
+                      htmlFor="defaultPollDuration"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Default poll duration
+                    </label>
+                    <select
+                      id="defaultPollDuration"
+                      value={settings.defaultPollDuration}
+                      onChange={(e) => patchSettings({ defaultPollDuration: parseInt(e.target.value, 10) })}
+                      disabled={!settings.pollCreationEnabled}
+                      className="block w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                    >
+                      <option value={1}>1 Day</option>
+                      <option value={3}>3 Days</option>
+                      <option value={7}>7 Days (Recommended)</option>
+                      <option value={14}>14 Days</option>
+                      <option value={30}>30 Days</option>
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Default active time limit for your newly created polls.
+                    </p>
+                  </div>
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      id="allowAnonymousVoting"
+                      type="checkbox"
+                      className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      checked={settings.allowAnonymousVoting}
+                      disabled={!settings.pollCreationEnabled}
+                      onChange={(e) =>
+                        patchSettings({ allowAnonymousVoting: e.target.checked })
+                      }
+                    />
+                    <span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50">
+                        Allow anonymous voting by default
+                      </span>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        Voters can choose to keep their identities private from other participants.
+                      </span>
+                    </span>
+                  </label>
+
+                  <div>
+                    <label
+                      htmlFor="pollResultsVisibility"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Default poll results visibility
+                    </label>
+                    <select
+                      id="pollResultsVisibility"
+                      value={settings.pollResultsVisibility}
+                      onChange={(e) => patchSettings({ pollResultsVisibility: e.target.value as any })}
+                      disabled={!settings.pollCreationEnabled}
+                      className="block w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                    >
+                      <option value="always">Always visible</option>
+                      <option value="after_voting">Only after voting</option>
+                      <option value="after_ended">Only after the poll has ended</option>
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Determine who can see the current voting distribution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
                 Export / import file
               </h2>
