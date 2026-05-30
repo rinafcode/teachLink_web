@@ -252,6 +252,87 @@ export default function SettingsPage() {
             </section>
 
             <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">Security</h2>
+
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Electronic Signature
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  Enable a typed signature to authenticate important actions such as document
+                  signing and certificate issuance.
+                </p>
+
+                <label className="flex items-start gap-3 cursor-pointer mb-4">
+                  <input
+                    type="checkbox"
+                    className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    checked={settings.electronicSignatureEnabled}
+                    onChange={(e) =>
+                      patchSettings({ electronicSignatureEnabled: e.target.checked })
+                    }
+                  />
+                  <span>
+                    <span className="font-medium text-gray-900 dark:text-gray-50">
+                      Enable electronic signature
+                    </span>
+                    <span className="block text-xs text-gray-500 dark:text-gray-400">
+                      When enabled, your typed name acts as a legal acknowledgement for signed
+                      actions.
+                    </span>
+                  </span>
+                </label>
+
+                <div
+                  className={
+                    settings.electronicSignatureEnabled ? undefined : 'opacity-50 pointer-events-none'
+                  }
+                >
+                  <label
+                    htmlFor="signatureName"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Signature name
+                  </label>
+                  <input
+                    id="signatureName"
+                    type="text"
+                    maxLength={100}
+                    value={settings.signatureName}
+                    onChange={(e) => patchSettings({ signatureName: e.target.value })}
+                    disabled={!settings.electronicSignatureEnabled}
+                    placeholder="Your full name"
+                    className="block w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Appears on signed documents and certificates.
+                  </p>
+
+                  <label className="flex items-start gap-3 cursor-pointer mt-4">
+                    <input
+                      type="checkbox"
+                      className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      checked={settings.requireSignatureOnCertificates}
+                      disabled={!settings.electronicSignatureEnabled}
+                      onChange={(e) =>
+                        patchSettings({ requireSignatureOnCertificates: e.target.checked })
+                      }
+                    />
+                    <span>
+                      <span className="font-medium text-gray-900 dark:text-gray-50">
+                        Require signature for certificates
+                      </span>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400">
+                        You will be prompted to confirm your signature before a certificate is
+                        issued.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
                 Export / import file
               </h2>

@@ -356,6 +356,93 @@ describe('Settings System Integration', () => {
     });
   });
 
+  // ── Electronic Signature Integration ──────────────────────────────────────
+
+  describe('Electronic Signature Integration', () => {
+    it('defaults to disabled electronic signature', () => {
+      const defaults = createDefaultSettings();
+      expect(defaults.electronicSignatureEnabled).toBe(false);
+      expect(defaults.signatureName).toBe('');
+      expect(defaults.requireSignatureOnCertificates).toBe(false);
+    });
+
+    it('validates a full electronic signature configuration', () => {
+      const settings = {
+        ...createDefaultSettings(),
+        electronicSignatureEnabled: true,
+        signatureName: 'Jane Doe',
+        requireSignatureOnCertificates: true,
+      };
+      const result = SettingsService.validateSettings(settings);
+      expect(result.valid).toBe(true);
+      expect(result.data?.electronicSignatureEnabled).toBe(true);
+      expect(result.data?.signatureName).toBe('Jane Doe');
+      expect(result.data?.requireSignatureOnCertificates).toBe(true);
+    });
+
+    it('rejects a signatureName that exceeds 100 characters', () => {
+      const settings = {
+        ...createDefaultSettings(),
+        electronicSignatureEnabled: true,
+        signatureName: 'a'.repeat(101),
+      };
+      const result = SettingsService.validateSettings(settings);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('signatureName'))).toBe(true);
+    });
+
+    it('preserves electronic signature settings through export/import cycle', () => {
+      const original = {
+        ...createDefaultSettings(),
+        electronicSignatureEnabled: true,
+        signatureName: 'Alice Smith',
+        requireSignatureOnCertificates: true,
+      };
+      const storeState = SettingsService.createStoreState(original);
+      const exported = SettingsService.exportSettings(storeState);
+      const importResult = SettingsService.importSettings(exported);
+
+      expect(importResult.valid).toBe(true);
+      expect(importResult.data?.electronicSignatureEnabled).toBe(true);
+      expect(importResult.data?.signatureName).toBe('Alice Smith');
+      expect(importResult.data?.requireSignatureOnCertificates).toBe(true);
+    });
+
+    it('resets electronic signature to defaults on resetToDefaults', () => {
+      const reset = SettingsService.resetToDefaults();
+      expect(reset.electronicSignatureEnabled).toBe(false);
+      expect(reset.signatureName).toBe('');
+      expect(reset.requireSignatureOnCertificates).toBe(false);
+    });
+
+    it('canEditSetting returns true for all electronic signature fields', () => {
+      expect(SettingsService.canEditSetting('electronicSignatureEnabled')).toBe(true);
+      expect(SettingsService.canEditSetting('signatureName')).toBe(true);
+      expect(SettingsService.canEditSetting('requireSignatureOnCertificates')).toBe(true);
+    });
+
+    it('merges electronic signature settings via last-write-wins', () => {
+      const localState: SettingsStorePersistedShape = {
+        settings: { ...createDefaultSettings(), electronicSignatureEnabled: false },
+        updatedAt: Date.now() - 2000,
+        lastSyncedAt: null,
+      };
+      const remoteState: SettingsStorePersistedShape = {
+        settings: {
+          ...createDefaultSettings(),
+          electronicSignatureEnabled: true,
+          signatureName: 'Bob',
+        },
+        updatedAt: Date.now() - 1000,
+        lastSyncedAt: null,
+      };
+
+      const merged = SettingsService.mergeSettings(localState, remoteState);
+      expect(merged.settings.electronicSignatureEnabled).toBe(true);
+      expect(merged.settings.signatureName).toBe('Bob');
+    });
+  });
+
   // ── LocalStorage Integration ───────────────────────────────────────────────
 
   describe('LocalStorage Integration', () => {
