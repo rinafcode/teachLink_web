@@ -8,6 +8,7 @@ import {
   withSecurityHeaders,
   validateQuerySafety,
   createSecurityErrorResponse,
+  sanitizeObject,
 } from '@/lib/security';
 
 export const runtime = 'edge';
@@ -87,10 +88,12 @@ export async function GET(request: Request): Promise<NextResponse<CourseListResp
   const nextIndex = startIndex + limit;
   const nextCursor = nextIndex < courses.length ? String(nextIndex) : undefined;
 
+  const sanitizedPage = sanitizeObject(page);
+
   const response = withSecurityHeaders(
     addHeaders(
       NextResponse.json({
-        data: page,
+        data: sanitizedPage,
         total: courses.length,
         nextCursor,
       }),
