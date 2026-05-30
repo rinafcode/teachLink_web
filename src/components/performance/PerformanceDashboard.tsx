@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Toaster } from 'react-hot-toast';
 import {
@@ -12,6 +12,8 @@ import {
   Globe,
   ShieldCheck,
   Trash2,
+  Maximize2,
+  Search,
 } from 'lucide-react';
 import {
   CartesianGrid,
@@ -21,6 +23,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  ReferenceArea,
 } from 'recharts';
 
 import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
@@ -47,10 +50,20 @@ function formatTick(name: string, value: number): string {
 
 /**
  * Full-screen performance monitoring: Core Web Vitals, alerts, suggestions, and trend charts.
+ * Features advanced Zoom Integration (Presets + Drag selection).
  */
 export const PerformanceDashboard: React.FC = () => {
   const { metrics, alerts, suggestions, trend, clearAlerts, refreshTrendFromStorage } =
     usePerformanceMonitoring();
+
+  // Zoom States per Vital
+  const [presets, setPresets] = useState<Record<string, 'all' | 10 | 25 | 50>>({});
+  const [zoomRanges, setZoomRanges] = useState<
+    Record<string, { left: number; right: number } | null>
+  >({});
+  const [refAreas, setRefAreas] = useState<Record<string, { start: number; end: number } | null>>(
+    {},
+  );
 
   const isAnalyticsEnabled =
     process.env.NEXT_PUBLIC_ENABLE_PERF_ANALYTICS === 'true' ||
@@ -66,7 +79,73 @@ export const PerformanceDashboard: React.FC = () => {
 
   const handleClearTrends = () => {
     clearTrendHistory();
+    setZoomRanges({});
+    setRefAreas({});
+    setPresets({});
     refreshTrendFromStorage();
+  };
+
+  // Drag selection handlers
+  const handleMouseDown = (name: string, e: any) => {
+    if (e && e.activeLabel) {
+      const activeLabelNum = Number(e.activeLabel);
+      if (!isNaN(activeLabelNum)) {
+        setRefAreas((prev) => ({
+          ...prev,
+          [name]: { start: activeLabelNum, end: activeLabelNum },
+        }));
+      }
+    }
+  };
+
+  const handleMouseMove = (name: string, e: any) => {
+    const currentRef = refAreas[name];
+    if (currentRef && e && e.activeLabel) {
+      const activeLabelNum = Number(e.activeLabel);
+      if (!isNaN(activeLabelNum)) {
+        setRefAreas((prev) => ({
+          ...prev,
+          [name]: { ...currentRef, end: activeLabelNum },
+        }));
+      }
+    }
+  };
+
+  const handleMouseUp = (name: string) => {
+    const currentRef = refAreas[name];
+    setRefAreas((prev) => ({ ...prev, [name]: null }));
+
+    if (currentRef && currentRef.start !== currentRef.end) {
+      let { start, end } = currentRef;
+      if (start > end) {
+        const temp = start;
+        start = end;
+        end = temp;
+      }
+      setZoomRanges((prev) => ({
+        ...prev,
+        [name]: { left: start, right: end },
+      }));
+    }
+  };
+
+  const handleResetZoom = (name: string) => {
+    setZoomRanges((prev) => ({
+      ...prev,
+      [name]: null,
+    }));
+  };
+
+  const handleApplyPreset = (name: string, val: 'all' | 10 | 25 | 50) => {
+    setPresets((prev) => ({
+      ...prev,
+      [name]: val,
+    }));
+    // Reset drag zoom on preset change to avoid out of bounds
+    setZoomRanges((prev) => ({
+      ...prev,
+      [name]: null,
+    }));
   };
 
   return (
@@ -198,28 +277,111 @@ export const PerformanceDashboard: React.FC = () => {
         <OptimizationSuggestions suggestions={suggestions} />
 
         <section aria-labelledby="perf-trends-heading">
-          <h2 id="perf-trends-heading" className="text-sm font-semibold mb-4">
-            Trends (this tab session)
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <div>
+              <h2 id="perf-trends-heading" className="text-sm font-semibold">
+                Trends (this tab session)
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Drag horizontally to zoom in on a range. Click buttons to filter window sizes.
+              </p>
+            </div>
+          </div>
           <div className="grid gap-6 lg:grid-cols-2">
             {VITAL_NAMES.map((name) => {
-              const data = seriesByVital[name];
+              const fullSeries = seriesByVital[name];
+              const activePreset = presets[name] || 'all';
+
+              // Apply Preset Filter First
+              let presetSeries = fullSeries;
+              if (activePreset !== 'all') {
+                presetSeries = fullSeries.slice(-activePreset);
+              }
+
+              // Apply Drag Zoom Range Filter Second
+              const activeZoom = zoomRanges[name];
+              const displayedData = activeZoom
+                ? presetSeries.filter((d) => d.i >= activeZoom.left && d.i <= activeZoom.right)
+                : presetSeries;
+
+              const isZoomed = !!activeZoom;
+
               return (
                 <div
                   key={name}
-                  className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4"
+                  className="relative rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4 transition-all duration-200"
                 >
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">
-                    {name}
-                  </h3>
-                  {data.length < 2 ? (
+                  {/* Floating Reset Zoom Badge */}
+                  {isZoomed && (
+                    <button
+                      type="button"
+                      onClick={() => handleResetZoom(name)}
+                      className="absolute top-4 right-4 z-10 inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded-md shadow-md transition-colors"
+                      aria-label="Reset Zoom to show all samples in preset"
+                      title="Reset Zoom"
+                    >
+                      <Maximize2 className="w-3 h-3" />
+                      Reset Zoom
+                    </button>
+                  )}
+
+                  <div className="flex items-center justify-between gap-4 mb-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                      {name}
+                      {isZoomed && (
+                        <span className="inline-flex items-center text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded">
+                          Zoomed
+                        </span>
+                      )}
+                    </h3>
+
+                    {/* Predefined Duration Presets */}
+                    {fullSeries.length >= 2 && (
+                      <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-700 rounded-md p-0.5 bg-gray-50 dark:bg-gray-850">
+                        {(
+                          [
+                            { key: 'all', label: 'All' },
+                            { key: 10, label: 'L10' },
+                            { key: 25, label: 'L25' },
+                            { key: 50, label: 'L50' },
+                          ] as const
+                        ).map((presetItem) => (
+                          <button
+                            key={presetItem.key}
+                            type="button"
+                            onClick={() => handleApplyPreset(name, presetItem.key)}
+                            className={`px-1.5 py-0.5 text-[9px] font-medium rounded transition-colors ${
+                              activePreset === presetItem.key
+                                ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                            }`}
+                            aria-label={`Show ${presetItem.label} samples`}
+                          >
+                            {presetItem.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {fullSeries.length < 2 ? (
                     <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
                       Not enough samples yet. Interact with the app or reload to collect points.
                     </p>
                   ) : (
-                    <div className="h-48 w-full" role="img" aria-label={`${name} trend chart`}>
+                    <div
+                      className="h-48 w-full select-none cursor-crosshair"
+                      role="img"
+                      aria-label={`${name} trend chart showing ${displayedData.length} samples. Drag horizontally to zoom.`}
+                    >
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                        <LineChart
+                          data={displayedData}
+                          margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                          onMouseDown={(e) => handleMouseDown(name, e)}
+                          onMouseMove={(e) => handleMouseMove(name, e)}
+                          onMouseUp={() => handleMouseUp(name)}
+                        >
                           <CartesianGrid
                             strokeDasharray="3 3"
                             className="stroke-gray-200 dark:stroke-gray-700"
@@ -237,6 +399,7 @@ export const PerformanceDashboard: React.FC = () => {
                           <YAxis
                             tick={{ fontSize: 10 }}
                             tickFormatter={(v) => formatTick(name, v as number)}
+                            domain={['auto', 'auto']}
                           />
                           <Tooltip
                             formatter={(value: number) => [formatTick(name, value), name]}
@@ -247,9 +410,21 @@ export const PerformanceDashboard: React.FC = () => {
                             dataKey="value"
                             stroke="#6366f1"
                             strokeWidth={2}
-                            dot={false}
+                            dot={displayedData.length <= 25 ? { r: 3 } : false}
+                            activeDot={{ r: 5 }}
                             isAnimationActive={false}
                           />
+
+                          {/* Interactive Zoom Reference Selection Area */}
+                          {refAreas[name] && (
+                            <ReferenceArea
+                              x1={refAreas[name]?.start}
+                              x2={refAreas[name]?.end}
+                              strokeOpacity={0.3}
+                              fill="#6366f1"
+                              fillOpacity={0.3}
+                            />
+                          )}
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
