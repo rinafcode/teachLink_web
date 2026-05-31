@@ -15,6 +15,13 @@ export {
 export { validateWalletInteraction, type WalletInteractionResult } from './walletValidation';
 
 export {
+  WalletCache,
+  walletCache,
+  walletCacheKeys,
+  CACHE_TTL,
+} from './walletCache';
+
+export {
   isValidEthereumAddress,
   isValidStarknetAddress,
   isValidAddress,
