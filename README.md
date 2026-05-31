@@ -41,6 +41,7 @@ This frontend serves as the main user interface for interacting with TeachLink's
 - 🔐 **Starknet Wallet Integration** – Login and interact using Starknet-compatible wallets
 - 🧾 **Markdown-Based Post Editor** – Rich, previewable post creation using markdown
 - 💡 **Tipping System** – Send and receive on-chain tips via smart contracts
+- 📝 **Tip Notarization Service** – Proof-backed tip transactions with server-side notarization records
 - 🌙 **Dark/Light Theme Toggle** – Accessible theming using Tailwind CSS
 - 🔎 **Dynamic Routing with App Router** – Clean, scalable navigation
 - 📂 **Profile and Topic Pages** – View user-specific content and explore topic-specific posts
@@ -117,6 +118,7 @@ The project now uses **pnpm workspaces** as the monorepo/dependency strategy.
 For detailed tasks, see GitHub Issues
 
 ## 🤝 Contributing
+
 We welcome community contributions!
 
 - Read **`CONTRIBUTING.md`** before opening a PR.
@@ -124,13 +126,14 @@ We welcome community contributions!
 - Merges to protected branches require passing CI + approvals.
 
 Guidelines:
+
 - Fork the repo and make your changes in a feature branch
 - Before submitting a PR, read the **`CONTRIBUTING.md`** file
 
 ## 📬 Join the Community
 
 - [Telegram](t.me/teachlinkOD)
-Join our Telegram group for discussions and support
+  Join our Telegram group for discussions and support
 
 Make sure your PR references the correct issue:
 Example: Close #3
@@ -154,4 +157,7 @@ let make our code clean, maintainable and scallable. Keep to Standard
 
 📜 License
 MIT © 2025 TeachLink DAO
+
+```
+
 ```

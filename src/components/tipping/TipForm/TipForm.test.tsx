@@ -34,7 +34,7 @@ describe('TipForm', () => {
     const { user } = render(<TipForm recipient={recipient} />);
     await user.type(screen.getByTestId('tip-amount-input'), '0');
     await user.click(screen.getByTestId('tip-submit'));
-    expect(screen.getByTestId('tip-error')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('tip-error')).toBeInTheDocument());
   });
 
   it('shows loading state while sending tip', async () => {
@@ -47,7 +47,15 @@ describe('TipForm', () => {
   });
 
   it('shows success message after successful tip', async () => {
-    mockSendTip.mockResolvedValueOnce({ txHash: '0xabc' });
+    mockSendTip.mockResolvedValueOnce({
+      txHash: '0xabc',
+      recipientId: recipient.id,
+      amount: 0.05,
+      notarizationId: 'notarization-user-99-abc',
+      notarizationProof: 'proof-value',
+      notarizedAt: new Date().toISOString(),
+    });
+
     const { user } = render(<TipForm recipient={recipient} />);
     await user.type(screen.getByTestId('tip-amount-input'), '0.05');
     await user.click(screen.getByTestId('tip-submit'));

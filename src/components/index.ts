@@ -7,6 +7,7 @@
 export * from './ui/Modal';
 export * from './ui/Toast';
 export * from './ui/EmptyState';
+export * from './ui/Quote';
 export * from './shared/EnvGuard';
 export * from './errors/ErrorBoundarySystem';
 export { QRCodeComponent } from './QRCode';
