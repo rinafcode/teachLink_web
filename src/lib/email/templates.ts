@@ -46,8 +46,7 @@ const TEXT_TEMPLATES: Record<TransactionalTemplateId, string> = {
     'Reset your TeachLink password using this link: {{resetUrl}}. Expires in {{expiresInMinutes}} minutes.',
   'security-alert':
     'Security alert: sign-in from {{device}} on {{timestamp}}. If not you, secure your account.',
-  'course-enrollment':
-    'Enrollment confirmed for {{courseName}}. Start here: {{courseUrl}}',
+  'course-enrollment': 'Enrollment confirmed for {{courseName}}. Start here: {{courseUrl}}',
 };
 
 export class EmailTemplateManager {

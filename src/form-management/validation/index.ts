@@ -43,3 +43,11 @@ export type {
   FormValidationResult,
   ValidationFunction,
 } from '../types/core.js';
+
+// Image optimization exports
+export {
+  optimizeImage,
+  validateImageDimensions,
+  type ImageOptimizationOptions,
+  type ImageDimensionConstraints,
+} from './image-optimizer.js';

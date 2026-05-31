@@ -12,10 +12,10 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
-import { parseApiError } from '@/utils/error-handler';
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
 
@@ -96,7 +96,9 @@ export default function SignupPage() {
               <input
                 type="text"
                 placeholder="John Doe"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                className={`w-full px-4 py-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
+                aria-invalid={!!errors.name}
+                aria-describedby="name-error"
                 {...register('name')}
               />
               <FieldError error={errors.name?.message} id="name-error" />
@@ -107,7 +109,9 @@ export default function SignupPage() {
               <input
                 type="email"
                 placeholder="john.doe@example.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                className={`w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
+                aria-invalid={!!errors.email}
+                aria-describedby="email-error"
                 {...register('email')}
               />
               <FieldError error={errors.email?.message} id="email-error" />
@@ -119,7 +123,9 @@ export default function SignupPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12"
+                  className={`w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
+                  aria-invalid={!!errors.password}
+                  aria-describedby="password-error"
                   {...register('password')}
                 />
                 <button
@@ -133,10 +139,29 @@ export default function SignupPage() {
               <FieldError error={errors.password?.message} id="password-error" />
             </div>
 
-            <FormError
-              error={signupMutation.error?.message}
-              id="signup-api-error"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  className={`w-full px-4 py-3 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
+                  aria-invalid={!!errors.confirmPassword}
+                  aria-describedby="confirmPassword-error"
+                  {...register('confirmPassword')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <FieldError error={errors.confirmPassword?.message} id="confirmPassword-error" />
+            </div>
+
+            <FormError error={signupMutation.error?.message} id="signup-api-error" />
 
             {successMessage && (
               <motion.div

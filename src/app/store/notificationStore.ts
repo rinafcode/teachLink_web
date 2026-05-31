@@ -1,13 +1,6 @@
 import { create } from 'zustand';
-
-export type AppNotification = {
-  id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  message: string;
-  createdAt: string; // ISO
-  read: boolean;
-  meta?: Record<string, any>;
-};
+import { AppNotification } from '@/lib/notifications/types';
+import { NotificationService } from '@/lib/notifications/service';
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -35,20 +28,18 @@ interface NotificationState {
   ) => AppNotification;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+  removeNotification: (id: string) => void;
   clearRead: () => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: load<AppNotification[]>(STORAGE_KEY, []),
   addNotification: (n) => {
-    const notif: AppNotification = {
-      id: n.id || `ntf_${Math.random().toString(36).slice(2)}_${Date.now()}`,
-      type: n.type,
+    const notif = NotificationService.createNotification({
       message: n.message,
+      type: n.type,
       meta: n.meta,
-      createdAt: new Date().toISOString(),
-      read: false,
-    };
+    });
     const next = [notif, ...get().notifications].slice(0, 200);
     set({ notifications: next });
     save(STORAGE_KEY, next);
@@ -61,6 +52,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
   markAllAsRead: () => {
     const next = get().notifications.map((x) => ({ ...x, read: true }));
+    set({ notifications: next });
+    save(STORAGE_KEY, next);
+  },
+  removeNotification: (id) => {
+    const next = get().notifications.filter((x) => x.id !== id);
     set({ notifications: next });
     save(STORAGE_KEY, next);
   },

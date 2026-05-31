@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 export async function POST(request: Request) {
+  edgeLog('info', '/api/performance/vitals', 'POST request received');
   try {
     const metric = await request.json();
 

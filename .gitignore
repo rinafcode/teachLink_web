@@ -4,3 +4,23 @@ node_modules/
 dist/
 build/
 coverage/node_modules/
+.env.local
+package-lock.json
+
+# AI assistant / tooling artifacts
+.claude/
+.claude/**
+CLAUDE.md
+.cursor/
+.cursorrules
+.cursorignore
+.aider*
+.windsurfrules
+.github/copilot-instructions.md
+.continue/
+.codeium/
+.gemini/
+.specstory/
+.roo/
+.kilocode/
+.augment/

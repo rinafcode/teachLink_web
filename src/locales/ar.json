@@ -1,6 +1,6 @@
 {
   "common": {
-    "loading": "جاري التحميل...",
+    "loading": "جار التحميل...",
     "error": "خطأ",
     "success": "نجاح",
     "cancel": "إلغاء",
@@ -29,7 +29,8 @@
     "notifications": "الإشعارات",
     "logout": "تسجيل الخروج",
     "login": "تسجيل الدخول",
-    "signup": "إنشاء حساب"
+    "signup": "إنشاء حساب",
+    "teach": "التدريس"
   },
   "course": {
     "title": "دورة",
@@ -43,7 +44,8 @@
     "rating": "التقييم",
     "description": "الوصف",
     "syllabus": "المنهج",
-    "resources": "الموارد"
+    "resources": "الموارد",
+    "previewTitle": "معاينة الدورة"
   },
   "dashboard": {
     "welcome": "مرحباً",
@@ -52,7 +54,143 @@
     "upcomingDeadlines": "المواعيد النهائية القادمة",
     "recommendedCourses": "الدورات الموصى بها",
     "learningStreak": "سلسلة التعلم",
-    "progressSummary": "ملخص التقدم"
+    "progressSummary": "ملخص التقدم",
+    "learningProgress": "تقدم التعلم",
+    "progressStatus": "{{percent}}% مكتمل • {{remaining}} متبقية",
+    "quickActions": "إجراءات سريعة",
+    "continueLearning": "تابع التعلم",
+    "downloadCourse": "تنزيل الدورة",
+    "offlineAccess": "للوصول دون اتصال",
+    "viewProgress": "عرض التقدم",
+    "trackLearning": "تتبّع تعلمك",
+    "completedLesson": "أكملت درساً",
+    "downloadedCourse": "تم تنزيل الدورة",
+    "activityEntry": "{{course}} • {{time}}",
+    "timeHoursAgo": "قبل {{count}} ساعات",
+    "timeDayAgo": "قبل {{count}} يوم",
+    "analytics": {
+      "title": "لوحة التحليلات",
+      "subtitle": "تصور تفاعلي للبيانات ورؤى في الوقت الحقيقي",
+      "chartTypeSelector": "محدد نوع المخطط",
+      "actions": {
+        "exportAll": "تصدير الكل",
+        "exportAllAria": "تصدير جميع اللوحات كملف CSV",
+        "share": "مشاركة",
+        "shareAria": "نسخ رابط لوحة التحكم القابل للمشاركة",
+        "copied": "تم النسخ",
+        "exportPanel": "تصدير {{panel}} كملف CSV"
+      },
+      "toasts": {
+        "shareSuccess": "تم نسخ رابط لوحة التحكم إلى الحافظة",
+        "shareError": "تعذر النسخ إلى الحافظة",
+        "exportAllSuccess": "تم تصدير اللوحات كملف CSV"
+      },
+      "exports": {
+        "labelColumn": "التسمية"
+      },
+      "filters": {
+        "show": "إظهار المرشحات",
+        "hide": "إخفاء المرشحات",
+        "activeFilters": "المرشحات النشطة",
+        "removeTimeRange": "إزالة مرشح نطاق الوقت",
+        "removeCategory": "إزالة مرشح {{category}}",
+        "resetAll": "إعادة تعيين الكل",
+        "resetAllAria": "إعادة تعيين جميع المرشحات",
+        "timeRange": "نطاق الوقت",
+        "aggregation": "التجميع",
+        "metric": "المقياس",
+        "categories": "الفئات",
+        "categoryFilters": "مرشحات الفئات",
+        "timeRangeOptions": {
+          "7d": "آخر 7 أيام",
+          "30d": "آخر 30 يوما",
+          "90d": "آخر 90 يوما",
+          "1y": "العام الماضي",
+          "all": "كل الوقت"
+        },
+        "aggregationOptions": {
+          "sum": "المجموع",
+          "average": "المتوسط",
+          "count": "العدد",
+          "min": "الأدنى",
+          "max": "الأقصى"
+        },
+        "metrics": {
+          "enrollments": "التسجيلات",
+          "revenue": "الإيرادات",
+          "completions": "الإكمالات",
+          "views": "المشاهدات"
+        },
+        "categoriesOptions": {
+          "webDev": "تطوير الويب",
+          "dataScience": "علم البيانات",
+          "design": "التصميم",
+          "marketing": "التسويق",
+          "mobile": "الجوال"
+        }
+      },
+      "panels": {
+        "enrollments": {
+          "title": "تسجيلات الدورات"
+        },
+        "revenue": {
+          "title": "الإيرادات"
+        },
+        "completions": {
+          "title": "الإكمالات"
+        },
+        "realtime": {
+          "title": "النشاط المباشر"
+        }
+      },
+      "datasets": {
+        "enrollments": "تسجيلات الدورات",
+        "revenue": "الإيرادات",
+        "completions": "الإكمالات",
+        "realtime": "بيانات حية",
+        "views": "مشاهدات الدورة"
+      },
+      "chartTypes": {
+        "line": "مخطط خطي",
+        "bar": "مخطط أعمدة",
+        "area": "مخطط مساحة",
+        "pie": "مخطط دائري",
+        "scatter": "مخطط تبعثر",
+        "radar": "مخطط رادار"
+      },
+      "drillDown": {
+        "selected": "العنصر المحدد",
+        "allData": "كل البيانات",
+        "backToAllDataAria": "العودة إلى كل البيانات",
+        "detailTitle": "تفاصيل - {{label}}",
+        "backToOverview": "العودة إلى النظرة العامة"
+      },
+      "realtime": {
+        "status": {
+          "paused": "متوقف",
+          "connected": "متصل",
+          "simulating": "محاكاة",
+          "disconnected": "غير متصل"
+        },
+        "pointsCount": "{{count}} نقطة",
+        "updateSpeed": "سرعة التحديث",
+        "pause": "إيقاف التحديثات المباشرة",
+        "resume": "استئناف التحديثات المباشرة",
+        "reset": "إعادة ضبط البيانات",
+        "loadingData": "جار تحميل البيانات...",
+        "waitingForData": "بانتظار البيانات...",
+        "stats": {
+          "mean": "المتوسط",
+          "median": "الوسيط",
+          "trend": "الاتجاه"
+        },
+        "trendDirections": {
+          "up": "ارتفاع",
+          "down": "انخفاض",
+          "neutral": "ثابت"
+        }
+      }
+    }
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
@@ -84,5 +222,111 @@
     "unauthorized": "غير مصرح",
     "forbidden": "محظور",
     "serverError": "خطأ في الخادم"
+  },
+  "home": {
+    "heroTitlePrefix": "مرحباً بك في",
+    "heroSubtitle": "تعلّم في أي وقت ومن أي مكان مع منصتنا الشاملة",
+    "navDesktopTitle": "لوحة تحكم سطح المكتب",
+    "navDesktopDescription": "منصة تعلم متكاملة مع أدوات متقدمة",
+    "navMobileTitle": "تطبيق الهاتف",
+    "navMobileDescription": "تجربة تعلم محسّنة للمس على التنقل",
+    "navCatalogTitle": "كتالوج الدورات",
+    "navCatalogDescription": "استعرض الدورات المتاحة",
+    "featuredTitle": "الدورات المميزة",
+    "whyTitle": "لماذا TeachLink؟",
+    "featureOfflineTitle": "تعلم دون اتصال",
+    "featureOfflineDescription": "حمّل الدورات وتعلّم بدون اتصال بالإنترنت",
+    "featureCrossPlatformTitle": "متعدد المنصات",
+    "featureCrossPlatformDescription": "تجربة سلسة عبر سطح المكتب والجوال والتابلت",
+    "featureWeb3Title": "تكامل Web3",
+    "featureWeb3Description": "منصة لامركزية بميزات قائمة على البلوكتشين",
+    "ctaTitle": "جاهز لبدء التعلم؟",
+    "ctaSubtitle": "انضم إلى آلاف المتعلمين على TeachLink اليوم",
+    "ctaPrimary": "ابدأ الآن",
+    "ctaSecondary": "تسجيل الدخول"
+  },
+  "performance": {
+    "dashboard": {
+      "title": "لوحة أداء النظام",
+      "subtitle": "مؤشرات أداء ويب الأساسية، والتنبيهات الأخيرة، وعينات اتجاه الجلسة (المخزنة في sessionStorage).",
+      "navigation": "التنقل في لوحة أداء النظام",
+      "clearHistory": "مسح سجل الاتجاهات",
+      "trendsHeading": "الاتجاهات (خلال جلسة التبويب الحالية)",
+      "chartPlaceholder": "لا توجد عينات كافية بعد. تفاعل مع التطبيق أو أعد تحميل الصفحة لجمع البيانات.",
+      "chartAriaLabel": "مخطط اتجاه {{name}}",
+      "xAxisLabel": "عينة رقم",
+      "vitals": {
+        "heading": "مؤشرات أداء ويب الأساسية",
+        "ariaLabel": "مؤشرات أداء ويب الأساسية",
+        "waiting": "بانتظار البيانات...",
+        "ratings": {
+          "good": "جيد",
+          "needsImprovement": "بحاجة لتحسين",
+          "poor": "ضعيف"
+        }
+      },
+      "statusPanel": {
+        "heading": "حالة التحليلات",
+        "statusLabel": "الحالة",
+        "active": "نشط",
+        "disabled": "معطل (بيئة التطوير)",
+        "endpoint": "نقطة النهاية",
+        "simulated": "المتوسط العالمي المحاكى (7 أيام)"
+      },
+      "alertsPanel": {
+        "heading": "التنبيهات",
+        "clearList": "مسح القائمة",
+        "empty": "لا توجد تنبيهات تراجع في الأداء خلال هذه الجلسة."
+      }
+    },
+    "monitor": {
+      "heading": "الأداء",
+      "dashboardLink": "لوحة التحكم",
+      "compact": "موجز",
+      "expand": "توسيع",
+      "ariaLabel": "أحدث مؤشرات الأداء",
+      "collecting": "جاري جمع البيانات..."
+    },
+    "telemetry": {
+      "alerts": {
+        "poor": "{{name}} في النطاق \"الضعيف\" ({{value}}). يرجى التفكير في التحسين.",
+        "warning": "{{name}} بحاجة إلى تحسين ({{value}})."
+      },
+      "suggestions": {
+        "impact": "تأثير {{impact}}",
+        "impactLevels": {
+          "high": "عالٍ",
+          "medium": "متوسط",
+          "low": "منخفض"
+        },
+        "heading": "اقتراحات تحسين الأداء",
+        "headingFallback": "اقتراحات",
+        "empty": "لم يتم رصد أي مشاكل في مؤشرات الأداء الأساسية الحالية. واصل المراقبة مع تفاعل المستخدمين.",
+        "lcp": {
+          "title": "تسريع رسم أكبر محتوى مرئي (LCP)",
+          "detail": "قم بتحسين عنصر LCP: استخدم صوراً متجاوبة، وتنسيقات حديثة (AVIF/WebP)، وعرضاً وارتفاعاً محددين، وقم بتحميل مورد البطل مسبقاً. قلل وقت استجابة الخادم والبرامج النصية التي تعوق الرسم."
+        },
+        "inp": {
+          "title": "تحسين استجابة التفاعل (INP)",
+          "detail": "قم بتجزئة المهام الطويلة، وتأجيل ملفات JavaScript غير الهامة، وتجنب التحديثات المتزامنة الكبيرة في معالجات الأحداث. يفضل استخدام الانتقالات وهياكل المكونات الأصغر."
+        },
+        "cls": {
+          "title": "تثبيت تخطيط الصفحة (CLS)",
+          "detail": "احجز مساحة للصور، وعناصر التضمين، والإعلانات. تجنب إدراج محتوى فوق المحتوى الحالي بدون عنصر نائب. يفضل استخدام رسوم التحويل بدلاً من الخصائص التي تؤدي لتغيير التخطيط."
+        },
+        "fcp": {
+          "title": "الوصول إلى أول رسم مرئي أسرع (FCP)",
+          "detail": "قم بتضمين ملفات CSS الهامة في السطر، وتقليص ملفات CSS غير المستخدمة، وتقليل حظر الخطوط. حافظ على صغر حجم أصول المسار الحرج."
+        },
+        "ttfb": {
+          "title": "تقليل وقت الوصول لأول بايت (TTFB)",
+          "detail": "حسن التخزين المؤقت، وحسن زمن استجابة الخادم/واجهة البرمجيات، واستخدم شبكة توصيل المحتوى (CDN) للأصول الثابتة والديناميكية."
+        },
+        "slowConnection": {
+          "title": "التكيف مع الشبكات البطيئة",
+          "detail": "تم رصد اتصال مقيد. قلل أحجام البيانات، وحمّل المحتوى أسفل الجزء المرئي ببطء، وتجنب التحميل المسبق المكثف."
+        }
+      }
+    }
   }
 }

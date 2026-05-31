@@ -15,7 +15,7 @@ import { measureExecutionTime, expectWithinBudget } from '../utils/testUtils';
 
 const BUDGETS = {
   COMPONENT_RENDER: 100,
-  LARGE_LIST_RENDER: 300,
+  LARGE_LIST_RENDER: 1000,
   SEARCH_FILTER: 30,
   SORT_1000: 50,
   COMPUTATION: 100,

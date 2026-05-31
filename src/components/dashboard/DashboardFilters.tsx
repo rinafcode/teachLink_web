@@ -7,9 +7,20 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Filter, X, RotateCcw } from 'lucide-react';
+import { Filter, X, RotateCcw, LifeBuoy } from 'lucide-react';
 import { TimeRange, AggregationType, CHART_COLOR_PALETTE } from '@/utils/visualizationUtils';
 import type { DashboardFiltersState } from '@/hooks/useDashboardData';
+import { useInternationalization } from '@/hooks/useInternationalization';
+import {
+  getDashboardAggregationLabel,
+  getDashboardCategoryLabel,
+  getDashboardMetricLabel,
+  getDashboardTimeRangeLabel,
+  translateWithFallback,
+} from './dashboardI18n';
+import { FilterHelpPopover } from '@/components/search/FilterHelpPopover';
+import { FilterSupportGuide } from '@/components/search/FilterSupportGuide';
+import { useFilterCustomerSupport } from '@/hooks/useFilterCustomerSupport';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,21 +35,9 @@ export interface DashboardFiltersProps {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
-  { value: '7d', label: 'Last 7 Days' },
-  { value: '30d', label: 'Last 30 Days' },
-  { value: '90d', label: 'Last 90 Days' },
-  { value: '1y', label: 'Last Year' },
-  { value: 'all', label: 'All Time' },
-];
+const TIME_RANGE_OPTIONS: TimeRange[] = ['7d', '30d', '90d', '1y', 'all'];
 
-const AGGREGATION_OPTIONS: { value: AggregationType; label: string }[] = [
-  { value: 'sum', label: 'Sum' },
-  { value: 'average', label: 'Average' },
-  { value: 'count', label: 'Count' },
-  { value: 'min', label: 'Min' },
-  { value: 'max', label: 'Max' },
-];
+const AGGREGATION_OPTIONS: AggregationType[] = ['sum', 'average', 'count', 'min', 'max'];
 
 const DEFAULT_CATEGORIES = ['Web Dev', 'Data Science', 'Design', 'Marketing', 'Mobile'];
 const DEFAULT_METRICS = ['enrollments', 'revenue', 'completions', 'views'];
@@ -54,7 +53,30 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
     metrics = DEFAULT_METRICS,
     className = '',
   }) => {
+    const { t } = useInternationalization();
     const [isOpen, setIsOpen] = useState(false);
+    const support = useFilterCustomerSupport();
+
+    const timeRangeOptions = useMemo(
+      () =>
+        TIME_RANGE_OPTIONS.map((value) => ({
+          value,
+          label: getDashboardTimeRangeLabel(value, t),
+        })),
+      [t],
+    );
+
+    const aggregationOptions = useMemo(
+      () =>
+        AGGREGATION_OPTIONS.map((value) => ({
+          value,
+          label: getDashboardAggregationLabel(value, t),
+        })),
+      [t],
+    );
+
+    const getCategoryLabel = useCallback((category: string) => getDashboardCategoryLabel(category, t), [t]);
+    const getMetricLabel = useCallback((metric: string) => getDashboardMetricLabel(metric, t), [t]);
 
     const toggleCategory = useCallback(
       (cat: string) => {
@@ -97,7 +119,13 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
             >
               <Filter className="w-4 h-4" aria-hidden="true" />
               <span className="text-sm font-medium">
-                {isOpen ? 'Hide Filters' : 'Show Filters'}
+                {translateWithFallback(
+                  t,
+                  isOpen
+                    ? 'dashboard.analytics.filters.hide'
+                    : 'dashboard.analytics.filters.show',
+                  isOpen ? 'Hide Filters' : 'Show Filters',
+                )}
               </span>
               {activeFilterCount > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-600 text-white rounded-full">
@@ -107,16 +135,28 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
             </button>
 
             {/* Active filter badges */}
-            <div className="flex flex-wrap gap-2" role="list" aria-label="Active filters">
+            <div
+              className="flex flex-wrap gap-2"
+              role="list"
+              aria-label={translateWithFallback(
+                t,
+                'dashboard.analytics.filters.activeFilters',
+                'Active filters',
+              )}
+            >
               {filters.timeRange !== '30d' && (
                 <span
                   role="listitem"
                   className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                 >
-                  {TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label}
+                  {timeRangeOptions.find((option) => option.value === filters.timeRange)?.label}
                   <button
                     onClick={() => onFiltersChange({ timeRange: '30d' })}
-                    aria-label="Remove time range filter"
+                    aria-label={translateWithFallback(
+                      t,
+                      'dashboard.analytics.filters.removeTimeRange',
+                      'Remove time range filter',
+                    )}
                     className="hover:text-red-500 transition-colors"
                   >
                     <X className="w-3 h-3" />
@@ -130,10 +170,15 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
                   className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full text-white"
                   style={{ backgroundColor: CHART_COLOR_PALETTE[i % CHART_COLOR_PALETTE.length] }}
                 >
-                  {cat}
+                  {getCategoryLabel(cat)}
                   <button
                     onClick={() => removeCategory(cat)}
-                    aria-label={`Remove ${cat} filter`}
+                    aria-label={translateWithFallback(
+                      t,
+                      'dashboard.analytics.filters.removeCategory',
+                      `Remove ${getCategoryLabel(cat)} filter`,
+                      { category: getCategoryLabel(cat) },
+                    )}
                     className="hover:opacity-75 transition-opacity"
                   >
                     <X className="w-3 h-3" />
@@ -143,16 +188,32 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
             </div>
           </div>
 
-          {activeFilterCount > 0 && (
+          <div className="flex items-center gap-2">
+            {activeFilterCount > 0 && (
+              <button
+                onClick={onReset}
+                aria-label={translateWithFallback(
+                  t,
+                  'dashboard.analytics.filters.resetAllAria',
+                  'Reset all filters',
+                )}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 rounded-lg"
+              >
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                {translateWithFallback(t, 'dashboard.analytics.filters.resetAll', 'Reset All')}
+              </button>
+            )}
+
             <button
-              onClick={onReset}
-              aria-label="Reset all filters"
-              className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 rounded-lg"
+              type="button"
+              onClick={support.openGuide}
+              aria-label="Open filter help guide"
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-lg"
             >
-              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-              Reset All
+              <LifeBuoy className="w-3.5 h-3.5" aria-hidden="true" />
+              Help
             </button>
-          )}
+          </div>
         </div>
 
         {/* Expandable panel */}
@@ -163,21 +224,33 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
           >
             {/* Time Range */}
             <div>
-              <label
-                htmlFor="filter-time-range"
-                className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"
-              >
-                Time Range
-              </label>
+              <div className="flex items-center gap-1 mb-2">
+                <label
+                  htmlFor="filter-time-range"
+                  className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                >
+                  {translateWithFallback(
+                    t,
+                    'dashboard.analytics.filters.timeRange',
+                    'Time Range',
+                  )}
+                </label>
+                <FilterHelpPopover
+                  content={support.FILTER_HELP_CONTENT.duration}
+                  isOpen={support.activeHelpId === 'duration'}
+                  onToggle={() => support.toggleHelp('duration')}
+                  onClose={support.closeHelp}
+                />
+              </div>
               <select
                 id="filter-time-range"
                 value={filters.timeRange}
                 onChange={(e) => onFiltersChange({ timeRange: e.target.value as TimeRange })}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
-                {TIME_RANGE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                {timeRangeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -189,7 +262,11 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
                 htmlFor="filter-aggregation"
                 className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"
               >
-                Aggregation
+                {translateWithFallback(
+                  t,
+                  'dashboard.analytics.filters.aggregation',
+                  'Aggregation',
+                )}
               </label>
               <select
                 id="filter-aggregation"
@@ -199,9 +276,9 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
                 }
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
-                {AGGREGATION_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                {aggregationOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -210,9 +287,17 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
             {/* Metric */}
             <fieldset>
               <legend className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                Metric
+                {translateWithFallback(t, 'dashboard.analytics.filters.metric', 'Metric')}
               </legend>
-              <div className="flex flex-col gap-1.5" role="radiogroup" aria-label="Metric">
+              <div
+                className="flex flex-col gap-1.5"
+                role="radiogroup"
+                aria-label={translateWithFallback(
+                  t,
+                  'dashboard.analytics.filters.metric',
+                  'Metric',
+                )}
+              >
                 {metrics.map((m) => (
                   <label key={m} className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -223,7 +308,9 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
                       onChange={() => onFiltersChange({ metric: m })}
                       className="accent-blue-600"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">{m}</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {getMetricLabel(m)}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -232,9 +319,21 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
             {/* Categories */}
             <div>
               <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                Categories
+                {translateWithFallback(
+                  t,
+                  'dashboard.analytics.filters.categories',
+                  'Categories',
+                )}
               </span>
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Category filters">
+              <div
+                className="flex flex-wrap gap-2"
+                role="group"
+                aria-label={translateWithFallback(
+                  t,
+                  'dashboard.analytics.filters.categoryFilters',
+                  'Category filters',
+                )}
+              >
                 {categories.map((cat, i) => {
                   const isActive = filters.categories.includes(cat);
                   return (
@@ -253,7 +352,7 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
                           : { borderColor: '#d1d5db', color: '#374151' }
                       }
                     >
-                      {cat}
+                      {getCategoryLabel(cat)}
                     </button>
                   );
                 })}
@@ -261,6 +360,12 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
             </div>
           </div>
         )}
+
+        <FilterSupportGuide
+          isOpen={support.guideOpen}
+          onClose={support.closeGuide}
+          helpContent={support.FILTER_HELP_CONTENT}
+        />
       </div>
     );
   },

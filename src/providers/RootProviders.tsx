@@ -7,8 +7,10 @@ import { ThemeProvider } from '@/lib/theme-provider';
 import { I18nProvider } from '@/hooks/useInternationalization';
 import { InternationalizationEngine } from '@/components/i18n/InternationalizationEngine';
 import { CulturalAdaptationManager } from '@/components/i18n/CulturalAdaptationManager';
+import { LanguageManager } from '@/components/i18n/LanguageManager';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 import { RouteChangeAnnouncer } from '@/components/accessibility/RouteChangeAnnouncer';
+import { CommandPalette } from '@/components/CommandPalette';
 import {
   LegacyStorePreferencesBridge,
   RemoteSettingsSync,
@@ -53,6 +55,11 @@ const PrefetchingEngine = dynamic(() => import('@/components/performance/Prefetc
 
 const DynamicTheming = dynamic(() => import('@/components/theme/DynamicTheming'), { ssr: false });
 
+const CookieConsentBanner = dynamic(
+  () => import('@/components/consent/CookieConsentBanner').then((mod) => mod.CookieConsentBanner),
+  { ssr: false },
+);
+
 interface RootProvidersProps {
   children: React.ReactNode;
   defaultTheme: string;
@@ -64,48 +71,54 @@ interface RootProvidersProps {
  * Consolidates all client-side providers and components to reduce layout complexity
  * and enables lazy loading of non-critical systems.
  */
-export function RootProviders({ children, defaultTheme, defaultLocale = 'en' }: RootProvidersProps) {
+export function RootProviders({
+  children,
+  defaultTheme,
+  defaultLocale = 'en',
+}: RootProvidersProps) {
   return (
     <I18nextProvider i18n={i18n}>
-    <FeatureFlagProvider>
-      <I18nProvider defaultLanguage={defaultLocale as import('@/locales/types').LanguageCode}>
-      <InternationalizationEngine>
-        <CulturalAdaptationManager>
-          <ThemeProvider defaultTheme={defaultTheme}>
-            <ThemeFromSettingsBootstrap />
-            <LegacyStorePreferencesBridge />
-            <RemoteSettingsSync />
-            <Suspense fallback={null}>
-              <DynamicTheming />
-            </Suspense>
-            <EnvGuard>
-              <AccessibilityProvider pageLabel="TeachLink - main application">
-                <RouteChangeAnnouncer />
+      <FeatureFlagProvider>
+        <I18nProvider defaultLanguage={defaultLocale as any}>
+          <InternationalizationEngine>
+            <LanguageManager />
+            <CulturalAdaptationManager>
+              <ThemeProvider defaultTheme={defaultTheme}>
+                <ThemeFromSettingsBootstrap />
+                <LegacyStorePreferencesBridge />
+                <RemoteSettingsSync />
                 <Suspense fallback={null}>
-                  <PerformanceMonitoringProvider>
-                    <OfflineModeProvider>
-                      <ToastProvider>
-                        <Suspense fallback={null}>
-                          <PWAManager />
-                          <StateManagerIntegration />
-                          <PerformanceMonitor />
-                          <PrefetchingEngine />
-                        </Suspense>
-                        <ErrorBoundary>
-                          <Suspense fallback={<Loading />}>{children}</Suspense>
-                        </ErrorBoundary>
-                        <CookieConsentBanner />
-                      </ToastProvider>
-                    </OfflineModeProvider>
-                  </PerformanceMonitoringProvider>
+                  <DynamicTheming />
                 </Suspense>
-              </AccessibilityProvider>
-            </EnvGuard>
-          </ThemeProvider>
-        </CulturalAdaptationManager>
-      </InternationalizationEngine>
-      </I18nProvider>
-    </FeatureFlagProvider>
+                <EnvGuard>
+                  <AccessibilityProvider pageLabel="TeachLink - main application">
+                    <RouteChangeAnnouncer />
+                    <CommandPalette />
+                    <Suspense fallback={null}>
+                      <PerformanceMonitoringProvider>
+                        <OfflineModeProvider>
+                          <ToastProvider>
+                            <Suspense fallback={null}>
+                              <PWAManager />
+                              <StateManagerIntegration />
+                              <PerformanceMonitor />
+                              <PrefetchingEngine />
+                            </Suspense>
+                            <ErrorBoundary>
+                              <Suspense fallback={<Loading />}>{children}</Suspense>
+                            </ErrorBoundary>
+                            <CookieConsentBanner />
+                          </ToastProvider>
+                        </OfflineModeProvider>
+                      </PerformanceMonitoringProvider>
+                    </Suspense>
+                  </AccessibilityProvider>
+                </EnvGuard>
+              </ThemeProvider>
+            </CulturalAdaptationManager>
+          </InternationalizationEngine>
+        </I18nProvider>
+      </FeatureFlagProvider>
     </I18nextProvider>
   );
 }

@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+
 /**
  * In-memory sliding window rate limiter for API routes.
  * Provides IP-based rate limiting with configurable limits and windows.
@@ -100,8 +102,6 @@ export const RATE_LIMIT_TIERS = {
 
 export type RateLimitTier = keyof typeof RATE_LIMIT_TIERS;
 
-import { NextResponse } from 'next/server';
-
 export function createRateLimitResponse(result: RateLimitResult): NextResponse | null {
   if (result.success) {
     return null;
@@ -109,7 +109,7 @@ export function createRateLimitResponse(result: RateLimitResult): NextResponse |
 
   const retryAfter = result.retryAfter ?? Math.ceil((result.reset - Date.now()) / 1000);
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       error: {
         code: 'rate_limit_exceeded',
@@ -119,21 +119,22 @@ export function createRateLimitResponse(result: RateLimitResult): NextResponse |
     },
     {
       status: 429,
-      headers: {
-        'X-RateLimit-Limit': String(result.limit),
-        'X-RateLimit-Remaining': String(result.remaining),
-        'X-RateLimit-Reset': String(Math.floor(result.reset / 1000)),
-        'Retry-After': String(retryAfter),
-      },
     },
   );
+
+  response.headers.set('X-RateLimit-Limit', String(result.limit));
+  response.headers.set('X-RateLimit-Remaining', String(result.remaining));
+  response.headers.set('X-RateLimit-Reset', String(Math.floor(result.reset / 1000)));
+  response.headers.set('Retry-After', String(retryAfter));
+
+  return response;
 }
 
 export function withRateLimit<T extends Request>(
   request: T,
   tier: RateLimitTier,
 ): {
-  addHeaders: <R extends Response | NextResponse<any>>(response: R) => R;
+  addHeaders: <U>(response: Response | NextResponse<U>) => NextResponse<U>;
   rateLimitResponse: NextResponse | null;
 } {
   const ip = getClientIP(request);
@@ -141,11 +142,16 @@ export function withRateLimit<T extends Request>(
   const identifier = `${ip}:${tier}`;
   const result = slidingWindowRateLimit(identifier, config);
 
-  const addHeaders = <R extends Response | NextResponse<any>>(response: R): R => {
-    response.headers.set('X-RateLimit-Limit', String(result.limit));
-    response.headers.set('X-RateLimit-Remaining', String(result.remaining));
-    response.headers.set('X-RateLimit-Reset', String(Math.floor(result.reset / 1000)));
-    return response;
+  const addHeaders = <U>(response: Response | NextResponse<U>): NextResponse<U> => {
+    const headers = new Headers(response.headers);
+    headers.set('X-RateLimit-Limit', String(result.limit));
+    headers.set('X-RateLimit-Remaining', String(result.remaining));
+    headers.set('X-RateLimit-Reset', String(Math.floor(result.reset / 1000)));
+    return new NextResponse<U>(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   };
 
   return {

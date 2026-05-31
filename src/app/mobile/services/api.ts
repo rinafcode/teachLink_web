@@ -1,7 +1,7 @@
 import { apiClient } from '@/lib/api';
 import { Course, Lesson, UserProgress, LearningSession } from '../types/mobile';
 
-const BASE = '/api';
+const BASE = '/api/v1';
 
 export interface ApiResponse<T> {
   data: T;

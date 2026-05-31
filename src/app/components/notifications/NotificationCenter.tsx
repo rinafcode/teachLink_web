@@ -8,7 +8,6 @@ import {
   Trash2,
   Filter,
   Search,
-  Settings,
   BarChart3,
   X,
   ChevronDown,

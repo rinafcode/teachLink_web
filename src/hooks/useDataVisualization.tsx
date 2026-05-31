@@ -11,8 +11,6 @@ import {
   ChartType,
   TimeRange,
   AggregationType,
-  aggregateByTimePeriod,
-  calculateMovingAverage,
   calculateTrend,
   exportToCSV,
   exportToJSON,

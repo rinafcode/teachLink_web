@@ -171,7 +171,7 @@ export function VideoBookmarks() {
         return next;
       });
 
-      void fetch('/api/bookmarks', {
+      void fetch('/api/v1/bookmarks', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, lessonId, id }),

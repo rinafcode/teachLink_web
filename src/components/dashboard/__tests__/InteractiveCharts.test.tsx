@@ -5,6 +5,44 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { InteractiveCharts } from '../InteractiveCharts';
 import type { ChartData } from '@/utils/visualizationUtils';
 
+vi.mock('@/hooks/useInternationalization', async () => {
+  const translations = (await import('@/locales/en.json')).default;
+  const read = (key: string) =>
+    key.split('.').reduce<unknown>((value, part) => {
+      if (value && typeof value === 'object' && part in (value as Record<string, unknown>)) {
+        return (value as Record<string, unknown>)[part];
+      }
+      return key;
+    }, translations);
+
+  const t = (key: string, params?: Record<string, string | number>) => {
+    const value = read(key);
+    if (typeof value !== 'string') {
+      return key;
+    }
+    if (!params) {
+      return value;
+    }
+
+    return value.replace(/\{\{(\w+)\}\}/g, (_, paramKey) => String(params[paramKey] ?? ''));
+  };
+
+  return {
+    useInternationalization: () => ({
+      language: 'en',
+      t,
+      formatNumber: (value: number, options?: Intl.NumberFormatOptions) =>
+        new Intl.NumberFormat('en-US', options).format(value),
+      formatPercentage: (value: number, decimals = 0) =>
+        new Intl.NumberFormat('en-US', {
+          style: 'percent',
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        }).format(value / 100),
+    }),
+  };
+});
+
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 // Recharts uses ResizeObserver; provide a minimal stub
@@ -116,7 +154,7 @@ describe('InteractiveCharts', () => {
 
   it('calls onClearDrillDown when breadcrumb "All Data" link is clicked', () => {
     render(<InteractiveCharts {...baseProps} drillDownIndex={0} />);
-    fireEvent.click(screen.getByRole('button', { name: /back to all data/i }));
+    fireEvent.click(screen.getByRole('link', { name: /all data/i }));
     expect(baseProps.onClearDrillDown).toHaveBeenCalledTimes(1);
   });
 });

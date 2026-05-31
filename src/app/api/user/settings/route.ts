@@ -1,13 +1,22 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withRateLimit } from '@/lib/ratelimit';
-import { appSettingsSchema, createDefaultSettings, type AppSettings } from '@/lib/settings/types';
+import { 
+  appSettingsSchema, 
+  createDefaultSettings, 
+  type AppSettings,
+  SettingsService,
+  SettingsStorePersistedShape 
+} from '@/lib/settings';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 /**
  * Ephemeral server-side store for syncing settings across devices for a given sync key.
  * Replace with persistent DB (PostgreSQL, KV, etc.) in production deployments.
  */
-const remoteSettingsDb = new Map<string, { settings: AppSettings; updatedAt: number }>();
+const remoteSettingsDb = new Map<string, SettingsStorePersistedShape>();
 
 const putBodySchema = z.object({
   userId: z.string().min(1).max(256),
@@ -16,6 +25,7 @@ const putBodySchema = z.object({
 });
 
 export async function GET(request: Request) {
+  edgeLog('info', '/api/user/settings', 'GET request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'READ');
   if (rateLimitResponse) {
     return rateLimitResponse;
@@ -25,12 +35,13 @@ export async function GET(request: Request) {
   const userId = searchParams.get('userId');
 
   if (!userId?.trim()) {
+    const defaultState = SettingsService.createStoreState(createDefaultSettings());
     return addHeaders(
       NextResponse.json(
         {
           success: false,
           message: 'userId query parameter is required',
-          data: { settings: createDefaultSettings(), updatedAt: 0 },
+          data: { settings: defaultState.settings, updatedAt: defaultState.updatedAt },
         },
         { status: 400 },
       ),
@@ -39,12 +50,13 @@ export async function GET(request: Request) {
 
   const row = remoteSettingsDb.get(userId);
   if (!row) {
+    const defaultState = SettingsService.createStoreState(createDefaultSettings());
     return addHeaders(
       NextResponse.json(
         {
           success: false,
           message: 'No remote settings saved yet',
-          data: { settings: createDefaultSettings(), updatedAt: 0 },
+          data: { settings: defaultState.settings, updatedAt: defaultState.updatedAt },
         },
         { status: 404 },
       ),
@@ -60,6 +72,7 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  edgeLog('info', '/api/user/settings', 'PUT request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) {
     return rateLimitResponse;
@@ -76,13 +89,28 @@ export async function PUT(request: Request) {
     }
 
     const { userId, settings, updatedAt } = parsed.data;
-    remoteSettingsDb.set(userId, { settings, updatedAt });
+    
+    // Validate settings using service layer
+    const validation = SettingsService.validateSettings(settings);
+    if (!validation.valid) {
+      return addHeaders(
+        NextResponse.json({ 
+          success: false, 
+          message: 'Invalid settings',
+          errors: validation.errors 
+        }, { status: 400 }),
+      );
+    }
+
+    // Create store state with proper timestamps
+    const storeState = SettingsService.createStoreState(settings);
+    remoteSettingsDb.set(userId, storeState);
 
     return addHeaders(
       NextResponse.json({
         success: true,
         message: 'Settings saved.',
-        data: { settings, updatedAt },
+        data: { settings, updatedAt: storeState.updatedAt },
       }),
     );
   } catch {

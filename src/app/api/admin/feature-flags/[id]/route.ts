@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  flagStore,
-  createAuditEntry,
-} from '@/lib/feature-flags/store';
+import { flagStore, createAuditEntry } from '@/lib/feature-flags/store';
 import type { FeatureFlag, TargetingRule } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
+import { logAuditMutation } from '@/middleware/audit';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 // ─── GET /api/admin/feature-flags/[id] ───────────────────────────────────────
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'API');
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  edgeLog('info', '/api/admin/feature-flags/[id]', 'GET request received');
+  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
   const { id } = await params;
@@ -25,10 +24,8 @@ export async function GET(
 // ─── PUT /api/admin/feature-flags/[id] ───────────────────────────────────────
 // Full or partial update. Also handles toggle via { enabled: boolean }.
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  edgeLog('info', '/api/admin/feature-flags/[id]', 'PUT request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'AUTH');
   if (rateLimitResponse) return rateLimitResponse;
 
@@ -46,8 +43,12 @@ export async function PUT(
     ...(typeof body.name === 'string' && body.name.trim() ? { name: body.name.trim() } : {}),
     ...(typeof body.description === 'string' ? { description: body.description.trim() } : {}),
     ...(typeof body.enabled === 'boolean' ? { enabled: body.enabled } : {}),
-    ...(['all', 'percentage', 'targeting'].includes(body.strategy) ? { strategy: body.strategy } : {}),
-    ...(typeof body.percentage === 'number' ? { percentage: Math.max(0, Math.min(100, body.percentage)) } : {}),
+    ...(['all', 'percentage', 'targeting'].includes(body.strategy)
+      ? { strategy: body.strategy }
+      : {}),
+    ...(typeof body.percentage === 'number'
+      ? { percentage: Math.max(0, Math.min(100, body.percentage)) }
+      : {}),
     ...(Array.isArray(body.rules) ? { rules: body.rules as TargetingRule[] } : {}),
     ...(Array.isArray(body.tags) ? { tags: body.tags.map(String) } : {}),
     updatedAt: new Date().toISOString(),
@@ -55,20 +56,26 @@ export async function PUT(
 
   flagStore.set(id, updated);
 
-  const action = typeof body.enabled === 'boolean' && body.enabled !== existing.enabled
-    ? 'toggled'
-    : 'updated';
+  const action =
+    typeof body.enabled === 'boolean' && body.enabled !== existing.enabled ? 'toggled' : 'updated';
   createAuditEntry(action, actor, existing, updated);
 
-  return addHeaders(NextResponse.json({ flag: updated }));
+  const response = addHeaders(NextResponse.json({ flag: updated }));
+  logAuditMutation(req, {
+    action: 'update',
+    targetType: 'feature-flag',
+    targetId: updated.id,
+    statusCode: response.status,
+    metadata: { action },
+  });
+
+  return response;
 }
 
 // ─── DELETE /api/admin/feature-flags/[id] ────────────────────────────────────
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  edgeLog('info', '/api/admin/feature-flags/[id]', 'DELETE request received');
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'AUTH');
   if (rateLimitResponse) return rateLimitResponse;
 
@@ -80,5 +87,14 @@ export async function DELETE(
   flagStore.delete(id);
   createAuditEntry('deleted', actor, existing, null);
 
-  return addHeaders(NextResponse.json({ message: 'Deleted' }));
+  const response = addHeaders(NextResponse.json({ message: 'Deleted' }));
+  logAuditMutation(req, {
+    action: 'delete',
+    targetType: 'feature-flag',
+    targetId: id,
+    statusCode: response.status,
+    metadata: { name: existing.name },
+  });
+
+  return response;
 }

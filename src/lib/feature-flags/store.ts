@@ -160,11 +160,19 @@ export function evaluateFlag(flag: FeatureFlag, context: Record<string, string> 
       return flag.rules.every((rule) => {
         const attrVal = context[rule.attribute] ?? '';
         switch (rule.operator) {
-          case 'equals':    return attrVal === rule.value;
-          case 'contains':  return attrVal.includes(rule.value);
-          case 'startsWith':return attrVal.startsWith(rule.value);
-          case 'in':        return rule.value.split(',').map((v) => v.trim()).includes(attrVal);
-          default:          return false;
+          case 'equals':
+            return attrVal === rule.value;
+          case 'contains':
+            return attrVal.includes(rule.value);
+          case 'startsWith':
+            return attrVal.startsWith(rule.value);
+          case 'in':
+            return rule.value
+              .split(',')
+              .map((v) => v.trim())
+              .includes(attrVal);
+          default:
+            return false;
         }
       });
     }

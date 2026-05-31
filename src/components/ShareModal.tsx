@@ -61,7 +61,7 @@ export function ShareModal({
 
   const handleDownload = useCallback(async () => {
     if (!qrRef.current) return;
-    
+
     try {
       setIsLoading(true);
       await downloadQRCode(qrRef.current, 'teachlink-qrcode.png');

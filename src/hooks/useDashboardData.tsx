@@ -10,10 +10,15 @@ import {
   generateDashboardSampleData,
   generateShareableURL,
   parseDashboardURL,
-  getDrillDownData,
   DashboardShareConfig,
 } from '@/utils/chartUtils';
 import type { ChartData } from '@/utils/visualizationUtils';
+import { useInternationalization } from '@/hooks/useInternationalization';
+import {
+  getDashboardDatasetLabel,
+  getDashboardPanelTitle,
+  translateWithFallback,
+} from '@/components/dashboard/dashboardI18n';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,34 +62,47 @@ const DEFAULT_FILTERS: DashboardFiltersState = {
   aggregation: 'sum',
 };
 
-const buildDefaultPanels = (timeRange: TimeRange): DashboardPanel[] => [
+const buildDefaultPanels = (
+  timeRange: TimeRange,
+  locale: string,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): DashboardPanel[] => [
   {
     id: 'enrollments',
-    title: 'Course Enrollments',
+    title: getDashboardPanelTitle('enrollments', t),
     chartType: 'line',
-    data: generateDashboardSampleData('enrollments', timeRange),
+    data: generateDashboardSampleData('enrollments', timeRange, {
+      locale,
+      datasetLabel: getDashboardDatasetLabel('enrollments', t),
+    }),
     drillDownIndex: null,
     position: 0,
   },
   {
     id: 'revenue',
-    title: 'Revenue',
+    title: getDashboardPanelTitle('revenue', t),
     chartType: 'bar',
-    data: generateDashboardSampleData('revenue', timeRange),
+    data: generateDashboardSampleData('revenue', timeRange, {
+      locale,
+      datasetLabel: getDashboardDatasetLabel('revenue', t),
+    }),
     drillDownIndex: null,
     position: 1,
   },
   {
     id: 'completions',
-    title: 'Completions',
+    title: getDashboardPanelTitle('completions', t),
     chartType: 'area',
-    data: generateDashboardSampleData('completions', timeRange),
+    data: generateDashboardSampleData('completions', timeRange, {
+      locale,
+      datasetLabel: getDashboardDatasetLabel('completions', t),
+    }),
     drillDownIndex: null,
     position: 2,
   },
   {
     id: 'realtime',
-    title: 'Live Activity',
+    title: getDashboardPanelTitle('realtime', t),
     chartType: 'line',
     data: { labels: [], datasets: [] },
     drillDownIndex: null,
@@ -95,6 +113,7 @@ const buildDefaultPanels = (timeRange: TimeRange): DashboardPanel[] => [
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export const useDashboardData = (): UseDashboardDataReturn => {
+  const { language, t } = useInternationalization();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -111,12 +130,46 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   });
 
   const [panels, setPanels] = useState<DashboardPanel[]>(() =>
-    buildDefaultPanels(filters.timeRange),
+    buildDefaultPanels(filters.timeRange, language, t),
   );
 
   const [shareURL, setShareURL] = useState<string | null>(null);
 
   const sortedPanels = useMemo(() => [...panels].sort((a, b) => a.position - b.position), [panels]);
+
+  useEffect(() => {
+    setPanels((prevPanels) =>
+      prevPanels.map((panel) => {
+        if (panel.id === 'realtime') {
+          return {
+            ...panel,
+            title: getDashboardPanelTitle(panel.id, t),
+          };
+        }
+
+        const localizedLabels = generateDashboardSampleData(panel.id, filters.timeRange, {
+          locale: language,
+        }).labels;
+
+        return {
+          ...panel,
+          title: getDashboardPanelTitle(panel.id, t),
+          data: {
+            ...panel.data,
+            labels: localizedLabels,
+            datasets: panel.data.datasets.map((dataset, index) =>
+              index === 0
+                ? {
+                    ...dataset,
+                    label: getDashboardDatasetLabel(panel.id, t),
+                  }
+                : dataset,
+            ),
+          },
+        };
+      }),
+    );
+  }, [filters.timeRange, language, t]);
 
   // Update filters and regenerate data for non-realtime panels
   const setFilters = useCallback((partial: Partial<DashboardFiltersState>) => {
@@ -129,7 +182,10 @@ export const useDashboardData = (): UseDashboardDataReturn => {
               ? panel
               : {
                   ...panel,
-                  data: generateDashboardSampleData(panel.id, next.timeRange),
+                  data: generateDashboardSampleData(panel.id, next.timeRange, {
+                    locale: language,
+                    datasetLabel: getDashboardDatasetLabel(panel.id, t),
+                  }),
                   drillDownIndex: null,
                 },
           ),
@@ -137,13 +193,13 @@ export const useDashboardData = (): UseDashboardDataReturn => {
       }
       return next;
     });
-  }, []);
+  }, [language, t]);
 
   const resetFilters = useCallback(() => {
     setFiltersState(DEFAULT_FILTERS);
-    setPanels(buildDefaultPanels(DEFAULT_FILTERS.timeRange));
+    setPanels(buildDefaultPanels(DEFAULT_FILTERS.timeRange, language, t));
     setShareURL(null);
-  }, []);
+  }, [language, t]);
 
   const setPanelChartType = useCallback((id: string, chartType: ChartType) => {
     setPanels((prev) => prev.map((p) => (p.id === id ? { ...p, chartType } : p)));
@@ -185,12 +241,16 @@ export const useDashboardData = (): UseDashboardDataReturn => {
       if (!panel) return;
       const filename = `${panel.title.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
       if (format === 'csv') {
-        exportToCSV(panel.data, filename);
+        exportToCSV(
+          panel.data,
+          filename,
+          translateWithFallback(t, 'dashboard.analytics.exports.labelColumn', 'Label'),
+        );
       } else {
         exportToJSON(panel.data, filename);
       }
     },
-    [panels],
+    [panels, t],
   );
 
   return {

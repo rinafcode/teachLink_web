@@ -4,19 +4,37 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
-import { getHtmlDir } from '@/lib/i18n/config';
+import { Footer } from '@/components/layout/Footer';
 
 // Languages supported at startup — extend as new locale files are added.
-const VALID_LOCALES = new Set(['en', 'es', 'ar', 'fr', 'de', 'he', 'ja', 'zh', 'pt', 'ru', 'it', 'ko']);
+const VALID_LOCALES = new Set([
+  'en',
+  'es',
+  'ar',
+  'fr',
+  'de',
+  'he',
+  'ja',
+  'zh',
+  'pt',
+  'ru',
+  'it',
+  'ko',
+]);
+const RTL_LOCALES = new Set(['ar', 'he']);
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+  display: 'swap',
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+  display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -38,7 +56,7 @@ export default async function RootLayout({
   // avoids a hydration flash for RTL users.
   const rawLocale = cookieStore.get('i18n:language')?.value ?? 'en';
   const locale = VALID_LOCALES.has(rawLocale) ? rawLocale : 'en';
-  const dir = getHtmlDir(locale);
+  const dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
 
   const themeScript = `
     (function() {
@@ -64,10 +82,13 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50 flex flex-col min-h-screen`}
       >
         <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
-          {children}
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
         </RootProviders>
 
         {/* Non-essential analytics — loaded after page is interactive */}

@@ -32,17 +32,17 @@ export function MyComponent() {
 
 **Props**:
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | string | - | URL or text to encode (required) |
-| `size` | number | 256 | Size of QR code in pixels |
-| `level` | 'L' \| 'M' \| 'Q' \| 'H' | 'H' | Error correction level |
-| `includeMargin` | boolean | true | Include quiet zone around QR code |
-| `bgColor` | string | '#ffffff' | Background color (hex or CSS color) |
-| `fgColor` | string | '#000000' | Foreground/module color |
-| `className` | string | '' | Additional CSS classes |
-| `onRender` | function | - | Callback when QR code renders |
-| `ref` | React.Ref | - | Canvas element ref for programmatic access |
+| Prop            | Type                     | Default   | Description                                |
+| --------------- | ------------------------ | --------- | ------------------------------------------ |
+| `value`         | string                   | -         | URL or text to encode (required)           |
+| `size`          | number                   | 256       | Size of QR code in pixels                  |
+| `level`         | 'L' \| 'M' \| 'Q' \| 'H' | 'H'       | Error correction level                     |
+| `includeMargin` | boolean                  | true      | Include quiet zone around QR code          |
+| `bgColor`       | string                   | '#ffffff' | Background color (hex or CSS color)        |
+| `fgColor`       | string                   | '#000000' | Foreground/module color                    |
+| `className`     | string                   | ''        | Additional CSS classes                     |
+| `onRender`      | function                 | -         | Callback when QR code renders              |
+| `ref`           | React.Ref                | -         | Canvas element ref for programmatic access |
 
 ### 2. `ShareModal`
 
@@ -81,16 +81,16 @@ export function PostCard() {
 
 **Props**:
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `isOpen` | boolean | - | Controls modal visibility (required) |
-| `onClose` | function | - | Callback when modal closes (required) |
-| `shareUrl` | string | - | URL to encode in QR code (required) |
-| `title` | string | 'Share this content' | Modal title |
-| `description` | string | 'Scan the QR code to open' | Description text |
-| `qrSize` | number | 256 | Size of QR code |
-| `fgColor` | string | '#000000' | QR code foreground color |
-| `bgColor` | string | '#ffffff' | QR code background color |
+| Prop          | Type     | Default                    | Description                           |
+| ------------- | -------- | -------------------------- | ------------------------------------- |
+| `isOpen`      | boolean  | -                          | Controls modal visibility (required)  |
+| `onClose`     | function | -                          | Callback when modal closes (required) |
+| `shareUrl`    | string   | -                          | URL to encode in QR code (required)   |
+| `title`       | string   | 'Share this content'       | Modal title                           |
+| `description` | string   | 'Scan the QR code to open' | Description text                      |
+| `qrSize`      | number   | 256                        | Size of QR code                       |
+| `fgColor`     | string   | '#000000'                  | QR code foreground color              |
+| `bgColor`     | string   | '#ffffff'                  | QR code background color              |
 
 **Features**:
 
@@ -239,7 +239,7 @@ export function ProfileCard({ username, profileId, avatar }: ProfileCardProps) {
     <div className="border rounded-lg p-4">
       {avatar && <img src={avatar} alt={username} className="w-12 h-12 rounded-full" />}
       <h2>{username}</h2>
-      
+
       <button
         onClick={() => setShowShare(true)}
         className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
@@ -277,12 +277,7 @@ export function TopicHeader({ topicSlug, topicName }: { topicSlug: string; topic
       <h1>{topicName}</h1>
 
       <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg inline-block">
-        <QRCodeComponent
-          value={shareUrl}
-          size={200}
-          level="H"
-          fgColor="#2563eb"
-        />
+        <QRCodeComponent value={shareUrl} size={200} level="H" fgColor="#2563eb" />
       </div>
 
       <button

@@ -5,10 +5,12 @@ This document provides comprehensive instructions for building, running, and dep
 ## Architecture
 
 The Docker setup uses **multi-stage builds** to optimize:
+
 - **Build Stage**: Compiles Next.js and validates i18n configuration
 - **Runtime Stage**: Lean production image with minimal dependencies
 
 ### Image Optimization
+
 - Base image: `node:20-alpine` (~150MB)
 - Production image size: ~250-300MB (after build)
 - Development image: Includes dev dependencies for fast iteration
@@ -161,7 +163,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - '80:80'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -231,16 +233,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      
+
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Build and push
         uses: docker/build-push-action@v4
         with:

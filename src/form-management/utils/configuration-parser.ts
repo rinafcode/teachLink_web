@@ -13,7 +13,6 @@ import {
   ValidationRule,
   ValidationResult,
   ValidationError,
-  FieldType,
   LayoutConfiguration,
   ValidationConfiguration,
   AutoSaveConfiguration,
@@ -46,7 +45,19 @@ const FieldTypeSchema = z.enum([
 
 // Zod schema for ValidationRule - use type assertion for function schemas
 const ValidationRuleSchema = z.object({
-  type: z.enum(['required', 'email', 'minLength', 'maxLength', 'pattern', 'custom', 'async']),
+  type: z.enum([
+    'required',
+    'email',
+    'minLength',
+    'maxLength',
+    'pattern',
+    'custom',
+    'async',
+    'fileSize',
+    'fileType',
+    'imageDimensions',
+    'imageOptimize',
+  ]),
   params: z.record(z.any()).optional(),
   message: z.string(),
   condition: z.function().optional(),

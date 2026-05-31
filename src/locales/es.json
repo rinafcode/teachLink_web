@@ -29,7 +29,8 @@
     "notifications": "Notificaciones",
     "logout": "Cerrar sesión",
     "login": "Iniciar sesión",
-    "signup": "Registrarse"
+    "signup": "Registrarse",
+    "teach": "[MISSING TRANSLATION] Teach"
   },
   "course": {
     "title": "Curso",
@@ -43,7 +44,8 @@
     "rating": "Calificación",
     "description": "Descripción",
     "syllabus": "Programa",
-    "resources": "Recursos"
+    "resources": "Recursos",
+    "previewTitle": "[MISSING TRANSLATION] Course Preview"
   },
   "dashboard": {
     "welcome": "Bienvenido",
@@ -52,7 +54,143 @@
     "upcomingDeadlines": "Próximas Fechas Límite",
     "recommendedCourses": "Cursos Recomendados",
     "learningStreak": "Racha de Aprendizaje",
-    "progressSummary": "Resumen de Progreso"
+    "progressSummary": "Resumen de Progreso",
+    "learningProgress": "[MISSING TRANSLATION] Learning Progress",
+    "progressStatus": "[MISSING TRANSLATION] {{percent}}% complete • {{remaining}} remaining",
+    "quickActions": "[MISSING TRANSLATION] Quick Actions",
+    "continueLearning": "[MISSING TRANSLATION] Continue Learning",
+    "downloadCourse": "[MISSING TRANSLATION] Download Course",
+    "offlineAccess": "[MISSING TRANSLATION] For offline access",
+    "viewProgress": "[MISSING TRANSLATION] View Progress",
+    "trackLearning": "[MISSING TRANSLATION] Track your learning",
+    "completedLesson": "[MISSING TRANSLATION] Completed lesson",
+    "downloadedCourse": "[MISSING TRANSLATION] Downloaded course",
+    "activityEntry": "[MISSING TRANSLATION] {{course}} • {{time}}",
+    "timeHoursAgo": "[MISSING TRANSLATION] {{count}} hours ago",
+    "timeDayAgo": "[MISSING TRANSLATION] {{count}} day ago",
+    "analytics": {
+      "title": "Panel de analiticas",
+      "subtitle": "Visualizacion interactiva de datos e informacion en tiempo real",
+      "chartTypeSelector": "Selector de tipo de grafico",
+      "actions": {
+        "exportAll": "Exportar todo",
+        "exportAllAria": "Exportar todos los paneles como CSV",
+        "share": "Compartir",
+        "shareAria": "Copiar enlace compartible del panel",
+        "copied": "Copiado",
+        "exportPanel": "Exportar {{panel}} como CSV"
+      },
+      "toasts": {
+        "shareSuccess": "Enlace del panel copiado al portapapeles",
+        "shareError": "No se pudo copiar al portapapeles",
+        "exportAllSuccess": "Paneles exportados como CSV"
+      },
+      "exports": {
+        "labelColumn": "Etiqueta"
+      },
+      "filters": {
+        "show": "Mostrar filtros",
+        "hide": "Ocultar filtros",
+        "activeFilters": "Filtros activos",
+        "removeTimeRange": "Quitar filtro de rango de tiempo",
+        "removeCategory": "Quitar filtro de {{category}}",
+        "resetAll": "Restablecer todo",
+        "resetAllAria": "Restablecer todos los filtros",
+        "timeRange": "Rango de tiempo",
+        "aggregation": "Agregacion",
+        "metric": "Metrica",
+        "categories": "Categorias",
+        "categoryFilters": "Filtros de categoria",
+        "timeRangeOptions": {
+          "7d": "Ultimos 7 dias",
+          "30d": "Ultimos 30 dias",
+          "90d": "Ultimos 90 dias",
+          "1y": "Ultimo ano",
+          "all": "Todo el tiempo"
+        },
+        "aggregationOptions": {
+          "sum": "Suma",
+          "average": "Promedio",
+          "count": "Conteo",
+          "min": "Minimo",
+          "max": "Maximo"
+        },
+        "metrics": {
+          "enrollments": "Inscripciones",
+          "revenue": "Ingresos",
+          "completions": "Finalizaciones",
+          "views": "Vistas"
+        },
+        "categoriesOptions": {
+          "webDev": "Desarrollo web",
+          "dataScience": "Ciencia de datos",
+          "design": "Diseno",
+          "marketing": "Marketing",
+          "mobile": "Movil"
+        }
+      },
+      "panels": {
+        "enrollments": {
+          "title": "Inscripciones a cursos"
+        },
+        "revenue": {
+          "title": "Ingresos"
+        },
+        "completions": {
+          "title": "Finalizaciones"
+        },
+        "realtime": {
+          "title": "Actividad en vivo"
+        }
+      },
+      "datasets": {
+        "enrollments": "Inscripciones a cursos",
+        "revenue": "Ingresos",
+        "completions": "Finalizaciones",
+        "realtime": "Datos en vivo",
+        "views": "Vistas del curso"
+      },
+      "chartTypes": {
+        "line": "Grafico de lineas",
+        "bar": "Grafico de barras",
+        "area": "Grafico de area",
+        "pie": "Grafico circular",
+        "scatter": "Grafico de dispersion",
+        "radar": "Grafico radar"
+      },
+      "drillDown": {
+        "selected": "Seleccionado",
+        "allData": "Todos los datos",
+        "backToAllDataAria": "Volver a todos los datos",
+        "detailTitle": "Detalle - {{label}}",
+        "backToOverview": "Volver al resumen"
+      },
+      "realtime": {
+        "status": {
+          "paused": "Pausado",
+          "connected": "Conectado",
+          "simulating": "Simulando",
+          "disconnected": "Desconectado"
+        },
+        "pointsCount": "{{count}} pts",
+        "updateSpeed": "Velocidad de actualizacion",
+        "pause": "Pausar actualizaciones en vivo",
+        "resume": "Reanudar actualizaciones en vivo",
+        "reset": "Restablecer datos",
+        "loadingData": "Cargando datos...",
+        "waitingForData": "Esperando datos...",
+        "stats": {
+          "mean": "Media",
+          "median": "Mediana",
+          "trend": "Tendencia"
+        },
+        "trendDirections": {
+          "up": "Sube",
+          "down": "Baja",
+          "neutral": "Estable"
+        }
+      }
+    }
   },
   "profile": {
     "editProfile": "Editar Perfil",
@@ -84,5 +222,111 @@
     "unauthorized": "No autorizado",
     "forbidden": "Prohibido",
     "serverError": "Error del servidor"
+  },
+  "home": {
+    "heroTitlePrefix": "Welcome to",
+    "heroSubtitle": "Learn anytime, anywhere with our comprehensive platform",
+    "navDesktopTitle": "Desktop Dashboard",
+    "navDesktopDescription": "Full-featured learning platform with advanced tools",
+    "navMobileTitle": "Mobile App",
+    "navMobileDescription": "Touch-optimized learning experience for on-the-go",
+    "navCatalogTitle": "Course Catalog",
+    "navCatalogDescription": "Browse and explore available courses",
+    "featuredTitle": "Featured Courses",
+    "whyTitle": "Why TeachLink?",
+    "featureOfflineTitle": "Offline Learning",
+    "featureOfflineDescription": "Download courses and learn without internet connection",
+    "featureCrossPlatformTitle": "Cross-Platform",
+    "featureCrossPlatformDescription": "Seamless experience across desktop, mobile, and tablet",
+    "featureWeb3Title": "Web3 Integration",
+    "featureWeb3Description": "Decentralized platform with blockchain-based features",
+    "ctaTitle": "Ready to start learning?",
+    "ctaSubtitle": "Join thousands of learners on TeachLink today",
+    "ctaPrimary": "Get Started",
+    "ctaSecondary": "Sign In"
+  },
+  "performance": {
+    "dashboard": {
+      "title": "Panel de rendimiento",
+      "subtitle": "Core Web Vitals, alertas recientes y muestras de tendencias de la sesión (almacenadas en sessionStorage).",
+      "navigation": "Navegación del panel de rendimiento",
+      "clearHistory": "Borrar historial de tendencias",
+      "trendsHeading": "Tendencias (esta sesión de pestaña)",
+      "chartPlaceholder": "Aún no hay suficientes muestras. Interactúe con la aplicación o vuelva a cargar para recopilar puntos.",
+      "chartAriaLabel": "Gráfico de tendencia de {{name}}",
+      "xAxisLabel": "Muestra #",
+      "vitals": {
+        "heading": "Core Web Vitals",
+        "ariaLabel": "Core Web Vitals",
+        "waiting": "Esperando...",
+        "ratings": {
+          "good": "Bueno",
+          "needsImprovement": "Necesita mejorar",
+          "poor": "Deficiente"
+        }
+      },
+      "statusPanel": {
+        "heading": "Estado de analíticas",
+        "statusLabel": "Estado",
+        "active": "Activo",
+        "disabled": "Deshabilitado (Desarrollo)",
+        "endpoint": "Punto final",
+        "simulated": "Promedio global simulado (7d)"
+      },
+      "alertsPanel": {
+        "heading": "Alertas",
+        "clearList": "Borrar lista",
+        "empty": "Sin alertas de degradación en esta sesión."
+      }
+    },
+    "monitor": {
+      "heading": "Rendimiento",
+      "dashboardLink": "Panel",
+      "compact": "Compacto",
+      "expand": "Expandir",
+      "ariaLabel": "Últimas métricas de rendimiento",
+      "collecting": "Recopilando métricas..."
+    },
+    "telemetry": {
+      "alerts": {
+        "poor": "{{name}} está en el rango \"deficiente\" ({{value}}). Considere la optimización.",
+        "warning": "{{name}} necesita mejorar ({{value}})."
+      },
+      "suggestions": {
+        "impact": "Impacto {{impact}}",
+        "impactLevels": {
+          "high": "Alto",
+          "medium": "Medio",
+          "low": "Bajo"
+        },
+        "heading": "Sugerencias de optimización",
+        "headingFallback": "Sugerencias",
+        "empty": "No se detectaron problemas a partir de las Core Web Vitals actuales. Siga monitoreando mientras los usuarios interactúan con la aplicación.",
+        "lcp": {
+          "title": "Acelerar el despliegue del elemento visual más grande (LCP)",
+          "detail": "Optimice el elemento LCP: use imágenes adaptables, formatos modernos (AVIF/WebP), ancho/alto explícitos y cargue previamente el recurso hero. Reduzca el tiempo de respuesta del servidor y los scripts que bloquean el renderizado."
+        },
+        "inp": {
+          "title": "Mejorar la capacidad de respuesta a la interacción (INP)",
+          "detail": "Divida las tareas largas, aplace el JavaScript no crítico y evite grandes actualizaciones síncronas en los manejadores de eventos. Prefiera transiciones y árboles de componentes más pequeños en las rutas de interacción."
+        },
+        "cls": {
+          "title": "Estabilizar el diseño (CLS)",
+          "detail": "Reserve espacio para imágenes, elementos incrustados y anuncios. Evite insertar contenido encima del contenido existente sin un marcador de posición. Prefiera animaciones de transformación en lugar de propiedades que desencadenen el diseño."
+        },
+        "fcp": {
+          "title": "Lograr el primer renderizado antes (FCP)",
+          "detail": "Inserte CSS crítico en línea, recorte el CSS no utilizado y reduzca el bloqueo de fuentes. Mantenga los recursos del path crítico y del HTML pequeños y almacenables en caché."
+        },
+        "ttfb": {
+          "title": "Reducir el tiempo al primer byte (TTFB)",
+          "detail": "Mejore el almacenamiento en caché perimetral, optimice la latencia del servidor/API y use una CDN para recursos estáticos y dinámicos donde sea posible."
+        },
+        "slowConnection": {
+          "title": "Adaptarse a redes lentas",
+          "detail": "Se detectó una conexión limitada. Reduzca el tamaño de las cargas útiles, cargue de forma diferida el contenido debajo de la parte visible y evite la precarga agresiva."
+        }
+      }
+    }
   }
 }

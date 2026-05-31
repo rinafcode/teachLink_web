@@ -1,3 +1,13 @@
+import { User as ZodUser, UserRole as ZodUserRole } from '@/schemas/user.schema';
+import { Course as ZodCourse } from '@/schemas/course.schema';
+import { AuthResponse as ZodAuthResponse } from '@/schemas/auth.schema';
+import { AnalyticsEventPayload as ZodAnalyticsEventPayload } from '@/schemas/analytics.schema';
+import { UserProgress as ZodUserProgress } from '@/schemas/progress.schema';
+import {
+  VideoBookmark as ZodVideoBookmark,
+  VideoNote as ZodVideoNote,
+} from '@/schemas/content.schema';
+
 /**
  * Shared API response envelope and domain types.
  * Import these as generics when calling apiClient methods to get full type safety.
@@ -28,12 +38,13 @@ export interface SuccessResponse {
 // Auth
 // ---------------------------------------------------------------------------
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  INSTRUCTOR = 'INSTRUCTOR',
-  STUDENT = 'STUDENT',
-  GUEST = 'GUEST',
-}
+export type UserRole = ZodUserRole;
+export const UserRole = {
+  ADMIN: 'ADMIN' as UserRole,
+  INSTRUCTOR: 'INSTRUCTOR' as UserRole,
+  STUDENT: 'STUDENT' as UserRole,
+  GUEST: 'GUEST' as UserRole,
+};
 
 export enum Permission {
   // Course Permissions
@@ -50,88 +61,72 @@ export enum Permission {
   // Content Permissions
   CONTENT_ACCESS = 'CONTENT_ACCESS',
   CONTENT_UPLOAD = 'CONTENT_UPLOAD',
+  CONTENT_APPROVE = 'CONTENT_APPROVE',
 
   // System Permissions
   SYSTEM_SETTINGS = 'SYSTEM_SETTINGS',
   ANALYTICS_VIEW = 'ANALYTICS_VIEW',
 }
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-}
-
-export interface AuthResponse {
-  message: string;
-  user: User;
-  token: string;
-}
+export type User = ZodUser;
+export type AuthResponse = ZodAuthResponse;
 
 // ---------------------------------------------------------------------------
 // Courses
 // ---------------------------------------------------------------------------
 
-export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  instructor: string;
-  duration: string;
-  totalLessons: number;
-  progress: number;
-  category: string;
-  size: string;
-  thumbnailUrl: string;
-  downloaded: boolean;
-}
+export type Course = ZodCourse;
 
 // ---------------------------------------------------------------------------
 // Bookmarks
 // ---------------------------------------------------------------------------
 
-export interface VideoBookmark {
-  id: string;
-  time: number;
-  title: string;
-  note?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type VideoBookmark = ZodVideoBookmark;
 
 // ---------------------------------------------------------------------------
 // Notes
 // ---------------------------------------------------------------------------
 
-export interface VideoNote {
-  id: string;
-  time: number;
-  text: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type VideoNote = ZodVideoNote;
 
 // ---------------------------------------------------------------------------
 // User progress
 // ---------------------------------------------------------------------------
 
-export interface UserProgress {
-  streak: number;
-  totalTimeSpent: number;
-  dailyGoal: number;
-  lastActive: string;
-  completedCourses: number;
-  totalCourses: number;
-}
+export type UserProgress = ZodUserProgress;
 
 // ---------------------------------------------------------------------------
 // Video analytics
 // ---------------------------------------------------------------------------
 
-export interface AnalyticsEventPayload {
-  userId?: string;
-  lessonId: string;
-  eventType: string;
-  payload: Record<string, unknown>;
+export type AnalyticsEventPayload = ZodAnalyticsEventPayload;
+
+// ---------------------------------------------------------------------------
+// Approvals
+// ---------------------------------------------------------------------------
+
+export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface ApprovalItem {
+  id: string;
+  contentId: string;
+  contentType: 'COURSE' | 'POST';
+  title: string;
+  submittedBy: string;
+  submittedAt: string;
+  status: ApprovalStatus;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNote?: string;
+}
+
+export interface SubmitApprovalRequest {
+  contentId: string;
+  contentType: ApprovalItem['contentType'];
+  title: string;
+}
+
+export interface ReviewApprovalRequest {
+  status: 'APPROVED' | 'REJECTED';
+  reviewNote?: string;
 }

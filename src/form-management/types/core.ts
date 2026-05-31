@@ -20,7 +20,18 @@ export type FieldType =
 
 // Validation Rule Types
 export interface ValidationRule {
-  type: 'required' | 'email' | 'minLength' | 'maxLength' | 'pattern' | 'custom' | 'async';
+  type:
+    | 'required'
+    | 'email'
+    | 'minLength'
+    | 'maxLength'
+    | 'pattern'
+    | 'custom'
+    | 'async'
+    | 'fileSize'
+    | 'fileType'
+    | 'imageDimensions'
+    | 'imageOptimize';
   params?: Record<string, any>;
   message: string;
   condition?: (formState: FormState) => boolean;
@@ -143,7 +154,6 @@ export interface FormConfiguration {
   autoSave?: AutoSaveConfiguration;
   analytics?: AnalyticsConfiguration;
   accessibility?: AccessibilityConfiguration;
-  conditionalLogic?: ConditionalRule[];
 }
 
 // Auto-Save Configuration

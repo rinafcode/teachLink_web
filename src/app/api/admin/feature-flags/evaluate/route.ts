@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { flagStore, evaluateFlag } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
+import { edgeLog } from '@/../infra/edge-config';
+
+export const runtime = 'edge';
 
 /**
  * GET /api/admin/feature-flags/evaluate?id=<flagId>&userId=<uid>&plan=<plan>…
@@ -8,7 +11,8 @@ import { withRateLimit } from '@/lib/ratelimit';
  * All query params beyond `id` are passed as the evaluation context.
  */
 export async function GET(req: NextRequest) {
-  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'API');
+  edgeLog('info', '/api/admin/feature-flags/evaluate', 'GET request received');
+  const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
   const { searchParams } = new URL(req.url);

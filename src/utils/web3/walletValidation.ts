@@ -21,13 +21,14 @@ export function validateWalletInteraction(): WalletInteractionResult {
     };
   }
 
-  // Check for Starknet wallet
+  // Check if any supported wallet is available (MetaMask or Starknet)
+  const hasEthereum = !!(window as Window & { ethereum?: unknown }).ethereum;
   const hasStarknet = !!(window as Window & { starknet?: unknown }).starknet;
 
-  if (!hasStarknet) {
+  if (!hasEthereum && !hasStarknet) {
     return {
       canInteract: false,
-      reason: 'No Starknet wallet extension detected',
+      reason: 'No Web3 wallet extension detected. Please install MetaMask, ArgentX, or Braavos.',
     };
   }
 
