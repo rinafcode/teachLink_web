@@ -44,6 +44,15 @@ export type EventName =
   | 'modal_closed'
   | 'filter_applied'
   | 'sort_changed'
+  // Import
+  | 'import_started'
+  | 'import_file_parsed'
+  | 'import_validation_started'
+  | 'import_validation_completed'
+  | 'import_completed'
+  | 'import_failed'
+  | 'import_cancelled'
+  | 'import_rollback_completed'
   // Errors
   | 'error_boundary_triggered'
   | 'api_error'
