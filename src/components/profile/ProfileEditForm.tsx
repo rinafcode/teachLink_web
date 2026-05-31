@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -29,33 +30,41 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfileEditForm() {
   const { updateProfile, isLoading } = useProfileUpdate();
-  const user = useStore((state) => state.user);
+  const userId = useStore((state) => state.user.id);
+  const userName = useStore((state) => state.user.name);
+  const notificationsEnabled = useStore((state) => state.user.preferences.notifications);
+  const theme = useStore((state) => state.user.preferences.theme);
+  const prefetching = useStore((state) => state.user.preferences.prefetching);
   const setPreferences = useStore((state) => state.setPreferences);
   const setUser = useStore((state) => state.setUser);
 
-  const methods = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: user.name || 'John Doe',
-      email: user.id ? 'user@example.com' : 'john@example.com', // Placeholder if no user
+  const defaultValues = useMemo<ProfileFormData>(
+    () => ({
+      name: userName || 'John Doe',
+      email: userId ? 'user@example.com' : 'john@example.com',
       bio: 'Lifelong learner and enthusiast.',
       notifications: {
-        email: user.preferences.notifications,
+        email: notificationsEnabled,
         push: false,
       },
-      theme: user.preferences.theme,
-      prefetching: user.preferences.prefetching,
-    },
+      theme,
+      prefetching,
+    }),
+    [notificationsEnabled, prefetching, theme, userId, userName],
+  );
+
+  const methods = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues,
   });
 
   const {
     handleSubmit,
-    register,
     formState: { errors },
     setValue,
   } = methods;
 
-  const onSubmit = async (data: ProfileFormData) => {
+  const onSubmit = useCallback(async (data: ProfileFormData) => {
     const success = await updateProfile(data);
     if (success) {
       setUser({ name: data.name });
@@ -65,11 +74,11 @@ export default function ProfileEditForm() {
         prefetching: data.prefetching,
       });
     }
-  };
+  }, [setPreferences, setUser, updateProfile]);
 
-  const handleImageSelect = (file: File) => {
+  const handleImageSelect = useCallback((file: File) => {
     setValue('avatar', file);
-  };
+  }, [setValue]);
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100">

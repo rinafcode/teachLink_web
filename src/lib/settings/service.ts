@@ -35,7 +35,7 @@ export class SettingsService {
       const parsed = appSettingsSchema.safeParse(data);
       
       if (!parsed.success) {
-        parsed.error.errors.forEach((err) => {
+        parsed.error.errors.forEach((err: any) => {
           errors.push(`${err.path.join('.')}: ${err.message}`);
         });
         return {
@@ -131,7 +131,7 @@ export class SettingsService {
       
       return {
         valid: false,
-        error: result.errors.find((e) => e.includes(key)) || 'Invalid value',
+        error: result.errors.find((e) => e.includes(String(key))) || 'Invalid value',
       };
     } catch {
       return {
@@ -229,6 +229,8 @@ export class SettingsService {
     canEditEmail: boolean;
     canEditPrefetching: boolean;
     canEditReducedMotion: boolean;
+    canEditElectronicSignature: boolean;
+    canEditPollSettings: boolean;
     canExportSettings: boolean;
     canImportSettings: boolean;
     canSyncSettings: boolean;
@@ -240,6 +242,8 @@ export class SettingsService {
       canEditEmail: true,
       canEditPrefetching: true,
       canEditReducedMotion: true,
+      canEditElectronicSignature: true,
+      canEditPollSettings: true,
       canExportSettings: true,
       canImportSettings: true,
       canSyncSettings: true,
@@ -260,6 +264,13 @@ export class SettingsService {
       emailNotifications: 'canEditEmail',
       prefetchingEnabled: 'canEditPrefetching',
       reducedMotion: 'canEditReducedMotion',
+      electronicSignatureEnabled: 'canEditElectronicSignature',
+      signatureName: 'canEditElectronicSignature',
+      requireSignatureOnCertificates: 'canEditElectronicSignature',
+      pollCreationEnabled: 'canEditPollSettings',
+      defaultPollDuration: 'canEditPollSettings',
+      allowAnonymousVoting: 'canEditPollSettings',
+      pollResultsVisibility: 'canEditPollSettings',
     };
 
     return capabilities[permissionMap[key]] || false;
@@ -270,9 +281,21 @@ export class SettingsService {
    */
   static migrateSettings(settings: AppSettings): AppSettings {
     // If settings version is outdated, apply migrations
-    // Currently on version 1, so no migrations needed yet
     if (settings.version !== SETTINGS_SCHEMA_VERSION) {
-      // Future: Add migration logic here when version changes
+      // Migration from version 2 to version 3: Add virtual background fields
+      if (settings.version === 2) {
+        return {
+          ...settings,
+          version: SETTINGS_SCHEMA_VERSION,
+          virtualBackgroundEnabled: false,
+          virtualBackgroundType: 'none',
+          virtualBackgroundImage: '',
+          virtualBackgroundBlur: 10,
+          virtualBackgroundColor: '#000000',
+        };
+      }
+      
+      // For other version mismatches, use defaults but preserve existing fields
       return {
         ...createDefaultSettings(),
         ...settings,

@@ -77,6 +77,12 @@ export const settingsPreferences: PreferenceOption[] = [
     description: 'Enable offline learning capabilities',
     enabled: true,
   },
+  {
+    id: 'poll-creation',
+    label: 'Poll Creation',
+    description: 'Allow creating interactive polls in study groups and courses',
+    enabled: true,
+  },
 ];
 
 export const achievements: Achievement[] = [
