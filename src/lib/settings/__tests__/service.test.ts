@@ -477,6 +477,9 @@ describe('SettingsService', () => {
       Object.values(capabilities).forEach((capability) => {
         expect(capability).toBe(true);
       });
+      
+      // Check that virtual background capability exists
+      expect(capabilities.canEditVirtualBackground).toBe(true);
     });
   });
 
@@ -587,6 +590,24 @@ describe('SettingsService', () => {
 
       expect(migrated.theme).toBe('dark');
       expect(migrated.language).toBe('fr');
+    });
+
+    it('migrates version 2 to version 3 with virtual background fields', () => {
+      const v2Settings = {
+        ...createDefaultSettings(),
+        version: 2 as any,
+        theme: 'dark' as const,
+      };
+      
+      const result = SettingsService.migrateSettings(v2Settings);
+
+      expect(result.version).toBe(3);
+      expect(result.virtualBackgroundEnabled).toBe(false);
+      expect(result.virtualBackgroundType).toBe('none');
+      expect(result.virtualBackgroundImage).toBe('');
+      expect(result.virtualBackgroundBlur).toBe(10);
+      expect(result.virtualBackgroundColor).toBe('#000000');
+      expect(result.theme).toBe('dark'); // Preserves existing field
     });
   });
 });

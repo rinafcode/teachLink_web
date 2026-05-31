@@ -5,6 +5,9 @@ import { SETTINGS_SCHEMA_VERSION } from './constants';
 export const themePreferenceSchema = z.enum(['light', 'dark', 'system']);
 export type ThemePreference = z.infer<typeof themePreferenceSchema>;
 
+export const virtualBackgroundTypeSchema = z.enum(['none', 'blur', 'image', 'color']);
+export type VirtualBackgroundType = z.infer<typeof virtualBackgroundTypeSchema>;
+
 /**
  * Validated schema for all user-configurable application settings.
  *
@@ -78,6 +81,7 @@ export type ExportedSettingsEnvelope = z.infer<typeof exportedSettingsEnvelopeSc
  * - `theme` defaults to `'system'` so the OS preference is respected out of the box.
  * - `language` is read from `navigator.language` when available, falling back to `'en'`.
  * - All notification and UX toggles default to their most permissive value.
+ * - Virtual background is disabled by default with 'none' type.
  */
 export function createDefaultSettings(): AppSettings {
   return {

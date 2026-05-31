@@ -76,6 +76,29 @@ describe('Settings System Integration', () => {
       expect(importResult.data).toEqual(originalSettings);
     });
 
+    it('exports and imports virtual background settings', () => {
+      const settingsWithVB = {
+        ...createDefaultSettings(),
+        virtualBackgroundEnabled: true,
+        virtualBackgroundType: 'image' as const,
+        virtualBackgroundImage: 'https://example.com/bg.jpg',
+        virtualBackgroundBlur: 25,
+        virtualBackgroundColor: '#FF5733',
+      };
+      
+      const storeState = SettingsService.createStoreState(settingsWithVB);
+      const exported = SettingsService.exportSettings(storeState);
+
+      const importResult = SettingsService.importSettings(exported);
+
+      expect(importResult.valid).toBe(true);
+      expect(importResult.data?.virtualBackgroundEnabled).toBe(true);
+      expect(importResult.data?.virtualBackgroundType).toBe('image');
+      expect(importResult.data?.virtualBackgroundImage).toBe('https://example.com/bg.jpg');
+      expect(importResult.data?.virtualBackgroundBlur).toBe(25);
+      expect(importResult.data?.virtualBackgroundColor).toBe('#FF5733');
+    });
+
     it('handles partial updates correctly', () => {
       const currentSettings = createDefaultSettings();
       const partialUpdate = { theme: 'dark' as const };
@@ -94,6 +117,24 @@ describe('Settings System Integration', () => {
       expect(resetSettings.theme).not.toBe('dark');
       expect(resetSettings.language).not.toBe('fr');
       expect(resetSettings).toEqual(createDefaultSettings());
+    });
+
+    it('resets virtual background settings to defaults', () => {
+      const modifiedSettings = {
+        ...createDefaultSettings(),
+        virtualBackgroundEnabled: true,
+        virtualBackgroundType: 'image' as const,
+        virtualBackgroundImage: 'https://example.com/bg.jpg',
+        virtualBackgroundBlur: 50,
+        virtualBackgroundColor: '#FF0000',
+      };
+      const resetSettings = SettingsService.resetToDefaults();
+
+      expect(resetSettings.virtualBackgroundEnabled).toBe(false);
+      expect(resetSettings.virtualBackgroundType).toBe('none');
+      expect(resetSettings.virtualBackgroundImage).toBe('');
+      expect(resetSettings.virtualBackgroundBlur).toBe(10);
+      expect(resetSettings.virtualBackgroundColor).toBe('#000000');
     });
   });
 
