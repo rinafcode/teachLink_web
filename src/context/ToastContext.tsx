@@ -43,7 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     (message: string, type: ToastType = 'info', duration = DEFAULT_TOAST_DURATION) => {
       circuitBreaker.execute(
         () => {
-          const id = Math.random().toString(36).substr(2, 9);
+          const id = Math.random().toString(36).substring(2, 11);
           setToasts((prev: ToastMessage[]) => [...prev, { id, type, message, duration }]);
 
           if (duration > 0) {
@@ -57,7 +57,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           // Fallback: Log to console when circuit is open
           console.warn('[Toast Circuit Breaker] Toast notification suppressed:', { type, message });
           // Optionally show a simplified fallback toast
-          const id = Math.random().toString(36).substr(2, 9);
+          const id = Math.random().toString(36).substring(2, 11);
           setToasts((prev: ToastMessage[]) => [...prev.slice(-2), { id, type: 'info', message: 'Notifications temporarily limited', duration: 3000 }]);
           if (duration > 0) {
             setTimeout(() => {
