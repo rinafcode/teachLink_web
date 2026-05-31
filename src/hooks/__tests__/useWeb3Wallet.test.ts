@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useWeb3Wallet } from '../useWeb3Wallet';
+import { walletConnectionQueue } from '@/utils/web3/walletQueue';
 
 describe('useWeb3Wallet', () => {
   let mockEthereum: any;
@@ -42,6 +43,7 @@ describe('useWeb3Wallet', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.useRealTimers();
+    walletConnectionQueue.clear('cleanup');
     if (typeof window !== 'undefined') {
       delete (window as any).ethereum;
       delete (window as any).starknet;
@@ -185,5 +187,49 @@ describe('useWeb3Wallet', () => {
 
     expect(result.current.isConnected).toBe(false);
     expect(result.current.address).toBeNull();
+  });
+
+  it('should expose queueStats with correct shape', () => {
+    const { result } = renderHook(() => useWeb3Wallet());
+    const { queueStats } = result.current;
+
+    expect(queueStats).toHaveProperty('queueLength');
+    expect(queueStats).toHaveProperty('isProcessing');
+    expect(queueStats).toHaveProperty('totalProcessed');
+    expect(queueStats).toHaveProperty('totalFailed');
+    expect(typeof queueStats.queueLength).toBe('number');
+    expect(typeof queueStats.isProcessing).toBe('boolean');
+  });
+
+  it('should serialise concurrent connect calls so only one runs at a time', async () => {
+    const callOrder: number[] = [];
+    let callCount = 0;
+
+    mockEthereum.request.mockImplementation(
+      ({ method }: { method: string }) =>
+        new Promise<string | string[]>((resolve) => {
+          const id = ++callCount;
+          setTimeout(() => {
+            callOrder.push(id);
+            if (method === 'eth_requestAccounts')
+              resolve(['0x1234567890123456789012345678901234567890']);
+            else resolve('0x1');
+          }, 10);
+        }),
+    );
+
+    const { result } = renderHook(() => useWeb3Wallet());
+
+    await act(async () => {
+      await Promise.all([
+        result.current.connect('metamask'),
+        result.current.connect('metamask'),
+      ]);
+      vi.runAllTimers();
+    });
+
+    // FIFO: first call's eth_requestAccounts resolves before the second call starts
+    expect(callOrder[0]).toBeLessThan(callOrder[callOrder.length - 1]);
+    expect(result.current.isConnected).toBe(true);
   });
 });

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { validateWalletInteraction, safeWalletCall } from '@/utils/web3/walletValidation';
+import { walletConnectionQueue } from '@/utils/web3/walletQueue';
 
 /**
  * Supported wallet providers
@@ -200,63 +201,68 @@ export function useWeb3Wallet() {
   }, []);
 
   /**
-   * Connect to specified wallet provider, now supports 'service'
+   * Connect to specified wallet provider, now supports 'service'.
+   * All calls are serialised through walletConnectionQueue so that
+   * rapid successive invocations never fire concurrent wallet pop-ups
+   * or produce conflicting state updates.
    */
   const connect = useCallback(
     async (provider: WalletProvider = 'metamask') => {
       setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
-      try {
-        const interaction = validateWalletInteraction();
-        if (!interaction.canInteract) {
-          throw new Error(interaction.reason || 'Wallet interactions disabled');
+      return walletConnectionQueue.enqueue(async () => {
+        try {
+          const interaction = validateWalletInteraction();
+          if (!interaction.canInteract) {
+            throw new Error(interaction.reason || 'Wallet interactions disabled');
+          }
+
+          let result;
+          switch (provider) {
+            case 'metamask':
+              result = await connectMetaMask();
+              break;
+            case 'starknet':
+              result = await connectStarknet();
+              break;
+            case 'service':
+              result = await connectServiceAccount();
+              break;
+            default:
+              throw new Error(`Unsupported wallet provider: ${provider}`);
+          }
+
+          if (!result.success || !result.data) {
+            throw new Error(result.error || 'Connection failed');
+          }
+
+          setState((prev) => ({
+            ...prev,
+            address: result.data.address,
+            isConnected: true,
+            isConnecting: false,
+            provider: result.data.provider,
+            chainId: result.data.chainId,
+            error: null,
+          }));
+
+          // Persist connection preference
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('wallet_provider', provider);
+            localStorage.setItem('wallet_connected', 'true');
+          }
+
+          return result.data;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to connect wallet';
+          setState((prev) => ({
+            ...prev,
+            isConnecting: false,
+            error: message,
+          }));
+          throw error;
         }
-
-        let result;
-        switch (provider) {
-          case 'metamask':
-            result = await connectMetaMask();
-            break;
-          case 'starknet':
-            result = await connectStarknet();
-            break;
-          case 'service':
-            result = await connectServiceAccount();
-            break;
-          default:
-            throw new Error(`Unsupported wallet provider: ${provider}`);
-        }
-
-        if (!result.success || !result.data) {
-          throw new Error(result.error || 'Connection failed');
-        }
-
-        setState((prev) => ({
-          ...prev,
-          address: result.data.address,
-          isConnected: true,
-          isConnecting: false,
-          provider: result.data.provider,
-          chainId: result.data.chainId,
-          error: null,
-        }));
-
-        // Persist connection preference
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('wallet_provider', provider);
-          localStorage.setItem('wallet_connected', 'true');
-        }
-
-        return result.data;
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to connect wallet';
-        setState((prev) => ({
-          ...prev,
-          isConnecting: false,
-          error: message,
-        }));
-        throw error;
-      }
+      });
     },
     [connectMetaMask, connectStarknet, connectServiceAccount],
   );
@@ -472,5 +478,6 @@ export function useWeb3Wallet() {
     sendTransaction,
     clearError,
     supportedChains: SUPPORTED_CHAINS,
+    queueStats: walletConnectionQueue.getStats(),
   };
 }
