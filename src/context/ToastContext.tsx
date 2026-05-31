@@ -1,9 +1,20 @@
 'use client';
 
 import { DEFAULT_TOAST_DURATION } from '@/constants/app.constants';
-import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  ReactNode,
+  useRef,
+} from 'react';
 import { Toast, ToastType } from '@/components/ui/Toast';
-import { createToastCircuitBreaker, CircuitBreakerMetrics } from '@/utils/circuitBreaker';
+import {
+  createToastCircuitBreaker,
+  CircuitBreakerMetrics,
+} from '@/utils/circuitBreaker';
 
 export interface ToastMessage {
   id: string;
@@ -27,24 +38,35 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const circuitBreaker = useRef(createToastCircuitBreaker({
-    failureThreshold: 5,
-    successThreshold: 2,
-    timeout: 60000,
-    monitoringPeriod: 10000,
-    maxConcurrentRequests: 10,
-  })).current;
+  const circuitBreaker = useRef(
+    createToastCircuitBreaker({
+      failureThreshold: 5,
+      successThreshold: 2,
+      timeout: 60000,
+      monitoringPeriod: 10000,
+      maxConcurrentRequests: 10,
+    }),
+  ).current;
 
   const removeToast = useCallback((id: string) => {
-    setToasts((prev: ToastMessage[]) => prev.filter((toast: ToastMessage) => toast.id !== id));
+    setToasts((prev: ToastMessage[]) =>
+      prev.filter((toast: ToastMessage) => toast.id !== id),
+    );
   }, []);
 
   const addToast = useCallback(
-    (message: string, type: ToastType = 'info', duration = DEFAULT_TOAST_DURATION) => {
+    (
+      message: string,
+      type: ToastType = 'info',
+      duration = DEFAULT_TOAST_DURATION,
+    ) => {
       circuitBreaker.execute(
         () => {
           const id = Math.random().toString(36).substring(2, 11);
-          setToasts((prev: ToastMessage[]) => [...prev, { id, type, message, duration }]);
+          setToasts((prev: ToastMessage[]) => [
+            ...prev,
+            { id, type, message, duration },
+          ]);
 
           if (duration > 0) {
             setTimeout(() => {
@@ -55,10 +77,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         },
         () => {
           // Fallback: Log to console when circuit is open
-          console.warn('[Toast Circuit Breaker] Toast notification suppressed:', { type, message });
+          console.warn('[Toast Circuit Breaker] Toast notification suppressed:', {
+            type,
+            message,
+          });
           // Optionally show a simplified fallback toast
           const id = Math.random().toString(36).substring(2, 11);
-          setToasts((prev: ToastMessage[]) => [...prev.slice(-2), { id, type: 'info', message: 'Notifications temporarily limited', duration: 3000 }]);
+          setToasts((prev: ToastMessage[]) => [
+            ...prev.slice(-2),
+            {
+              id,
+              type: 'info',
+              message: 'Notifications temporarily limited',
+              duration: 3000,
+            },
+          ]);
           if (duration > 0) {
             setTimeout(() => {
               removeToast(id);
@@ -77,7 +110,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [addToast],
   );
   const success = useCallback(
-    (message: string, duration?: number) => addToast(message, 'success', duration),
+    (message: string, duration?: number) =>
+      addToast(message, 'success', duration),
     [addToast],
   );
   const info = useCallback(
@@ -94,8 +128,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [circuitBreaker]);
 
   const value = useMemo(
-    () => ({ toasts, addToast, removeToast, error, success, info, getCircuitBreakerMetrics, resetCircuitBreaker }),
-    [toasts, addToast, removeToast, error, success, info, getCircuitBreakerMetrics, resetCircuitBreaker],
+    () => ({
+      toasts,
+      addToast,
+      removeToast,
+      error,
+      success,
+      info,
+      getCircuitBreakerMetrics,
+      resetCircuitBreaker,
+    }),
+    [
+      toasts,
+      addToast,
+      removeToast,
+      error,
+      success,
+      info,
+      getCircuitBreakerMetrics,
+      resetCircuitBreaker,
+    ],
   );
 
   return (

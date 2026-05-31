@@ -1,9 +1,9 @@
 /**
  * Circuit Breaker Implementation for Toast Notifications
- * 
+ *
  * This utility implements the Circuit Breaker pattern to prevent cascading failures
  * and provide fallback behavior when the toast notification system is overwhelmed.
- * 
+ *
  * States:
  * - CLOSED: Normal operation, requests pass through
  * - OPEN: Circuit is tripped, requests fail fast
@@ -56,7 +56,10 @@ export class CircuitBreaker {
   /**
    * Execute an operation with circuit breaker protection
    */
-  async execute<T>(operation: () => Promise<T> | T, fallback?: () => T): Promise<T> {
+  async execute<T>(
+    operation: () => Promise<T> | T,
+    fallback?: () => T,
+  ): Promise<T> {
     this.totalRequests++;
 
     // Check if circuit is open and timeout has elapsed
@@ -125,7 +128,7 @@ export class CircuitBreaker {
 
     // Clean up old failures outside monitoring period
     this.failureHistory = this.failureHistory.filter(
-      time => Date.now() - time < this.config.monitoringPeriod
+      (time) => Date.now() - time < this.config.monitoringPeriod,
     );
 
     if (this.state === 'HALF_OPEN') {
@@ -211,6 +214,8 @@ export class CircuitBreaker {
 /**
  * Create a circuit breaker instance for toast notifications
  */
-export function createToastCircuitBreaker(config?: Partial<CircuitBreakerConfig>): CircuitBreaker {
+export function createToastCircuitBreaker(
+  config?: Partial<CircuitBreakerConfig>,
+): CircuitBreaker {
   return new CircuitBreaker({ ...DEFAULT_CONFIG, ...config });
 }
