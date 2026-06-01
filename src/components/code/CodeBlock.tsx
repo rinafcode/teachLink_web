@@ -70,9 +70,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
           </span>
           {/* Spacer to keep button width stable */}
           <span className="w-3.5 h-3.5 inline-block" aria-hidden />
-          <span
-            className={`transition-colors duration-200 ${copied ? 'text-emerald-400' : ''}`}
-          >
+          <span className={`transition-colors duration-200 ${copied ? 'text-emerald-400' : ''}`}>
             {copied ? 'Copied!' : 'Copy'}
           </span>
         </button>
@@ -82,10 +80,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       <div
         className="overflow-hidden transition-[max-height] duration-500 ease-in-out"
         style={{
-          maxHeight:
-            isCollapsible && !expanded
-              ? `${collapseThreshold * 1.625}rem`
-              : '9999px',
+          maxHeight: isCollapsible && !expanded ? `${collapseThreshold * 1.625}rem` : '9999px',
           WebkitMaskImage:
             isCollapsible && !expanded
               ? 'linear-gradient(to bottom, black 60%, transparent 100%)'
@@ -119,7 +114,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
           ) : (
             <>
               <ChevronDown className="w-3.5 h-3.5 transition-transform duration-300" />
-              Show {lineCount - collapseThreshold} more line{lineCount - collapseThreshold !== 1 ? 's' : ''}
+              Show {lineCount - collapseThreshold} more line
+              {lineCount - collapseThreshold !== 1 ? 's' : ''}
             </>
           )}
         </button>
