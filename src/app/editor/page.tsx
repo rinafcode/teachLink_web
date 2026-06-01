@@ -1,50 +1,69 @@
-'use client';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { PrivilegedContainer } from '@/components/shared/PrivilegedContainer';
+import { UserRole } from '@/types/api';
+import { EDITOR_MIN_ROLE, canAccessPostEditor } from '@/lib/auth/editorAccess';
+import { EditorWorkspace } from './EditorWorkspace';
 
-import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { sanitizeHtml } from '@/utils/sanitize';
+export const metadata: Metadata = {
+  title: 'Post Editor | TeachLink',
+  description: 'Create and edit privileged post content with a secure editor workspace.',
+};
 
-const RichContentEditor = dynamic(
-  () => import('@/components/editor/RichContentEditor').then((mod) => mod.RichContentEditor),
-  {
-    loading: () => (
-      <div className="h-[500px] w-full bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl" />
-    ),
-    ssr: false,
-  },
-);
+function fallback() {
+  return (
+    <main className="mx-auto flex min-h-[60vh] max-w-3xl items-center justify-center px-6 py-16">
+      <section className="w-full rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+          Privileged container
+        </p>
+        <h1 className="mt-3 text-3xl font-bold text-gray-900 dark:text-white">
+          Post editor access is restricted.
+        </h1>
+        <p className="mt-4 text-base text-gray-600 dark:text-gray-300">
+          Only instructors and admins can open the editor workspace.
+        </p>
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <Link
+            href="/login"
+            className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/dashboard"
+            className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+          >
+            Dashboard
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}
 
-export default function EditorPage() {
-  const [content, setContent] = useState('<p>Start editing...</p>');
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
+export default async function EditorPage() {
+  const cookieStore = await cookies();
+  const roleCookie = cookieStore.get('user-role')?.value;
+  const userRole = Object.values(UserRole).includes(roleCookie as UserRole)
+    ? (roleCookie as UserRole)
+    : null;
+
+  const restrictedFallback = fallback();
+
+  if (!canAccessPostEditor(userRole)) {
+    return restrictedFallback;
+  }
 
   return (
-    <div className="container mx-auto p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-          Advanced Content Editor Demo
-        </h1>
-        <button
-          onClick={() => setIsPreviewMode((prev) => !prev)}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            isPreviewMode
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          {isPreviewMode ? 'Back to Editor' : 'Preview'}
-        </button>
-      </div>
-
-      {isPreviewMode ? (
-        <div className="prose dark:prose-invert max-w-none bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 min-h-[calc(100vh-200px)]">
-          <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
-        </div>
-      ) : (
-        <div className="mb-8">
-          <RichContentEditor initialContent={content} onUpdate={setContent} />
-        </div>
-      )}
-    </div>
+    <PrivilegedContainer
+      userRole={userRole}
+      requiredRole={EDITOR_MIN_ROLE}
+      fallback={restrictedFallback}
+      className="min-h-screen"
+    >
+      <EditorWorkspace />
+    </PrivilegedContainer>
   );
 }

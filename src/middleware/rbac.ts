@@ -8,6 +8,7 @@ import { UserRole } from '@/types/api';
 const ROUTE_PERMISSIONS: Record<string, UserRole> = {
   '/admin': UserRole.ADMIN,
   '/instructor': UserRole.INSTRUCTOR,
+  '/editor': UserRole.INSTRUCTOR,
   '/dashboard': UserRole.STUDENT,
   '/profile': UserRole.STUDENT,
 };
@@ -22,8 +23,8 @@ export function checkRoutePermission(
   const { pathname } = request.nextUrl;
 
   // Find the required role for the current path
-  const requiredRole = Object.entries(ROUTE_PERMISSIONS).find(([path]) =>
-    pathname.startsWith(path),
+  const requiredRole = Object.entries(ROUTE_PERMISSIONS).find(
+    ([path]) => pathname === path || pathname.startsWith(`${path}/`),
   )?.[1];
 
   if (!requiredRole) {
