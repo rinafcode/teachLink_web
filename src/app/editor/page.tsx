@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { PrivilegedContainer } from '@/components/shared/PrivilegedContainer';
 import { UserRole } from '@/types/api';
-import { EDITOR_MIN_ROLE, canAccessPostEditor } from '@/lib/auth/editorAccess';
+import { EDITOR_MIN_ROLE } from '@/lib/auth/editorAccess';
 import { EditorWorkspace } from './EditorWorkspace';
 
 export const metadata: Metadata = {
@@ -43,6 +43,10 @@ function fallback() {
   );
 }
 
+function RestrictedEditorFallback() {
+  return fallback();
+}
+
 export default async function EditorPage() {
   const cookieStore = await cookies();
   const roleCookie = cookieStore.get('user-role')?.value;
@@ -50,17 +54,11 @@ export default async function EditorPage() {
     ? (roleCookie as UserRole)
     : null;
 
-  const restrictedFallback = fallback();
-
-  if (!canAccessPostEditor(userRole)) {
-    return restrictedFallback;
-  }
-
   return (
     <PrivilegedContainer
       userRole={userRole}
       requiredRole={EDITOR_MIN_ROLE}
-      fallback={restrictedFallback}
+      fallback={<RestrictedEditorFallback />}
       className="min-h-screen"
     >
       <EditorWorkspace />

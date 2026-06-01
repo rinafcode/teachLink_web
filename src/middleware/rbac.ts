@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { UserRole } from '@/types/api';
+import { isAtLeastRole } from '@/lib/auth/acl';
 
 /**
  * Define which routes require which minimum roles.
@@ -36,12 +37,7 @@ export function checkRoutePermission(
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Hierarchy check
-  const hierarchy = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN];
-  const userRoleIndex = hierarchy.indexOf(userRole);
-  const requiredRoleIndex = hierarchy.indexOf(requiredRole);
-
-  if (userRoleIndex < requiredRoleIndex) {
+  if (!isAtLeastRole(userRole, requiredRole)) {
     // Redirect to an unauthorized page or dashboard
     return NextResponse.redirect(new URL('/unauthorized', request.url));
   }

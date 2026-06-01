@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { NextResponse, type NextRequest } from 'next/server';
 import { checkRoutePermission } from '../rbac';
 import { UserRole } from '@/types/api';
@@ -56,5 +56,12 @@ describe('checkRoutePermission', () => {
   it('does not interfere with public routes', () => {
     const request = createMockRequest('/editorial');
     expect(checkRoutePermission(request, UserRole.ADMIN)).toBeNull();
+  });
+
+  it('protects nested editor routes', () => {
+    const request = createMockRequest('/editor/posts/123');
+
+    expect(checkRoutePermission(request, UserRole.INSTRUCTOR)).toBeNull();
+    expect(checkRoutePermission(request, UserRole.STUDENT)?.status).toBe(307);
   });
 });
