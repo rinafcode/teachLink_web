@@ -70,18 +70,21 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }
   };
 
-  const hide = useCallback(() => {
-    clearTimer();
-    if (interactive) {
-      timerRef.current = setTimeout(() => {
-        if (!isTooltipHovered) {
-          setVisible(false);
-        }
-      }, 100);
-    } else {
-      setVisible(false);
-    }
-  }, [interactive, isTooltipHovered]);
+  const hide = useCallback(
+    (tooltipHovered = isTooltipHovered) => {
+      clearTimer();
+      if (interactive) {
+        timerRef.current = setTimeout(() => {
+          if (!tooltipHovered) {
+            setVisible(false);
+          }
+        }, 100);
+      } else {
+        setVisible(false);
+      }
+    },
+    [interactive, isTooltipHovered],
+  );
 
   const handleTooltipEnter = useCallback(() => {
     if (!interactive) return;
@@ -93,7 +96,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const handleTooltipLeave = useCallback(() => {
     if (!interactive) return;
     setIsTooltipHovered(false);
-    hide();
+    hide(false);
   }, [interactive, hide]);
 
   /** Anomaly detection: flag if tooltip opens >5 times in 3 seconds */
