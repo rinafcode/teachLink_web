@@ -21,6 +21,7 @@ import { VideoPlayerContext } from './VideoPlayerContext';
 import type { VideoPlayerContextValue } from './VideoPlayerContext';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
+import { useAudioEnhancement } from '../../hooks/useAudioEnhancement';
 import { AudioInvoiceManager, AudioInvoiceButton } from '@/components/audio';
 
 interface VideoPlayerProps {

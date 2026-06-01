@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, TrendingUp } from 'lucide-react';
+import { Settings, TrendingUp, DollarSign, Users, BarChart3, BookOpen } from 'lucide-react';
 import { AccessibleLoading } from '../../accessibility/ScreenReaderOptimizer';
 
 interface ProgressSummaryWidgetProps {
