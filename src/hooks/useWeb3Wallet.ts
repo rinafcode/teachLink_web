@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { validateWalletInteraction, safeWalletCall } from '@/utils/web3/walletValidation';
+import { walletCache, walletCacheKeys, CACHE_TTL } from '@/utils/web3/walletCache';
 
 /**
  * Supported wallet providers
@@ -262,18 +263,67 @@ export function useWeb3Wallet() {
   );
 
   /**
+   * Fetch native balance for the connected wallet and cache the result.
+   * Only runs for MetaMask (EVM) connections; Starknet has a different API.
+   */
+  const fetchBalance = useCallback(async () => {
+    if (!state.address || !state.chainId || state.provider !== 'metamask') return;
+
+    const cacheKey = walletCacheKeys.balance(state.address, state.chainId);
+    const cached = walletCache.get<WalletBalance[]>(cacheKey);
+    if (cached) {
+      setState((prev) => ({ ...prev, balances: cached }));
+      return;
+    }
+
+    try {
+      if (typeof window === 'undefined') return;
+      const ethereum = (window as Window & { ethereum?: any }).ethereum;
+      if (!ethereum) return;
+
+      const balanceHex: string = await ethereum.request({
+        method: 'eth_getBalance',
+        params: [state.address, 'latest'],
+      });
+
+      const balanceWei = BigInt(balanceHex);
+      const balanceEth = Number(balanceWei) / 1e18;
+      const chain = SUPPORTED_CHAINS[state.chainId];
+
+      const balances: WalletBalance[] = [
+        {
+          token: 'native',
+          balance: balanceEth.toFixed(6),
+          decimals: 18,
+          symbol: chain?.nativeCurrency.symbol ?? 'ETH',
+        },
+      ];
+
+      walletCache.set(cacheKey, balances, CACHE_TTL.BALANCE);
+      setState((prev) => ({ ...prev, balances }));
+    } catch (error) {
+      console.warn('[useWeb3Wallet] Balance fetch failed:', error);
+    }
+  }, [state.address, state.chainId, state.provider]);
+
+  /**
    * Disconnect wallet
    */
   const disconnect = useCallback(async () => {
-    setState((prev) => ({
-      ...prev,
-      address: null,
-      isConnected: false,
-      provider: null,
-      chainId: null,
-      balances: [],
-      error: null,
-    }));
+    setState((prev) => {
+      if (prev.address) {
+        walletCache.invalidateByPrefix(walletCacheKeys.addressPrefix(prev.address));
+      }
+      return {
+        ...prev,
+        address: null,
+        isConnected: false,
+        provider: null,
+        chainId: null,
+        balances: [],
+        error: null,
+      };
+    });
 
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('wallet_connected');
@@ -378,6 +428,13 @@ export function useWeb3Wallet() {
   }, []);
 
   /**
+   * Fetch balance whenever the connected address or chain changes
+   */
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
+
+  /**
    * Auto-connect on mount if previously connected
    */
   useEffect(() => {
@@ -470,6 +527,7 @@ export function useWeb3Wallet() {
     switchChain,
     signMessage,
     sendTransaction,
+    fetchBalance,
     clearError,
     supportedChains: SUPPORTED_CHAINS,
   };

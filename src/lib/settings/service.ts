@@ -281,9 +281,21 @@ export class SettingsService {
    */
   static migrateSettings(settings: AppSettings): AppSettings {
     // If settings version is outdated, apply migrations
-    // Currently on version 1, so no migrations needed yet
     if (settings.version !== SETTINGS_SCHEMA_VERSION) {
-      // Future: Add migration logic here when version changes
+      // Migration from version 2 to version 3: Add virtual background fields
+      if (settings.version === 2) {
+        return {
+          ...settings,
+          version: SETTINGS_SCHEMA_VERSION,
+          virtualBackgroundEnabled: false,
+          virtualBackgroundType: 'none',
+          virtualBackgroundImage: '',
+          virtualBackgroundBlur: 10,
+          virtualBackgroundColor: '#000000',
+        };
+      }
+      
+      // For other version mismatches, use defaults but preserve existing fields
       return {
         ...createDefaultSettings(),
         ...settings,

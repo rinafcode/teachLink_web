@@ -103,8 +103,7 @@ export class AsyncValidationManager {
       return existingValidation;
     }
 
-    // Create debounced validation
-    return new Promise((resolve, reject) => {
+    const validationPromise = new Promise<ValidationResult>((resolve, reject) => {
       const timer = setTimeout(async () => {
         this.debounceTimers.delete(fieldId);
 
@@ -124,6 +123,9 @@ export class AsyncValidationManager {
 
       this.debounceTimers.set(fieldId, timer);
     });
+
+    this.pendingValidations.set(fieldId, validationPromise);
+    return validationPromise;
   }
 
   /**
@@ -149,9 +151,6 @@ export class AsyncValidationManager {
       validationFunction,
       options,
     );
-
-    // Store pending validation
-    this.pendingValidations.set(fieldId, validationPromise);
 
     try {
       const result = await validationPromise;
