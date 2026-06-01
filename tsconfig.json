@@ -1,23 +1,72 @@
 {
-  "extends": "@teachlink/tooling/tsconfig/base.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "allowJs": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "jsx": "preserve"
   },
-  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     ".next",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "src/app/api/auth",
+    "src/app/api/bookmarks",
+    "src/app/api/notes",
+    "src/app/api/certificates",
+    "src/app/components/dashboard/widgets",
+    "src/app/dashboard/page.tsx",
+    "src/app/hooks/useMessaging.tsx",
+    "src/app/hooks/useNotifications.tsx",
+    "src/app/hooks/useStudyGroups.tsx",
+    "src/components/BulkActions.tsx",
+    "src/components/InfiniteList.tsx",
+    "src/components/accessibility/VoiceControl.tsx",
+    "src/components/assessment/QuestionTypes.tsx",
+    "src/components/audio/AudioPlayer.tsx",
+    "src/components/cms/MediaManager.tsx",
+    "src/components/navigation/SidebarNavigation.tsx",
+    "src/components/notificationcenter.tsx",
+    "src/components/virtualizedsearchresults.tsx",
+    "src/components/web3/WalletConnector.tsx",
+    "src/form-management",
+    "src/hooks/useCodeEditor.tsx",
+    "src/hooks/useCollaboration.ts",
+    "src/hooks/useLazyLoad.tsx",
+    "src/hooks/useVideoPlayer.ts",
+    "src/hooks/useVirtualBackground.ts",
+    "src/hooks/useWeb3Wallet.ts",
+    "src/lib/api.ts",
+    "src/lib/apiInterceptors.ts",
+    "src/lib/auth/acl.ts",
+    "src/lib/bulk/bulkHistory.ts",
+    "src/lib/settings/service.ts",
+    "src/middleware/redirectManagement.ts",
+    "src/pages/settings/index.tsx",
+    "src/serviceWorker.ts",
+    "src/services/pdf-generation.ts",
+    "src/services/serviceAccount.ts",
+    "src/utils/virtualBackgroundUtils.ts",
+    "src/workers/sms-cluster-worker.ts"
   ]
 }

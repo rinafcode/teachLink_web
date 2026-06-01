@@ -12,11 +12,17 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
+import { DiscordButton } from '../../../components/auth/DiscordButton';
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
+
+  const handleDiscordSignup = () => {
+    window.location.href = '/api/auth/discord';
+  };
 
   const {
     register,
@@ -28,12 +34,18 @@ export default function SignupPage() {
 
   const signupMutation = useMutation(
     async (data: SignupFormData) => {
-      await apiClient.post('/api/auth/signup', data);
+      return apiClient.post<{ verification?: { required: boolean } }>('/api/auth/signup', data);
     },
     {
-      onSuccess: () => {
+      onSuccess: (data, variables) => {
+        if (data.verification?.required) {
+          setSuccessMessage('Account created successfully! Check your email to verify your account.');
+          setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(variables.email)}`), 1500);
+          return;
+        }
+
         setSuccessMessage('Account created successfully! Redirecting...');
-        setTimeout(() => router.push('/dashboard'), 1500);
+        setTimeout(() => router.push('/onboarding'), 1500);
       },
     },
   );
@@ -95,7 +107,11 @@ export default function SignupPage() {
               <input
                 type="text"
                 placeholder="John Doe"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                className={`w-full px-4 py-3 border ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
+                aria-invalid={!!errors.name}
+                aria-describedby="name-error"
                 {...register('name')}
               />
               <FieldError error={errors.name?.message} id="name-error" />
@@ -106,7 +122,11 @@ export default function SignupPage() {
               <input
                 type="email"
                 placeholder="john.doe@example.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                className={`w-full px-4 py-3 border ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
+                aria-invalid={!!errors.email}
+                aria-describedby="email-error"
                 {...register('email')}
               />
               <FieldError error={errors.email?.message} id="email-error" />
@@ -118,7 +138,11 @@ export default function SignupPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12"
+                  className={`w-full px-4 py-3 border ${
+                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
+                  aria-invalid={!!errors.password}
+                  aria-describedby="password-error"
                   {...register('password')}
                 />
                 <button
@@ -130,6 +154,32 @@ export default function SignupPage() {
                 </button>
               </div>
               <FieldError error={errors.password?.message} id="password-error" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  className={`w-full px-4 py-3 border ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
+                  aria-invalid={!!errors.confirmPassword}
+                  aria-describedby="confirmPassword-error"
+                  {...register('confirmPassword')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <FieldError error={errors.confirmPassword?.message} id="confirmPassword-error" />
             </div>
 
             <FormError error={signupMutation.error?.message} id="signup-api-error" />
@@ -165,6 +215,12 @@ export default function SignupPage() {
               Sign in
             </Link>
           </motion.p>
+          <p className="mt-3 text-center text-sm text-gray-600">
+            Need to verify email or restore access?{' '}
+            <Link href="/verify-email" className="text-blue-600 hover:text-blue-700 font-medium">
+              Open recovery
+            </Link>
+          </p>
 
           {/* Divider */}
           <div className="relative my-6">
@@ -177,7 +233,8 @@ export default function SignupPage() {
           </div>
 
           {/* Social buttons */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <DiscordButton onClick={handleDiscordSignup} />
             <button
               type="button"
               className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"

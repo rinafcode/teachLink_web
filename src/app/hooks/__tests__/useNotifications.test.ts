@@ -8,6 +8,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useNotifications } from '../useNotifications';
 import { useNotificationStore } from '@/app/store/notificationStore';
+import { AppNotification } from '@/lib/notifications/types';
 
 // ─── Mock localStorage ────────────────────────────────────────────────────────
 
@@ -15,9 +16,15 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
   };
 })();
 

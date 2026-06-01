@@ -56,7 +56,7 @@ function buildImgixUrl(src: string, opts: ImageOptimizerOptions): string {
 export function getOptimizedUrl(
   src: string,
   opts: ImageOptimizerOptions = {},
-  provider: CDNProvider = 'next'
+  provider: CDNProvider = 'next',
 ): string {
   const options = { quality: DEFAULT_QUALITY, ...opts };
 
@@ -77,7 +77,7 @@ export function buildSrcSet(
   src: string,
   widths: number[],
   opts: Omit<ImageOptimizerOptions, 'width'> = {},
-  provider: CDNProvider = 'next'
+  provider: CDNProvider = 'next',
 ): string {
   return widths
     .map((w) => `${getOptimizedUrl(src, { ...opts, width: w }, provider)} ${w}w`)

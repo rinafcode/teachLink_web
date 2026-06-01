@@ -31,7 +31,9 @@ function matchesFilter(row: Record<string, unknown>, filter: ExportFilter): bool
     case 'neq':
       return value !== filter.value;
     case 'contains':
-      return String(value ?? '').toLowerCase().includes(String(filter.value ?? '').toLowerCase());
+      return String(value ?? '')
+        .toLowerCase()
+        .includes(String(filter.value ?? '').toLowerCase());
     case 'gt':
       return compareValues(value, filter.value) > 0;
     case 'gte':

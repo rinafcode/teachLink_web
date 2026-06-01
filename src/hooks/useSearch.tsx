@@ -26,31 +26,33 @@ export function useSearch<T extends SearchResult>(
   const [hasMore, setHasMore] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const search = useCallback(
-    async (searchQuery: string, cursor?: string) => {
-      if (!searchQuery.trim()) {
-        setResults([]);
-        setNextCursor(undefined);
-        setHasMore(false);
-        return;
-      }
+  const fetchFnRef = useRef(fetchFn);
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  }, [fetchFn]);
 
-      setIsLoading(true);
-      setError(null);
+  const search = useCallback(async (searchQuery: string, cursor?: string) => {
+    if (!searchQuery.trim()) {
+      setResults([]);
+      setNextCursor(undefined);
+      setHasMore(false);
+      return;
+    }
 
-      try {
-        const { items, nextCursor: next } = await fetchFn(searchQuery, cursor);
-        setResults((prev) => (cursor ? [...prev, ...items] : items));
-        setNextCursor(next);
-        setHasMore(!!next);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Search failed');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [fetchFn],
-  );
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { items, nextCursor: next } = await fetchFnRef.current(searchQuery, cursor);
+      setResults((prev) => (cursor ? [...prev, ...items] : items));
+      setNextCursor(next);
+      setHasMore(!!next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const updateQuery = useCallback(
     (value: string) => {
