@@ -23,7 +23,8 @@ export async function sendTip(payload: TipPayload): Promise<TipResult> {
   const responseBody = await response.json().catch(() => ({ error: 'Unable to parse response' }));
 
   if (!response.ok) {
-    const message = typeof responseBody.error === 'string' ? responseBody.error : 'Unable to send tip.';
+    const message =
+      typeof responseBody.error === 'string' ? responseBody.error : 'Unable to send tip.';
     throw new Error(message);
   }
 

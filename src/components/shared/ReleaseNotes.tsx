@@ -27,9 +27,9 @@ export const ReleaseNotes: React.FC = () => {
             changes: ['Added Release Notes feature', 'Updated dependencies'],
           },
         ];
-        
+
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
         setNotes(data);
       } catch (error) {
         console.error('Failed to fetch release notes:', error);
@@ -42,7 +42,12 @@ export const ReleaseNotes: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div className="p-4 animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg h-32" data-testid="loading-skeleton"></div>;
+    return (
+      <div
+        className="p-4 animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg h-32"
+        data-testid="loading-skeleton"
+      ></div>
+    );
   }
 
   return (
@@ -55,11 +60,16 @@ export const ReleaseNotes: React.FC = () => {
           {notes.map((note) => (
             <li key={note.version} className="border-b pb-4 last:border-b-0 dark:border-gray-800">
               <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                v{note.version} <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({note.date})</span>
+                v{note.version}{' '}
+                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                  ({note.date})
+                </span>
               </h3>
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 {note.changes.map((change, idx) => (
-                  <li key={idx} className="text-gray-700 dark:text-gray-300">{change}</li>
+                  <li key={idx} className="text-gray-700 dark:text-gray-300">
+                    {change}
+                  </li>
                 ))}
               </ul>
             </li>

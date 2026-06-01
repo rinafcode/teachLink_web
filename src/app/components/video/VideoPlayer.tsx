@@ -304,7 +304,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onNote: onNote ?? (() => undefined),
       audioEnhancement,
     }),
-    [transcript, currentTime, duration, playbackRate, seekTo, setPlaybackRate, onBookmark, onNote, audioEnhancement],
+    [
+      transcript,
+      currentTime,
+      duration,
+      playbackRate,
+      seekTo,
+      setPlaybackRate,
+      onBookmark,
+      onNote,
+      audioEnhancement,
+    ],
   );
 
   if (error) {

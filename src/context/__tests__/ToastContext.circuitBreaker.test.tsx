@@ -12,24 +12,16 @@ describe('ToastContext with Circuit Breaker', () => {
 
   const TestComponent = () => {
     const { addToast, getCircuitBreakerMetrics, resetCircuitBreaker } = useToast();
-    
+
     return (
       <div>
-        <button onClick={() => addToast('Test message', 'info', 100)}>
-          Add Toast
-        </button>
-        <button onClick={() => addToast('Error message', 'error', 100)}>
-          Add Error Toast
-        </button>
+        <button onClick={() => addToast('Test message', 'info', 100)}>Add Toast</button>
+        <button onClick={() => addToast('Error message', 'error', 100)}>Add Error Toast</button>
         <button onClick={() => addToast('Success message', 'success', 100)}>
           Add Success Toast
         </button>
-        <button onClick={() => resetCircuitBreaker()}>
-          Reset Circuit Breaker
-        </button>
-        <div data-testid="metrics">
-          {JSON.stringify(getCircuitBreakerMetrics())}
-        </div>
+        <button onClick={() => resetCircuitBreaker()}>Reset Circuit Breaker</button>
+        <div data-testid="metrics">{JSON.stringify(getCircuitBreakerMetrics())}</div>
       </div>
     );
   };
@@ -38,12 +30,12 @@ describe('ToastContext with Circuit Breaker', () => {
     render(
       <ToastProvider>
         <TestComponent />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const metricsElement = screen.getByTestId('metrics');
     const metrics = JSON.parse(metricsElement.textContent || '{}');
-    
+
     expect(metrics).toHaveProperty('state');
     expect(metrics).toHaveProperty('totalRequests');
     expect(metrics).toHaveProperty('totalSuccesses');
@@ -54,11 +46,11 @@ describe('ToastContext with Circuit Breaker', () => {
     render(
       <ToastProvider>
         <TestComponent />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const addButton = screen.getByText('Add Toast');
-    
+
     await act(async () => {
       addButton.click();
     });
@@ -74,12 +66,12 @@ describe('ToastContext with Circuit Breaker', () => {
     render(
       <ToastProvider>
         <TestComponent />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const addButton = screen.getByText('Add Toast');
     const resetButton = screen.getByText('Reset Circuit Breaker');
-    
+
     await act(async () => {
       addButton.click();
     });
@@ -100,11 +92,11 @@ describe('ToastContext with Circuit Breaker', () => {
     render(
       <ToastProvider>
         <TestComponent />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const addButton = screen.getByText('Add Toast');
-    
+
     await act(async () => {
       addButton.click();
     });
@@ -118,12 +110,12 @@ describe('ToastContext with Circuit Breaker', () => {
     render(
       <ToastProvider>
         <TestComponent />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const errorButton = screen.getByText('Add Error Toast');
     const successButton = screen.getByText('Add Success Toast');
-    
+
     await act(async () => {
       errorButton.click();
     });
@@ -147,11 +139,11 @@ describe('ToastContext with Circuit Breaker', () => {
     render(
       <ToastProvider>
         <TestComponent />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const addButton = screen.getByText('Add Toast');
-    
+
     // Add multiple toasts rapidly
     for (let i = 0; i < 15; i++) {
       await act(async () => {
@@ -169,15 +161,15 @@ describe('ToastContext with Circuit Breaker', () => {
 
   it('should log warning when toast is suppressed', async () => {
     const consoleWarnSpy = vi.spyOn(console, 'warn');
-    
+
     render(
       <ToastProvider>
         <TestComponent />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const addButton = screen.getByText('Add Toast');
-    
+
     // Add many toasts rapidly to potentially trigger circuit breaker
     for (let i = 0; i < 20; i++) {
       await act(async () => {

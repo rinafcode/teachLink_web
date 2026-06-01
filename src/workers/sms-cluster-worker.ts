@@ -43,7 +43,6 @@ export const startSMSClusterWorker = () => {
       console.log('Starting a new worker...');
       cluster.fork(); // Auto-heal workers
     });
-
   } else {
     // Workers can share any TCP connection
     // In this case it is an HTTP server or a message queue listener
@@ -63,7 +62,7 @@ export const startSMSClusterWorker = () => {
           console.error(`[Worker ${process.pid}] Failed to send SMS:`, error);
         }
       }
-      
+
       // Continue polling with a small delay to prevent tight loop
       setTimeout(processQueue, 1000);
     };

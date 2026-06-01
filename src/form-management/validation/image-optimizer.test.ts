@@ -4,11 +4,7 @@ import { FieldDescriptor } from '../types/core.js';
 
 describe('Image Optimization', () => {
   describe('optimizeImage', () => {
-    const createMockImageFile = (
-      name = 'test.jpg',
-      size = 1000,
-      type = 'image/jpeg',
-    ): File => {
+    const createMockImageFile = (name = 'test.jpg', size = 1000, type = 'image/jpeg'): File => {
       const file = new File(['mock image content'], name, { type });
       Object.defineProperty(file, 'size', { value: size });
       return file;
@@ -83,8 +79,15 @@ describe('Image Optimization', () => {
     it('should handle preserveAspectRatio option', async () => {
       const file = createMockImageFile();
 
-      const preserveResult = await optimizeImage(file, { maxWidth: 100, preserveAspectRatio: true });
-      const stretchResult = await optimizeImage(file, { maxWidth: 100, maxHeight: 100, preserveAspectRatio: false });
+      const preserveResult = await optimizeImage(file, {
+        maxWidth: 100,
+        preserveAspectRatio: true,
+      });
+      const stretchResult = await optimizeImage(file, {
+        maxWidth: 100,
+        maxHeight: 100,
+        preserveAspectRatio: false,
+      });
 
       // Both should return File objects in jsdom
       expect(preserveResult).toBeInstanceOf(File);
@@ -93,10 +96,7 @@ describe('Image Optimization', () => {
   });
 
   describe('validateImageDimensions', () => {
-    const createMockImageFile = (
-      name = 'test.jpg',
-      type = 'image/jpeg',
-    ): File => {
+    const createMockImageFile = (name = 'test.jpg', type = 'image/jpeg'): File => {
       return new File(['mock'], name, { type });
     };
 

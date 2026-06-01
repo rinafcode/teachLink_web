@@ -3,7 +3,14 @@
  * Centralized type definitions for the notification system
  */
 
-export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'message' | 'course' | 'system';
+export type NotificationType =
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'message'
+  | 'course'
+  | 'system';
 export type NotificationChannel = 'push' | 'email' | 'sms' | 'in-app';
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type NotificationCategory =

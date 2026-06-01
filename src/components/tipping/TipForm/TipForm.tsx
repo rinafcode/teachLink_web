@@ -95,26 +95,35 @@ export function TipForm({ recipient, groups = DEFAULT_INTEREST_GROUPS, onSuccess
           Tip sent successfully!
         </div>
         <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-          Your support for {recipient.name} has been routed through the <strong>{selectedGroup.name}</strong> interest group.
+          Your support for {recipient.name} has been routed through the{' '}
+          <strong>{selectedGroup.name}</strong> interest group.
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} data-testid="tip-form" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <form
+      onSubmit={handleSubmit}
+      data-testid="tip-form"
+      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+    >
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
           <Gift className="h-5 w-5 text-sky-500" />
           <span>Tip {recipient.name}</span>
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Choose a special interest group so your tip supports the right community and content category.
+          Choose a special interest group so your tip supports the right community and content
+          category.
         </p>
       </div>
 
       <div className="grid gap-3">
-        <label className="text-sm font-medium text-slate-800 dark:text-slate-200" htmlFor="tip-group">
+        <label
+          className="text-sm font-medium text-slate-800 dark:text-slate-200"
+          htmlFor="tip-group"
+        >
           Special Interest Group
         </label>
         <select
@@ -137,7 +146,10 @@ export function TipForm({ recipient, groups = DEFAULT_INTEREST_GROUPS, onSuccess
       </div>
 
       <div className="grid gap-3">
-        <label className="text-sm font-medium text-slate-800 dark:text-slate-200" htmlFor="tip-amount">
+        <label
+          className="text-sm font-medium text-slate-800 dark:text-slate-200"
+          htmlFor="tip-amount"
+        >
           Amount (ETH)
         </label>
         <input
@@ -156,7 +168,11 @@ export function TipForm({ recipient, groups = DEFAULT_INTEREST_GROUPS, onSuccess
       </div>
 
       {error ? (
-        <p role="alert" data-testid="tip-error" className="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-900/20 dark:text-rose-200">
+        <p
+          role="alert"
+          data-testid="tip-error"
+          className="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-900/20 dark:text-rose-200"
+        >
           {error}
         </p>
       ) : null}

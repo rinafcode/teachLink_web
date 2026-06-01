@@ -72,7 +72,9 @@ describe('ImageUploader', () => {
   });
 
   it('revokes the previous object URL when the selected avatar changes', () => {
-    createObjectURL.mockReturnValueOnce('blob:first-preview').mockReturnValueOnce('blob:next-preview');
+    createObjectURL
+      .mockReturnValueOnce('blob:first-preview')
+      .mockReturnValueOnce('blob:next-preview');
 
     const { container, unmount } = render(<ImageUploader onImageSelect={vi.fn()} />);
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;

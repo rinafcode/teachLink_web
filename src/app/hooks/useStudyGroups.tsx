@@ -404,35 +404,26 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     [me.id, me.name, groups, triggerSync],
   );
 
-  const groupMessages = useCallback<UseStudyGroupsApi['groupMessages']>(
-    (groupId) => {
-      const persistedMessages = load(STORAGE_KEYS.messages, [] as GroupMessage[]);
-      return persistedMessages
-        .filter((m) => m.groupId === groupId)
-        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-    },
-    [messages],
-  );
+  const groupMessages = useCallback<UseStudyGroupsApi['groupMessages']>((groupId) => {
+    const persistedMessages = load(STORAGE_KEYS.messages, [] as GroupMessage[]);
+    return persistedMessages
+      .filter((m) => m.groupId === groupId)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  }, []);
 
-  const groupResources = useCallback<UseStudyGroupsApi['groupResources']>(
-    (groupId) => {
-      const persistedResources = load(STORAGE_KEYS.resources, [] as GroupResource[]);
-      return persistedResources
-        .filter((r) => r.groupId === groupId)
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    },
-    [resources],
-  );
+  const groupResources = useCallback<UseStudyGroupsApi['groupResources']>((groupId) => {
+    const persistedResources = load(STORAGE_KEYS.resources, [] as GroupResource[]);
+    return persistedResources
+      .filter((r) => r.groupId === groupId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, []);
 
-  const groupChallenges = useCallback<UseStudyGroupsApi['groupChallenges']>(
-    (groupId) => {
-      const persistedChallenges = load(STORAGE_KEYS.challenges, [] as GroupChallenge[]);
-      return persistedChallenges
-        .filter((c) => c.groupId === groupId)
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    },
-    [challenges],
-  );
+  const groupChallenges = useCallback<UseStudyGroupsApi['groupChallenges']>((groupId) => {
+    const persistedChallenges = load(STORAGE_KEYS.challenges, [] as GroupChallenge[]);
+    return persistedChallenges
+      .filter((c) => c.groupId === groupId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, []);
 
   const challengeLeaderboard = useCallback<UseStudyGroupsApi['challengeLeaderboard']>(
     (challengeId) => {
@@ -443,7 +434,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         .sort((a, b) => b.progress - a.progress)
         .map((p) => ({ userId: p.userId, userName: p.userName, progress: p.progress }));
     },
-    [challenges],
+    [],
   );
 
   // Persist when state changes (robust against batch updates via persistAll)

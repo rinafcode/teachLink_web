@@ -33,7 +33,11 @@ export const SidebarNavigation: React.FC = () => {
                 <Link
                   href={item.href}
                   className={`flex items-center gap-3 p-2 rounded-lg transition-colors duration-200
-                    ${isActive ? 'bg-blue-100 dark:bg-blue-900 text-blue-600' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'}
+                    ${
+                      isActive
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }
                   `}
                 >
                   <item.icon size={20} className="flex-shrink-0" />

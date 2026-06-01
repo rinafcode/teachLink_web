@@ -30,10 +30,10 @@ export class SettingsService {
    */
   static validateSettings(data: unknown): SettingsValidationResult {
     const errors: string[] = [];
-    
+
     try {
       const parsed = appSettingsSchema.safeParse(data);
-      
+
       if (!parsed.success) {
         parsed.error.errors.forEach((err: any) => {
           errors.push(`${err.path.join('.')}: ${err.message}`);
@@ -43,7 +43,7 @@ export class SettingsService {
           errors,
         };
       }
-      
+
       return {
         valid: true,
         errors: [],
@@ -98,7 +98,7 @@ export class SettingsService {
   static needsSync(localState: SettingsStorePersistedShape | null): boolean {
     if (!localState) return true;
     if (!localState.lastSyncedAt) return true;
-    
+
     // Sync if local changes were made after last sync
     return localState.updatedAt > localState.lastSyncedAt;
   }
@@ -124,11 +124,11 @@ export class SettingsService {
     try {
       const partialSettings = { ...createDefaultSettings(), [key]: value };
       const result = this.validateSettings(partialSettings);
-      
+
       if (result.valid) {
         return { valid: true };
       }
-      
+
       return {
         valid: false,
         error: result.errors.find((e) => e.includes(String(key))) || 'Invalid value',
@@ -182,7 +182,9 @@ export class SettingsService {
       if (importData.version && importData.version !== SETTINGS_SCHEMA_VERSION) {
         return {
           valid: false,
-          errors: [`Settings version mismatch. Expected v${SETTINGS_SCHEMA_VERSION}, got v${importData.version}`],
+          errors: [
+            `Settings version mismatch. Expected v${SETTINGS_SCHEMA_VERSION}, got v${importData.version}`,
+          ],
         };
       }
 
@@ -255,7 +257,7 @@ export class SettingsService {
    */
   static canEditSetting(key: keyof AppSettings): boolean {
     const capabilities = this.getCapabilities();
-    
+
     const permissionMap: Record<keyof AppSettings, keyof typeof capabilities> = {
       version: 'canEditTheme', // Version is system-managed
       theme: 'canEditTheme',
@@ -294,7 +296,7 @@ export class SettingsService {
           virtualBackgroundColor: '#000000',
         };
       }
-      
+
       // For other version mismatches, use defaults but preserve existing fields
       return {
         ...createDefaultSettings(),
@@ -302,7 +304,7 @@ export class SettingsService {
         version: SETTINGS_SCHEMA_VERSION,
       };
     }
-    
+
     return settings;
   }
 }

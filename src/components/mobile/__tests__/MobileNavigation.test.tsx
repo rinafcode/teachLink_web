@@ -30,7 +30,7 @@ describe('MobileNavigation Component', () => {
 
     expect(screen.getByRole('tab', { name: /home/i })).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByRole('tab', { name: /courses/i })).toHaveAttribute('aria-selected', 'true');
-    
+
     // Only the active tab should have tabIndex 0, others should have -1
     expect(screen.getByRole('tab', { name: /courses/i })).toHaveAttribute('tabindex', '0');
     expect(screen.getByRole('tab', { name: /home/i })).toHaveAttribute('tabindex', '-1');
@@ -102,7 +102,7 @@ describe('MobileNavigation Component', () => {
       const profileTab = screen.getByRole('tab', { name: /profile/i });
 
       searchTab.focus();
-      
+
       await user.keyboard('{Home}');
       expect(document.activeElement).toBe(homeTab);
 
@@ -133,7 +133,7 @@ describe('MobileNavigation Component', () => {
       const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
       const classList = nav.className;
       const responsiveRailPrefix = '[@media_(min-width:640px)_and_(orientation:landscape)]';
-      
+
       expect(classList).toContain(`${responsiveRailPrefix}:top-0`);
       expect(classList).toContain(`${responsiveRailPrefix}:h-dvh`);
       expect(classList).toContain(`${responsiveRailPrefix}:w-20`);

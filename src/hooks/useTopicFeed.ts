@@ -86,5 +86,15 @@ export function useTopicFeed(slug: string): UseTopicFeedReturn {
     setSort(s);
   }, []);
 
-  return { topic, posts, loading, loadingMore, hasMore, sort, setSort: handleSetSort, loadMore, error };
+  return {
+    topic,
+    posts,
+    loading,
+    loadingMore,
+    hasMore,
+    sort,
+    setSort: handleSetSort,
+    loadMore,
+    error,
+  };
 }

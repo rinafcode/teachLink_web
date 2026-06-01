@@ -26,9 +26,7 @@ export default function TooltipDemoPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 p-10">
-      <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
-        Tooltip System Demo
-      </h1>
+      <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Tooltip System Demo</h1>
       <p className="mb-10 text-gray-500 dark:text-gray-400">
         Hover or focus the buttons below to see tooltips. Anomaly detection is active — rapidly
         toggling a tooltip or keeping it open for &gt;10 s will log an anomaly.
@@ -63,9 +61,7 @@ export default function TooltipDemoPage() {
 
       {/* Placement showcase */}
       <section className="mb-12">
-        <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
-          Placements
-        </h2>
+        <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">Placements</h2>
         <div className="flex flex-wrap items-center gap-10">
           {PLACEMENTS.map((placement) => (
             <Tooltip
@@ -97,8 +93,7 @@ export default function TooltipDemoPage() {
         <Tooltip
           content={
             <span>
-              <strong>Tip:</strong> This tooltip supports{' '}
-              <em>rich React content</em>.
+              <strong>Tip:</strong> This tooltip supports <em>rich React content</em>.
             </span>
           }
           placement="right"
@@ -133,9 +128,7 @@ export default function TooltipDemoPage() {
       {/* Anomaly log */}
       <section>
         <div className="mb-3 flex items-center gap-4">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-            Anomaly Log
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Anomaly Log</h2>
           {anomalies.length > 0 && (
             <button
               onClick={clearAnomalies}

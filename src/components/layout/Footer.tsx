@@ -29,7 +29,8 @@ export const Footer: React.FC = () => {
               TeachLink
             </Link>
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              Empowering education through decentralized learning and comprehensive funding opportunities.
+              Empowering education through decentralized learning and comprehensive funding
+              opportunities.
             </p>
           </div>
 
@@ -38,19 +39,28 @@ export const Footer: React.FC = () => {
             <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Platform</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/courses" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center group">
+                <Link
+                  href="/courses"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center group"
+                >
                   <ChevronRight className="w-4 h-4 mr-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                   {t('navigation.courses') || 'Courses'}
                 </Link>
               </li>
               <li>
-                <Link href="/instructor" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center group">
+                <Link
+                  href="/instructor"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center group"
+                >
                   <ChevronRight className="w-4 h-4 mr-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                   {t('navigation.teach') || 'Teach'}
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center group">
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center group"
+                >
                   <ChevronRight className="w-4 h-4 mr-2 text-gray-400 group-hover:text-blue-600 transition-colors" />
                   {t('navigation.dashboard') || 'Dashboard'}
                 </Link>
@@ -65,7 +75,8 @@ export const Footer: React.FC = () => {
               Grant Management
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Explore funding opportunities, track applications, and manage active educational grants.
+              Explore funding opportunities, track applications, and manage active educational
+              grants.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {grantLinks.map((link) => {
@@ -92,10 +103,16 @@ export const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} TeachLink. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/privacy" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <Link
+              href="/privacy"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            >
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+            <Link
+              href="/terms"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            >
               Terms of Service
             </Link>
           </div>

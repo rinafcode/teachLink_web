@@ -300,8 +300,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     ): Promise<Record<NotificationChannel, boolean>> => {
       try {
         const results = await NotificationService.deliverToChannels(notification, channels);
-        const successMap: Record<NotificationChannel, boolean> = {} as Record<NotificationChannel, boolean>;
-        
+        const successMap: Record<NotificationChannel, boolean> = {} as Record<
+          NotificationChannel,
+          boolean
+        >;
+
         results.forEach((result) => {
           successMap[result.channel] = result.success;
         });
@@ -309,7 +312,10 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         return successMap;
       } catch (error) {
         console.error('Failed to deliver notification to channels:', error);
-        const errorMap: Record<NotificationChannel, boolean> = {} as Record<NotificationChannel, boolean>;
+        const errorMap: Record<NotificationChannel, boolean> = {} as Record<
+          NotificationChannel,
+          boolean
+        >;
         channels.forEach((channel) => {
           errorMap[channel] = false;
         });

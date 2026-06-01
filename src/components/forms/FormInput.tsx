@@ -44,10 +44,13 @@ export const FormInput: React.FC<FormInputProps> = ({
   const isError = !!error;
   const inputId = id ?? `${name}-${generatedId}`;
   const helperTextId = helperText ? `${inputId}-helper` : undefined;
-  const certificationProgramId = certificationProgram ? `${inputId}-certification-program` : undefined;
+  const certificationProgramId = certificationProgram
+    ? `${inputId}-certification-program`
+    : undefined;
   const errorId = isError ? `${inputId}-error` : undefined;
   const describedBy =
-    [ariaDescribedBy, helperTextId, certificationProgramId, errorId].filter(Boolean).join(' ') || undefined;
+    [ariaDescribedBy, helperTextId, certificationProgramId, errorId].filter(Boolean).join(' ') ||
+    undefined;
 
   const paddingLeftClass = Icon ? 'pl-10' : 'pl-4';
   const baseStyles = `

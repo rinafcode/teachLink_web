@@ -39,7 +39,11 @@ interface SortBarProps {
 
 function SortBar({ current, onChange }: SortBarProps) {
   return (
-    <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg" role="group" aria-label="Sort posts">
+    <div
+      className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg"
+      role="group"
+      aria-label="Sort posts"
+    >
       {SORT_OPTIONS.map(({ value, label, icon }) => (
         <button
           key={value}
@@ -147,7 +151,10 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
 
         {/* Post items */}
         {posts.map((post) => (
-          <article key={post.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+          <article
+            key={post.id}
+            className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          >
             <div className="flex gap-3">
               {post.authorAvatar ? (
                 <Image

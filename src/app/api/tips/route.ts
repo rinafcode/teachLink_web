@@ -55,7 +55,9 @@ export async function POST(request: NextRequest) {
   // Route to canary or stable implementation based on evaluation
   if (canary.enabled) {
     // Canary path (behaviour can be swapped to new implementation)
-    const tipId = `tip_canary_${Math.floor(Date.now() / 1000)}_${Math.random().toString(36).slice(2, 8)}`;
+    const tipId = `tip_canary_${Math.floor(Date.now() / 1000)}_${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
     const response = NextResponse.json(
       {
         success: true,
@@ -66,7 +68,12 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
     if (setCookie) {
-      response.cookies.set('anon-user-id', setCookie, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
+      response.cookies.set('anon-user-id', setCookie, {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365,
+      });
     }
     return response;
   }
@@ -82,7 +89,12 @@ export async function POST(request: NextRequest) {
     { status: 201 },
   );
   if (setCookie) {
-    response.cookies.set('anon-user-id', setCookie, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
+    response.cookies.set('anon-user-id', setCookie, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
   return response;
 }

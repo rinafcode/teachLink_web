@@ -56,10 +56,7 @@ export class CircuitBreaker {
   /**
    * Execute an operation with circuit breaker protection
    */
-  async execute<T>(
-    operation: () => Promise<T> | T,
-    fallback?: () => T,
-  ): Promise<T> {
+  async execute<T>(operation: () => Promise<T> | T, fallback?: () => T): Promise<T> {
     this.totalRequests++;
 
     // Check if circuit is open and timeout has elapsed
@@ -214,8 +211,6 @@ export class CircuitBreaker {
 /**
  * Create a circuit breaker instance for toast notifications
  */
-export function createToastCircuitBreaker(
-  config?: Partial<CircuitBreakerConfig>,
-): CircuitBreaker {
+export function createToastCircuitBreaker(config?: Partial<CircuitBreakerConfig>): CircuitBreaker {
   return new CircuitBreaker({ ...DEFAULT_CONFIG, ...config });
 }

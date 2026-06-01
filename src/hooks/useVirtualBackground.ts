@@ -33,17 +33,18 @@ export function useVirtualBackground() {
         }
 
         const config = settingsToVirtualBackgroundConfig(settings);
-        
+
         if (!config.enabled || config.type === 'none') {
           return stream;
         }
 
         const processedStream = await applyVirtualBackground(stream, config);
         processedStreamRef.current = processedStream;
-        
+
         return processedStream;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to apply virtual background';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to apply virtual background';
         setError(errorMessage);
         console.error('Virtual background error:', err);
         return stream;
