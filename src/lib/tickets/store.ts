@@ -56,10 +56,7 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket | n
   return json.data ?? null;
 }
 
-export async function updateTicket(
-  id: string,
-  input: UpdateTicketInput,
-): Promise<Ticket | null> {
+export async function updateTicket(id: string, input: UpdateTicketInput): Promise<Ticket | null> {
   const res = await fetch(`${BASE}/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

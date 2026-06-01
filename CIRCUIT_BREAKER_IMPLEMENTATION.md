@@ -9,6 +9,7 @@ This document describes the Circuit Breaker pattern implementation for Toast Not
 ### Components
 
 1. **Circuit Breaker Core** (`src/utils/circuitBreaker.ts`)
+
    - Implements the Circuit Breaker pattern with three states: CLOSED, OPEN, HALF_OPEN
    - Tracks metrics including failure count, success count, and request statistics
    - Provides configurable thresholds for failure tolerance and recovery
@@ -105,11 +106,7 @@ import { useToast } from '@/context/ToastContext';
 function ResetButton() {
   const { resetCircuitBreaker } = useToast();
 
-  return (
-    <button onClick={resetCircuitBreaker}>
-      Reset Circuit Breaker
-    </button>
-  );
+  return <button onClick={resetCircuitBreaker}>Reset Circuit Breaker</button>;
 }
 ```
 
@@ -134,6 +131,7 @@ pnpm run test circuitBreaker.test.ts
 ```
 
 Test coverage includes:
+
 - Initial state verification
 - Successful operations
 - Failed operations and threshold handling
@@ -175,6 +173,7 @@ The Circuit Breaker has minimal performance impact:
 ## Accessibility
 
 The Circuit Breaker does not affect accessibility:
+
 - Toast notifications remain accessible when circuit is CLOSED
 - Fallback toast uses standard accessible patterns
 - No impact on screen readers or keyboard navigation
@@ -224,6 +223,7 @@ Potential improvements for future iterations:
 ## Changelog
 
 ### Version 1.0.0
+
 - Initial implementation
 - Three-state Circuit Breaker (CLOSED, OPEN, HALF_OPEN)
 - Configurable thresholds and timeouts

@@ -15,6 +15,12 @@ export interface CodeTestCase {
   expectedOutput: string;
 }
 
+export interface CodeChallengeGradingPolicy {
+  partialCredit?: boolean;
+  normalizeWhitespace?: boolean;
+  normalizeCase?: boolean;
+}
+
 export interface QuizQuestionBase {
   id: string;
   type: QuizQuestionType;
@@ -38,6 +44,7 @@ export interface CodeChallengeQuizQuestion extends QuizQuestionBase {
   codeTemplate?: string;
   language?: string;
   testCases?: CodeTestCase[];
+  gradingPolicy?: CodeChallengeGradingPolicy;
 }
 
 export type QuizQuestion =
@@ -53,7 +60,7 @@ export interface Quiz {
   questions: QuizQuestion[];
 }
 
-export type QuizFeedbackStatus = 'correct' | 'incorrect' | null;
+export type QuizFeedbackStatus = 'correct' | 'partial' | 'incorrect' | null;
 
 export interface QuizAnswerRecord {
   value: string;
@@ -66,6 +73,80 @@ export interface QuizAnswerRecord {
 interface UseQuizParams {
   quiz: Quiz;
   autoStart?: boolean;
+}
+
+interface GradedCodeChallengeResult {
+  isCorrect: boolean;
+  earnedPoints: number;
+  feedback: QuizFeedbackStatus;
+  meta: Record<string, unknown>;
+}
+
+function normalizeQuizOutput(value: unknown, gradingPolicy?: CodeChallengeGradingPolicy) {
+  const stringValue =
+    typeof value === 'string'
+      ? value
+      : typeof value === 'number' || typeof value === 'boolean'
+        ? String(value)
+        : (() => {
+            try {
+              return JSON.stringify(value);
+            } catch {
+              return String(value);
+            }
+          })();
+
+  let normalized = stringValue.replace(/\r\n/g, '\n').trim();
+
+  if (gradingPolicy?.normalizeWhitespace) {
+    normalized = normalized.replace(/\s+/g, ' ');
+  }
+
+  if (gradingPolicy?.normalizeCase) {
+    normalized = normalized.toLowerCase();
+  }
+
+  return normalized;
+}
+
+function gradeCodeChallengeSubmission(
+  question: CodeChallengeQuizQuestion,
+  testResults: boolean[],
+): GradedCodeChallengeResult {
+  const totalTests = testResults.length;
+  const passedTests = testResults.filter(Boolean).length;
+  const passRate = totalTests > 0 ? passedTests / totalTests : 0;
+  const hasPerfectScore = totalTests > 0 && passedTests === totalTests;
+  const hasPartialSuccess = passedTests > 0 && !hasPerfectScore;
+  const allowsPartialCredit = question.gradingPolicy?.partialCredit ?? false;
+
+  const earnedPoints =
+    hasPerfectScore
+      ? question.points
+      : allowsPartialCredit && hasPartialSuccess
+        ? Math.max(1, Math.floor(question.points * passRate))
+        : 0;
+
+  const feedback: QuizFeedbackStatus = hasPerfectScore
+    ? 'correct'
+    : allowsPartialCredit && hasPartialSuccess
+      ? 'partial'
+      : 'incorrect';
+
+  return {
+    isCorrect: hasPerfectScore,
+    earnedPoints,
+    feedback,
+    meta: {
+      testResults,
+      passRate,
+      passedTests,
+      totalTests,
+      tainted: !hasPerfectScore && totalTests > 0,
+      tolerated: feedback === 'partial',
+      partialCreditEnabled: allowsPartialCredit,
+    },
+  };
 }
 
 export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
@@ -158,7 +239,7 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
 
   const gradeNonCodeQuestion = useCallback((question: QuizQuestion, value: string) => {
     if (question.type === 'multiple-choice') {
-      const correct = question.options.find((o) => o.isCorrect);
+      const correct = question.options.find((option) => option.isCorrect);
       const isCorrect = correct ? correct.id === value : false;
       return {
         isCorrect,
@@ -258,18 +339,16 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
         const question = quiz.questions.find((q) => q.id === questionId);
         if (!question || question.type !== 'code-challenge') return prev;
 
-        const allPassed = params.testResults.length ? params.testResults.every(Boolean) : false;
+        const graded = gradeCodeChallengeSubmission(question, params.testResults);
 
         return {
           ...prev,
           [questionId]: {
             value: params.code,
-            isCorrect: allPassed,
-            earnedPoints: allPassed ? question.points : 0,
-            feedback: allPassed ? 'correct' : 'incorrect',
-            meta: {
-              testResults: params.testResults,
-            },
+            isCorrect: graded.isCorrect,
+            earnedPoints: graded.earnedPoints,
+            feedback: graded.feedback,
+            meta: graded.meta,
           },
         };
       });
@@ -326,3 +405,4 @@ export function useQuiz({ quiz, autoStart = true }: UseQuizParams) {
 }
 
 export type UseQuizReturn = ReturnType<typeof useQuiz>;
+export { gradeCodeChallengeSubmission, normalizeQuizOutput };

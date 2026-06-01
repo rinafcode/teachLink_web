@@ -172,28 +172,31 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   }, [filters.timeRange, language, t]);
 
   // Update filters and regenerate data for non-realtime panels
-  const setFilters = useCallback((partial: Partial<DashboardFiltersState>) => {
-    setFiltersState((prev) => {
-      const next = { ...prev, ...partial };
-      if (partial.timeRange && partial.timeRange !== prev.timeRange) {
-        setPanels((prevPanels) =>
-          prevPanels.map((panel) =>
-            panel.id === 'realtime'
-              ? panel
-              : {
-                  ...panel,
-                  data: generateDashboardSampleData(panel.id, next.timeRange, {
-                    locale: language,
-                    datasetLabel: getDashboardDatasetLabel(panel.id, t),
-                  }),
-                  drillDownIndex: null,
-                },
-          ),
-        );
-      }
-      return next;
-    });
-  }, [language, t]);
+  const setFilters = useCallback(
+    (partial: Partial<DashboardFiltersState>) => {
+      setFiltersState((prev) => {
+        const next = { ...prev, ...partial };
+        if (partial.timeRange && partial.timeRange !== prev.timeRange) {
+          setPanels((prevPanels) =>
+            prevPanels.map((panel) =>
+              panel.id === 'realtime'
+                ? panel
+                : {
+                    ...panel,
+                    data: generateDashboardSampleData(panel.id, next.timeRange, {
+                      locale: language,
+                      datasetLabel: getDashboardDatasetLabel(panel.id, t),
+                    }),
+                    drillDownIndex: null,
+                  },
+            ),
+          );
+        }
+        return next;
+      });
+    },
+    [language, t],
+  );
 
   const resetFilters = useCallback(() => {
     setFiltersState(DEFAULT_FILTERS);

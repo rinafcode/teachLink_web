@@ -35,10 +35,7 @@ export async function getConferences(userId: string): Promise<Conference[]> {
  *
  * For now, returns mock conference with generated ID.
  */
-export async function addConference(
-  userId: string,
-  input: ConferenceInput,
-): Promise<Conference> {
+export async function addConference(userId: string, input: ConferenceInput): Promise<Conference> {
   try {
     logger.debug('Adding conference to profile', { context: { userId, title: input.title } });
 

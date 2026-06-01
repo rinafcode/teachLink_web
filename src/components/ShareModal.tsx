@@ -117,7 +117,7 @@ export function ShareModal({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} className="max-w-md">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
       <div className="space-y-6">
         {/* Description */}
         {description && <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>}

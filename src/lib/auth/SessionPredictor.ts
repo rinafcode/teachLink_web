@@ -20,10 +20,10 @@ export class SessionPredictor {
   private maxSessionLength: number;
   private idleThreshold: number;
   private isTracking = false;
-  
+
   private onPredictiveAbandonment?: () => void;
   private onPredictiveRefresh?: () => void;
-  
+
   private trackingInterval: ReturnType<typeof setInterval> | null = null;
   private sessionStartTime: number;
 
@@ -59,7 +59,7 @@ export class SessionPredictor {
    */
   public stopTracking(): void {
     this.isTracking = false;
-    
+
     if (typeof window !== 'undefined') {
       window.removeEventListener('mousemove', this.trackActivity);
       window.removeEventListener('keydown', this.trackActivity);
@@ -79,11 +79,11 @@ export class SessionPredictor {
   private trackActivity = (): void => {
     const now = Date.now();
     const lastActivity = this.activityTimestamps[this.activityTimestamps.length - 1];
-    
+
     // Only record activity if it's been more than 500ms since the last one
     if (!lastActivity || now - lastActivity > 500) {
       this.activityTimestamps.push(now);
-      
+
       // Keep only the last 1000 timestamps to prevent memory leaks
       if (this.activityTimestamps.length > 1000) {
         this.activityTimestamps.shift();
@@ -97,14 +97,14 @@ export class SessionPredictor {
   public evaluatePredictions(): void {
     const now = Date.now();
     const probabilityIdle = this.predictIdleProbability(now);
-    
+
     if (probabilityIdle > 0.8 && this.onPredictiveAbandonment) {
       this.onPredictiveAbandonment();
     }
 
     const sessionProgress = (now - this.sessionStartTime) / this.maxSessionLength;
     const shouldRefresh = this.predictSessionRefresh(sessionProgress, probabilityIdle);
-    
+
     if (shouldRefresh && this.onPredictiveRefresh) {
       this.onPredictiveRefresh();
     }
@@ -128,9 +128,10 @@ export class SessionPredictor {
 
     // Analyze pattern: if frequency of events in the last 5 minutes is very low, increase probability
     const fiveMinutesAgo = currentTime - 5 * 60 * 1000;
-    const recentActivities = this.activityTimestamps.filter(t => t > fiveMinutesAgo).length;
-    
-    if (recentActivities < 5 && timeSinceLastActivity > 60000) { // less than 5 actions in 5 mins, and none in 1 min
+    const recentActivities = this.activityTimestamps.filter((t) => t > fiveMinutesAgo).length;
+
+    if (recentActivities < 5 && timeSinceLastActivity > 60000) {
+      // less than 5 actions in 5 mins, and none in 1 min
       probability += 0.2;
     }
 
@@ -149,7 +150,7 @@ export class SessionPredictor {
     }
     return false;
   }
-  
+
   /**
    * Reset session tracking manually (e.g. after a refresh)
    */

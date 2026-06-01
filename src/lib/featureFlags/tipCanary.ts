@@ -26,7 +26,10 @@ function clampPercent(value: number) {
 }
 
 export function evaluateTipCanary(request: NextRequest): CanaryResult {
-  const raw = process.env.TIP_RECEIVING_CANARY_PERCENT ?? process.env.NEXT_PUBLIC_TIP_RECEIVING_CANARY_PERCENT ?? '0';
+  const raw =
+    process.env.TIP_RECEIVING_CANARY_PERCENT ??
+    process.env.NEXT_PUBLIC_TIP_RECEIVING_CANARY_PERCENT ??
+    '0';
   const percent = clampPercent(Number(raw));
 
   if (percent <= 0) {
@@ -34,7 +37,10 @@ export function evaluateTipCanary(request: NextRequest): CanaryResult {
   }
 
   // Try to get a stable identifier for the user
-  const userId = request.cookies.get('user-id')?.value || request.headers.get('x-user-id') || request.cookies.get('anon-user-id')?.value;
+  const userId =
+    request.cookies.get('user-id')?.value ||
+    request.headers.get('x-user-id') ||
+    request.cookies.get('anon-user-id')?.value;
 
   let identifier = userId;
   let setAnonId: string | undefined;
@@ -60,4 +66,4 @@ export function evaluateTipCanary(request: NextRequest): CanaryResult {
   return { enabled, bucket, percent, identifier: setAnonId ? undefined : identifier, setAnonId };
 }
 
-export { };
+export {};

@@ -42,9 +42,9 @@ describe('GroupDiscussionThread', () => {
 
     expect(screen.getByRole('log', { name: 'Discussion messages' })).toBeInTheDocument();
     expect(screen.getByRole('form', { name: 'Create discussion post' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Discussion post content' })).toHaveAccessibleDescription(
-      'Press Cmd/Ctrl + Enter to post',
-    );
+    expect(
+      screen.getByRole('textbox', { name: 'Discussion post content' }),
+    ).toHaveAccessibleDescription('Press Cmd/Ctrl + Enter to post');
     expect(screen.getByRole('status')).toHaveTextContent('No messages yet');
   });
 

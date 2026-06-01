@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Image from 'next/image';
+import { dataWarehouse } from '@/lib/dataWarehouse';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -10,11 +11,7 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-function ImageUploader({
-  onImageSelect,
-  initialImageUrl,
-  className = '',
-}: ImageUploaderProps) {
+function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: ImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -33,6 +30,7 @@ function ImageUploader({
     };
   }, []);
 
+<<<<<<< perforrmance-search-functionality-code-quality-improvement
   const setObjectPreviewUrl = useCallback((objectUrl: string) => {
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
@@ -97,6 +95,25 @@ function ImageUploader({
       fileInputRef.current.value = '';
     }
   }, [onImageSelect, setObjectPreviewUrl]);
+=======
+  const handleFileChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+        }
+
+        const objectUrl = URL.createObjectURL(file);
+        objectUrlRef.current = objectUrl;
+        setPreviewUrl(objectUrl);
+
+        onImageSelect(file);
+      }
+    },
+    [onImageSelect],
+  );
+>>>>>>> main
 
   const handleClick = useCallback(() => {
     fileInputRef.current?.click();

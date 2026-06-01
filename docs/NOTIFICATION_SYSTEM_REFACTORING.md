@@ -9,16 +9,19 @@ This document describes the refactoring of the Notification System implemented a
 ### Before Refactoring
 
 1. **Multiple Conflicting Implementations**: The codebase had three separate notification systems:
+
    - `notificationStore.ts` - Zustand-based local state management
    - `Notificationprovider.tsx` - React Context with WebSocket integration
    - `use-notification.ts` - Simple toast-based utility hook
 
 2. **Inconsistent Data Structures**: Different notification types and interfaces across implementations:
+
    - `AppNotification` type vs `Notification` type
    - Different field naming conventions
    - Inconsistent timestamp handling (ISO string vs Date object)
 
 3. **Scattered Responsibilities**: Business logic spread across multiple files without clear organization:
+
    - Validation logic mixed with UI components
    - Duplicate utility functions
    - No clear service layer
@@ -120,23 +123,25 @@ Enhanced React hook with:
 Most existing code will continue to work without changes due to backward compatibility. However, consider these updates:
 
 #### Before (Old Pattern)
+
 ```typescript
 const { addNotification } = useNotificationStore();
 addNotification({
   type: 'info',
   message: 'Hello',
-  meta: { custom: 'data' }
+  meta: { custom: 'data' },
 });
 ```
 
 #### After (Recommended Pattern)
+
 ```typescript
 import { NotificationService } from '@/lib/notifications';
 
 const notification = NotificationService.createNotification({
   message: 'Hello',
   type: 'info',
-  meta: { custom: 'data' }
+  meta: { custom: 'data' },
 });
 
 // Then use with store or hook
@@ -170,6 +175,7 @@ Service layer has comprehensive unit tests covering:
 - Default preference generation
 
 Run unit tests:
+
 ```bash
 pnpm test src/lib/notifications/__tests__/service.test.ts
 ```
@@ -185,6 +191,7 @@ Integration tests verify:
 - Analytics calculation
 
 Run integration tests:
+
 ```bash
 pnpm test src/lib/notifications/__tests__/integration.test.ts
 ```
@@ -192,6 +199,7 @@ pnpm test src/lib/notifications/__tests__/integration.test.ts
 ### Existing Tests
 
 Updated existing tests to use new type imports:
+
 - `src/app/store/__tests__/notificationStore.test.ts`
 - `src/app/hooks/__tests__/useNotifications.test.ts`
 

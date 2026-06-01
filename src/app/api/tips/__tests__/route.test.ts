@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { POST } from '../route';
 
-function makeReq(body: unknown, cookies: Record<string, string> = {}, headers: Record<string, string> = {}) {
+function makeReq(
+  body: unknown,
+  cookies: Record<string, string> = {},
+  headers: Record<string, string> = {},
+) {
   return {
     json: async () => body,
     cookies: {
@@ -28,7 +32,10 @@ describe('POST /api/tips route', () => {
 
   it('routes to canary when percent is 100', async () => {
     process.env.TIP_RECEIVING_CANARY_PERCENT = '100';
-    const req = makeReq({ recipientId: 'r2', amount: 0.02, groupId: 'g', groupName: 'General' }, { 'user-id': 'user-42' });
+    const req = makeReq(
+      { recipientId: 'r2', amount: 0.02, groupId: 'g', groupName: 'General' },
+      { 'user-id': 'user-42' },
+    );
     const res: any = await POST(req as any);
     // Try to read JSON body from NextResponse (if supported)
     if (typeof res.json === 'function') {

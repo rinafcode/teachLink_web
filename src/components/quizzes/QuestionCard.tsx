@@ -14,6 +14,7 @@ interface QuestionCardProps {
 const QuestionCard = React.memo(({ question, quizState }: QuestionCardProps) => {
   const answer = quizState.answers[question.id];
   const showFeedback = Boolean(answer?.feedback);
+  const feedbackIsPartial = answer?.feedback === 'partial';
 
   return (
     <div className="bg-white dark:bg-[#1E293B] rounded-xl shadow-sm border border-[#E2E8F0] dark:border-[#334155] p-6">
@@ -22,10 +23,18 @@ const QuestionCard = React.memo(({ question, quizState }: QuestionCardProps) => 
         {showFeedback ? (
           <div
             className={`text-sm font-medium ${
-              answer?.feedback === 'correct' ? 'text-[#0066FF] dark:text-[#00C2FF]' : 'text-red-700'
+              answer?.feedback === 'correct'
+                ? 'text-[#0066FF] dark:text-[#00C2FF]'
+                : feedbackIsPartial
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-red-700'
             }`}
           >
-            {answer?.feedback === 'correct' ? 'Correct' : 'Incorrect'}
+            {answer?.feedback === 'correct'
+              ? 'Correct'
+              : feedbackIsPartial
+                ? 'Partially correct'
+                : 'Incorrect'}
           </div>
         ) : null}
       </div>

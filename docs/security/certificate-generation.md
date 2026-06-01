@@ -17,11 +17,13 @@ This document outlines the security threat model, mitigations, and compliance me
 **Mitigation Status:** ✅ MITIGATED — Ownership verification on all fetch/download endpoints
 
 **Implementation:**
+
 - All certificate retrieval endpoints verify `certificate.userId === req.user.id`
 - Returns 404 for non-existent or unauthorized certificates (does not leak existence to non-owners)
 - Failed access attempts are logged for audit trail
 
 **Code Pattern:**
+
 ```typescript
 const certificate = await getCertificateById(certId);
 if (!certificate) return res.status(404).json({ error: 'Not found' });
@@ -29,7 +31,7 @@ if (certificate.userId !== currentUserId) {
   logger.warn('Unauthorized certificate access attempt', {
     requesterId: currentUserId,
     certificateId: certId,
-    ownerId: certificate.userId
+    ownerId: certificate.userId,
   });
   return res.status(404).json({ error: 'Not found' });
 }
@@ -50,12 +52,14 @@ if (certificate.userId !== currentUserId) {
 **Mitigation Status:** ✅ MITIGATED — Input sanitization + output encoding
 
 **Implementation:**
+
 - All user input fields (name, courseTitle, customFields) are sanitized before storage
 - Sanitization strips HTML tags, limits length, and rejects dangerous patterns
 - PDF generation escapes all user input before interpolation
 - Template paths are never user-supplied
 
 **Sanitization Rules:**
+
 - Reject or encode: `<script`, `javascript:`, `data:`, `../../`, `../`
 - Maximum field lengths: name (100 chars), courseTitle (200 chars)
 - Use DOMPurify for HTML sanitization on the frontend
@@ -74,6 +78,7 @@ if (certificate.userId !== currentUserId) {
 **Mitigation Status:** ✅ MITIGATED — Server-side completion verification + verification hash
 
 **Implementation:**
+
 - Before generation, verify server-side: `completion = await getCourseCompletion(userId, courseId)`
 - Check: `if (!completion || !completion.isCompleted) return 403 Forbidden`
 - On generation, compute verification hash: `sha256(userId + courseId + completionDate + SECRET)`
@@ -93,8 +98,9 @@ if (certificate.userId !== currentUserId) {
 **Mitigation Status:** ✅ MITIGATED — Auth middleware applied to all certificate routes
 
 **Implementation:**
+
 - All certificate endpoints require `requireAuth` middleware
-- Routes: 
+- Routes:
   - `POST /api/certificates/generate` — requires auth
   - `GET /api/certificates/:id` — requires auth + ownership check
   - `GET /api/certificates/:id/download` — requires auth + ownership check
@@ -113,6 +119,7 @@ if (certificate.userId !== currentUserId) {
 **Mitigation Status:** ✅ MITIGATED — Per-user rate limiting on generation endpoint
 
 **Implementation:**
+
 - Configuration: 10 certificates per 15 minutes per user
 - Rate limiter key: `req.user.id` (per-user, not per-IP)
 - Returns 429 Too Many Requests with `Retry-After` header
@@ -131,6 +138,7 @@ if (certificate.userId !== currentUserId) {
 **Mitigation Status:** ✅ MITIGATED — Authenticated API routes + UUID filenames
 
 **Implementation:**
+
 - Certificates stored in non-web-accessible directories
 - Files named with UUIDs, never user-supplied names
 - Served via authenticated API routes, not direct file URLs
@@ -149,6 +157,7 @@ if (certificate.userId !== currentUserId) {
 **Mitigation Status:** ✅ MITIGATED — Opaque UUIDs instead of sequential IDs
 
 **Implementation:**
+
 - All public-facing endpoints use UUID v4 for certificate identification
 - Internal database key remains sequential for performance, never exposed
 - UUID format: `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`
@@ -166,6 +175,7 @@ if (certificate.userId !== currentUserId) {
 **Mitigation Status:** ✅ MITIGATED — Structured audit logging on all events
 
 **Implementation:**
+
 - Log certificate generation: `{ event: 'certificate.generated', userId, courseId, certId, timestamp }`
 - Log certificate downloads: `{ event: 'certificate.downloaded', userId, certId, ip, timestamp }`
 - Log failed access attempts: `{ event: 'certificate.access_denied', requesterId, certId, reason }`
@@ -176,15 +186,15 @@ if (certificate.userId !== currentUserId) {
 
 ## Access Control Matrix
 
-| Action | Actor | Requirement | Notes |
-|--------|-------|-------------|-------|
-| Generate | Authenticated Student | Completed Course | Server-side verification required |
-| View Own | Certificate Owner | Authenticated | IDOR check enforced |
-| View Others | Non-Owner | N/A | Forbidden (404 returned) |
-| Download | Certificate Owner | Authenticated | IDOR check enforced |
-| Verify | Anyone | Public | No auth required; hash verification only |
-| Delete | Certificate Owner | Authenticated | Can revoke own certificates |
-| Admin Override | Admin | Authenticated + Admin Role | Can access/delete any certificate |
+| Action         | Actor                 | Requirement                | Notes                                    |
+| -------------- | --------------------- | -------------------------- | ---------------------------------------- |
+| Generate       | Authenticated Student | Completed Course           | Server-side verification required        |
+| View Own       | Certificate Owner     | Authenticated              | IDOR check enforced                      |
+| View Others    | Non-Owner             | N/A                        | Forbidden (404 returned)                 |
+| Download       | Certificate Owner     | Authenticated              | IDOR check enforced                      |
+| Verify         | Anyone                | Public                     | No auth required; hash verification only |
+| Delete         | Certificate Owner     | Authenticated              | Can revoke own certificates              |
+| Admin Override | Admin                 | Authenticated + Admin Role | Can access/delete any certificate        |
 
 ---
 
@@ -199,6 +209,7 @@ GET /api/certificates/verify/{{certificateId}}
 ```
 
 Response:
+
 ```json
 {
   "valid": true,
@@ -217,12 +228,14 @@ The backend validates the stored verification hash against the certificate data.
 ## Rate Limits
 
 ### Certificate Generation
+
 - **Limit:** 10 per 15 minutes per authenticated user
 - **Key:** User ID (not IP)
 - **Response:** 429 Too Many Requests
 - **Headers:** `Retry-After: <seconds>`
 
 ### Certificate Download
+
 - **Limit:** Unlimited (no rate limiting on download itself)
 - **Rationale:** Users should be able to download their own certificates repeatedly
 
@@ -233,14 +246,17 @@ The backend validates the stored verification hash against the certificate data.
 ### Events Logged
 
 1. **Certificate Generation** (`certificate.generated`)
+
    - Fields: `userId`, `courseId`, `certificateId`, `timestamp`
    - Triggers: When POST /api/certificates/generate succeeds
 
 2. **Certificate Download** (`certificate.downloaded`)
+
    - Fields: `userId`, `certificateId`, `timestamp`, `ip`
    - Triggers: When GET /api/certificates/:id/download succeeds
 
 3. **Failed Access Attempt** (`certificate.access_denied`)
+
    - Fields: `requesterId`, `certificateId`, `reason`, `timestamp`
    - Triggers: When IDOR check fails or auth fails
 
@@ -255,7 +271,7 @@ const logs = queryAuditLogs({
   action: 'certificate.generated',
   actorId: 'user-123',
   limit: 50,
-  offset: 0
+  offset: 0,
 });
 ```
 
@@ -279,6 +295,7 @@ const logs = queryAuditLogs({
 ### Rate Limiting in Distributed Systems
 
 Current implementation uses in-memory store. For multi-server deployments:
+
 - Implement Redis-backed rate limiting
 - Ensure consistent user ID extraction across all servers
 
@@ -294,21 +311,25 @@ Current implementation uses in-memory store. For multi-server deployments:
 ## Known Limitations & Accepted Risks
 
 ### 1. **Verification Hash Rotation Not Implemented**
+
 - When `CERTIFICATE_VERIFICATION_SECRET` is rotated, existing certificates cannot be verified
 - **Mitigation:** Document rotation procedure; provide migration script
 - **Status:** TODO — Add versioned secrets support
 
 ### 2. **No Real-Time Certificate Revocation**
+
 - Revoked certificates are marked deleted but remain discoverable if ID is known
 - **Mitigation:** Check revocation status on every access; maintain revocation list
 - **Status:** Partially mitigated — revocation check in progress
 
 ### 3. **PDF Generation Timeout Not Enforced**
+
 - Puppeteer may hang on malicious HTML
 - **Mitigation:** Implement per-request timeout via `Promise.race()`
 - **Status:** TODO — Add 30-second timeout on PDF generation
 
 ### 4. **No Certificate Revocation API**
+
 - Users cannot revoke issued certificates
 - **Mitigation:** Add DELETE /api/certificates/:id endpoint
 - **Status:** TODO — Implement revocation flow
@@ -347,16 +368,19 @@ Current implementation uses in-memory store. For multi-server deployments:
 ## Compliance Notes
 
 ### GDPR
+
 - Certificates contain user data (name, completion date)
 - Audit logs link certificates to user IDs
 - Implement: data export, deletion, and retention policies
 
 ### WCAG 2.1 (Accessibility)
+
 - Certificates should be screen-reader compatible
 - PDF generated with accessibility metadata (requires Puppeteer config)
 - Alternative text formats (JSON, plain text) should be available
 
 ### Data Minimization
+
 - Only store necessary fields: userId, courseId, completionDate, name
 - Do not store email, phone, or other PII in certificate body
 
@@ -384,9 +408,11 @@ For security issues or questions, contact the TeachLink security team.
 ## Appendix: API Endpoints
 
 ### POST /api/certificates/generate
+
 Generate a new certificate for a course.
 
 **Request:**
+
 ```json
 {
   "courseId": "course_uuid",
@@ -395,6 +421,7 @@ Generate a new certificate for a course.
 ```
 
 **Response (200):**
+
 ```json
 {
   "certificateId": "cert_uuid",
@@ -406,6 +433,7 @@ Generate a new certificate for a course.
 ```
 
 **Error Responses:**
+
 - 401: Not authenticated
 - 403: Course not completed
 - 429: Rate limit exceeded
@@ -413,9 +441,11 @@ Generate a new certificate for a course.
 ---
 
 ### GET /api/certificates/:id
+
 Retrieve certificate metadata.
 
 **Response (200):**
+
 ```json
 {
   "certificateId": "cert_uuid",
@@ -430,6 +460,7 @@ Retrieve certificate metadata.
 ---
 
 ### GET /api/certificates/:id/download
+
 Download certificate as PDF.
 
 **Response:** PDF file with `Content-Disposition: attachment`
@@ -437,9 +468,11 @@ Download certificate as PDF.
 ---
 
 ### GET /api/certificates/verify/:id
+
 Verify certificate authenticity (public).
 
 **Response (200):**
+
 ```json
 {
   "valid": true,
@@ -453,6 +486,7 @@ Verify certificate authenticity (public).
 ---
 
 ### DELETE /api/certificates/:id
+
 Revoke certificate (owner or admin only).
 
 **Response (204):** No content
