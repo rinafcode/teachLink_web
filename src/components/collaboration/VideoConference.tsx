@@ -187,12 +187,13 @@ export function VideoConference({
 
   const startLocalStream = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      setLocalStream(stream);
-      stream.getAudioTracks().forEach((track) => {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+      // Apply virtual background if enabled
+      const processedStream = await virtualBackground.applyToStream(stream);
+
+      setLocalStream(processedStream);
+      processedStream.getAudioTracks().forEach((track) => {
         track.enabled = microphoneEnabled;
       });
       processedStream.getVideoTracks().forEach((track) => {

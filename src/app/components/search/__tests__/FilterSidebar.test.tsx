@@ -21,11 +21,7 @@ describe('FilterSidebar (App) Component - Node Affinity', () => {
     const onReset = vi.fn();
 
     render(
-      <FilterSidebar
-        filters={defaultFilters}
-        onFilterChange={onFilterChange}
-        onReset={onReset}
-      />
+      <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
     expect(screen.getByText('Node Affinity')).toBeInTheDocument();
@@ -40,11 +36,7 @@ describe('FilterSidebar (App) Component - Node Affinity', () => {
     const onReset = vi.fn();
 
     render(
-      <FilterSidebar
-        filters={defaultFilters}
-        onFilterChange={onFilterChange}
-        onReset={onReset}
-      />
+      <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
     // Click on Replica Node option

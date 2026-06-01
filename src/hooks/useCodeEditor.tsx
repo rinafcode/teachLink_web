@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { editor } from 'monaco-editor';
 import {

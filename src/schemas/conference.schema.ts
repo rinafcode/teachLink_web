@@ -16,16 +16,8 @@ export const ConferenceSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid date format',
   }),
-  location: z
-    .string()
-    .max(200, 'Location must be less than 200 characters')
-    .optional()
-    .nullable(),
-  url: z
-    .string()
-    .url('Invalid URL')
-    .optional()
-    .nullable(),
+  location: z.string().max(200, 'Location must be less than 200 characters').optional().nullable(),
+  url: z.string().url('Invalid URL').optional().nullable(),
 });
 
 /**

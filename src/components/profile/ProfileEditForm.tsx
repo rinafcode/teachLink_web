@@ -64,21 +64,27 @@ export default function ProfileEditForm() {
     setValue,
   } = methods;
 
-  const onSubmit = useCallback(async (data: ProfileFormData) => {
-    const success = await updateProfile(data);
-    if (success) {
-      setUser({ name: data.name });
-      setPreferences({
-        theme: data.theme,
-        notifications: data.notifications.email,
-        prefetching: data.prefetching,
-      });
-    }
-  }, [setPreferences, setUser, updateProfile]);
+  const onSubmit = useCallback(
+    async (data: ProfileFormData) => {
+      const success = await updateProfile(data);
+      if (success) {
+        setUser({ name: data.name });
+        setPreferences({
+          theme: data.theme,
+          notifications: data.notifications.email,
+          prefetching: data.prefetching,
+        });
+      }
+    },
+    [setPreferences, setUser, updateProfile],
+  );
 
-  const handleImageSelect = useCallback((file: File) => {
-    setValue('avatar', file);
-  }, [setValue]);
+  const handleImageSelect = useCallback(
+    (file: File) => {
+      setValue('avatar', file);
+    },
+    [setValue],
+  );
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100">

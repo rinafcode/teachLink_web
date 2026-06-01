@@ -17,8 +17,6 @@ import { AccessibleLoading } from '../../app/components/accessibility/ScreenRead
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
 
-
-
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 export interface SubmitButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

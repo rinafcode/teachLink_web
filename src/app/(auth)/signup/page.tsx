@@ -107,7 +107,9 @@ export default function SignupPage() {
               <input
                 type="text"
                 placeholder="John Doe"
-                className={`w-full px-4 py-3 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
+                className={`w-full px-4 py-3 border ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
                 aria-invalid={!!errors.name}
                 aria-describedby="name-error"
                 {...register('name')}
@@ -120,7 +122,9 @@ export default function SignupPage() {
               <input
                 type="email"
                 placeholder="john.doe@example.com"
-                className={`w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
+                className={`w-full px-4 py-3 border ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all`}
                 aria-invalid={!!errors.email}
                 aria-describedby="email-error"
                 {...register('email')}
@@ -134,7 +138,9 @@ export default function SignupPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
+                  className={`w-full px-4 py-3 border ${
+                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
                   aria-invalid={!!errors.password}
                   aria-describedby="password-error"
                   {...register('password')}
@@ -151,12 +157,16 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-3 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
+                  className={`w-full px-4 py-3 border ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all pr-12`}
                   aria-invalid={!!errors.confirmPassword}
                   aria-describedby="confirmPassword-error"
                   {...register('confirmPassword')}

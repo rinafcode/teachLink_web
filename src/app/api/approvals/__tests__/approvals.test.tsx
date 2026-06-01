@@ -27,7 +27,7 @@ const makeUser = (role: string, overrides: Partial<User> = {}): User =>
     email: 'test@example.com',
     role: role as User['role'],
     ...overrides,
-  }) as User;
+  } as User);
 
 // ---------------------------------------------------------------------------
 // 1. ACL — permission assignment
@@ -158,7 +158,10 @@ describe('Approval API route', () => {
       { id: 'a1', status: 'PENDING', title: 'Course A' },
       { id: 'a2', status: 'APPROVED', title: 'Course B' },
     ];
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ json: async () => ({ success: true, data: items }) }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ json: async () => ({ success: true, data: items }) }),
+    );
 
     const res = await fetch('/api/approvals');
     const json = await res.json();
@@ -219,9 +222,7 @@ describe('SubmitForApproval component', () => {
     );
     await user.click(screen.getByRole('button', { name: /submit.*approval/i }));
 
-    await waitFor(() =>
-      expect(screen.getByText(/submitted for review/i)).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(/submitted for review/i)).toBeInTheDocument());
   });
 
   it('shows error message on network failure', async () => {
@@ -232,9 +233,7 @@ describe('SubmitForApproval component', () => {
     );
     await user.click(screen.getByRole('button', { name: /submit.*approval/i }));
 
-    await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/network error/i),
-    );
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/network error/i));
   });
 
   it('calls onSubmitted callback with returned item', async () => {

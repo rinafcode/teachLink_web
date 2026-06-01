@@ -97,7 +97,7 @@ describe('ConferenceManagement', () => {
 
     it('renders list of conferences when data exists', async () => {
       render(<ConferenceManagement />);
-      
+
       // Wait for data to load and display
       await waitFor(() => {
         expect(screen.getByText('Tech Summit 2024')).toBeInTheDocument();
@@ -208,10 +208,13 @@ describe('ConferenceManagement', () => {
       await user.click(submitBtn);
 
       await waitFor(() => {
-        expect(conferenceService.addConference).toHaveBeenCalledWith('user-123', expect.objectContaining({
-          title: 'New Conference',
-          date: '2024-12-01',
-        }));
+        expect(conferenceService.addConference).toHaveBeenCalledWith(
+          'user-123',
+          expect.objectContaining({
+            title: 'New Conference',
+            date: '2024-12-01',
+          }),
+        );
       });
     });
 
@@ -303,7 +306,7 @@ describe('ConferenceManagement', () => {
           'conf-1',
           expect.objectContaining({
             title: 'Updated Conference',
-          })
+          }),
         );
       });
     });
@@ -348,7 +351,9 @@ describe('ConferenceManagement', () => {
         expect(screen.getByText('Tech Summit 2024')).toBeInTheDocument();
       });
 
-      const deleteBtn = screen.getByRole('button', { name: /delete conference: tech summit 2024/i });
+      const deleteBtn = screen.getByRole('button', {
+        name: /delete conference: tech summit 2024/i,
+      });
       expect(deleteBtn).toBeInTheDocument();
     });
 
@@ -360,7 +365,9 @@ describe('ConferenceManagement', () => {
         expect(screen.getByText('Tech Summit 2024')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole('button', { name: /delete conference: tech summit 2024/i }));
+      await user.click(
+        screen.getByRole('button', { name: /delete conference: tech summit 2024/i }),
+      );
 
       await waitFor(() => {
         expect(conferenceService.deleteConference).toHaveBeenCalledWith('user-123', 'conf-1');
@@ -376,7 +383,9 @@ describe('ConferenceManagement', () => {
         expect(screen.getByText('Tech Summit 2024')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole('button', { name: /delete conference: tech summit 2024/i }));
+      await user.click(
+        screen.getByRole('button', { name: /delete conference: tech summit 2024/i }),
+      );
 
       expect(conferenceService.deleteConference).not.toHaveBeenCalled();
     });
@@ -390,7 +399,9 @@ describe('ConferenceManagement', () => {
         expect(screen.getByText('Tech Summit 2024')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole('button', { name: /delete conference: tech summit 2024/i }));
+      await user.click(
+        screen.getByRole('button', { name: /delete conference: tech summit 2024/i }),
+      );
 
       await waitFor(() => {
         expect(conferenceService.deleteConference).toHaveBeenCalled();
@@ -448,9 +459,13 @@ describe('ConferenceManagement', () => {
   describe('Loading States', () => {
     beforeEach(() => {
       (conferenceService.addConference as any).mockImplementationOnce(
-        () => new Promise((resolve) => {
-          setTimeout(() => resolve({ id: 'new', title: 'Test', role: 'speaker', date: '2024-12-01' }), 100);
-        })
+        () =>
+          new Promise((resolve) => {
+            setTimeout(
+              () => resolve({ id: 'new', title: 'Test', role: 'speaker', date: '2024-12-01' }),
+              100,
+            );
+          }),
       );
     });
 
@@ -500,7 +515,9 @@ describe('ConferenceManagement', () => {
         expect(screen.getByText('Tech Summit 2024')).toBeInTheDocument();
       });
 
-      const deleteBtn = screen.getByRole('button', { name: /delete conference: tech summit 2024/i });
+      const deleteBtn = screen.getByRole('button', {
+        name: /delete conference: tech summit 2024/i,
+      });
       expect(deleteBtn).toHaveAttribute('aria-label', 'Delete conference: Tech Summit 2024');
     });
 
@@ -532,7 +549,7 @@ describe('ConferenceManagement', () => {
   describe('Integration with ProfileEditForm', () => {
     it('renders without affecting form region', () => {
       render(<ConferenceManagement />);
-      
+
       // Component should be in its own section, not inside a form
       const section = screen.queryByRole('region', { hidden: true });
       expect(section).toBeInTheDocument();
@@ -543,7 +560,7 @@ describe('ConferenceManagement', () => {
   describe('User Store Integration', () => {
     it('uses user ID from store when not provided as prop', () => {
       render(<ConferenceManagement />);
-      
+
       // Verify component initializes (no explicit assertion needed, just verify it doesn't error)
       expect(screen.getByRole('heading', { name: /conferences/i })).toBeInTheDocument();
     });
@@ -551,7 +568,7 @@ describe('ConferenceManagement', () => {
     it('uses provided userId prop over store', () => {
       const user = userEvent.setup();
       render(<ConferenceManagement userId="custom-user-id" />);
-      
+
       // When adding, it should use the provided ID
       expect(screen.getByRole('heading', { name: /conferences/i })).toBeInTheDocument();
     });

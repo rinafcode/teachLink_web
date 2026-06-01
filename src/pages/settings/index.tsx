@@ -285,7 +285,9 @@ export default function SettingsPage() {
 
                 <div
                   className={
-                    settings.electronicSignatureEnabled ? undefined : 'opacity-50 pointer-events-none'
+                    settings.electronicSignatureEnabled
+                      ? undefined
+                      : 'opacity-50 pointer-events-none'
                   }
                 >
                   <label
@@ -333,11 +335,14 @@ export default function SettingsPage() {
             </section>
 
             <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">Poll Creation &amp; Voting</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                Poll Creation &amp; Voting
+              </h2>
 
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  Configure default preferences for creating interactive polls in your classes, groups, or discussions.
+                  Configure default preferences for creating interactive polls in your classes,
+                  groups, or discussions.
                 </p>
 
                 <label className="flex items-start gap-3 cursor-pointer mb-4">
@@ -346,23 +351,24 @@ export default function SettingsPage() {
                     type="checkbox"
                     className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     checked={settings.pollCreationEnabled}
-                    onChange={(e) =>
-                      patchSettings({ pollCreationEnabled: e.target.checked })
-                    }
+                    onChange={(e) => patchSettings({ pollCreationEnabled: e.target.checked })}
                   />
                   <span>
                     <span className="font-medium text-gray-900 dark:text-gray-50">
                       Enable interactive polls
                     </span>
                     <span className="block text-xs text-gray-500 dark:text-gray-400">
-                      When enabled, you can create and manage interactive polls in your study groups and courses.
+                      When enabled, you can create and manage interactive polls in your study groups
+                      and courses.
                     </span>
                   </span>
                 </label>
 
                 <div
                   className={
-                    settings.pollCreationEnabled ? 'space-y-4' : 'opacity-50 pointer-events-none space-y-4'
+                    settings.pollCreationEnabled
+                      ? 'space-y-4'
+                      : 'opacity-50 pointer-events-none space-y-4'
                   }
                 >
                   <div>
@@ -375,7 +381,9 @@ export default function SettingsPage() {
                     <select
                       id="defaultPollDuration"
                       value={settings.defaultPollDuration}
-                      onChange={(e) => patchSettings({ defaultPollDuration: parseInt(e.target.value, 10) })}
+                      onChange={(e) =>
+                        patchSettings({ defaultPollDuration: parseInt(e.target.value, 10) })
+                      }
                       disabled={!settings.pollCreationEnabled}
                       className="block w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                     >
@@ -397,9 +405,7 @@ export default function SettingsPage() {
                       className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       checked={settings.allowAnonymousVoting}
                       disabled={!settings.pollCreationEnabled}
-                      onChange={(e) =>
-                        patchSettings({ allowAnonymousVoting: e.target.checked })
-                      }
+                      onChange={(e) => patchSettings({ allowAnonymousVoting: e.target.checked })}
                     />
                     <span>
                       <span className="font-medium text-gray-900 dark:text-gray-50">
@@ -421,7 +427,9 @@ export default function SettingsPage() {
                     <select
                       id="pollResultsVisibility"
                       value={settings.pollResultsVisibility}
-                      onChange={(e) => patchSettings({ pollResultsVisibility: e.target.value as any })}
+                      onChange={(e) =>
+                        patchSettings({ pollResultsVisibility: e.target.value as any })
+                      }
                       disabled={!settings.pollCreationEnabled}
                       className="block w-full max-w-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                     >
@@ -552,9 +560,7 @@ export default function SettingsPage() {
                         id="virtualBackgroundColor"
                         type="color"
                         value={settings.virtualBackgroundColor}
-                        onChange={(e) =>
-                          patchSettings({ virtualBackgroundColor: e.target.value })
-                        }
+                        onChange={(e) => patchSettings({ virtualBackgroundColor: e.target.value })}
                         disabled={!settings.virtualBackgroundEnabled}
                         className="h-10 w-16 rounded border border-gray-300 dark:border-gray-700"
                       />
@@ -562,9 +568,7 @@ export default function SettingsPage() {
                         type="text"
                         maxLength={7}
                         value={settings.virtualBackgroundColor}
-                        onChange={(e) =>
-                          patchSettings({ virtualBackgroundColor: e.target.value })
-                        }
+                        onChange={(e) => patchSettings({ virtualBackgroundColor: e.target.value })}
                         disabled={!settings.virtualBackgroundEnabled}
                         placeholder="#000000"
                         className="block w-32 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"

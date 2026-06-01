@@ -50,9 +50,7 @@ export async function withRequestLogging<T>(
 
   try {
     const result = await runWithLogContext({ requestId, correlationId }, () => handler(requestId));
-    const duration = Number(
-      ((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2),
-    );
+    const duration = Number(((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2));
     const status = getResponseStatus(result);
     const metric = recordMetric({
       name: 'http.request.duration',
