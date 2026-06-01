@@ -52,33 +52,26 @@ interface SortBarProps {
 
 function SortBar({ current, onChange, postCount }: SortBarProps) {
   return (
-    <div className="flex items-center justify-between gap-2">
-      <div
-        className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg"
-        role="group"
-        aria-label="Sort posts"
-      >
-        {SORT_OPTIONS.map(({ value, label, icon }) => (
-          <button
-            key={value}
-            onClick={() => onChange(value)}
-            aria-pressed={current === value}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-              current === value
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-          >
-            {icon}
-            {label}
-          </button>
-        ))}
-      </div>
-      {postCount !== undefined && (
-        <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-          {formatFollowerCount(postCount)} post{postCount !== 1 ? 's' : ''}
-        </span>
-      )}
+    <div
+      className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg"
+      role="group"
+      aria-label="Sort posts"
+    >
+      {SORT_OPTIONS.map(({ value, label, icon }) => (
+        <button
+          key={value}
+          onClick={() => onChange(value)}
+          aria-pressed={current === value}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+            current === value
+              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+          }`}
+        >
+          {icon}
+          {label}
+        </button>
+      ))}
     </div>
   );
 }

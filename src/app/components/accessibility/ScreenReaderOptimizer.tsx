@@ -131,12 +131,7 @@ export function AccessibleLoading({
   if (!isLoading) return null;
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-busy="true"
-      className={className}
-    >
+    <div role="status" aria-live="polite" aria-busy="true" className={className}>
       {spinner || <div className={spinnerClassName} />}
       {showText ? (
         <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">{message}</span>

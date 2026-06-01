@@ -11,10 +11,7 @@ import React, {
   useRef,
 } from 'react';
 import { Toast, ToastType } from '@/components/ui/Toast';
-import {
-  createToastCircuitBreaker,
-  CircuitBreakerMetrics,
-} from '@/utils/circuitBreaker';
+import { createToastCircuitBreaker, CircuitBreakerMetrics } from '@/utils/circuitBreaker';
 
 export interface ToastMessage {
   id: string;
@@ -49,58 +46,51 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   ).current;
 
   const removeToast = useCallback((id: string) => {
-    setToasts((prev: ToastMessage[]) =>
-      prev.filter((toast: ToastMessage) => toast.id !== id),
-    );
+    setToasts((prev: ToastMessage[]) => prev.filter((toast: ToastMessage) => toast.id !== id));
   }, []);
 
   const addToast = useCallback(
-    (
-      message: string,
-      type: ToastType = 'info',
-      duration = DEFAULT_TOAST_DURATION,
-    ) => {
-      circuitBreaker.execute(
-        () => {
-          const id = Math.random().toString(36).substring(2, 11);
-          setToasts((prev: ToastMessage[]) => [
-            ...prev,
-            { id, type, message, duration },
-          ]);
+    (message: string, type: ToastType = 'info', duration = DEFAULT_TOAST_DURATION) => {
+      circuitBreaker
+        .execute(
+          () => {
+            const id = Math.random().toString(36).substring(2, 11);
+            setToasts((prev: ToastMessage[]) => [...prev, { id, type, message, duration }]);
 
-          if (duration > 0) {
-            setTimeout(() => {
-              removeToast(id);
-            }, duration);
-          }
-          return Promise.resolve();
-        },
-        () => {
-          // Fallback: Log to console when circuit is open
-          console.warn('[Toast Circuit Breaker] Toast notification suppressed:', {
-            type,
-            message,
-          });
-          // Optionally show a simplified fallback toast
-          const id = Math.random().toString(36).substring(2, 11);
-          setToasts((prev: ToastMessage[]) => [
-            ...prev.slice(-2),
-            {
-              id,
-              type: 'info',
-              message: 'Notifications temporarily limited',
-              duration: 3000,
-            },
-          ]);
-          if (duration > 0) {
-            setTimeout(() => {
-              removeToast(id);
-            }, duration);
-          }
-        }
-      ).catch((error: unknown) => {
-        console.error('[Toast Circuit Breaker] Error:', error);
-      });
+            if (duration > 0) {
+              setTimeout(() => {
+                removeToast(id);
+              }, duration);
+            }
+            return Promise.resolve();
+          },
+          () => {
+            // Fallback: Log to console when circuit is open
+            console.warn('[Toast Circuit Breaker] Toast notification suppressed:', {
+              type,
+              message,
+            });
+            // Optionally show a simplified fallback toast
+            const id = Math.random().toString(36).substring(2, 11);
+            setToasts((prev: ToastMessage[]) => [
+              ...prev.slice(-2),
+              {
+                id,
+                type: 'info',
+                message: 'Notifications temporarily limited',
+                duration: 3000,
+              },
+            ]);
+            if (duration > 0) {
+              setTimeout(() => {
+                removeToast(id);
+              }, duration);
+            }
+          },
+        )
+        .catch((error: unknown) => {
+          console.error('[Toast Circuit Breaker] Error:', error);
+        });
     },
     [removeToast, circuitBreaker],
   );
@@ -110,8 +100,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [addToast],
   );
   const success = useCallback(
-    (message: string, duration?: number) =>
-      addToast(message, 'success', duration),
+    (message: string, duration?: number) => addToast(message, 'success', duration),
     [addToast],
   );
   const info = useCallback(

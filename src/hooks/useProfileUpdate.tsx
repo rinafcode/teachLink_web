@@ -19,24 +19,27 @@ export function useProfileUpdate() {
   const { execute, isLoading } = useErrorHandling();
   const { success } = useToast();
 
-  const updateProfile = useCallback(async (data: ProfileData) => {
-    const result = await execute(async () => {
-      // Simulate API call
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // You could conditionally reject here to test error path
-          resolve(true);
-        }, 1500);
+  const updateProfile = useCallback(
+    async (data: ProfileData) => {
+      const result = await execute(async () => {
+        // Simulate API call
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            // You could conditionally reject here to test error path
+            resolve(true);
+          }, 1500);
+        });
+        return true;
       });
-      return true;
-    });
 
-    if (result) {
-      success('Profile updated successfully!');
-      return true;
-    }
-    return false;
-  }, [execute, success]);
+      if (result) {
+        success('Profile updated successfully!');
+        return true;
+      }
+      return false;
+    },
+    [execute, success],
+  );
 
   return useMemo(() => ({ updateProfile, isLoading }), [updateProfile, isLoading]);
 }

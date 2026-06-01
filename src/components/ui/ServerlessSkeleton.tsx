@@ -22,12 +22,7 @@ function LoadingRegion({
   maxWidth?: string;
 }) {
   return (
-    <section
-      aria-busy="true"
-      aria-label={label}
-      className={containerClasses}
-      role="status"
-    >
+    <section aria-busy="true" aria-label={label} className={containerClasses} role="status">
       <span className="sr-only">{label}</span>
       <div className={`${maxWidth} mx-auto`}>{children}</div>
     </section>
@@ -175,7 +170,13 @@ export function ServerlessPageSkeleton({
         <Skeleton height={48} className="mb-6" animation="wave" />
         <div className="mb-6 flex gap-2">
           {Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} height={32} width={80} className="rounded-full" animation="wave" />
+            <Skeleton
+              key={index}
+              height={32}
+              width={80}
+              className="rounded-full"
+              animation="wave"
+            />
           ))}
         </div>
         <Skeleton height={20} width={128} className="mb-4" animation="wave" />

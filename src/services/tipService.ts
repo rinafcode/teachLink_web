@@ -25,8 +25,9 @@ export async function sendTip(payload: TipPayload): Promise<TipSendResult> {
   });
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => null);
-    throw new Error(errorBody?.message || 'Failed to send tip.');
+    const message =
+      typeof responseBody.error === 'string' ? responseBody.error : 'Unable to send tip.';
+    throw new Error(message);
   }
 
   return response.json();
