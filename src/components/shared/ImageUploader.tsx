@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Image from 'next/image';
+import { dataWarehouse } from '@/lib/dataWarehouse';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -37,6 +38,13 @@ function ImageUploader({
       const objectUrl = URL.createObjectURL(file);
       objectUrlRef.current = objectUrl;
       setPreviewUrl(objectUrl);
+
+      // Track the image upload event
+      dataWarehouse.trackEvent('IMAGE_UPLOADED', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+      }).catch(console.error);
 
       onImageSelect(file);
     }
