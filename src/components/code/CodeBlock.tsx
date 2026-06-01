@@ -80,14 +80,21 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
       {/* Code area with expand/collapse */}
       <div
-        className={`overflow-hidden transition-[max-height] duration-500 ease-in-out ${
-          isCollapsible && !expanded ? 'max-h-[calc(15*1.625rem)]' : 'max-h-[9999px]'
-        }`}
-        style={
-          isCollapsible && !expanded
-            ? { WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }
-            : undefined
-        }
+        className="overflow-hidden transition-[max-height] duration-500 ease-in-out"
+        style={{
+          maxHeight:
+            isCollapsible && !expanded
+              ? `${collapseThreshold * 1.625}rem`
+              : '9999px',
+          WebkitMaskImage:
+            isCollapsible && !expanded
+              ? 'linear-gradient(to bottom, black 60%, transparent 100%)'
+              : undefined,
+          maskImage:
+            isCollapsible && !expanded
+              ? 'linear-gradient(to bottom, black 60%, transparent 100%)'
+              : undefined,
+        }}
       >
         <pre className="overflow-x-auto p-4 text-sm font-mono leading-relaxed text-gray-100 m-0">
           <code>{code}</code>
