@@ -22,9 +22,9 @@ describe('tipService', () => {
       txHash: '0xabc',
       recipientId: 'user-99',
       amount: 0.05,
-      notarizationId: 'notarization-user-99-1234567890-abc123',
-      notarizationProof: 'proof-value',
-      notarizedAt: '2026-01-01T00:00:00.000Z',
+      id: 'notarization-user-99-1234567890-abc123',
+      proof: 'proof-value',
+      recordedAt: '2026-01-01T00:00:00.000Z',
     };
 
     mockFetch.mockResolvedValueOnce({
