@@ -25,4 +25,12 @@ export const queryKeys = {
     all: ['notes'] as const,
     byLesson: (lessonId: string) => ['notes', lessonId] as const,
   },
+  wallet: {
+    all: ['wallet'] as const,
+    balance: (address: string, chainId: string) =>
+      ['wallet', 'balance', address, chainId] as const,
+    nfts: (address: string, chainId: string) => ['wallet', 'nfts', address, chainId] as const,
+    positions: (address: string) => ['wallet', 'positions', address] as const,
+    transactions: (address: string) => ['wallet', 'transactions', address] as const,
+  },
 } as const;

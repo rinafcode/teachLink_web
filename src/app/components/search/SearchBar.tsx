@@ -37,7 +37,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allResults = [...results.courses, ...results.instructors, ...results.topics];
+    const allResults = [
+      ...results.courses,
+      ...results.instructors,
+      ...results.topics,
+      ...results.investments,
+    ];
 
     if (!isOpen && e.key === 'Enter') {
       setIsOpen(true);
@@ -90,7 +95,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setIsOpen]);
 
-  const allResults = [...results.courses, ...results.instructors, ...results.topics];
+  const allResults = [
+    ...results.courses,
+    ...results.instructors,
+    ...results.topics,
+    ...results.investments,
+  ];
 
   const hasResults = query && allResults.length > 0;
   const showSuggestions = !query && isOpen && searchHistory.length > 0;
@@ -110,7 +120,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search courses, instructors, topics..."
+          placeholder="Search courses, instructors, topics, investments..."
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -236,6 +246,29 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className, isExpanded = fa
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {topic.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Investment Features */}
+              {results.investments.length > 0 && (
+                <div>
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800">
+                    Investment Features
+                  </div>
+                  {results.investments.map((investment) => (
+                    <button
+                      key={investment.id}
+                      onClick={() => handleSearch(investment.title)}
+                      className="w-full px-4 py-3 text-left hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                    >
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                        {investment.title}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {investment.description}
                       </p>
                     </button>
                   ))}
