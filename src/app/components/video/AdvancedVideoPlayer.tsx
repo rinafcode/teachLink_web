@@ -19,7 +19,9 @@ import {
 } from 'lucide-react';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
+import { useAudioEnhancement } from '../../hooks/useAudioEnhancement';
 import { PlaybackControls } from './PlaybackControls';
+import { AudioEnhancement } from './AudioEnhancement';
 import { VideoNotes } from './VideoNotes';
 import { VideoBookmarks } from './VideoBookmarks';
 import { TranscriptView } from './TranscriptView';
@@ -115,6 +117,8 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
     resetError,
     isMuted,
   } = useVideoPlayer(videoRef);
+
+  const audioEnhancement = useAudioEnhancement(videoRef);
 
   const analytics = usePlaybackAnalytics({
     lessonId,
@@ -269,6 +273,10 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
           e.preventDefault();
           if (document.pictureInPictureEnabled) void togglePiP();
           break;
+        case 'e':
+          e.preventDefault();
+          audioEnhancement.toggle();
+          break;
       }
     };
 
@@ -285,6 +293,7 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
     toggleMute,
     togglePiP,
     volume,
+    audioEnhancement,
   ]);
 
   // Touch gesture handlers (double tap play/pause, swipe seek).
@@ -371,6 +380,7 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
     onBookmark: (b: { time: number; title: string; note?: string }) =>
       analytics.registerBookmarkAdded(b.time),
     onNote: (n: { time: number; text: string }) => analytics.registerNoteAdded(n.time),
+    audioEnhancement,
   };
 
   return (
@@ -588,6 +598,7 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
               </div>
 
               <PlaybackControls />
+              <AudioEnhancement />
 
               <div className="mt-2 text-xs text-white/80 flex items-center justify-between">
                 <span>Watched: {Math.round(analytics.snapshot.watchSeconds)}s</span>

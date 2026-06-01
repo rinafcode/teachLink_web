@@ -3,18 +3,17 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import type { ApiResponse } from '@/types/api';
 
-// GET /api/ai/progress → { courses: CourseProgress[]; insights: string[] }
-
-interface CourseProgress {
-  id: string;
-  title: string;
-  percent: number;
-}
+// GET /api/ai/progress → ApiResponse<ProgressData>
 
 interface ProgressData {
-  courses: CourseProgress[];
-  insights: string[];
+  streak: number;
+  totalTimeSpent: number;
+  dailyGoal: number;
+  lastActive: string;
+  completedCourses: number;
+  totalCourses: number;
 }
 
 function ProgressBar({ percent }: { percent: number }) {
@@ -40,11 +39,16 @@ export default function IntelligentProgress() {
 
   useEffect(() => {
     apiClient
-      .get<ProgressData>('/api/ai/progress')
-      .then(setData)
+      .get<ApiResponse<ProgressData>>('/api/ai/progress')
+      .then((response) => setData(response.data))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  const completion =
+    data && data.totalCourses > 0
+      ? Math.round((data.completedCourses / data.totalCourses) * 100)
+      : 0;
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -65,31 +69,38 @@ export default function IntelligentProgress() {
           </div>
         )}
 
-        {error && <p className="text-sm text-center text-red-500 py-4">Failed to load progress.</p>}
+        {error && (
+          <p className="text-sm text-center text-red-500 py-4" role="alert">
+            Could not load progress. Please try again.
+          </p>
+        )}
 
         {data && (
           <>
             <div className="space-y-3">
-              {data.courses.map((course) => (
-                <div key={course.id} className="space-y-1">
-                  <div className="flex justify-between text-xs text-gray-700 dark:text-gray-300">
-                    <span className="truncate max-w-[75%]">{course.title}</span>
-                    <span className="font-medium">{course.percent}%</span>
-                  </div>
-                  <ProgressBar percent={course.percent} />
-                </div>
-              ))}
+              <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300">
+                <span>{data.streak}-day streak</span>
+                <span>{completion}% complete</span>
+              </div>
+              <ProgressBar percent={completion} />
             </div>
 
-            {data.insights.length > 0 && (
-              <div className="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-1">
-                {data.insights.map((insight, i) => (
-                  <p key={i} className="text-xs text-gray-500 dark:text-gray-400">
-                    💡 {insight}
-                  </p>
-                ))}
+            <div className="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-3 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex justify-between">
+                <span>Total courses</span>
+                <span>
+                  {data.completedCourses}/{data.totalCourses}
+                </span>
               </div>
-            )}
+              <div className="flex justify-between">
+                <span>Daily goal</span>
+                <span>{data.dailyGoal} mins</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Last active</span>
+                <span>{new Date(data.lastActive).toLocaleDateString()}</span>
+              </div>
+            </div>
           </>
         )}
       </div>

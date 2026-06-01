@@ -40,9 +40,9 @@ const SAMPLE_QUESTIONS: AssessmentQuestion[] = [
     points: 10,
     difficulty: 4,
     language: 'javascript',
-    codeTemplate: 'function solution(a, b) {
+    codeTemplate: `function solution(a, b) {
   return a + b;
-}',
+}`,
     testCases: [
       { id: 't1', input: '1,2', expectedOutput: '3' },
       { id: 't2', input: '-1,4', expectedOutput: '3' },

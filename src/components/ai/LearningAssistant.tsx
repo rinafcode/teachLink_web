@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import type { ApiResponse } from '@/types/api';
 
 // POST /api/ai/chat — { message: string; context?: string } → { reply: string }
 
@@ -16,10 +17,11 @@ interface LearningAssistantProps {
   context?: string;
 }
 
-export default function LearningAssistant({ context }: LearningAssistantProps) {
+export default function LearningAssistant({ context = 'learning' }: LearningAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -35,17 +37,20 @@ export default function LearningAssistant({ context }: LearningAssistantProps) {
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setLoading(true);
+    setError(false);
 
     try {
-      const { reply } = await apiClient.post<{ reply: string }>('/api/ai/chat', {
+      const response = await apiClient.post<ApiResponse<{ reply: string }>>('/api/ai/chat', {
         message: text,
         context,
       });
+      const reply = response.data.reply;
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), role: 'assistant', content: reply },
       ]);
     } catch {
+      setError(true);
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), role: 'assistant', content: 'Sorry, something went wrong.' },
@@ -78,6 +83,11 @@ export default function LearningAssistant({ context }: LearningAssistantProps) {
         aria-label="Conversation"
         className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
       >
+        {error && (
+          <p className="text-sm text-center text-red-500" role="alert">
+            Failed to get a response. Please try again.
+          </p>
+        )}
         {messages.length === 0 && (
           <p className="text-sm text-center text-gray-400 mt-8">
             Ask me anything about your courses!

@@ -86,6 +86,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     resetError,
   } = useVideoPlayer(videoRef);
 
+  const audioEnhancement = useAudioEnhancement(videoRef);
+
   // Auto-hide controls
   useEffect(() => {
     if (!isPlaying) return;
@@ -300,8 +302,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setAutoQualityLearning: () => undefined,
       onBookmark: onBookmark ?? (() => undefined),
       onNote: onNote ?? (() => undefined),
+      audioEnhancement,
     }),
-    [transcript, currentTime, duration, playbackRate, seekTo, setPlaybackRate, onBookmark, onNote],
+    [transcript, currentTime, duration, playbackRate, seekTo, setPlaybackRate, onBookmark, onNote, audioEnhancement],
   );
 
   if (error) {

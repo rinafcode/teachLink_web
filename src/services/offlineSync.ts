@@ -8,6 +8,7 @@ import {
   resolveConflict,
   createConflictRecord,
 } from '@/lib/conflict/resolver';
+import { offlineApi } from './offlineApi';
 
 export type SyncItemType = 'course_progress';
 
@@ -319,6 +320,16 @@ export class OfflineSyncService {
     await this.db.delete('syncQueue', id);
   }
 
+  async removeQueueItemsForEntity(entityKey: string): Promise<void> {
+    const tx = this.db.transaction('syncQueue', 'readwrite');
+    const index = tx.objectStore('syncQueue').index('entityKey');
+    const items = await index.getAll(entityKey);
+    for (const item of items) {
+      await tx.objectStore('syncQueue').delete(item.id);
+    }
+    await tx.done;
+  }
+
   async clearQueue(): Promise<void> {
     await this.db.clear('syncQueue');
   }
@@ -361,7 +372,6 @@ export class OfflineSyncService {
 
     await this.db.put('conflicts', resolvedConflict);
 
-    // Update local storage with resolved data
     const [courseId, moduleId] = conflict.entityKey.split(':');
     await this.storage.saveProgress({
       courseId,
@@ -370,6 +380,7 @@ export class OfflineSyncService {
       synced: true,
       syncedAt: new Date().toISOString(),
     });
+    await this.removeQueueItemsForEntity(conflict.entityKey);
   }
 
   async syncData(options: SyncOptions = {}): Promise<SyncResult> {
@@ -438,62 +449,61 @@ export class OfflineSyncService {
       const [courseId, moduleId] = entityKey.split(':');
       const existing = await this.storage.getProgress(courseId, moduleId);
 
-      const isConflicted = existing?.synced && detectConflict(candidate.data, existing);
+      try {
+        const response = await offlineApi.syncLessonProgress(candidate.data);
+        const remoteData = response?.data ?? candidate.data;
 
-      if (isConflicted) {
-        const remoteData = {
-          progress: existing.progress,
-          completed: existing.completed,
-          updatedAt: existing.updatedAt,
-          version: existing.version || 1,
-        };
+        const isConflicted =
+          existing?.synced && detectConflict(candidate.data, remoteData) && response.success;
 
-        const conflict = createConflictRecord(
-          candidate.type,
-          entityKey,
-          candidate.data,
-          remoteData,
-        );
+        if (isConflicted) {
+          const conflict = createConflictRecord(
+            candidate.type,
+            entityKey,
+            candidate.data,
+            remoteData,
+          );
+          const strategy = this.resolveConflictStrategy(conflict, options);
 
-        const strategy = this.resolveConflictStrategy(conflict, options);
+          if (strategy !== 'manual') {
+            const resolvedData = resolveConflict(candidate.data, remoteData, strategy);
+            conflict.strategy = strategy;
+            conflict.resolved = true;
+            conflict.history.push({
+              timestamp: new Date().toISOString(),
+              action: 'AUTO_RESOLVED',
+              details: `Automatically resolved using ${strategy} strategy`,
+            });
 
-        if (strategy !== 'manual') {
-          const resolvedData = resolveConflict(candidate.data, remoteData, strategy);
-          conflict.strategy = strategy;
-          conflict.resolved = true;
-          conflict.history.push({
-            timestamp: new Date().toISOString(),
-            action: 'AUTO_RESOLVED',
-            details: `Automatically resolved using ${strategy} strategy`,
-          });
-
+            await this.storage.saveProgress({
+              courseId,
+              moduleId,
+              ...resolvedData,
+              synced: true,
+              syncedAt: new Date().toISOString(),
+            });
+            await this.removeQueueItemsForEntity(entityKey);
+            syncedItems += entityItems.length;
+          } else {
+            await this.addConflict(conflict);
+            conflicts.push(conflict);
+          }
+        } else {
           await this.storage.saveProgress({
             courseId,
             moduleId,
-            ...resolvedData,
+            progress: remoteData.progress,
+            completed: remoteData.completed,
+            updatedAt: remoteData.updatedAt,
+            version: remoteData.version,
             synced: true,
             syncedAt: new Date().toISOString(),
           });
+          await this.removeQueueItemsForEntity(entityKey);
+          syncedItems += entityItems.length;
         }
-
-        await this.addConflict(conflict);
-        conflicts.push(conflict);
-      } else {
-        await this.storage.saveProgress({
-          courseId,
-          moduleId,
-          progress: candidate.data.progress,
-          completed: candidate.data.completed,
-          updatedAt: candidate.data.updatedAt,
-          version: candidate.data.version,
-          synced: true,
-          syncedAt: new Date().toISOString(),
-        });
-      }
-
-      for (const item of entityItems) {
-        await this.removeFromQueue(item.id);
-        syncedItems += 1;
+      } catch (error) {
+        errors.push(`Failed to sync progress for ${entityKey}: ${String(error)}`);
       }
     }
 
@@ -531,7 +541,7 @@ export class OfflineSyncService {
       return 'manual';
     }
 
-    // Default "auto" strategy: smart merge if both are progress data, otherwise manual
-    return 'manual';
+    // Default auto strategy: intelligently merge progress payloads
+    return 'merge';
   }
 }

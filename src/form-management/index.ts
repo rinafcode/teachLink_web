@@ -13,6 +13,7 @@
  * - Form analytics and completion tracking
  * - Full accessibility support
  * - Performance optimizations for large forms
+ * - Image optimization for file uploads
  *
  * @version 1.0.0
  */
@@ -28,3 +29,6 @@ export * from './utils';
 
 // Export auto-save functionality
 export * from './auto-save';
+
+// Export validation functionality including image optimization
+export * from './validation';

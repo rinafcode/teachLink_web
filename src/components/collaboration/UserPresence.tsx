@@ -13,7 +13,9 @@ export function UserPresence({ users, title = 'Active collaborators' }: UserPres
     return (
       <div className="rounded-3xl border border-gray-200 bg-white/80 p-4 shadow-sm dark:border-gray-700 dark:bg-slate-900/80">
         <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</div>
-        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">No one is online in this room yet.</p>
+        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+          No one is online in this room yet.
+        </p>
       </div>
     );
   }
@@ -29,8 +31,15 @@ export function UserPresence({ users, title = 'Active collaborators' }: UserPres
 
       <div className="mt-4 space-y-3">
         {users.map((user) => (
-          <div key={user.id} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-            <img src={user.avatar} alt={user.name} className="h-10 w-10 rounded-full object-cover" />
+          <div
+            key={user.id}
+            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+          >
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="h-10 w-10 rounded-full object-cover"
+            />
             <div className="min-w-0 flex-1 overflow-hidden">
               <div className="truncate font-medium">{user.name}</div>
               <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">

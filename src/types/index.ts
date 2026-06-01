@@ -28,3 +28,7 @@ export type {
   DashboardLayout,
   ExportOptions,
 } from './analytics';
+export type {
+  Conference,
+  ConferenceInput,
+} from './conference';

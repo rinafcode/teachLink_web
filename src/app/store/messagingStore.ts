@@ -129,9 +129,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
 
   markMessageAsRead: (messageId) => {
     set((state) => ({
-      messages: state.messages.map((msg) =>
-        msg.id === messageId ? { ...msg, read: true } : msg
-      ),
+      messages: state.messages.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg)),
     }));
 
     get().socket?.emit('read', { messageId });
@@ -140,7 +138,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   markConversationAsRead: (conversationId) => {
     set((state) => ({
       conversations: state.conversations.map((conv) =>
-        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv,
       ),
     }));
   },

@@ -1,5 +1,6 @@
 import '../app/globals.css';
 import ProfileEditForm from '../components/profile/ProfileEditForm';
+import ConferenceManagement from '../components/profile/ConferenceManagement';
 import { Toaster } from 'react-hot-toast';
 
 export default function ProfileEdit() {
@@ -14,6 +15,8 @@ export default function ProfileEdit() {
         </div>
 
         <ProfileEditForm />
+
+        <ConferenceManagement />
       </div>
       <Toaster position="bottom-right" />
     </div>
