@@ -60,7 +60,7 @@ export async function applyVirtualBackground(
   const canvasTrack = canvasStream.getVideoTracks()[0];
 
   // Process frames in real-time
-  const processFrame = () => {
+  const processFrame = async () => {
     if (video.readyState < 2) {
       requestAnimationFrame(processFrame);
       return;

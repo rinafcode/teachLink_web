@@ -1,5 +1,19 @@
 import pino from 'pino';
-import { AsyncLocalStorage } from 'async_hooks';
+// Simple synchronous context storage compatible with both browser and Node.js
+class SimpleAsyncLocalStorage<T> {
+  private store: T | undefined;
+  getStore(): T | undefined {
+    return this.store;
+  }
+  run<R>(store: T, callback: () => R): R {
+    this.store = store;
+    try {
+      return callback();
+    } finally {
+      this.store = undefined;
+    }
+  }
+}
 import { createCounterMetric } from './performance';
 import { HttpLogTransport, InMemoryLogTransport, queryLogRecords } from './transports';
 import { LogLevel, LogQuery, LogRecord, LogTransport, PerformanceMetric } from './types';
@@ -34,7 +48,7 @@ export interface LogContextStore {
   correlationId?: string;
 }
 
-export const logContextStorage = new AsyncLocalStorage<LogContextStore>();
+export const logContextStorage = new SimpleAsyncLocalStorage<LogContextStore>();
 
 export function runWithLogContext<T>(context: LogContextStore, callback: () => T): T {
   return logContextStorage.run(context, callback);
