@@ -1,5 +1,6 @@
 import { useErrorHandling } from './useErrorHandling';
 import { useToast } from '@/context/ToastContext';
+import { useCallback, useMemo } from 'react';
 
 interface ProfileData {
   name?: string;
@@ -18,7 +19,7 @@ export function useProfileUpdate() {
   const { execute, isLoading } = useErrorHandling();
   const { success } = useToast();
 
-  const updateProfile = async (data: ProfileData) => {
+  const updateProfile = useCallback(async (data: ProfileData) => {
     const result = await execute(async () => {
       // Simulate API call
       await new Promise((resolve, reject) => {
@@ -35,7 +36,7 @@ export function useProfileUpdate() {
       return true;
     }
     return false;
-  };
+  }, [execute, success]);
 
-  return { updateProfile, isLoading };
+  return useMemo(() => ({ updateProfile, isLoading }), [updateProfile, isLoading]);
 }

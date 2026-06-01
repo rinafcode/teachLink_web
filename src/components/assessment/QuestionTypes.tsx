@@ -94,10 +94,10 @@ export function createQuestionTemplate(type: AssessmentQuestionType): Assessment
         ...base,
         type,
         language: 'javascript',
-        codeTemplate: 'function solution(input) {
+        codeTemplate: `function solution(input) {
   // Write your code here
   return input;
-}',
+}`,
         testCases: [
           { id: createId(), input: '2', expectedOutput: '4' },
         ],

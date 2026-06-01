@@ -11,6 +11,7 @@ export interface FilterState {
   sort: string;
   instructor: string;
   searchTerm: string;
+  nodeAffinity?: string;
 }
 
 export const useSearchFilters = () => {
@@ -29,6 +30,7 @@ export const useSearchFilters = () => {
       sort: searchParams?.get('sort') || 'relevance',
       instructor: searchParams?.get('instructor') || '',
       searchTerm: searchParams?.get('q') || '',
+      nodeAffinity: searchParams?.get('affinity') || 'auto',
     }),
     [searchParams],
   );
@@ -55,6 +57,7 @@ export const useSearchFilters = () => {
         prev.sort !== next.sort ||
         prev.instructor !== next.instructor ||
         prev.searchTerm !== next.searchTerm ||
+        prev.nodeAffinity !== next.nodeAffinity ||
         prev.difficulty.join(',') !== next.difficulty.join(',') ||
         prev.topics.join(',') !== next.topics.join(',');
 
@@ -97,6 +100,9 @@ export const useSearchFilters = () => {
       if (filters.searchTerm) {
         params.set('q', filters.searchTerm);
       }
+      if (filters.nodeAffinity && filters.nodeAffinity !== 'auto') {
+        params.set('affinity', filters.nodeAffinity);
+      }
 
       const pPathname = pathnameRef.current;
       const pSearchParams = searchParamsRef.current;
@@ -136,6 +142,7 @@ export const useSearchFilters = () => {
       sort: 'relevance',
       instructor: '',
       searchTerm: '',
+      nodeAffinity: 'auto',
     });
   }, []);
 

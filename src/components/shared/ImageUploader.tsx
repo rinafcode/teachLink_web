@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import Image from 'next/image';
+import { dataWarehouse } from '@/lib/dataWarehouse';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -9,38 +11,56 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-export default function ImageUploader({
+function ImageUploader({
   onImageSelect,
   initialImageUrl,
   className = '',
 }: ImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
+    };
+  }, []);
+
+  const handleFileChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Create local preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
 
-      // Pass file to parent
+      const objectUrl = URL.createObjectURL(file);
+      objectUrlRef.current = objectUrl;
+      setPreviewUrl(objectUrl);
+
+      // Track the image upload event
+      dataWarehouse.trackEvent('IMAGE_UPLOADED', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+      }).catch(console.error);
+
       onImageSelect(file);
     }
-  };
+  }, [onImageSelect]);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
-      <div
+      <button
+        type="button"
+        aria-label="Change profile picture"
         onClick={handleClick}
-        className="relative w-32 h-32 rounded-full overflow-hidden cursor-pointer border-4 border-gray-100 hover:border-blue-500 transition-colors group"
+        className="group relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-gray-100 p-0 transition-colors hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         {previewUrl ? (
           <Image
@@ -48,7 +68,7 @@ export default function ImageUploader({
             alt="Profile Preview"
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
-            unoptimized={previewUrl.startsWith('data:')}
+            unoptimized={previewUrl.startsWith('blob:')}
             className="object-cover"
           />
         ) : (
@@ -75,7 +95,7 @@ export default function ImageUploader({
             Change
           </span>
         </div>
-      </div>
+      </button>
 
       <input
         ref={fileInputRef}
@@ -94,3 +114,5 @@ export default function ImageUploader({
     </div>
   );
 }
+
+export default memo(ImageUploader);

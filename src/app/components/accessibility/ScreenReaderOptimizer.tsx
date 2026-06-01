@@ -104,11 +104,19 @@ export function AccessibleDescription({ id, children }: AccessibleDescriptionPro
 interface AccessibleLoadingProps {
   message?: string;
   isLoading: boolean;
+  className?: string;
+  spinnerClassName?: string;
+  showText?: boolean;
+  spinner?: React.ReactNode;
 }
 
 export function AccessibleLoading({
   message = 'Loading content',
   isLoading,
+  className = 'flex items-center justify-center p-4',
+  spinnerClassName = 'animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600',
+  showText = false,
+  spinner,
 }: AccessibleLoadingProps) {
   const announce = useScreenReaderAnnouncement();
 
@@ -127,10 +135,14 @@ export function AccessibleLoading({
       role="status"
       aria-live="polite"
       aria-busy="true"
-      className="flex items-center justify-center p-4"
+      className={className}
     >
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-      <span className="sr-only">{message}</span>
+      {spinner || <div className={spinnerClassName} />}
+      {showText ? (
+        <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">{message}</span>
+      ) : (
+        <span className="sr-only">{message}</span>
+      )}
     </div>
   );
 }

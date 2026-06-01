@@ -21,6 +21,7 @@ import { VideoPlayerContext } from './VideoPlayerContext';
 import type { VideoPlayerContextValue } from './VideoPlayerContext';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
+import { useAudioEnhancement } from '../../hooks/useAudioEnhancement';
 
 interface VideoPlayerProps {
   src: string;
@@ -81,6 +82,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     retry,
     resetError,
   } = useVideoPlayer(videoRef);
+
+  const audioEnhancement = useAudioEnhancement(videoRef);
 
   // Auto-hide controls
   useEffect(() => {
@@ -296,8 +299,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setAutoQualityLearning: () => undefined,
       onBookmark: onBookmark ?? (() => undefined),
       onNote: onNote ?? (() => undefined),
+      audioEnhancement,
     }),
-    [transcript, currentTime, duration, playbackRate, seekTo, setPlaybackRate, onBookmark, onNote],
+    [transcript, currentTime, duration, playbackRate, seekTo, setPlaybackRate, onBookmark, onNote, audioEnhancement],
   );
 
   if (error) {

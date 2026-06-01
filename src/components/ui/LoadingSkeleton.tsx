@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 
 interface LoadingSkeletonProps {
@@ -30,7 +28,13 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     height: height,
   };
 
-  return <div className={`${baseClasses} ${variantClasses[variant]} ${className}`} style={style} />;
+  return (
+    <div
+      aria-hidden="true"
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      style={style}
+    />
+  );
 };
 
 export const CardSkeleton = () => (

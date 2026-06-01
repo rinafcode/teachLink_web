@@ -39,6 +39,10 @@ const demoQuiz: Quiz = {
       explanation: 'One solution: return input.toUpperCase();',
       codeTemplate: 'return input.toUpperCase();',
       language: 'javascript',
+      gradingPolicy: {
+        partialCredit: true,
+        normalizeWhitespace: true,
+      },
       testCases: [
         { input: 'hello', expectedOutput: 'HELLO' },
         { input: 'TeachLink', expectedOutput: 'TEACHLINK' },

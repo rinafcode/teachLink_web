@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 interface PreferenceOption {
   id: string;
@@ -44,84 +44,123 @@ const privacyPreferences: PreferenceOption[] = [
   },
 ];
 
-export default function PreferencesSection() {
-  const [notificationSettings, setNotificationSettings] = useState<Record<string, boolean>>({
-    email_notifications: true,
-    marketing_emails: false,
-    course_updates: true,
-  });
+const defaultNotificationSettings = {
+  email_notifications: true,
+  marketing_emails: false,
+  course_updates: true,
+};
 
-  const [privacySettings, setPrivacySettings] = useState<Record<string, boolean>>({
-    profile_visibility: true,
-    show_progress: true,
-    show_achievements: true,
-  });
+const defaultPrivacySettings = {
+  profile_visibility: true,
+  show_progress: true,
+  show_achievements: true,
+};
 
-  const handleNotificationChange = (id: string) => {
+interface PreferenceCheckboxProps {
+  preference: PreferenceOption;
+  checked: boolean;
+  onToggle: (id: string) => void;
+}
+
+const PreferenceCheckbox = memo(function PreferenceCheckbox({
+  preference,
+  checked,
+  onToggle,
+}: PreferenceCheckboxProps) {
+  const handleChange = useCallback(() => {
+    onToggle(preference.id);
+  }, [onToggle, preference.id]);
+
+  return (
+    <div className="flex items-start">
+      <div className="flex h-5 items-center">
+        <input
+          id={preference.id}
+          type="checkbox"
+          checked={checked}
+          onChange={handleChange}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+      </div>
+      <div className="ml-3">
+        <label htmlFor={preference.id} className="text-sm font-medium text-gray-700">
+          {preference.label}
+        </label>
+        <p className="text-sm text-gray-500">{preference.description}</p>
+      </div>
+    </div>
+  );
+});
+
+interface PreferenceGroupProps {
+  title: string;
+  preferences: PreferenceOption[];
+  settings: Record<string, boolean>;
+  onToggle: (id: string) => void;
+}
+
+const PreferenceGroup = memo(function PreferenceGroup({
+  title,
+  preferences,
+  settings,
+  onToggle,
+}: PreferenceGroupProps) {
+  return (
+    <div className="rounded-lg bg-white p-6 shadow-md">
+      <h2 className="mb-6 text-xl font-semibold">{title}</h2>
+      <div className="space-y-4">
+        {preferences.map((preference) => (
+          <PreferenceCheckbox
+            key={preference.id}
+            preference={preference}
+            checked={settings[preference.id]}
+            onToggle={onToggle}
+          />
+        ))}
+      </div>
+    </div>
+  );
+});
+
+function PreferencesSection() {
+  const [notificationSettings, setNotificationSettings] = useState<Record<string, boolean>>(
+    defaultNotificationSettings,
+  );
+
+  const [privacySettings, setPrivacySettings] =
+    useState<Record<string, boolean>>(defaultPrivacySettings);
+
+  const handleNotificationChange = useCallback((id: string) => {
     setNotificationSettings((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
-  };
+  }, []);
 
-  const handlePrivacyChange = (id: string) => {
+  const handlePrivacyChange = useCallback((id: string) => {
     setPrivacySettings((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
-  };
+  }, []);
 
   return (
     <div className="space-y-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-6">Notification Preferences</h2>
-        <div className="space-y-4">
-          {notificationPreferences.map((preference) => (
-            <div key={preference.id} className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id={preference.id}
-                  type="checkbox"
-                  checked={notificationSettings[preference.id]}
-                  onChange={() => handleNotificationChange(preference.id)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-              </div>
-              <div className="ml-3">
-                <label htmlFor={preference.id} className="text-sm font-medium text-gray-700">
-                  {preference.label}
-                </label>
-                <p className="text-sm text-gray-500">{preference.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <PreferenceGroup
+        title="Notification Preferences"
+        preferences={notificationPreferences}
+        settings={notificationSettings}
+        onToggle={handleNotificationChange}
+      />
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-6">Privacy Settings</h2>
-        <div className="space-y-4">
-          {privacyPreferences.map((preference) => (
-            <div key={preference.id} className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id={preference.id}
-                  type="checkbox"
-                  checked={privacySettings[preference.id]}
-                  onChange={() => handlePrivacyChange(preference.id)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-              </div>
-              <div className="ml-3">
-                <label htmlFor={preference.id} className="text-sm font-medium text-gray-700">
-                  {preference.label}
-                </label>
-                <p className="text-sm text-gray-500">{preference.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <PreferenceGroup
+        title="Privacy Settings"
+        preferences={privacyPreferences}
+        settings={privacySettings}
+        onToggle={handlePrivacyChange}
+      />
     </div>
   );
 }
+
+export default memo(PreferencesSection);
