@@ -4,8 +4,9 @@ import { validateBody } from '@/lib/validation';
 import { LoginRequestSchema } from '@/types/api/auth.dto';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
+import { getVerificationStatus } from '@/lib/auth/email-verification';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // ---------------------------------------------------------------------------
 // POST /api/auth/login
@@ -24,6 +25,7 @@ export async function POST(
     if (!result.ok) return addHeaders(result.error) as NextResponse;
 
     const { email, password } = result.data;
+    const verification = await getVerificationStatus(email);
 
     // Mock: demo credentials
     if (email === 'demo@teachlink.com' && password === 'password123') {
@@ -35,6 +37,18 @@ export async function POST(
             token: `mock-jwt-token-${Date.now()}`,
           },
           { status: 200 },
+        ),
+      );
+    }
+
+    if (verification && verification.required && verification.status !== 'verified') {
+      return addHeaders(
+        NextResponse.json(
+          {
+            message: 'Email verification required',
+            verification,
+          },
+          { status: 403 },
         ),
       );
     }

@@ -34,10 +34,16 @@ export default function SignupPage() {
 
   const signupMutation = useMutation(
     async (data: SignupFormData) => {
-      await apiClient.post('/api/auth/signup', data);
+      return apiClient.post<{ verification?: { required: boolean } }>('/api/auth/signup', data);
     },
     {
-      onSuccess: () => {
+      onSuccess: (data, variables) => {
+        if (data.verification?.required) {
+          setSuccessMessage('Account created successfully! Check your email to verify your account.');
+          setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(variables.email)}`), 1500);
+          return;
+        }
+
         setSuccessMessage('Account created successfully! Redirecting...');
         setTimeout(() => router.push('/onboarding'), 1500);
       },
@@ -199,6 +205,12 @@ export default function SignupPage() {
               Sign in
             </Link>
           </motion.p>
+          <p className="mt-3 text-center text-sm text-gray-600">
+            Need to verify email or restore access?{' '}
+            <Link href="/verify-email" className="text-blue-600 hover:text-blue-700 font-medium">
+              Open recovery
+            </Link>
+          </p>
 
           {/* Divider */}
           <div className="relative my-6">
