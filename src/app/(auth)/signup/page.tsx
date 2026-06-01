@@ -12,11 +12,16 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
+import { DiscordButton } from '../../../components/auth/DiscordButton';
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
+
+  const handleDiscordSignup = () => {
+    window.location.href = '/api/auth/discord';
+  };
 
   const {
     register,
@@ -177,7 +182,8 @@ export default function SignupPage() {
           </div>
 
           {/* Social buttons */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <DiscordButton onClick={handleDiscordSignup} />
             <button
               type="button"
               className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"

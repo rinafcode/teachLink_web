@@ -43,3 +43,15 @@ export type AuthResponseDTO = AuthResponse;
 export interface AuthErrorDTO {
   message: string;
 }
+
+// ---------------------------------------------------------------------------
+// Discord OAuth Types
+// ---------------------------------------------------------------------------
+
+export interface DiscordAuthResponseDTO extends AuthResponseDTO {
+  user: AuthUserDTO & {
+    provider?: string;
+    providerId?: string;
+    avatar?: string;
+  };
+}
