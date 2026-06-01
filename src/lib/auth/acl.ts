@@ -3,9 +3,9 @@ import { User, UserRole, Permission } from '@/types/api';
 /**
  * Mapping of roles to their granted permissions.
  */
-export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
-  [UserRole.ADMIN]: Object.values(Permission),
-  [UserRole.INSTRUCTOR]: [
+export const ROLES_PERMISSIONS = {
+  ADMIN: Object.values(Permission),
+  INSTRUCTOR: [
     Permission.COURSE_VIEW,
     Permission.COURSE_CREATE,
     Permission.COURSE_EDIT,
@@ -15,13 +15,9 @@ export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.CONTENT_UPLOAD,
     Permission.ANALYTICS_VIEW,
   ],
-  [UserRole.STUDENT]: [
-    Permission.COURSE_VIEW,
-    Permission.COURSE_DOWNLOAD,
-    Permission.CONTENT_ACCESS,
-  ],
-  [UserRole.GUEST]: [Permission.COURSE_VIEW],
-};
+  STUDENT: [Permission.COURSE_VIEW, Permission.COURSE_DOWNLOAD, Permission.CONTENT_ACCESS],
+  GUEST: [Permission.COURSE_VIEW],
+} satisfies Record<UserRole, Permission[]>;
 
 /**
  * Check if a user has a specific permission based on their role.
@@ -64,8 +60,18 @@ export function hasAllPermissions(
 export function isAtLeast(user: User | null | undefined, role: UserRole): boolean {
   if (!user) return false;
 
+  return isAtLeastRole(user.role, role);
+}
+
+/**
+ * Check if a role has at least the minimum required role.
+ * Roles are hierarchical: ADMIN > INSTRUCTOR > STUDENT > GUEST
+ */
+export function isAtLeastRole(userRole: UserRole | null | undefined, role: UserRole): boolean {
+  if (!userRole) return false;
+
   const hierarchy = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN];
-  const userRoleIndex = hierarchy.indexOf(user.role);
+  const userRoleIndex = hierarchy.indexOf(userRole);
   const requiredRoleIndex = hierarchy.indexOf(role);
 
   return userRoleIndex >= requiredRoleIndex;
