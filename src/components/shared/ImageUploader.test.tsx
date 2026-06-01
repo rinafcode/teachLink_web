@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ImageUploader from './ImageUploader';
+import { dataWarehouse } from '@/lib/dataWarehouse';
 
 vi.mock('next/image', () => ({
   default: ({
@@ -30,10 +31,12 @@ vi.mock('next/image', () => ({
 describe('ImageUploader', () => {
   const createObjectURL = vi.fn();
   const revokeObjectURL = vi.fn();
+  const trackEventSpy = vi.spyOn(dataWarehouse, 'trackEvent').mockImplementation(async () => {});
 
   beforeEach(() => {
     createObjectURL.mockReset();
     revokeObjectURL.mockReset();
+    trackEventSpy.mockClear();
 
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
@@ -57,6 +60,11 @@ describe('ImageUploader', () => {
 
     expect(createObjectURL).toHaveBeenCalledWith(avatar);
     expect(onImageSelect).toHaveBeenCalledWith(avatar);
+    expect(trackEventSpy).toHaveBeenCalledWith('IMAGE_UPLOADED', {
+      fileName: 'avatar.png',
+      fileSize: avatar.size,
+      fileType: 'image/png',
+    });
     expect(screen.getByRole('img', { name: 'Profile Preview' })).toHaveAttribute(
       'src',
       'blob:profile-preview',

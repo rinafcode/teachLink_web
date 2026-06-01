@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Image from 'next/image';
+import { dataWarehouse } from '@/lib/dataWarehouse';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;

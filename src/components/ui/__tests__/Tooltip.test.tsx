@@ -101,6 +101,31 @@ describe('Tooltip', () => {
     expect(tooltip).toHaveStyle({ transform: 'scale(1.5)', transformOrigin: 'left center' });
   });
 
+  it('supports interactive content and keeps the tooltip open while hovering the bubble', () => {
+    render(
+      <Tooltip content={<button type="button">Play</button>} interactive delayMs={0}>
+        <button>trigger</button>
+      </Tooltip>,
+    );
+
+    const trigger = screen.getByText('trigger');
+    fireEvent.mouseEnter(trigger);
+    act(() => vi.advanceTimersByTime(0));
+
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip).toHaveClass('pointer-events-auto');
+
+    fireEvent.mouseLeave(trigger);
+    fireEvent.mouseEnter(tooltip);
+    act(() => vi.advanceTimersByTime(100));
+
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+
+    fireEvent.mouseLeave(tooltip);
+    act(() => vi.advanceTimersByTime(100));
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
   it('calls onAnomaly after rapid toggles', () => {
     const onAnomaly = vi.fn();
     render(

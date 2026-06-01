@@ -113,6 +113,42 @@ export default function TooltipDemoPage() {
         </Tooltip>
       </section>
 
+      {/* YouTube preview tooltip */}
+      <section className="mb-12">
+        <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
+          YouTube Preview
+        </h2>
+        <Tooltip
+          content={
+            <div className="w-[320px] max-w-full overflow-hidden rounded-md">
+              <iframe
+                className="h-44 w-full"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="YouTube preview"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          }
+          placement="bottom"
+          delayMs={100}
+          zoomScale={zoomScale}
+          interactive
+          onAnomaly={(type) => onOpen(`youtube-${type}`)}
+        >
+          <button
+            className="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            onFocus={() => onOpen('youtube')}
+            onBlur={() => onClose('youtube')}
+            onMouseEnter={() => onOpen('youtube')}
+            onMouseLeave={() => onClose('youtube')}
+          >
+            Hover for YouTube preview
+          </button>
+        </Tooltip>
+      </section>
+
       {/* Disabled tooltip */}
       <section className="mb-12">
         <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">

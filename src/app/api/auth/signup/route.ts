@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { withRateLimit } from '@/lib/ratelimit';
 import { validateBody } from '@/lib/validation';
 import { SignupRequestSchema } from '@/types/api/auth.dto';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
+import { notificationService } from '@/services/notifications';
+import {
+  buildVerificationMailContext,
+  createOrRestoreVerification,
+} from '@/lib/auth/email-verification';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // ---------------------------------------------------------------------------
 // POST /api/auth/signup
@@ -55,8 +61,31 @@ export async function POST(
       );
     }
 
-    const userId = Math.random().toString(36).substring(2, 9);
-    edgeLog('info', route, 'Account created', { userId });
+    const verificationResult = await createOrRestoreVerification({ email, name });
+
+    if ('status' in verificationResult && verificationResult.status === 'already_verified') {
+      edgeLog('warn', route, 'Registration conflict', { reason: 'email_verified' });
+      return addHeaders(NextResponse.json({ message: 'Email already verified' }, { status: 409 }));
+    }
+
+    const mailContext = buildVerificationMailContext(
+      verificationResult.record,
+      verificationResult.verificationToken,
+      verificationResult.backupCode,
+    );
+    const emailResult = await notificationService.sendEmailVerificationEmail(mailContext);
+    if (!emailResult.success) {
+      edgeLog('warn', route, 'Verification email delivery failed', {
+        provider: emailResult.provider,
+        error: emailResult.error,
+      });
+    }
+
+    const userId = randomUUID();
+    edgeLog('info', route, 'Account created', {
+      userId,
+      verificationId: verificationResult.record.verificationId,
+    });
 
     return addHeaders(
       NextResponse.json(
@@ -64,6 +93,13 @@ export async function POST(
           message: 'Account created successfully',
           user: { id: userId, name, email },
           token: `mock-jwt-token-${Date.now()}`,
+          verification: {
+            required: true,
+            status: verificationResult.record.status,
+            sessionId: verificationResult.record.verificationId,
+            expiresAt: verificationResult.record.expiresAt,
+            resendAvailableAt: verificationResult.record.resendAvailableAt,
+          },
         },
         { status: 201 },
       ),

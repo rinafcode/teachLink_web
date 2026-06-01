@@ -1,18 +1,22 @@
+import { TipNotarizationResponse } from '@/services/notarizationService';
+
 export interface TipPayload {
   recipientId: string;
   amount: number;
-  groupId: string;
-  groupName: string;
 }
 
-export interface TipResult {
-  success: true;
-  tipId: string;
-  createdAt: string;
+export interface TipSendResult extends TipNotarizationResponse {
+  txHash: string;
+  recipientId: string;
+  amount: number;
 }
 
-export async function sendTip(payload: TipPayload): Promise<TipResult> {
-  const response = await fetch('/api/tips', {
+export async function sendTip(payload: TipPayload): Promise<TipSendResult> {
+  if (typeof payload.amount !== 'number' || payload.amount <= 0) {
+    throw new Error('Tip amount must be greater than zero.');
+  }
+
+  const response = await fetch('/api/tipping', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -20,13 +24,11 @@ export async function sendTip(payload: TipPayload): Promise<TipResult> {
     body: JSON.stringify(payload),
   });
 
-  const responseBody = await response.json().catch(() => ({ error: 'Unable to parse response' }));
-
   if (!response.ok) {
     const message =
       typeof responseBody.error === 'string' ? responseBody.error : 'Unable to send tip.';
     throw new Error(message);
   }
 
-  return responseBody as TipResult;
+  return response.json();
 }

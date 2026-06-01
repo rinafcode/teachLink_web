@@ -27,11 +27,19 @@ interface CourseEnrollmentInput extends BaseNotificationInput {
   courseUrl: string;
 }
 
+export interface EmailVerificationInput extends BaseNotificationInput {
+  verificationUrl: string;
+  restoreUrl: string;
+  backupCode: string;
+  expiresInMinutes: number;
+}
+
 export type NotificationEvent =
   | { type: 'welcome'; data: BaseNotificationInput }
   | { type: 'password-reset'; data: PasswordResetInput }
   | { type: 'security-alert'; data: SecurityAlertInput }
-  | { type: 'course-enrollment'; data: CourseEnrollmentInput };
+  | { type: 'course-enrollment'; data: CourseEnrollmentInput }
+  | { type: 'email-verification'; data: EmailVerificationInput };
 
 export class NotificationService {
   private readonly queue: EmailQueue;
@@ -74,6 +82,10 @@ export class NotificationService {
 
   sendCourseEnrollmentEmail(data: CourseEnrollmentInput): Promise<EmailSendResult> {
     return this.sendEvent({ type: 'course-enrollment', data });
+  }
+
+  sendEmailVerificationEmail(data: EmailVerificationInput): Promise<EmailSendResult> {
+    return this.sendEvent({ type: 'email-verification', data });
   }
 
   private buildTemplate(templateId: TransactionalTemplateId, payload: EmailTemplatePayload) {

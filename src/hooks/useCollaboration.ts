@@ -16,6 +16,7 @@ export type CollaborationUser = {
   color: string;
   isSharingScreen?: boolean;
   isActive?: boolean;
+  isHost?: boolean;
   cursor?: CursorPosition;
 };
 

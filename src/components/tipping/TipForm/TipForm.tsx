@@ -1,66 +1,25 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
-import { Gift, Sparkles } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
 import { sendTip } from '@/services/tipService';
 
-export interface SpecialInterestGroup {
-  id: string;
-  name: string;
-  description: string;
+interface TipFormProps {
+  recipient: {
+    id: string;
+    name: string;
+  };
 }
 
-export interface TipRecipient {
-  id: string;
-  name: string;
-}
-
-export interface TipFormProps {
-  recipient: TipRecipient;
-  groups?: SpecialInterestGroup[];
-  onSuccess?: () => void;
-}
-
-const DEFAULT_INTEREST_GROUPS: SpecialInterestGroup[] = [
-  {
-    id: 'general',
-    name: 'General',
-    description: 'Support the creator and help the wider community.',
-  },
-  {
-    id: 'education',
-    name: 'Education',
-    description: 'Prioritize knowledge sharing and tutorial development.',
-  },
-  {
-    id: 'web3',
-    name: 'Web3',
-    description: 'Fuel Starknet and blockchain learning content.',
-  },
-  {
-    id: 'design',
-    name: 'Design',
-    description: 'Reward design insights, UI patterns, and product thinking.',
-  },
-];
-
-export function TipForm({ recipient, groups = DEFAULT_INTEREST_GROUPS, onSuccess }: TipFormProps) {
-  const availableGroups = groups.length > 0 ? groups : DEFAULT_INTEREST_GROUPS;
+export default function TipForm({ recipient }: TipFormProps) {
   const [amount, setAmount] = useState('');
-  const [selectedGroupId, setSelectedGroupId] = useState(availableGroups[0].id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  const selectedGroup = useMemo(
-    () => availableGroups.find((group) => group.id === selectedGroupId) ?? availableGroups[0],
-    [availableGroups, selectedGroupId],
-  );
+  const [proof, setProof] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setSuccess(false);
 
     const parsedAmount = Number(amount);
     if (!amount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -69,19 +28,14 @@ export function TipForm({ recipient, groups = DEFAULT_INTEREST_GROUPS, onSuccess
     }
 
     setLoading(true);
-
     try {
-      await sendTip({
-        recipientId: recipient.id,
-        amount: parsedAmount,
-        groupId: selectedGroup.id,
-        groupName: selectedGroup.name,
-      });
+      const result = await sendTip({ recipientId: recipient.id, amount: parsedAmount });
+      // `sendTip` extends notarization response which provides `proof` and `recordedAt`
+      setProof((result as any).proof ?? null);
       setSuccess(true);
-      setAmount('');
-      onSuccess?.();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Transaction failed. Please try again.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to send tip at this time.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -175,13 +129,13 @@ export function TipForm({ recipient, groups = DEFAULT_INTEREST_GROUPS, onSuccess
         >
           {error}
         </p>
-      ) : null}
+      )}
 
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
         data-testid="tip-submit"
+        className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-blue-300"
       >
         {loading ? 'Sending…' : 'Send Tip'}
       </button>

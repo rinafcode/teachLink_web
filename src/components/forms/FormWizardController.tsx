@@ -23,6 +23,7 @@ interface FormWizardControllerProps {
   validateBeforeNext?: boolean;
   className?: string;
   children: (currentStep: WizardStep, progress: WizardProgress) => React.ReactNode;
+  fields?: FieldDescriptor[];
 }
 
 export const FormWizardController: React.FC<FormWizardControllerProps> = ({
@@ -35,10 +36,18 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
   validateBeforeNext = true,
   className = '',
   children,
+  fields = [],
 }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [validationEngine] = useState(() => new ValidationEngineImpl());
+  const [validationEngine] = useState(() => new ValidationEngineImpl(fields));
+
+  useEffect(() => {
+    if (fields && fields.length > 0) {
+      validationEngine.updateFieldDescriptors(fields);
+    }
+  }, [fields, validationEngine]);
+
   const [isValidating, setIsValidating] = useState(false);
   const { error, success } = useNotification();
 
