@@ -34,7 +34,7 @@ export default function SignupPage() {
     {
       onSuccess: () => {
         setSuccessMessage('Account created successfully! Redirecting...');
-        setTimeout(() => router.push('/dashboard'), 1500);
+        setTimeout(() => router.push('/onboarding'), 1500);
       },
     },
   );
