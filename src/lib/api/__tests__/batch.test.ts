@@ -186,6 +186,20 @@ describe('useHelpDocumentation', () => {
     expect(result.current.articles[0].id).toBe('getting-started');
   });
 
+  it('calls the versioned help endpoint', async () => {
+    const article = makeArticle('reputation');
+    mockFetch([article]);
+
+    const { result } = renderHook(() => useHelpDocumentation(['reputation']));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/v1/help',
+      expect.objectContaining({ method: 'POST', headers: { 'Content-Type': 'application/json' } }),
+    );
+    expect(result.current.articles[0].id).toBe('reputation');
+  });
+
   it('sets error when fetch fails', async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
