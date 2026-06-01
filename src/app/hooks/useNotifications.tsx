@@ -8,6 +8,7 @@ import {
   NotificationCategory,
   UserNotificationPreferences,
   NotificationAnalytics,
+  NotificationRecommendation,
   generateNotificationId,
   shouldSendNotification,
   calculateAnalytics,
@@ -16,6 +17,7 @@ import {
   createDefaultPreferences,
   validatePreferences,
   NotificationService,
+  generateRecommendations,
 } from '@/lib/notifications';
 
 interface UseNotificationsOptions {
@@ -69,9 +71,15 @@ interface UseNotificationsReturn {
     notification: AppNotification,
     channels: NotificationChannel[],
   ) => Promise<Record<NotificationChannel, boolean>>;
+
+  // Recommendations
+  recommendations: NotificationRecommendation[];
+  applyRecommendation: (id: string) => Promise<void>;
+  dismissRecommendation: (id: string) => void;
 }
 
 const PREFERENCES_STORAGE_KEY = 'notification_preferences_v1';
+const DISMISSED_RECOMMENDATIONS_KEY = 'dismissed_recommendations_v1';
 
 export function useNotifications(options: UseNotificationsOptions = {}): UseNotificationsReturn {
   const { userId = 'default', enableAnalytics = true } = options;
@@ -88,6 +96,14 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const [preferences, setPreferences] = useState<UserNotificationPreferences | null>(null);
   const [analytics, setAnalytics] = useState<NotificationAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(DISMISSED_RECOMMENDATIONS_KEY);
+      return stored ? new Set<string>(JSON.parse(stored)) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
 
   // Load preferences from localStorage
   useEffect(() => {
@@ -300,8 +316,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     ): Promise<Record<NotificationChannel, boolean>> => {
       try {
         const results = await NotificationService.deliverToChannels(notification, channels);
-        const successMap: Record<NotificationChannel, boolean> = {} as Record<NotificationChannel, boolean>;
-        
+        const successMap: Record<NotificationChannel, boolean> = {} as Record<
+          NotificationChannel,
+          boolean
+        >;
+
         results.forEach((result) => {
           successMap[result.channel] = result.success;
         });
@@ -309,7 +328,10 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         return successMap;
       } catch (error) {
         console.error('Failed to deliver notification to channels:', error);
-        const errorMap: Record<NotificationChannel, boolean> = {} as Record<NotificationChannel, boolean>;
+        const errorMap: Record<NotificationChannel, boolean> = {} as Record<
+          NotificationChannel,
+          boolean
+        >;
         channels.forEach((channel) => {
           errorMap[channel] = false;
         });
@@ -321,6 +343,48 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   // Computed values
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+
+  // Recommendations — recompute whenever analytics or preferences change
+  const recommendations = useMemo<NotificationRecommendation[]>(() => {
+    if (!analytics || !preferences) return [];
+    const all = generateRecommendations(analytics, preferences);
+    return all.filter((r) => !dismissedIds.has(r.id));
+  }, [analytics, preferences, dismissedIds]);
+
+  // Apply a recommendation: merge its patch into preferences then auto-dismiss
+  const applyRecommendation = useCallback(
+    async (id: string) => {
+      const rec = recommendations.find((r) => r.id === id);
+      if (!rec) return;
+      await updatePreferences(rec.preferencePatch);
+      // Dismiss after applying so it no longer appears
+      setDismissedIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        try {
+          localStorage.setItem(DISMISSED_RECOMMENDATIONS_KEY, JSON.stringify([...next]));
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+    },
+    [recommendations, updatePreferences],
+  );
+
+  // Dismiss without applying
+  const dismissRecommendation = useCallback((id: string) => {
+    setDismissedIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      try {
+        localStorage.setItem(DISMISSED_RECOMMENDATIONS_KEY, JSON.stringify([...next]));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
 
   return {
     // State
@@ -351,6 +415,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     // Multi-channel delivery
     sendToChannel,
     sendToAllChannels,
+
+    // Recommendations
+    recommendations,
+    applyRecommendation,
+    dismissRecommendation,
   };
 }
 
