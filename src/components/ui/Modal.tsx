@@ -5,11 +5,23 @@ import { X } from 'lucide-react';
 import { useFocusTrap, useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
+
+const SIZE_CLASSES: Record<ModalSize, string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-xl',
+  full: 'max-w-full',
+};
+
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  /** Controls the maximum width of the modal panel */
+  size?: ModalSize;
   /** Additional class names for the inner panel */
   className?: string;
 }
@@ -18,7 +30,7 @@ export interface ModalProps {
  * Accessible modal dialog with focus trap, Escape-to-close, and screen reader announcements.
  * Uses the existing `useFocusTrap` hook from `useAccessibility`.
  */
-export function Modal({ isOpen, onClose, title, children, className = '' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, size = 'md', className = '' }: ModalProps) {
   const titleId = useId();
   const containerRef = useFocusTrap(isOpen);
   const announce = useScreenReaderAnnouncement();
@@ -62,7 +74,7 @@ export function Modal({ isOpen, onClose, title, children, className = '' }: Moda
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <div
-          className={`relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl dark:bg-gray-900 ${className}`}
+          className={`relative w-full ${SIZE_CLASSES[size]} max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl dark:bg-gray-900 ${className}`}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">

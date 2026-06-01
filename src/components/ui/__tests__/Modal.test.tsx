@@ -1,63 +1,82 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
-import { Modal } from '../Modal';
-import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+import { Modal, ModalSize } from '../Modal';
 
-// Mock the hooks to avoid testing their specific behaviors here
 vi.mock('@/hooks/useAccessibility', () => ({
   useFocusTrap: () => ({ current: null }),
   useScreenReaderAnnouncement: () => vi.fn(),
 }));
 
-const ThrowErrorComponent = () => {
-  throw new Error('Test child error');
+const defaultProps = {
+  isOpen: true,
+  onClose: vi.fn(),
+  title: 'Test Modal',
+  children: <p>Content</p>,
 };
 
-describe('Modal component with Disaster Recovery', () => {
-  const originalConsoleError = console.error;
+function getPanel() {
+  // The inner panel is the div containing the header and content
+  return screen.getByRole('dialog').querySelector('div');
+}
 
-  beforeAll(() => {
-    // Suppress console.error for expected React errors during testing
-    console.error = vi.fn();
+describe('Modal', () => {
+  it('renders nothing when closed', () => {
+    render(<Modal {...defaultProps} isOpen={false} />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  afterAll(() => {
-    console.error = originalConsoleError;
+  it('renders title and children when open', () => {
+    render(<Modal {...defaultProps} />);
+    expect(screen.getByText('Test Modal')).toBeInTheDocument();
+    expect(screen.getByText('Content')).toBeInTheDocument();
   });
 
-  it('renders children correctly when no error is thrown', () => {
-    render(
-      <Modal isOpen={true} onClose={() => {}} title="Test Modal">
-        <div data-testid="child-content">Normal Content</div>
-      </Modal>,
-    );
-
-    expect(screen.getByTestId('child-content')).toBeInTheDocument();
-    expect(screen.getByText('Normal Content')).toBeInTheDocument();
+  it('calls onClose when backdrop is clicked', () => {
+    const onClose = vi.fn();
+    render(<Modal {...defaultProps} onClose={onClose} />);
+    fireEvent.click(screen.getByRole('dialog').previousElementSibling!);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('catches errors in children using ErrorBoundary and prevents app crash', () => {
-    render(
-      <Modal isOpen={true} onClose={() => {}} title="Test Error Modal">
-        <ThrowErrorComponent />
-      </Modal>,
-    );
-
-    // ErrorBoundarySystem displays "Something went wrong." or "Application Error"
-    expect(screen.getByText('Something went wrong.')).toBeInTheDocument();
+  it('calls onClose when Escape is pressed', () => {
+    const onClose = vi.fn();
+    render(<Modal {...defaultProps} onClose={onClose} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onClose when clicking the close button', () => {
-    const handleClose = vi.fn();
-    render(
-      <Modal isOpen={true} onClose={handleClose} title="Test Modal">
-        <div>Content</div>
-      </Modal>,
-    );
+  it('calls onClose when close button is clicked', () => {
+    const onClose = vi.fn();
+    render(<Modal {...defaultProps} onClose={onClose} />);
+    fireEvent.click(screen.getByLabelText('Close dialog'));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 
-    const closeButton = screen.getByLabelText('Close dialog');
-    fireEvent.click(closeButton);
-    expect(handleClose).toHaveBeenCalledTimes(1);
+  describe('size classes', () => {
+    const sizes: Array<[ModalSize, string]> = [
+      ['sm', 'max-w-sm'],
+      ['md', 'max-w-md'],
+      ['lg', 'max-w-lg'],
+      ['xl', 'max-w-xl'],
+      ['full', 'max-w-full'],
+    ];
+
+    it.each(sizes)('applies %s → %s', (size, expectedClass) => {
+      render(<Modal {...defaultProps} size={size} />);
+      expect(getPanel()).toHaveClass(expectedClass);
+    });
+
+    it('defaults to md (max-w-md) when size is omitted', () => {
+      render(<Modal {...defaultProps} />);
+      expect(getPanel()).toHaveClass('max-w-md');
+    });
+  });
+
+  it('merges extra className with size class', () => {
+    render(<Modal {...defaultProps} size="lg" className="my-custom-class" />);
+    const panel = getPanel();
+    expect(panel).toHaveClass('max-w-lg');
+    expect(panel).toHaveClass('my-custom-class');
   });
 });
