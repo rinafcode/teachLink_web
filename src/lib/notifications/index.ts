@@ -5,6 +5,7 @@
 
 export * from './types';
 export * from './service';
+export { generateRecommendations } from './recommendation-engine';
 
 // Re-export utility functions from notificationUtils
 export {
@@ -22,3 +23,4 @@ export {
   createDefaultPreferences,
   validatePreferences,
 } from '@/utils/notificationUtils';
+
