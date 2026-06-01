@@ -51,9 +51,9 @@ describe('TipForm', () => {
       txHash: '0xabc',
       recipientId: recipient.id,
       amount: 0.05,
-      notarizationId: 'notarization-user-99-abc',
-      notarizationProof: 'proof-value',
-      notarizedAt: new Date().toISOString(),
+      id: 'notarization-user-99-abc',
+      proof: 'proof-value',
+      recordedAt: new Date().toISOString(),
     });
 
     const { user } = render(<TipForm recipient={recipient} />);

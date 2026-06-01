@@ -30,7 +30,8 @@ export default function TipForm({ recipient }: TipFormProps) {
     setLoading(true);
     try {
       const result = await sendTip({ recipientId: recipient.id, amount: parsedAmount });
-      setProof(result.notarizationProof);
+      // `sendTip` extends notarization response which provides `proof` and `recordedAt`
+      setProof((result as any).proof ?? null);
       setSuccess(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to send tip at this time.';
