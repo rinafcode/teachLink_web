@@ -85,7 +85,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       if (json.success) {
         setItems((prev) => prev.map((item) => (item.id === id ? json.data : item)));
       } else {
-        setError(json.message ?? 'Review failed');
+        setError(json.message ?? 'Review failed already');
       }
     } catch {
       setError('Network error');
