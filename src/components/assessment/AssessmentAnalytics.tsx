@@ -52,20 +52,34 @@ export function AssessmentAnalytics() {
     <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Assessment analytics</h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Detailed performance data, question-level insights, and exam integrity reports.</p>
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            Assessment analytics
+          </h2>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Detailed performance data, question-level insights, and exam integrity reports.
+          </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-3xl bg-slate-50 p-4 text-center dark:bg-slate-900">
-            <div className="text-sm uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Avg. score</div>
-            <div className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{averageScore}%</div>
+            <div className="text-sm uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+              Avg. score
+            </div>
+            <div className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">
+              {averageScore}%
+            </div>
           </div>
           <div className="rounded-3xl bg-slate-50 p-4 text-center dark:bg-slate-900">
-            <div className="text-sm uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Pass rate</div>
-            <div className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{passRate}%</div>
+            <div className="text-sm uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+              Pass rate
+            </div>
+            <div className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">
+              {passRate}%
+            </div>
           </div>
           <div className="rounded-3xl bg-slate-50 p-4 text-center dark:bg-slate-900">
-            <div className="text-sm uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Risk flags</div>
+            <div className="text-sm uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+              Risk flags
+            </div>
             <div className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">21%</div>
           </div>
         </div>
@@ -96,12 +110,21 @@ export function AssessmentAnalytics() {
             </div>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={completionTimeline} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                <LineChart
+                  data={completionTimeline}
+                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#CBD5E1" />
                   <XAxis dataKey="name" tick={{ fill: '#64748B' }} />
                   <YAxis tick={{ fill: '#64748B' }} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#6366F1" strokeWidth={3} dot={{ r: 4 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#6366F1"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -114,7 +137,14 @@ export function AssessmentAnalytics() {
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={proctoringCoverage} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4}>
+                  <Pie
+                    data={proctoringCoverage}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={4}
+                  >
                     {proctoringCoverage.map((entry, index) => (
                       <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -130,15 +160,21 @@ export function AssessmentAnalytics() {
       <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-3xl bg-white p-4 dark:bg-slate-950">
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Average accuracy</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              Average accuracy
+            </div>
             <div className="mt-2 text-3xl font-semibold">{averageScore}%</div>
           </div>
           <div className="rounded-3xl bg-white p-4 dark:bg-slate-950">
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Review rate</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              Review rate
+            </div>
             <div className="mt-2 text-3xl font-semibold">{passRate}%</div>
           </div>
           <div className="rounded-3xl bg-white p-4 dark:bg-slate-950">
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Risk detection</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              Risk detection
+            </div>
             <div className="mt-2 text-3xl font-semibold">21%</div>
           </div>
         </div>

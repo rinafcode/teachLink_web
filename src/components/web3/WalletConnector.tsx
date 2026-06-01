@@ -9,6 +9,8 @@ interface WalletConnectorProps {
   showBalance?: boolean;
   onConnect?: (address: string, provider: WalletProvider) => void;
   onDisconnect?: () => void;
+  /** Optional flag to expose Service Account provider */
+  showServiceAccount?: boolean;
 }
 
 /**
@@ -32,32 +34,16 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
   showBalance = false,
   onConnect,
   onDisconnect,
+  showServiceAccount,
 }) => {
   const wallet = useWeb3Wallet();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
 
   const walletProviders: { id: WalletProvider; name: string; description: string }[] = [
-    {
-      id: 'metamask',
-      name: 'MetaMask',
-      description: 'Connect using MetaMask extension',
-    },
-    {
-      id: 'starknet',
-      name: 'Starknet',
-      description: 'Connect using ArgentX or Braavos',
-    },
-    // {
-    //   id: 'walletconnect',
-    //   name: 'WalletConnect',
-    //   description: 'Connect using WalletConnect protocol',
-    // },
-    // {
-    //   id: 'coinbase',
-    //   name: 'Coinbase Wallet',
-    //   description: 'Connect using Coinbase Wallet',
-    // },
+    { id: 'metamask', name: 'MetaMask', description: 'Connect using MetaMask extension' },
+    { id: 'starknet', name: 'Starknet', description: 'Connect using ArgentX or Braavos' },
+    ...(showServiceAccount ? [{ id: 'service', name: 'Service Account', description: 'Connect using backend service account' }] : []),
   ];
 
   /**

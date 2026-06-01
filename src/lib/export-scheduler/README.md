@@ -18,20 +18,24 @@ Automated recurring data exports with scheduling, multiple formats, email delive
 ### Components
 
 1. **Scheduler Service** (`scheduler-service.ts`)
+
    - Main orchestrator for scheduled exports
    - Checks for due schedules periodically
    - Queues export jobs
 
 2. **Storage Layer** (`storage.ts`)
+
    - IndexedDB-based persistence
    - Stores templates, schedules, and history
 
 3. **Exporter** (`exporter.ts`)
+
    - Handles data export in various formats
    - Fetches data from sources
    - Generates export files
 
 4. **Notification Service** (`notification-service.ts`)
+
    - Sends email notifications
    - Handles success and failure notifications
 

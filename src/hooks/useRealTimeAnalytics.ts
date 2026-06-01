@@ -23,7 +23,7 @@ export const useRealTimeAnalytics = (initialData: AnalyticsDataPoint[] = []) => 
           value: Math.floor(Math.random() * 100) + 10,
           category: ['engagement', 'learning', 'performance'][Math.floor(Math.random() * 3)],
         };
-        
+
         // Keep the last 50 points to avoid memory issues while demonstrating streaming
         const updatedData = [...prevData, newDataPoint];
         return updatedData.length > 50 ? updatedData.slice(updatedData.length - 50) : updatedData;

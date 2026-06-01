@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type CollaborationUser, type WhiteboardStroke, useCollaboration } from '../../hooks/useCollaboration';
+import {
+  type CollaborationUser,
+  type WhiteboardStroke,
+  useCollaboration,
+} from '../../hooks/useCollaboration';
 
 interface SharedWhiteboardProps {
   roomId: string;
@@ -22,7 +26,11 @@ export function SharedWhiteboard({ roomId, user, websocketUrl }: SharedWhiteboar
   const [color, setColor] = useState('#2563eb');
   const [width, setWidth] = useState(4);
 
-  const { whiteboardStrokes, addWhiteboardStroke, clearWhiteboard } = useCollaboration(roomId, user, websocketUrl);
+  const { whiteboardStrokes, addWhiteboardStroke, clearWhiteboard } = useCollaboration(
+    roomId,
+    user,
+    websocketUrl,
+  );
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
@@ -114,8 +122,12 @@ export function SharedWhiteboard({ roomId, user, websocketUrl }: SharedWhiteboar
     <div className="rounded-3xl border border-gray-200 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Shared whiteboard</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Draw, annotate, and review ideas together in real time.</p>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Shared whiteboard
+          </h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Draw, annotate, and review ideas together in real time.
+          </p>
         </div>
         <button
           type="button"
@@ -135,7 +147,9 @@ export function SharedWhiteboard({ roomId, user, websocketUrl }: SharedWhiteboar
             <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">
               Color: <span className="h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">Stroke: {width}px</span>
+            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">
+              Stroke: {width}px
+            </span>
           </div>
 
           <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-2 dark:border-slate-700 dark:bg-slate-950">
@@ -158,7 +172,11 @@ export function SharedWhiteboard({ roomId, user, websocketUrl }: SharedWhiteboar
                   key={option.id}
                   type="button"
                   onClick={() => setTool(option.id)}
-                  className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${tool === option.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'}`}
+                  className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                    tool === option.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+                  }`}
                 >
                   {option.label}
                 </button>
@@ -189,21 +207,35 @@ export function SharedWhiteboard({ roomId, user, websocketUrl }: SharedWhiteboar
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent activity</h3>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Latest strokes from the shared canvas.</p>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              Recent activity
+            </h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Latest strokes from the shared canvas.
+            </p>
             <div className="mt-4 space-y-3">
               {previewStrokes.length ? (
                 previewStrokes.map((stroke) => (
-                  <div key={stroke.id} className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                  <div
+                    key={stroke.id}
+                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <span>{stroke.userId}</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">{stroke.path.length} points</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {stroke.path.length} points
+                      </span>
                     </div>
-                    <div className="mt-2 h-2 rounded-full" style={{ backgroundColor: stroke.color }} />
+                    <div
+                      className="mt-2 h-2 rounded-full"
+                      style={{ backgroundColor: stroke.color }}
+                    />
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No whiteboard annotations yet.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  No whiteboard annotations yet.
+                </p>
               )}
             </div>
           </div>

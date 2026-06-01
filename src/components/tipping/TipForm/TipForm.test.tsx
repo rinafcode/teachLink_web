@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/testing/utils/render';
-import { createMockUser, asyncMock, asyncErrorMock } from '@/testing/utils/mocks';
+import { render, screen, waitFor } from '../../../testing/utils/render';
+import { createMockUser, asyncMock, asyncErrorMock } from '../../../testing/utils/mocks';
 
 // ── Service mock ──────────────────────────────────────────────────────────
 const mockSendTip = vi.fn();

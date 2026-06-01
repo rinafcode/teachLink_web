@@ -135,7 +135,7 @@ export class ValidationEngineImpl implements ValidationEngine {
       const syncResult = this.validateField(fieldId, fieldValue, formState);
 
       // Asynchronous validation
-      const asyncResult = await this.executeAsyncValidation(fieldId, fieldValue);
+      const asyncResult = await this.executeAsyncValidation(fieldId, fieldValue, formState);
 
       // Combine results
       const combinedResult: ValidationResult = {
@@ -168,13 +168,15 @@ export class ValidationEngineImpl implements ValidationEngine {
   /**
    * Execute asynchronous validation for a field
    */
-  async executeAsyncValidation(fieldId: string, value: any): Promise<ValidationResult> {
+  async executeAsyncValidation(fieldId: string, value: any, context?: FormState): Promise<ValidationResult> {
     const fieldDescriptor = this.fieldDescriptors.get(fieldId);
     if (!fieldDescriptor) {
       return { isValid: true, errors: [] };
     }
 
-    const asyncRules = fieldDescriptor.validation.filter((rule) => rule.type === 'async');
+    const asyncRules = fieldDescriptor.validation.filter(
+      (rule) => rule.type === 'async' || rule.type === 'imageDimensions' || rule.type === 'imageOptimize'
+    );
     if (asyncRules.length === 0) {
       return { isValid: true, errors: [] };
     }
@@ -187,7 +189,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     }
 
     // Create validation promise
-    const validationPromise = this.executeAsyncRules(asyncRules, fieldId, value);
+    const validationPromise = this.executeAsyncRules(asyncRules, fieldId, value, context);
 
     // Cache the promise
     this.asyncValidationCache.set(cacheKey, validationPromise);
@@ -219,6 +221,10 @@ export class ValidationEngineImpl implements ValidationEngine {
           return this.validateMaxLength(context.value, rule);
         case 'pattern':
           return this.validatePattern(context.value, rule);
+        case 'fileSize':
+          return this.validateFileSize(context.value, rule);
+        case 'fileType':
+          return this.validateFileType(context.value, rule);
         case 'custom':
           return this.validateCustom(context, rule);
         default:
@@ -250,13 +256,14 @@ export class ValidationEngineImpl implements ValidationEngine {
     rules: ValidationRule[],
     fieldId: string,
     value: any,
+    context?: FormState,
   ): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
 
     for (const rule of rules) {
       try {
-        const result = await this.executeAsyncRule(rule, fieldId, value);
+        const result = await this.executeAsyncRule(rule, fieldId, value, context);
 
         if (!result.isValid) {
           errors.push(...result.errors);
@@ -290,7 +297,15 @@ export class ValidationEngineImpl implements ValidationEngine {
     rule: ValidationRule,
     fieldId: string,
     value: any,
+    context?: FormState,
   ): Promise<ValidationResult> {
+    if (rule.type === 'imageDimensions') {
+      return this.validateImageDimensions(value, rule);
+    }
+    if (rule.type === 'imageOptimize') {
+      return this.validateImageOptimize(value, rule, fieldId, context);
+    }
+
     const customRule = this.customRules.get(rule.type);
     if (!customRule) {
       throw new Error(`Unknown async validation rule: ${rule.type}`);
@@ -513,5 +528,185 @@ export class ValidationEngineImpl implements ValidationEngine {
    */
   removeCustomRule(name: string): boolean {
     return this.customRules.delete(name);
+  }
+
+  // Built-in file and image validation/optimization implementations
+
+  private validateFileSize(value: any, rule: ValidationRule): ValidationResult {
+    if (!value) {
+      return { isValid: true, errors: [] };
+    }
+
+    const file = value instanceof File ? value : null;
+    if (!file) {
+      return { isValid: true, errors: [] };
+    }
+
+    const maxSize = rule.params?.maxSize;
+    if (typeof maxSize !== 'number') {
+      return { isValid: true, errors: [] };
+    }
+
+    if (file.size > maxSize) {
+      return {
+        isValid: false,
+        errors: [
+          {
+            code: 'fileSize',
+            message: rule.message || `File size exceeds the maximum limit of ${maxSize} bytes`,
+          },
+        ],
+      };
+    }
+
+    return { isValid: true, errors: [] };
+  }
+
+  private validateFileType(value: any, rule: ValidationRule): ValidationResult {
+    if (!value) {
+      return { isValid: true, errors: [] };
+    }
+
+    const file = value instanceof File ? value : null;
+    if (!file) {
+      return { isValid: true, errors: [] };
+    }
+
+    const allowedTypes: string[] = rule.params?.allowedTypes;
+    if (!allowedTypes || !Array.isArray(allowedTypes)) {
+      return { isValid: true, errors: [] };
+    }
+
+    const matchesMime = allowedTypes.some((type) => {
+      if (type.startsWith('.')) {
+        return file.name.toLowerCase().endsWith(type.toLowerCase());
+      }
+      if (type.endsWith('/*')) {
+        const prefix = type.slice(0, -2);
+        return file.type.startsWith(prefix);
+      }
+      return file.type === type;
+    });
+
+    if (!matchesMime) {
+      return {
+        isValid: false,
+        errors: [
+          {
+            code: 'fileType',
+            message: rule.message || `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`,
+          },
+        ],
+      };
+    }
+
+    return { isValid: true, errors: [] };
+  }
+
+  private async validateImageDimensions(value: any, rule: ValidationRule): Promise<ValidationResult> {
+    if (!value) {
+      return { isValid: true, errors: [] };
+    }
+
+    const file = value instanceof File ? value : null;
+    if (!file) {
+      return { isValid: true, errors: [] };
+    }
+
+    const minWidth = rule.params?.minWidth;
+    const maxWidth = rule.params?.maxWidth;
+    const minHeight = rule.params?.minHeight;
+    const maxHeight = rule.params?.maxHeight;
+
+    try {
+      const { validateImageDimensions } = await import('./image-optimizer.js');
+      const result = await validateImageDimensions(file, { minWidth, maxWidth, minHeight, maxHeight });
+
+      if (!result.isValid) {
+        return {
+          isValid: false,
+          errors: [
+            {
+              code: 'imageDimensions',
+              message: rule.message || result.error || 'Image dimensions validation failed',
+            },
+          ],
+        };
+      }
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [
+          {
+            code: 'imageDimensionsError',
+            message: `Dimensions check failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+          },
+        ],
+      };
+    }
+
+    return { isValid: true, errors: [] };
+  }
+
+  private async validateImageOptimize(
+    value: any,
+    rule: ValidationRule,
+    fieldId: string,
+    context?: FormState,
+  ): Promise<ValidationResult> {
+    if (!value) {
+      return { isValid: true, errors: [] };
+    }
+
+    const file = value instanceof File ? value : null;
+    if (!file) {
+      return { isValid: true, errors: [] };
+    }
+
+    const maxWidth = rule.params?.maxWidth;
+    const maxHeight = rule.params?.maxHeight;
+    const quality = rule.params?.quality;
+    const format = rule.params?.format;
+    const preserveAspectRatio = rule.params?.preserveAspectRatio;
+
+    try {
+      const { optimizeImage } = await import('./image-optimizer.js');
+      const optimizedFile = await optimizeImage(file, {
+        maxWidth,
+        maxHeight,
+        quality,
+        format,
+        preserveAspectRatio,
+      });
+
+      if (context && context.values) {
+        context.values[fieldId] = optimizedFile;
+      }
+
+      const sizeReduced = optimizedFile.size < file.size;
+      return {
+        isValid: true,
+        errors: [],
+        warnings: sizeReduced
+          ? [
+              {
+                code: 'imageOptimized',
+                message: `Image optimized successfully. Size reduced from ${file.size} to ${optimizedFile.size} bytes.`,
+                field: fieldId,
+              },
+            ]
+          : undefined,
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [
+          {
+            code: 'imageOptimizeError',
+            message: rule.message || `Failed to optimize image: ${error instanceof Error ? error.message : 'unknown error'}`,
+          },
+        ],
+      };
+    }
   }
 }

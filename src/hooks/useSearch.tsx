@@ -32,6 +32,11 @@ export function useSearch<T extends SearchResult>(
   const abortController = useRef<AbortController | null>(null);
   const cache = useRef<Record<string, { items: T[]; nextCursor?: string }>>({});
 
+  const fetchFnRef = useRef(fetchFn);
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  }, [fetchFn]);
+
   const search = useCallback(
     async (searchQuery: string, cursor?: string) => {
       if (!searchQuery.trim()) {
@@ -64,7 +69,7 @@ export function useSearch<T extends SearchResult>(
       setError(null);
 
       try {
-        const { items, nextCursor: next } = await fetchFn(
+        const { items, nextCursor: next } = await fetchFnRef.current(
           searchQuery,
           cursor,
           abortController.current.signal,
@@ -89,7 +94,7 @@ export function useSearch<T extends SearchResult>(
         }
       }
     },
-    [fetchFn],
+    [],
   );
 
   const updateQuery = useCallback(
