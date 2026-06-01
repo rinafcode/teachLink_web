@@ -105,6 +105,34 @@ const MOCK_RESULTS = [
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuAUd6QuR7Rp0azAg6bhUKGrn8eqsVDX9Ry8ezok66U35Rnc39EGF8e_4RTwbxJKMv-73ahqf8f5ZB9b93NmWiNPSK8EnFcIr6DteWxx7yWzlyXRTn5Ti-5vmkE6VCeszMwgLEntCvZqhhTZrqr2Jn9RHsXJsFVCynv4RsUCpiG3B-L_NPzkyO3IFkYBfoMOmsHnLUsFI4SXKQGRME81AAq--3NMDs_chLm5cXIc-AdEeXiMFUIGBH9GllgnintdJWon-xXTl_1BWos',
   },
+  {
+    id: 'FI-101',
+    title: 'Investment Fundamentals for Creators',
+    instructor: 'Dr. Sarah Connor',
+    duration: '7h 30m',
+    rating: 4.8,
+    price: 59.99,
+    originalPrice: 89.99,
+    category: 'Investment',
+    level: 'intermediate',
+    color: 'secondary',
+    image:
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'FI-102',
+    title: 'Strategic Investment Planning for Startups',
+    instructor: 'James Wilson',
+    duration: '9h 15m',
+    rating: 4.7,
+    price: 69.99,
+    originalPrice: 99.99,
+    category: 'Investment',
+    level: 'advanced',
+    color: 'secondary',
+    image:
+      'https://images.unsplash.com/photo-1542223616-0d4b4e2aa77d?auto=format&fit=crop&w=1200&q=80',
+  },
   // Repeat to simulate more results
   {
     id: 'CS-102',

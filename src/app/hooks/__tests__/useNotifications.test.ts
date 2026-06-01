@@ -8,6 +8,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useNotifications } from '../useNotifications';
 import { useNotificationStore } from '@/app/store/notificationStore';
+import { AppNotification } from '@/lib/notifications/types';
 
 // ─── Mock localStorage ────────────────────────────────────────────────────────
 

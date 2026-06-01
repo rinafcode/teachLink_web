@@ -245,7 +245,35 @@ export function useInternationalization(): I18nContextValue {
   const context = useContext(I18nContext);
 
   if (!context) {
-    throw new Error('useInternationalization must be used within I18nProvider');
+    const fallbackLanguage: LanguageCode = DEFAULT_LANGUAGE;
+    const fallbackPreferences = getCulturalPreferences(fallbackLanguage);
+    const fallbackT = (key: string, params?: Record<string, string | number>) =>
+      getTranslation({}, key, params);
+
+    return {
+      language: fallbackLanguage,
+      translations: {},
+      preferences: fallbackPreferences,
+      isLoading: false,
+      error: null,
+      t: fallbackT,
+      changeLanguage: async () => {},
+      formatDate: (date: Date | string | number, formatStr?: string) =>
+        formatDateUtil(date, fallbackLanguage, formatStr),
+      formatRelativeTime: (date: Date | string | number) =>
+        formatRelativeTime(date, fallbackLanguage),
+      formatNumber: (value: number, options?: Intl.NumberFormatOptions) =>
+        formatNumberUtil(value, fallbackLanguage, options),
+      formatCurrency: (amount: number, currency?: string) =>
+        formatCurrencyUtil(amount, fallbackLanguage, currency),
+      formatPercentage: (value: number, decimals?: number) =>
+        formatPercentage(value, fallbackLanguage, decimals),
+      parseNumber: (value: string) => parseNumber(value, fallbackLanguage),
+      formatFileSize: (bytes: number) => formatFileSize(bytes, fallbackLanguage),
+      formatDuration: (seconds: number) => formatDuration(seconds, fallbackLanguage),
+      direction: getTextDirection(fallbackLanguage),
+      isRTL: isRTLUtil(fallbackLanguage),
+    };
   }
 
   return context;

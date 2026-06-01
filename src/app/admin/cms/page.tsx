@@ -9,6 +9,7 @@ import { ContentTemplates } from '@/components/cms/ContentTemplates';
 import { useCMS } from '@/hooks/useCMS';
 import { Save, Eye, Settings, Share2, AlertTriangle } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
+import AdminThemeToggle from '@/components/admin/AdminThemeToggle';
 
 export default function CMSDashboard() {
   const { course, setCourse } = useCMS();
@@ -69,6 +70,7 @@ export default function CMSDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
+          <AdminThemeToggle />
           <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium text-sm">
             <Eye className="w-4 h-4" />
             Preview

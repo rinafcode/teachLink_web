@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 interface ProfileData {
   firstName: string;
@@ -15,7 +15,7 @@ interface ProfileData {
 export function useProfileUpdate() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateProfile = async (data: ProfileData) => {
+  const updateProfile = useCallback(async (data: ProfileData) => {
     setIsLoading(true);
     try {
       // TODO: Replace with actual API call
@@ -41,10 +41,7 @@ export function useProfileUpdate() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  return {
-    updateProfile,
-    isLoading,
-  };
+  return useMemo(() => ({ updateProfile, isLoading }), [updateProfile, isLoading]);
 }

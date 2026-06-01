@@ -133,8 +133,9 @@ export function VideoConference({
       fraud.checkLeave();
       socket.disconnect();
       socketRef.current = null;
+      virtualBackground.stopProcessing();
     };
-  }, [roomId, signalingUrl, user.id, user.name]);
+  }, [roomId, signalingUrl, user.id, user.name, virtualBackground]);
 
   useEffect(() => {
     if (localVideoRef.current) {
@@ -194,10 +195,10 @@ export function VideoConference({
       stream.getAudioTracks().forEach((track) => {
         track.enabled = microphoneEnabled;
       });
-      stream.getVideoTracks().forEach((track) => {
+      processedStream.getVideoTracks().forEach((track) => {
         track.enabled = cameraEnabled;
       });
-      return stream;
+      return processedStream;
     } catch (error) {
       setStatus('Unable to access camera or microphone');
       console.error(error);
@@ -324,6 +325,7 @@ export function VideoConference({
   };
 
   const endCall = () => {
+    virtualBackground.stopProcessing();
     pcRef.current?.close();
     pcRef.current = null;
     localStream?.getTracks().forEach((track) => track.stop());

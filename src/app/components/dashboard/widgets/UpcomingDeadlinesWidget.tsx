@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { AccessibleLoading } from '../../accessibility/ScreenReaderOptimizer';
 import { motion } from 'framer-motion';
 import { Clock, Users, FileText, Settings } from 'lucide-react';
 import { format, isToday, isTomorrow, addDays } from 'date-fns';
@@ -216,7 +217,7 @@ export const UpcomingDeadlinesWidget: React.FC<UpcomingDeadlinesWidgetProps> = (
 
       {/* Content */}
       <div className="p-4 space-y-4">
-        {isLoading && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+        {isLoading && <AccessibleLoading isLoading={true} message="Loading…" />}
         {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
         {/* Subtitle */}
