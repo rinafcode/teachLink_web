@@ -23,6 +23,8 @@ export interface TooltipProps {
   disabled?: boolean;
   /** Optional extra class for the tooltip bubble */
   className?: string;
+  /** Optional zoom scale for the tooltip bubble (1 = normal size) */
+  zoomScale?: number;
   /** Called when an anomaly is detected (e.g. rapid open/close) */
   onAnomaly?: (type: string) => void;
 }
@@ -34,6 +36,13 @@ const PLACEMENT_CLASSES: Record<TooltipPlacement, string> = {
   right: 'left-full top-1/2 -translate-y-1/2 ml-2',
 };
 
+const TRANSFORM_ORIGINS: Record<TooltipPlacement, string> = {
+  top: 'center bottom',
+  bottom: 'center top',
+  left: 'right center',
+  right: 'left center',
+};
+
 export const Tooltip: React.FC<TooltipProps> = ({
   content,
   children,
@@ -41,6 +50,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   delayMs = 200,
   disabled = false,
   className = '',
+  zoomScale = 1,
   onAnomaly,
 }) => {
   const [visible, setVisible] = useState(false);
@@ -86,6 +96,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
   }, []);
 
   const child = React.Children.only(children);
+  const normalizedZoom = Math.max(0.5, Math.min(3, zoomScale ?? 1));
+  const tooltipStyle = {
+    transform: normalizedZoom === 1 ? undefined : `scale(${normalizedZoom})`,
+    transformOrigin: TRANSFORM_ORIGINS[placement],
+  };
 
   return (
     <span className="relative inline-flex">
@@ -113,6 +128,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         <span
           id={tooltipId}
           role="tooltip"
+          style={tooltipStyle}
           className={[
             'pointer-events-none absolute z-50 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg dark:bg-gray-700',
             PLACEMENT_CLASSES[placement],

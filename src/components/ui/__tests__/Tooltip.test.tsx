@@ -89,6 +89,18 @@ describe('Tooltip', () => {
     expect(btn.getAttribute('aria-describedby')).toBe(tooltip.id);
   });
 
+  it('applies zoomScale transform and maintains placement origin', () => {
+    render(
+      <Tooltip content="Zoom tip" placement="right" delayMs={0} zoomScale={1.5}>
+        <button>trigger</button>
+      </Tooltip>
+    );
+    fireEvent.mouseEnter(screen.getByRole('button'));
+    act(() => vi.advanceTimersByTime(0));
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip).toHaveStyle({ transform: 'scale(1.5)', transformOrigin: 'left center' });
+  });
+
   it('calls onAnomaly after rapid toggles', () => {
     const onAnomaly = vi.fn();
     render(

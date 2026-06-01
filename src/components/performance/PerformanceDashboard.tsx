@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { Toaster } from 'react-hot-toast';
@@ -27,6 +25,9 @@ import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
 import { clearTrendHistory, type PerformanceTrendPoint } from '@/utils/performanceUtils';
 import { CoreWebVitals } from './CoreWebVitals';
 import { OptimizationSuggestions } from './OptimizationSuggestions';
+import { Breadcrumbs, type BreadcrumbItem } from '@/components/ui/Breadcrumbs';
+import { useInternationalization } from '@/hooks/useInternationalization';
+import { translateWithFallback } from '@/components/dashboard/dashboardI18n';
 
 const VITAL_NAMES = ['LCP', 'INP', 'CLS', 'FCP', 'TTFB'] as const;
 
@@ -49,6 +50,7 @@ function formatTick(name: string, value: number): string {
  * Full-screen performance monitoring: Core Web Vitals, alerts, suggestions, and trend charts.
  */
 export const PerformanceDashboard: React.FC = () => {
+  const { t } = useInternationalization();
   const { metrics, alerts, suggestions, trend, clearAlerts, refreshTrendFromStorage } =
     usePerformanceMonitoring();
 
@@ -75,19 +77,35 @@ export const PerformanceDashboard: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-8" role="main">
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-2"
-            >
-              <ArrowLeft className="w-4 h-4" aria-hidden />
-              Back
-            </Link>
+            <Breadcrumbs
+              items={[
+                { label: t('navigation.home'), href: '/' },
+                {
+                  label: translateWithFallback(
+                    t,
+                    'performance.dashboard.title',
+                    'Performance Dashboard',
+                  ),
+                  current: true,
+                },
+              ]}
+              ariaLabel={translateWithFallback(
+                t,
+                'performance.dashboard.navigation',
+                'Performance dashboard navigation',
+              )}
+              className="mb-2"
+            />
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
               <Activity className="w-7 h-7 text-indigo-600 dark:text-indigo-400" aria-hidden />
-              Performance dashboard
+              {translateWithFallback(t, 'performance.dashboard.title', 'Performance dashboard')}
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Core Web Vitals, recent alerts, and session trend samples (stored in sessionStorage).
+              {translateWithFallback(
+                t,
+                'performance.dashboard.subtitle',
+                'Core Web Vitals, recent alerts, and session trend samples (stored in sessionStorage).',
+              )}
             </p>
           </div>
           <button
@@ -96,7 +114,7 @@ export const PerformanceDashboard: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             <Eraser className="w-4 h-4" aria-hidden />
-            Clear trend history
+            {translateWithFallback(t, 'performance.dashboard.clearHistory', 'Clear trend history')}
           </button>
         </header>
 
@@ -107,11 +125,21 @@ export const PerformanceDashboard: React.FC = () => {
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4">
             <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
               <BarChart3 className="w-4 h-4 text-indigo-500" aria-hidden />
-              Analytics Status
+              {translateWithFallback(
+                t,
+                'performance.dashboard.statusPanel.heading',
+                'Analytics Status',
+              )}
             </h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-gray-400">Status</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {translateWithFallback(
+                    t,
+                    'performance.dashboard.statusPanel.statusLabel',
+                    'Status',
+                  )}
+                </span>
                 <span
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                     isAnalyticsEnabled
@@ -120,11 +148,23 @@ export const PerformanceDashboard: React.FC = () => {
                   }`}
                 >
                   {isAnalyticsEnabled ? <ShieldCheck className="w-3 h-3" /> : null}
-                  {isAnalyticsEnabled ? 'Active' : 'Disabled (Dev)'}
+                  {isAnalyticsEnabled
+                    ? translateWithFallback(t, 'performance.dashboard.statusPanel.active', 'Active')
+                    : translateWithFallback(
+                        t,
+                        'performance.dashboard.statusPanel.disabled',
+                        'Disabled (Dev)',
+                      )}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-gray-400">Endpoint</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {translateWithFallback(
+                    t,
+                    'performance.dashboard.statusPanel.endpoint',
+                    'Endpoint',
+                  )}
+                </span>
                 <span className="text-xs font-mono text-gray-600 dark:text-gray-300">
                   /api/performance/vitals
                 </span>
@@ -132,7 +172,11 @@ export const PerformanceDashboard: React.FC = () => {
               <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-2">
                   <Globe className="inline w-3 h-3 mr-1" />
-                  Simulated Global Average (7d)
+                  {translateWithFallback(
+                    t,
+                    'performance.dashboard.statusPanel.simulated',
+                    'Simulated Global Average (7d)',
+                  )}
                 </p>
                 <div className="space-y-1.5">
                   {[
@@ -157,7 +201,7 @@ export const PerformanceDashboard: React.FC = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 id="perf-alerts-heading" className="text-sm font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-600" aria-hidden />
-              Alerts
+              {translateWithFallback(t, 'performance.dashboard.alertsPanel.heading', 'Alerts')}
             </h2>
             {alerts.length > 0 ? (
               <button
@@ -166,31 +210,51 @@ export const PerformanceDashboard: React.FC = () => {
                 className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               >
                 <Trash2 className="w-3.5 h-3.5" aria-hidden />
-                Clear list
+                {translateWithFallback(
+                  t,
+                  'performance.dashboard.alertsPanel.clearList',
+                  'Clear list',
+                )}
               </button>
             ) : null}
           </div>
           {alerts.length === 0 ? (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              No degradation alerts in this session.
+              {translateWithFallback(
+                t,
+                'performance.dashboard.alertsPanel.empty',
+                'No degradation alerts in this session.',
+              )}
             </p>
           ) : (
             <ul className="space-y-2" aria-live="polite">
-              {alerts.map((a) => (
-                <li
-                  key={a.id}
-                  className={`rounded-lg border px-3 py-2 text-sm ${
-                    a.severity === 'critical'
-                      ? 'border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30'
-                      : 'border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20'
-                  }`}
-                >
-                  <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(a.at).toLocaleTimeString()}
-                  </span>
-                  <span className="ml-2">{a.message}</span>
-                </li>
-              ))}
+              {alerts.map((a) => {
+                const formattedValue = a.message.match(/\(([^)]+)\)/)?.[1] || '';
+                const translatedMessage = translateWithFallback(
+                  t,
+                  `performance.telemetry.alerts.${a.severity === 'critical' ? 'poor' : 'warning'}`,
+                  a.message,
+                  {
+                    name: a.metricName,
+                    value: formattedValue,
+                  },
+                );
+                return (
+                  <li
+                    key={a.id}
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      a.severity === 'critical'
+                        ? 'border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30'
+                        : 'border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20'
+                    }`}
+                  >
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(a.at).toLocaleTimeString()}
+                    </span>
+                    <span className="ml-2">{translatedMessage}</span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
@@ -199,7 +263,11 @@ export const PerformanceDashboard: React.FC = () => {
 
         <section aria-labelledby="perf-trends-heading">
           <h2 id="perf-trends-heading" className="text-sm font-semibold mb-4">
-            Trends (this tab session)
+            {translateWithFallback(
+              t,
+              'performance.dashboard.trendsHeading',
+              'Trends (this tab session)',
+            )}
           </h2>
           <div className="grid gap-6 lg:grid-cols-2">
             {VITAL_NAMES.map((name) => {
@@ -214,10 +282,23 @@ export const PerformanceDashboard: React.FC = () => {
                   </h3>
                   {data.length < 2 ? (
                     <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
-                      Not enough samples yet. Interact with the app or reload to collect points.
+                      {translateWithFallback(
+                        t,
+                        'performance.dashboard.chartPlaceholder',
+                        'Not enough samples yet. Interact with the app or reload to collect points.',
+                      )}
                     </p>
                   ) : (
-                    <div className="h-48 w-full" role="img" aria-label={`${name} trend chart`}>
+                    <div
+                      className="h-48 w-full"
+                      role="img"
+                      aria-label={translateWithFallback(
+                        t,
+                        'performance.dashboard.chartAriaLabel',
+                        `${name} trend chart`,
+                        { name },
+                      )}
+                    >
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                           <CartesianGrid
@@ -228,7 +309,11 @@ export const PerformanceDashboard: React.FC = () => {
                             dataKey="i"
                             tick={{ fontSize: 10 }}
                             label={{
-                              value: 'Sample #',
+                              value: translateWithFallback(
+                                t,
+                                'performance.dashboard.xAxisLabel',
+                                'Sample #',
+                              ),
                               position: 'insideBottom',
                               offset: -4,
                               fontSize: 10,

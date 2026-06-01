@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import Image from 'next/image';
 
 interface ImageUploaderProps {
@@ -9,30 +10,47 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-export default function ImageUploader({
+function ImageUploader({
   onImageSelect,
   initialImageUrl,
   className = '',
 }: ImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const objectUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (initialImageUrl) {
+      setPreviewUrl(initialImageUrl);
+    }
+  }, [initialImageUrl]);
 
   useEffect(() => {
     return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
       }
     };
-  }, [previewUrl]);
+  }, []);
 
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const setObjectPreviewUrl = useCallback((objectUrl: string) => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+    }
+
+    objectUrlRef.current = objectUrl;
+    setPreviewUrl(objectUrl);
+  }, []);
+
+  const handleFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (file.type.startsWith('video/')) {
       try {
         const video = document.createElement('video');
-        video.src = URL.createObjectURL(file);
+        const videoObjectUrl = URL.createObjectURL(file);
+        video.src = videoObjectUrl;
         video.crossOrigin = 'anonymous';
         video.muted = true;
 
@@ -55,7 +73,7 @@ export default function ImageUploader({
             (blob) => {
               if (blob) {
                 const objectUrl = URL.createObjectURL(blob);
-                setPreviewUrl(objectUrl);
+                setObjectPreviewUrl(objectUrl);
                 const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
                   type: 'image/jpeg',
                 });
@@ -66,30 +84,32 @@ export default function ImageUploader({
             0.85,
           );
         }
-        URL.revokeObjectURL(video.src);
+        URL.revokeObjectURL(videoObjectUrl);
       } catch (error) {
         console.error('Video optimization failed:', error);
       }
     } else if (file.type.startsWith('image/')) {
       const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      setObjectPreviewUrl(objectUrl);
       onImageSelect(file);
     }
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
+  }, [onImageSelect, setObjectPreviewUrl]);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
-      <div
+      <button
+        type="button"
+        aria-label="Change profile picture"
         onClick={handleClick}
-        className="relative w-32 h-32 rounded-full overflow-hidden cursor-pointer border-4 border-gray-100 hover:border-blue-500 transition-colors group"
+        className="group relative h-32 w-32 cursor-pointer overflow-hidden rounded-full border-4 border-gray-100 p-0 transition-colors hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         {previewUrl ? (
           <Image
@@ -124,7 +144,7 @@ export default function ImageUploader({
             Change
           </span>
         </div>
-      </div>
+      </button>
 
       <input
         ref={fileInputRef}
@@ -143,3 +163,5 @@ export default function ImageUploader({
     </div>
   );
 }
+
+export default memo(ImageUploader);

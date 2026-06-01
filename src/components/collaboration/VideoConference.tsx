@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Mic, Video, Monitor, Phone, VideoOff, MicOff } from 'lucide-react';
 import { io, type Socket } from 'socket.io-client';
 import type { CollaborationUser } from '../../hooks/useCollaboration';
+import { useVirtualBackground } from '../../hooks/useVirtualBackground';
 
 interface VideoConferenceProps {
   roomId: string;
@@ -42,6 +43,8 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
   const [microphoneEnabled, setMicrophoneEnabled] = useState(true);
   const [sharingScreen, setSharingScreen] = useState(false);
   const [status, setStatus] = useState('Idle');
+
+  const virtualBackground = useVirtualBackground();
 
   const signalingUrl =
     websocketUrl || process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001';
@@ -94,8 +97,9 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
     return () => {
       socket.disconnect();
       socketRef.current = null;
+      virtualBackground.stopProcessing();
     };
-  }, [roomId, signalingUrl, user.id, user.name]);
+  }, [roomId, signalingUrl, user.id, user.name, virtualBackground]);
 
   useEffect(() => {
     if (localVideoRef.current) {
@@ -148,14 +152,18 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
   const startLocalStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setLocalStream(stream);
-      stream.getAudioTracks().forEach((track) => {
+      
+      // Apply virtual background if enabled
+      const processedStream = await virtualBackground.applyToStream(stream);
+      
+      setLocalStream(processedStream);
+      processedStream.getAudioTracks().forEach((track) => {
         track.enabled = microphoneEnabled;
       });
-      stream.getVideoTracks().forEach((track) => {
+      processedStream.getVideoTracks().forEach((track) => {
         track.enabled = cameraEnabled;
       });
-      return stream;
+      return processedStream;
     } catch (error) {
       setStatus('Unable to access camera or microphone');
       console.error(error);
@@ -247,6 +255,7 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
   };
 
   const endCall = () => {
+    virtualBackground.stopProcessing();
     pcRef.current?.close();
     pcRef.current = null;
     localStream?.getTracks().forEach((track) => track.stop());

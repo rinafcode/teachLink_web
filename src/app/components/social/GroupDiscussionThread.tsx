@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Paperclip, Send } from 'lucide-react';
 import RichTextEditor from '@/app/components/ui/RichTextEditor';
@@ -26,6 +26,7 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
   const [files, setFiles] = useState<File[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorHelpId = useId();
 
   const attachments = useMemo<Attachment[]>(
     () =>
@@ -40,7 +41,10 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const end = messagesEndRef.current;
+    if (typeof end?.scrollIntoView === 'function') {
+      end.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const handlePost = () => {
@@ -53,37 +57,60 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
     }
   };
 
+  const handleEditorKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+      event.preventDefault();
+      handlePost();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full max-h-[600px] bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <div className="flex-1 overflow-y-auto space-y-4 p-4">
+      <div
+        className="flex-1 overflow-y-auto space-y-4 p-4"
+        role="log"
+        aria-label="Discussion messages"
+        aria-live="polite"
+        aria-relevant="additions text"
+      >
         {messages.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400" role="status">
             <p className="text-sm">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           <AnimatePresence>
             {messages.map((m, index) => (
-              <motion.div
+              <motion.article
                 key={m.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 className="flex items-start gap-3 group"
+                aria-labelledby={`message-${m.id}-sender`}
               >
                 {/* Avatar */}
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 border-2 border-white dark:border-gray-700 flex items-center justify-center text-sm font-medium text-purple-600 dark:text-purple-400">
+                <div
+                  className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 border-2 border-white dark:border-gray-700 flex items-center justify-center text-sm font-medium text-purple-600 dark:text-purple-400"
+                  aria-hidden="true"
+                >
                   {getInitials(m.senderName)}
                 </div>
 
                 {/* Message Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-50">
+                    <span
+                      id={`message-${m.id}-sender`}
+                      className="text-sm font-medium text-gray-900 dark:text-gray-50"
+                    >
                       {m.senderName}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <time
+                      className="text-xs text-gray-500 dark:text-gray-400"
+                      dateTime={new Date(m.createdAt).toISOString()}
+                    >
                       {formatDistanceToNow(new Date(m.createdAt), { addSuffix: true })}
-                    </span>
+                    </time>
                   </div>
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3"
@@ -106,7 +133,7 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
                     </div>
                   )}
                 </div>
-              </motion.div>
+              </motion.article>
             ))}
           </AnimatePresence>
         )}
@@ -114,8 +141,23 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-900/50">
-        <RichTextEditor content={content} onChange={setContent} placeholder="Share an update..." />
+      <form
+        className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-900/50"
+        onSubmit={(event) => {
+          event.preventDefault();
+          handlePost();
+        }}
+        aria-label="Create discussion post"
+      >
+        <div onKeyDown={handleEditorKeyDown}>
+          <RichTextEditor
+            content={content}
+            onChange={setContent}
+            placeholder="Share an update..."
+            ariaLabel="Discussion post content"
+            describedBy={editorHelpId}
+          />
+        </div>
         <div className="flex items-center justify-between">
           <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
             <Paperclip size={16} />
@@ -125,6 +167,7 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
               type="file"
               className="hidden"
               multiple
+              aria-label="Attach files to discussion post"
               onChange={(e) => {
                 const fl = Array.from(e.target.files || []);
                 setFiles((prev) => [...prev, ...fl]);
@@ -132,9 +175,9 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
             />
           </label>
           <button
-            onClick={handlePost}
             disabled={!content || content === '<p></p>' || content.trim() === ''}
             className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center gap-2"
+            type="submit"
           >
             <Send size={16} />
             Post
@@ -152,8 +195,10 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
               >
                 {file.name}
                 <button
+                  type="button"
                   onClick={() => setFiles(files.filter((_, i) => i !== index))}
                   className="hover:text-purple-900 dark:hover:text-purple-100"
+                  aria-label={`Remove ${file.name}`}
                 >
                   ×
                 </button>
@@ -161,8 +206,10 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
             ))}
           </div>
         )}
-        <p className="text-xs text-gray-500 dark:text-gray-400">Press Cmd/Ctrl + Enter to post</p>
-      </div>
+        <p id={editorHelpId} className="text-xs text-gray-500 dark:text-gray-400">
+          Press Cmd/Ctrl + Enter to post
+        </p>
+      </form>
     </div>
   );
 }

@@ -8,13 +8,14 @@
  * useTooltipAnomalyDetection hook in action.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tooltip, TooltipPlacement } from '@/components/ui/Tooltip';
 import { useTooltipAnomalyDetection } from '@/hooks/useTooltipAnomalyDetection';
 
 const PLACEMENTS: TooltipPlacement[] = ['top', 'bottom', 'left', 'right'];
 
 export default function TooltipDemoPage() {
+  const [zoomScale, setZoomScale] = useState(1);
   const { onOpen, onClose, anomalies, clearAnomalies } = useTooltipAnomalyDetection({
     rapidToggleThreshold: 5,
     rapidToggleWindowMs: 3000,
@@ -33,6 +34,33 @@ export default function TooltipDemoPage() {
         toggling a tooltip or keeping it open for &gt;10 s will log an anomaly.
       </p>
 
+      <section className="mb-10 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Tooltip Zoom</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Change the tooltip zoom scale to verify positioning and accessibility.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {[1, 1.25, 1.5, 2].map((scale) => (
+              <button
+                key={scale}
+                type="button"
+                className={`rounded-full border px-3 py-2 text-sm font-medium transition-all ${
+                  zoomScale === scale
+                    ? 'border-indigo-600 bg-indigo-600 text-white'
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-indigo-500 hover:text-indigo-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200'
+                }`}
+                onClick={() => setZoomScale(scale)}
+              >
+                {Math.round(scale * 100)}%
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Placement showcase */}
       <section className="mb-12">
         <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
@@ -44,6 +72,7 @@ export default function TooltipDemoPage() {
               key={placement}
               content={`Placement: ${placement}`}
               placement={placement}
+              zoomScale={zoomScale}
               onAnomaly={(type) => onOpen(`placement-${placement}-${type}`)}
             >
               <button
@@ -74,6 +103,7 @@ export default function TooltipDemoPage() {
           }
           placement="right"
           delayMs={100}
+          zoomScale={zoomScale}
           onAnomaly={(type) => onOpen(`rich-${type}`)}
         >
           <button
@@ -93,7 +123,7 @@ export default function TooltipDemoPage() {
         <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
           Disabled State
         </h2>
-        <Tooltip content="You should never see this" disabled>
+        <Tooltip content="You should never see this" disabled zoomScale={zoomScale}>
           <button className="rounded-lg bg-gray-400 px-5 py-2 text-sm font-medium text-white shadow cursor-not-allowed">
             Disabled tooltip
           </button>
