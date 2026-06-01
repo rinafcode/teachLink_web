@@ -406,7 +406,8 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
 
   const groupMessages = useCallback<UseStudyGroupsApi['groupMessages']>(
     (groupId) => {
-      return messages
+      const persistedMessages = load(STORAGE_KEYS.messages, [] as GroupMessage[]);
+      return persistedMessages
         .filter((m) => m.groupId === groupId)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     },
@@ -415,7 +416,8 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
 
   const groupResources = useCallback<UseStudyGroupsApi['groupResources']>(
     (groupId) => {
-      return resources
+      const persistedResources = load(STORAGE_KEYS.resources, [] as GroupResource[]);
+      return persistedResources
         .filter((r) => r.groupId === groupId)
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
@@ -424,7 +426,8 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
 
   const groupChallenges = useCallback<UseStudyGroupsApi['groupChallenges']>(
     (groupId) => {
-      return challenges
+      const persistedChallenges = load(STORAGE_KEYS.challenges, [] as GroupChallenge[]);
+      return persistedChallenges
         .filter((c) => c.groupId === groupId)
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
@@ -433,7 +436,8 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
 
   const challengeLeaderboard = useCallback<UseStudyGroupsApi['challengeLeaderboard']>(
     (challengeId) => {
-      const ch = challenges.find((c) => c.id === challengeId);
+      const persistedChallenges = load(STORAGE_KEYS.challenges, [] as GroupChallenge[]);
+      const ch = persistedChallenges.find((c) => c.id === challengeId);
       if (!ch) return [];
       return [...ch.progress]
         .sort((a, b) => b.progress - a.progress)

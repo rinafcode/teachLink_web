@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { AccessibleLoading } from '../../accessibility/ScreenReaderOptimizer';
 import { motion } from 'framer-motion';
 import { Flame, Trophy, Target, Settings } from 'lucide-react';
 
@@ -177,7 +177,7 @@ export const LearningStreakWidget: React.FC<LearningStreakWidgetProps> = ({
 
       {/* Content */}
       <div className="p-4 space-y-4">
-        {isLoading && <div className="text-sm text-gray-500">Loading…</div>}
+        {isLoading && <AccessibleLoading isLoading={true} message="Loading…" />}
         {error && <div className="text-sm text-red-600">{error}</div>}
         {/* Current Streak */}
         <div className="text-center">

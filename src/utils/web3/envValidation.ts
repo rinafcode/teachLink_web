@@ -12,6 +12,8 @@ const envSchema = z.object({
     .default(DEFAULT_STARKNET_NETWORK as any),
   NEXT_PUBLIC_STARKNET_RPC_URL: z.string().url().optional(),
   NEXT_PUBLIC_API_URL: z.string().url().optional(),
+  SERVICE_ACCOUNT_ADDRESS: z.string().optional(),
+  SERVICE_PRIVATE_KEY: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 

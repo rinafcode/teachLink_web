@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: teachlink-notification-data
+  namespace: production
+  labels:
+    app: teachlink
+    component: notification-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teachlink-notification-system
+  namespace: production
+  labels:
+    app: teachlink
+    component: notification-system
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: teachlink
+      component: notification-system
+  template:
+    metadata:
+      labels:
+        app: teachlink
+        component: notification-system
+    spec:
+      securityContext:
+        fsGroup: 1001
+      containers:
+      - name: notification-system
+        image: rinafcode/teachlink-notification-system:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: NOTIFICATION_STORAGE_PATH
+          value: "/var/lib/teachlink/notifications"
+        volumeMounts:
+        - name: notification-data
+          mountPath: /var/lib/teachlink/notifications
+      volumes:
+      - name: notification-data
+        persistentVolumeClaim:
+          claimName: teachlink-notification-data

@@ -123,6 +123,7 @@ function getPermissionDesc(permission: Permission): string {
     [Permission.USER_MANAGE]: 'Edit user roles and account statuses',
     [Permission.CONTENT_ACCESS]: 'Access premium learning materials',
     [Permission.CONTENT_UPLOAD]: 'Upload videos and documents',
+    [Permission.CONTENT_APPROVE]: 'Approve or reject submitted content',
     [Permission.SYSTEM_SETTINGS]: 'Modify global platform configuration',
     [Permission.ANALYTICS_VIEW]: 'View learning and engagement metrics',
   };

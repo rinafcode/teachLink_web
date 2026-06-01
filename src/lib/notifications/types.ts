@@ -94,3 +94,24 @@ export interface NotificationDeliveryResult {
   error?: string;
   timestamp: Date;
 }
+
+export type RecommendationType =
+  | 'disable_category'
+  | 'add_channel'
+  | 'switch_digest'
+  | 'enable_quiet_hours'
+  | 'reduce_frequency'
+  | 'enable_sms';
+
+export interface NotificationRecommendation {
+  /** Stable deterministic ID — same inputs always produce the same ID. */
+  id: string;
+  type: RecommendationType;
+  title: string;
+  description: string;
+  impact: 'low' | 'medium' | 'high';
+  /** Ready-to-apply diff — pass directly to updatePreferences(). */
+  preferencePatch: Partial<UserNotificationPreferences>;
+  category?: NotificationCategory;
+  channel?: NotificationChannel;
+}

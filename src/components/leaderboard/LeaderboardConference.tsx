@@ -1,8 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { Trophy, Medal, Crown, Users, Plus, Trash2, Video } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import {
+  Trophy,
+  Medal,
+  Crown,
+  Users,
+  Plus,
+  Trash2,
+  Video,
+  ShieldAlert,
+  Lock,
+} from 'lucide-react';
 import { VideoConference } from '@/components/collaboration/VideoConference';
+import { fraudDetectionService, FraudDetectionService } from '@/services/fraud-detection';
+import type { ConferenceAccessCheck } from '@/services/fraud-detection';
 
 export interface LeaderboardEntry {
   id: string;
@@ -17,6 +29,8 @@ export interface Conference {
   name: string;
   roomId: string;
   participants: number;
+  hostUserId?: string;
+  locked?: boolean;
 }
 
 interface LeaderboardConferenceProps {
@@ -24,6 +38,7 @@ interface LeaderboardConferenceProps {
   conferences?: Conference[];
   currentUserId?: string;
   currentUserName?: string;
+  fraudService?: FraudDetectionService;
 }
 
 const RANK_ICONS = [
@@ -45,11 +60,13 @@ export function LeaderboardConference({
   conferences: initialConferences = [],
   currentUserId = 'guest',
   currentUserName = 'Guest',
+  fraudService = fraudDetectionService,
 }: LeaderboardConferenceProps) {
   const [conferences, setConferences] = useState<Conference[]>(initialConferences);
   const [activeConference, setActiveConference] = useState<Conference | null>(null);
   const [newConferenceName, setNewConferenceName] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [accessError, setAccessError] = useState<string | null>(null);
 
   const sorted = [...entries].sort((a, b) => a.rank - b.rank);
 
@@ -61,6 +78,8 @@ export function LeaderboardConference({
       name,
       roomId: `room-${Date.now()}`,
       participants: 0,
+      hostUserId: currentUserId,
+      locked: false,
     };
     setConferences((prev) => [...prev, conf]);
     setNewConferenceName('');
@@ -68,9 +87,49 @@ export function LeaderboardConference({
   };
 
   const handleDeleteConference = (id: string) => {
-    if (activeConference?.id === id) setActiveConference(null);
+    if (activeConference?.id === id) {
+      setActiveConference(null);
+    }
     setConferences((prev) => prev.filter((c) => c.id !== id));
   };
+
+  const handleJoinConference = useCallback(
+    (conf: Conference) => {
+      setAccessError(null);
+
+      if (conf.locked) {
+        setAccessError('This conference is locked by the host.');
+        return;
+      }
+
+      const accessCheck: ConferenceAccessCheck =
+        fraudService.checkConferenceAccess(
+          currentUserId,
+          conf.roomId,
+          conf.hostUserId === currentUserId,
+          conf.hostUserId,
+        );
+
+      if (!accessCheck.allowed) {
+        setAccessError(
+          accessCheck.reason ||
+            'Access denied by fraud detection.',
+        );
+        return;
+      }
+
+      if (accessCheck.requiresVerification) {
+        setAccessError(
+          accessCheck.reason || 'Access granted with monitoring.',
+        );
+      }
+
+      setActiveConference(
+        activeConference?.id === conf.id ? null : conf,
+      );
+    },
+    [activeConference, currentUserId, fraudService],
+  );
 
   return (
     <div className="space-y-6">
@@ -81,7 +140,9 @@ export function LeaderboardConference({
       >
         <div className="flex items-center gap-2 mb-4">
           <Trophy size={20} className="text-yellow-500" aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Leaderboard</h2>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Leaderboard
+          </h2>
         </div>
 
         <ol className="space-y-2" aria-label="Top participants">
@@ -90,9 +151,16 @@ export function LeaderboardConference({
               key={entry.id}
               className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
             >
-              <span className="w-6 flex justify-center" aria-label={`Rank ${entry.rank}`}>
-                {entry.rank <= 3 ? RANK_ICONS[entry.rank - 1] : (
-                  <span className="text-sm font-semibold text-slate-500">{entry.rank}</span>
+              <span
+                className="w-6 flex justify-center"
+                aria-label={`Rank ${entry.rank}`}
+              >
+                {entry.rank <= 3 ? (
+                  RANK_ICONS[entry.rank - 1]
+                ) : (
+                  <span className="text-sm font-semibold text-slate-500">
+                    {entry.rank}
+                  </span>
                 )}
               </span>
 
@@ -104,7 +172,10 @@ export function LeaderboardConference({
                 {entry.name}
               </span>
 
-              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400" aria-label={`${entry.score} points`}>
+              <span
+                className="text-sm font-semibold text-blue-600 dark:text-blue-400"
+                aria-label={`${entry.score} points`}
+              >
                 {entry.score.toLocaleString()} pts
               </span>
             </li>
@@ -120,7 +191,9 @@ export function LeaderboardConference({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Users size={20} className="text-blue-500" aria-hidden="true" />
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Conferences</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Conferences
+            </h2>
           </div>
           <button
             type="button"
@@ -139,7 +212,9 @@ export function LeaderboardConference({
               type="text"
               value={newConferenceName}
               onChange={(e) => setNewConferenceName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateConference()}
+              onKeyDown={(e) =>
+                e.key === 'Enter' && handleCreateConference()
+              }
               placeholder="Conference name"
               className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Conference name"
@@ -155,6 +230,23 @@ export function LeaderboardConference({
           </div>
         )}
 
+        {accessError && (
+          <div
+            className="mb-4 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400"
+            role="alert"
+          >
+            <ShieldAlert size={14} aria-hidden="true" />
+            {accessError}
+            <button
+              type="button"
+              onClick={() => setAccessError(null)}
+              className="ml-auto rounded-lg px-2 py-1 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/30"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {conferences.length === 0 ? (
           <p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
             No conferences yet. Create one to get started.
@@ -166,13 +258,30 @@ export function LeaderboardConference({
                 key={conf.id}
                 className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
               >
-                <Video size={16} className="text-slate-400 shrink-0" aria-hidden="true" />
+                {conf.locked ? (
+                  <Lock
+                    size={16}
+                    className="text-red-400 shrink-0"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Video
+                    size={16}
+                    className="text-slate-400 shrink-0"
+                    aria-hidden="true"
+                  />
+                )}
                 <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                   {conf.name}
+                  {conf.hostUserId === currentUserId && (
+                    <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">
+                      Host
+                    </span>
+                  )}
                 </span>
                 <button
                   type="button"
-                  onClick={() => setActiveConference(activeConference?.id === conf.id ? null : conf)}
+                  onClick={() => handleJoinConference(conf)}
                   className={`rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${
                     activeConference?.id === conf.id
                       ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400'
@@ -200,7 +309,16 @@ export function LeaderboardConference({
       {activeConference && (
         <VideoConference
           roomId={activeConference.roomId}
-          user={{ id: currentUserId, name: currentUserName, avatar: '', color: '#3b82f6' }}
+          user={{
+            id: currentUserId,
+            name: currentUserName,
+            avatar: '',
+            color: '#3b82f6',
+            isHost: activeConference.hostUserId === currentUserId,
+          }}
+          fraudService={fraudService}
+          isHost={activeConference.hostUserId === currentUserId}
+          hostUserId={activeConference.hostUserId}
         />
       )}
     </div>

@@ -22,3 +22,4 @@ export { BulkImporter } from './BulkImporter';
 export type { BulkImporterProps, TargetFieldDef } from './BulkImporter';
 export { Tooltip } from './ui/Tooltip';
 export type { TooltipProps, TooltipPlacement } from './ui/Tooltip';
+export * from './shared/ReleaseNotes';
