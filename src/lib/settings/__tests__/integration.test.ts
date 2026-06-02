@@ -514,5 +514,69 @@ describe('Settings System Integration', () => {
 
       expect(validation.valid).toBe(true);
     });
+
+    // ── Documentation Update Integration ───────────────────────────────────────────
+
+    describe('Documentation Update Integration', () => {
+      it('integrates documentation validation with settings workflow', () => {
+        const settings = createDefaultSettings();
+        const validation = SettingsService.validateSettings(settings);
+
+        expect(validation.valid).toBe(true);
+
+        const docValidation = SettingsService.validateDocumentationCompleteness();
+        expect(docValidation.valid).toBe(true);
+      });
+
+      it('ensures documentation metadata stays in sync with schema', () => {
+        const metadata = SettingsService.getDocumentationMetadata();
+        const settings = createDefaultSettings();
+
+        expect(metadata.schemaVersion).toBe(settings.version);
+        expect(Object.keys(metadata.fields)).toEqual(Object.keys(settings));
+      });
+
+      it('generates documentation update recommendations', () => {
+        const update = SettingsService.generateDocumentationUpdate();
+
+        expect(update).toHaveProperty('needsUpdate');
+        expect(update).toHaveProperty('summary');
+        expect(update).toHaveProperty('suggestions');
+
+        // Verify suggestions are actionable
+        if (update.needsUpdate) {
+          update.suggestions.forEach((suggestion) => {
+            expect(typeof suggestion).toBe('string');
+            expect(suggestion.length).toBeGreaterThan(0);
+          });
+        }
+      });
+
+      it('validates documentation completeness end-to-end', () => {
+        const metadata = SettingsService.getDocumentationMetadata();
+        const validation = SettingsService.validateDocumentationCompleteness();
+
+        expect(validation.valid).toBe(true);
+        expect(metadata.fields).toBeDefined();
+
+        // All schema fields should be documented
+        const defaultSettings = createDefaultSettings();
+        Object.keys(defaultSettings).forEach((field) => {
+          expect(metadata.fields[field]).toBeDefined();
+          expect(typeof metadata.fields[field]).toBe('string');
+        });
+      });
+
+      it('maintains documentation version consistency', () => {
+        const metadata = SettingsService.getDocumentationMetadata();
+
+        expect(metadata.version).toBeTruthy();
+        expect(metadata.lastUpdated).toBeTruthy();
+        expect(metadata.schemaVersion).toBe(SETTINGS_SCHEMA_VERSION);
+      });
+    });
+  });
+});
+    });
   });
 });

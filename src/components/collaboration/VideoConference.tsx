@@ -73,6 +73,8 @@ export function VideoConference({
     hostUserId,
   });
 
+  const virtualBackground = useVirtualBackground();
+
   const signalingUrl =
     websocketUrl || process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001';
 
