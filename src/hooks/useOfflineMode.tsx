@@ -155,6 +155,8 @@ export const useOfflineMode = () => {
         throw new Error('Offline mode not initialized');
       }
 
+      const existing = await storageRef.current.getProgress(courseId, moduleId);
+      const version = existing?.version ? existing.version + 1 : 1;
       const record: OfflineProgressRecord = {
         courseId,
         moduleId,
@@ -162,6 +164,7 @@ export const useOfflineMode = () => {
         completed,
         updatedAt: new Date().toISOString(),
         synced: false,
+        version,
       };
 
       await storageRef.current.saveProgress(record);

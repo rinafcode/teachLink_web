@@ -40,7 +40,9 @@ This frontend serves as the main user interface for interacting with TeachLink's
 
 - 🔐 **Starknet Wallet Integration** – Login and interact using Starknet-compatible wallets
 - 🧾 **Markdown-Based Post Editor** – Rich, previewable post creation using markdown
-- 💡 **Tipping System** – Send and receive on-chain tips via smart contracts
+- 💡 **Tipping System** – Send and receive on-chain tips via smart contracts, now with Special Interest Group routing
+- 📝 **Tip Notarization Service** – Proof-backed tip transactions with server-side notarization records
+- 📧 **Email Verification Recovery** – Durable verification, resend, and restore flows with server-backed state and backup codes
 - 🌙 **Dark/Light Theme Toggle** – Accessible theming using Tailwind CSS
 - 🔎 **Dynamic Routing with App Router** – Clean, scalable navigation
 - 📂 **Profile and Topic Pages** – View user-specific content and explore topic-specific posts
@@ -82,6 +84,9 @@ Create a `.env.local` with:
 ```ini
 NEXT_PUBLIC_STARKNET_NETWORK=testnet
 NEXT_PUBLIC_INDEXER_API_URL=https://indexer.teachlink.xyz
+NEXT_PUBLIC_SITE_URL=https://teachlink.app
+# Optional: overrides the verification recovery store location
+# EMAIL_VERIFICATION_STORE_PATH=.data/email-verification.json
 ```
 
 3. **Run the development server**

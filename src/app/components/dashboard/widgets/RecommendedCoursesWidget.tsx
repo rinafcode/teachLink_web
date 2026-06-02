@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AccessibleLoading } from '../../accessibility/ScreenReaderOptimizer';
 import { motion } from 'framer-motion';
 import { BookOpen, Star, Clock, Users, Settings } from 'lucide-react';
 import { getAllCourses } from '@/lib/course-config';
@@ -237,7 +238,7 @@ export const RecommendedCoursesWidget: React.FC<RecommendedCoursesWidgetProps> =
       </div>
 
       <div className="space-y-4 p-4">
-        {isLoading && <div className="text-sm text-gray-500">Loading...</div>}
+        {isLoading && <AccessibleLoading isLoading={true} message="Loading..." />}
         {error && <div className="text-sm text-red-600">{error}</div>}
         {recommendedCourses.map((course, index) => (
           <motion.div
