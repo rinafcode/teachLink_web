@@ -4,6 +4,7 @@
  * Import from '@/components' rather than '@/app/components' for shared pieces.
  */
 
+export * from './ui/Accordion';
 export { Button, buttonVariants } from './ui/Button';
 export type { ButtonProps } from './ui/Button';
 export { ButtonGroup } from './ui/ButtonGroup';

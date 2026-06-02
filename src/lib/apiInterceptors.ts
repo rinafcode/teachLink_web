@@ -61,8 +61,7 @@ export const loggingErrorInterceptor: ErrorInterceptor = async (error: Error) =>
 };
 
 export const authRefreshInterceptor: ErrorInterceptor = async (error: Error) => {
-  const isUnauthorized =
-    error.message?.includes('401') || error.message?.includes('Unauthorized');
+  const isUnauthorized = error.message?.includes('401') || error.message?.includes('Unauthorized');
 
   if (isUnauthorized && typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);

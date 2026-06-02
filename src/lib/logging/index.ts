@@ -10,9 +10,8 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 40,
 };
 
-const configuredLevel = ((process.env.LOG_LEVEL ||
-  process.env.NEXT_PUBLIC_LOG_LEVEL ||
-  'info') as LogLevel) || 'info';
+const configuredLevel =
+  ((process.env.LOG_LEVEL || process.env.NEXT_PUBLIC_LOG_LEVEL || 'info') as LogLevel) || 'info';
 
 const pinoLogger = pino({
   level: configuredLevel,
@@ -133,10 +132,7 @@ class Logger implements AppLogger {
   }
 }
 
-export function createLogger(
-  scope: string,
-  context: Record<string, unknown> = {},
-): AppLogger {
+export function createLogger(scope: string, context: Record<string, unknown> = {}): AppLogger {
   return new Logger(scope, context);
 }
 

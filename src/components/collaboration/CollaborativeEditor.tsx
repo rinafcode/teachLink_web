@@ -14,19 +14,15 @@ interface CollaborativeEditorProps {
 export function CollaborativeEditor({ roomId, user, websocketUrl }: CollaborativeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [chatDraft, setChatDraft] = useState('');
-  const {
-    connected,
-    status,
-    editorText,
-    users,
-    messages,
-    updateText,
-    updateCursor,
-    sendMessage,
-  } = useCollaboration(roomId, user, websocketUrl);
+  const { connected, status, editorText, users, messages, updateText, updateCursor, sendMessage } =
+    useCollaboration(roomId, user, websocketUrl);
 
   const activeUserCount = users.length;
-  const connectionStatus = connected ? 'Connected' : status === 'connecting' ? 'Connecting...' : 'Offline';
+  const connectionStatus = connected
+    ? 'Connected'
+    : status === 'connecting'
+    ? 'Connecting...'
+    : 'Offline';
 
   const handleTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     updateText(event.target.value);
@@ -49,18 +45,19 @@ export function CollaborativeEditor({ roomId, user, websocketUrl }: Collaborativ
     setChatDraft('');
   };
 
-  const recentMessages = useMemo(
-    () => messages.slice(-6).reverse(),
-    [messages],
-  );
+  const recentMessages = useMemo(() => messages.slice(-6).reverse(), [messages]);
 
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-gray-200 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Collaborative editor</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Live editing with shared cursors, presence, and integrated chat.</p>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Collaborative editor
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Live editing with shared cursors, presence, and integrated chat.
+            </p>
           </div>
           <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
             <CircleDot size={14} className={connected ? 'text-emerald-500' : 'text-amber-500'} />
@@ -89,12 +86,24 @@ export function CollaborativeEditor({ roomId, user, websocketUrl }: Collaborativ
 
             <div className="grid gap-3 sm:grid-cols-2">
               {users.map((participant) => (
-                <div key={participant.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+                <div
+                  key={participant.id}
+                  className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+                >
                   <div className="flex items-center gap-3">
-                    <img src={participant.avatar} alt={participant.name} className="h-10 w-10 rounded-full object-cover" />
+                    <img
+                      src={participant.avatar}
+                      alt={participant.name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
                     <div>
-                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{participant.name}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">{participant.cursor ? `Cursor line ${participant.cursor.line}` : 'Reading'} • {participant.isSharingScreen ? 'Sharing screen' : 'Editing'}</div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {participant.name}
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {participant.cursor ? `Cursor line ${participant.cursor.line}` : 'Reading'}{' '}
+                        • {participant.isSharingScreen ? 'Sharing screen' : 'Editing'}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -110,16 +119,26 @@ export function CollaborativeEditor({ roomId, user, websocketUrl }: Collaborativ
               <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
                 {recentMessages.length ? (
                   recentMessages.map((message) => (
-                    <div key={message.id} className="rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+                    <div
+                      key={message.id}
+                      className="rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+                    >
                       <div className="flex items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
                         <span>{message.userName}</span>
-                        <time dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+                        <time dateTime={message.createdAt}>
+                          {new Date(message.createdAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </time>
                       </div>
                       <p className="mt-2 leading-6">{message.text}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">No messages yet. Start the conversation to keep your team synced in real time.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    No messages yet. Start the conversation to keep your team synced in real time.
+                  </p>
                 )}
               </div>
               <div className="mt-4 flex items-center gap-2">

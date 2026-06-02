@@ -30,7 +30,7 @@ export function checkOfflineCapabilities(): boolean {
  */
 export async function promptPWAInstall(installEvent: any): Promise<boolean> {
   if (!installEvent) return false;
-  
+
   try {
     installEvent.prompt();
     const { outcome } = await installEvent.userChoice;
