@@ -39,8 +39,13 @@ export default function SignupPage() {
     {
       onSuccess: (data, variables) => {
         if (data.verification?.required) {
-          setSuccessMessage('Account created successfully! Check your email to verify your account.');
-          setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(variables.email)}`), 1500);
+          setSuccessMessage(
+            'Account created successfully! Check your email to verify your account.',
+          );
+          setTimeout(
+            () => router.push(`/verify-email?email=${encodeURIComponent(variables.email)}`),
+            1500,
+          );
           return;
         }
 

@@ -87,14 +87,14 @@ function normalizeQuizOutput(value: unknown, gradingPolicy?: CodeChallengeGradin
     typeof value === 'string'
       ? value
       : typeof value === 'number' || typeof value === 'boolean'
-        ? String(value)
-        : (() => {
-            try {
-              return JSON.stringify(value);
-            } catch {
-              return String(value);
-            }
-          })();
+      ? String(value)
+      : (() => {
+          try {
+            return JSON.stringify(value);
+          } catch {
+            return String(value);
+          }
+        })();
 
   let normalized = stringValue.replace(/\r\n/g, '\n').trim();
 
@@ -120,18 +120,17 @@ function gradeCodeChallengeSubmission(
   const hasPartialSuccess = passedTests > 0 && !hasPerfectScore;
   const allowsPartialCredit = question.gradingPolicy?.partialCredit ?? false;
 
-  const earnedPoints =
-    hasPerfectScore
-      ? question.points
-      : allowsPartialCredit && hasPartialSuccess
-        ? Math.max(1, Math.floor(question.points * passRate))
-        : 0;
+  const earnedPoints = hasPerfectScore
+    ? question.points
+    : allowsPartialCredit && hasPartialSuccess
+    ? Math.max(1, Math.floor(question.points * passRate))
+    : 0;
 
   const feedback: QuizFeedbackStatus = hasPerfectScore
     ? 'correct'
     : allowsPartialCredit && hasPartialSuccess
-      ? 'partial'
-      : 'incorrect';
+    ? 'partial'
+    : 'incorrect';
 
   return {
     isCorrect: hasPerfectScore,

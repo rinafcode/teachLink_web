@@ -23,4 +23,3 @@ export {
   createDefaultPreferences,
   validatePreferences,
 } from '@/utils/notificationUtils';
-

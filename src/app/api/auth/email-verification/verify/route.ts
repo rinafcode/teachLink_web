@@ -30,18 +30,25 @@ export async function GET(request: NextRequest): Promise<NextResponse<VerifyResp
   try {
     const token = extractToken(request);
     if (!token) {
-      return addHeaders(NextResponse.json({ message: 'Verification token is required' }, { status: 400 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Verification token is required' }, { status: 400 }),
+      );
     }
 
     const result = await verifyEmailToken(token);
 
     if (result.status === 'verified') {
-      return addHeaders(NextResponse.json({ message: 'Email verified', verification: { status: 'verified' } }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email verified', verification: { status: 'verified' } }),
+      );
     }
 
     if (result.status === 'already_verified') {
       return addHeaders(
-        NextResponse.json({ message: 'Email already verified', verification: { status: 'already_verified' } }),
+        NextResponse.json({
+          message: 'Email already verified',
+          verification: { status: 'already_verified' },
+        }),
       );
     }
 
@@ -70,18 +77,25 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyRes
 
     const token = payload.data.token ?? extractToken(request);
     if (!token) {
-      return addHeaders(NextResponse.json({ message: 'Verification token is required' }, { status: 400 }));
+      return addHeaders(
+        NextResponse.json({ message: 'Verification token is required' }, { status: 400 }),
+      );
     }
 
     const result = await verifyEmailToken(token);
 
     if (result.status === 'verified') {
-      return addHeaders(NextResponse.json({ message: 'Email verified', verification: { status: 'verified' } }));
+      return addHeaders(
+        NextResponse.json({ message: 'Email verified', verification: { status: 'verified' } }),
+      );
     }
 
     if (result.status === 'already_verified') {
       return addHeaders(
-        NextResponse.json({ message: 'Email already verified', verification: { status: 'already_verified' } }),
+        NextResponse.json({
+          message: 'Email already verified',
+          verification: { status: 'already_verified' },
+        }),
       );
     }
 

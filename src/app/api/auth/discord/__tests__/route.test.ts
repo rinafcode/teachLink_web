@@ -33,7 +33,9 @@ describe('Discord OAuth API Route', () => {
       const response = await GET(mockRequest);
 
       expect(response.status).toBe(302); // Redirect status
-      expect(response.headers.get('location')).toBe('https://discord.com/oauth2/authorize?test=param');
+      expect(response.headers.get('location')).toBe(
+        'https://discord.com/oauth2/authorize?test=param',
+      );
     });
 
     it('should set state cookie', async () => {

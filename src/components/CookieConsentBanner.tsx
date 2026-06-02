@@ -101,10 +101,7 @@ export function CookieConsentBanner() {
             <p id={titleId} className="text-sm font-semibold text-gray-900 dark:text-gray-50">
               Cookie Preferences
             </p>
-            <p
-              id={`${titleId}-desc`}
-              className="mt-0.5 text-sm text-gray-600 dark:text-gray-400"
-            >
+            <p id={`${titleId}-desc`} className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
               We use cookies to improve your experience. You can accept all cookies or reject
               non-essential ones.{' '}
               <a

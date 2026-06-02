@@ -44,7 +44,9 @@ export const ResendVerificationRequestSchema = z.object({
 
 export const RestoreVerificationRequestSchema = z.object({
   email: z.string({ required_error: 'Email is required' }).email('Invalid email address'),
-  backupCode: z.string({ required_error: 'Backup code is required' }).min(1, 'Backup code is required'),
+  backupCode: z
+    .string({ required_error: 'Backup code is required' })
+    .min(1, 'Backup code is required'),
 });
 
 export type VerifyEmailRequestDTO = z.infer<typeof VerifyEmailRequestSchema>;

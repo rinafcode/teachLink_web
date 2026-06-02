@@ -156,7 +156,11 @@ describe('email verification store', () => {
 
     const originalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     process.env.NEXT_PUBLIC_SITE_URL = 'https://teachlink.example';
-    const mailContext = buildVerificationMailContext(created.record, created.verificationToken, created.backupCode);
+    const mailContext = buildVerificationMailContext(
+      created.record,
+      created.verificationToken,
+      created.backupCode,
+    );
     if (originalSiteUrl === undefined) {
       delete process.env.NEXT_PUBLIC_SITE_URL;
     } else {

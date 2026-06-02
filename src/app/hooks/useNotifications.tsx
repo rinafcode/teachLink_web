@@ -365,7 +365,9 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         next.add(id);
         try {
           localStorage.setItem(DISMISSED_RECOMMENDATIONS_KEY, JSON.stringify([...next]));
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         return next;
       });
     },
@@ -379,7 +381,9 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       next.add(id);
       try {
         localStorage.setItem(DISMISSED_RECOMMENDATIONS_KEY, JSON.stringify([...next]));
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       return next;
     });
   }, []);

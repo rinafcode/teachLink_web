@@ -35,7 +35,7 @@ class DataWarehouseService {
     if (process.env.NODE_ENV !== 'test') {
       console.log('[DataWarehouse] Event tracked:', JSON.stringify(payload, null, 2));
     }
-    
+
     // In a real implementation, you would do something like:
     // await fetch('https://api.datawarehouse.com/track', { method: 'POST', body: JSON.stringify(payload) })
   }

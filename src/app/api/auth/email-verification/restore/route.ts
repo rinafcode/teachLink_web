@@ -14,7 +14,10 @@ import { notificationService } from '@/services/notifications';
 export const runtime = 'nodejs';
 
 type RestoreResponseDTO =
-  | { message: string; verification: { status: 'pending' | 'already_verified' | 'expired' | 'not_found' } }
+  | {
+      message: string;
+      verification: { status: 'pending' | 'already_verified' | 'expired' | 'not_found' };
+    }
   | AuthErrorDTO;
 
 export async function POST(request: NextRequest): Promise<NextResponse<RestoreResponseDTO>> {
@@ -28,7 +31,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<RestoreRe
     const result = await restoreVerificationEmail(payload.data);
 
     if ('verificationToken' in result) {
-      const mailContext = buildVerificationMailContext(result.record, result.verificationToken, result.backupCode);
+      const mailContext = buildVerificationMailContext(
+        result.record,
+        result.verificationToken,
+        result.backupCode,
+      );
       await notificationService.sendEmailVerificationEmail(mailContext);
 
       return addHeaders(
@@ -41,7 +48,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<RestoreRe
 
     if (result.status === 'already_verified') {
       return addHeaders(
-        NextResponse.json({ message: 'Email already verified', verification: { status: 'already_verified' } }),
+        NextResponse.json({
+          message: 'Email already verified',
+          verification: { status: 'already_verified' },
+        }),
       );
     }
 
@@ -55,7 +65,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<RestoreRe
     }
 
     return addHeaders(
-      NextResponse.json({ message: 'Backup code expired', verification: { status: 'expired' } }, { status: 410 }),
+      NextResponse.json(
+        { message: 'Backup code expired', verification: { status: 'expired' } },
+        { status: 410 },
+      ),
     );
   } catch (error) {
     edgeLog('error', '/api/auth/email-verification/restore', 'Unhandled restore error', {
@@ -65,4 +78,3 @@ export async function POST(request: NextRequest): Promise<NextResponse<RestoreRe
     return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
 }
-

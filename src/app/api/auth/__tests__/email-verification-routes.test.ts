@@ -31,8 +31,12 @@ vi.mock('@/lib/auth/email-verification', () => ({
   buildVerificationMailContext: vi.fn((record, verificationToken, backupCode) => ({
     email: record.email,
     name: record.name,
-    verificationUrl: `https://teachlink.test/verify-email?token=${verificationToken}&email=${encodeURIComponent(record.email)}`,
-    restoreUrl: `https://teachlink.test/verify-email?restore=1&email=${encodeURIComponent(record.email)}`,
+    verificationUrl: `https://teachlink.test/verify-email?token=${verificationToken}&email=${encodeURIComponent(
+      record.email,
+    )}`,
+    restoreUrl: `https://teachlink.test/verify-email?restore=1&email=${encodeURIComponent(
+      record.email,
+    )}`,
     backupCode,
     expiresInMinutes: 15,
   })),
@@ -119,9 +123,12 @@ describe('email verification routes', () => {
     const { verifyEmailToken } = await import('@/lib/auth/email-verification');
     vi.mocked(verifyEmailToken).mockResolvedValue({ status: 'verified' });
 
-    const request = new Request('http://localhost/api/auth/email-verification/verify?token=test-token', {
-      method: 'GET',
-    }) as any;
+    const request = new Request(
+      'http://localhost/api/auth/email-verification/verify?token=test-token',
+      {
+        method: 'GET',
+      },
+    ) as any;
 
     const response = await verifyGET(request);
 
@@ -220,4 +227,3 @@ describe('email verification routes', () => {
     expect(body.verification.status).toBe('pending');
   });
 });
-

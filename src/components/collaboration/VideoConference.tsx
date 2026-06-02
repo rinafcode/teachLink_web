@@ -1,7 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Video, Monitor, Phone, VideoOff, MicOff, ShieldAlert, AlertTriangle } from 'lucide-react';
+import {
+  Mic,
+  Video,
+  Monitor,
+  Phone,
+  VideoOff,
+  MicOff,
+  ShieldAlert,
+  AlertTriangle,
+} from 'lucide-react';
 import { io, type Socket } from 'socket.io-client';
 import type { CollaborationUser } from '../../hooks/useCollaboration';
 import { useFraudDetection } from '../../hooks/useFraudDetection';
@@ -65,9 +74,7 @@ export function VideoConference({
   });
 
   const signalingUrl =
-    websocketUrl ||
-    process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
-    'http://localhost:3001';
+    websocketUrl || process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001';
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -100,9 +107,7 @@ export function VideoConference({
       if (userId === user.id) return;
       await createPeerConnection();
       if (!pcRef.current) return;
-      await pcRef.current.setRemoteDescription(
-        new RTCSessionDescription(offer),
-      );
+      await pcRef.current.setRemoteDescription(new RTCSessionDescription(offer));
       const answer = await pcRef.current.createAnswer();
       await pcRef.current.setLocalDescription(answer);
       socket.emit('webrtc-answer', { roomId, answer, userId: user.id });
@@ -113,9 +118,7 @@ export function VideoConference({
     socket.on('webrtc-answer', async ({ answer, userId }: SignalingAnswer) => {
       if (userId === user.id) return;
       if (!pcRef.current) return;
-      await pcRef.current.setRemoteDescription(
-        new RTCSessionDescription(answer),
-      );
+      await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
       setCallActive(true);
       setStatus('Call established');
     });
@@ -235,9 +238,7 @@ export function VideoConference({
     if (!stream) return;
 
     const peerConnection = await createPeerConnection();
-    stream
-      .getTracks()
-      .forEach((track) => peerConnection.addTrack(track, stream));
+    stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
 
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
@@ -351,8 +352,8 @@ export function VideoConference({
                   fraud.fraudScore >= 50
                     ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
                     : fraud.fraudScore >= 20
-                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
-                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
                 }`}
                 title={`Fraud score: ${fraud.fraudScore}`}
               >
@@ -401,9 +402,7 @@ export function VideoConference({
                 playsInline
                 className="h-72 w-full object-cover"
               />
-              <div className="p-3 text-sm text-slate-200">
-                Remote participant
-              </div>
+              <div className="p-3 text-sm text-slate-200">Remote participant</div>
             </div>
           </div>
 
@@ -435,17 +434,14 @@ export function VideoConference({
                 Access restricted
               </div>
               <p className="mt-1 text-xs">
-                {fraud.accessCheck.reason ||
-                  'Access to this conference is restricted.'}
+                {fraud.accessCheck.reason || 'Access to this conference is restricted.'}
               </p>
             </div>
           )}
         </div>
 
         <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Controls
-          </div>
+          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Controls</div>
           <button
             type="button"
             onClick={toggleCamera}
@@ -465,16 +461,13 @@ export function VideoConference({
             onClick={toggleScreenShare}
             className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           >
-            <Monitor size={16} />{' '}
-            {sharingScreen ? 'Stop screen share' : 'Share screen'}
+            <Monitor size={16} /> {sharingScreen ? 'Stop screen share' : 'Share screen'}
           </button>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
             <div className="flex items-center gap-2">
               <Mic size={14} />
-              <span>
-                {microphoneEnabled ? 'Microphone active' : 'Microphone muted'}
-              </span>
+              <span>{microphoneEnabled ? 'Microphone active' : 'Microphone muted'}</span>
             </div>
             <div className="mt-3 flex items-center gap-2">
               <Video size={14} />
