@@ -148,7 +148,7 @@ export default function TipForm({ recipient }: TipFormProps) {
         />
       </div>
 
-      {error ? (
+      {error && (
         <p
           role="alert"
           data-testid="tip-error"
