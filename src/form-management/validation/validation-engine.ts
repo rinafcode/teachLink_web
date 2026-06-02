@@ -168,14 +168,19 @@ export class ValidationEngineImpl implements ValidationEngine {
   /**
    * Execute asynchronous validation for a field
    */
-  async executeAsyncValidation(fieldId: string, value: any, context?: FormState): Promise<ValidationResult> {
+  async executeAsyncValidation(
+    fieldId: string,
+    value: any,
+    context?: FormState,
+  ): Promise<ValidationResult> {
     const fieldDescriptor = this.fieldDescriptors.get(fieldId);
     if (!fieldDescriptor) {
       return { isValid: true, errors: [] };
     }
 
     const asyncRules = fieldDescriptor.validation.filter(
-      (rule) => rule.type === 'async' || rule.type === 'imageDimensions' || rule.type === 'imageOptimize'
+      (rule) =>
+        rule.type === 'async' || rule.type === 'imageDimensions' || rule.type === 'imageOptimize',
     );
     if (asyncRules.length === 0) {
       return { isValid: true, errors: [] };
@@ -594,7 +599,8 @@ export class ValidationEngineImpl implements ValidationEngine {
         errors: [
           {
             code: 'fileType',
-            message: rule.message || `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`,
+            message:
+              rule.message || `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`,
           },
         ],
       };
@@ -603,7 +609,10 @@ export class ValidationEngineImpl implements ValidationEngine {
     return { isValid: true, errors: [] };
   }
 
-  private async validateImageDimensions(value: any, rule: ValidationRule): Promise<ValidationResult> {
+  private async validateImageDimensions(
+    value: any,
+    rule: ValidationRule,
+  ): Promise<ValidationResult> {
     if (!value) {
       return { isValid: true, errors: [] };
     }
@@ -620,7 +629,12 @@ export class ValidationEngineImpl implements ValidationEngine {
 
     try {
       const { validateImageDimensions } = await import('./image-optimizer.js');
-      const result = await validateImageDimensions(file, { minWidth, maxWidth, minHeight, maxHeight });
+      const result = await validateImageDimensions(file, {
+        minWidth,
+        maxWidth,
+        minHeight,
+        maxHeight,
+      });
 
       if (!result.isValid) {
         return {
@@ -639,7 +653,9 @@ export class ValidationEngineImpl implements ValidationEngine {
         errors: [
           {
             code: 'imageDimensionsError',
-            message: `Dimensions check failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+            message: `Dimensions check failed: ${
+              error instanceof Error ? error.message : 'unknown error'
+            }`,
           },
         ],
       };
@@ -703,7 +719,11 @@ export class ValidationEngineImpl implements ValidationEngine {
         errors: [
           {
             code: 'imageOptimizeError',
-            message: rule.message || `Failed to optimize image: ${error instanceof Error ? error.message : 'unknown error'}`,
+            message:
+              rule.message ||
+              `Failed to optimize image: ${
+                error instanceof Error ? error.message : 'unknown error'
+              }`,
           },
         ],
       };

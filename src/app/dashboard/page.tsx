@@ -5,6 +5,7 @@ import { CardSkeleton, ListSkeleton } from '@/components/ui/LoadingSkeleton';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatusIndicator';
 import { DownloadManager } from '@/components/offline/DownloadManager';
 import { useInternationalization } from '@/hooks/useInternationalization';
+import { SidebarNavigation } from '@/components/navigation/SidebarNavigation';
 
 export default function Dashboard() {
   const { isLoading } = useDashboardData();

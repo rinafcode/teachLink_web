@@ -5,5 +5,5 @@
  * Components will be implemented in subsequent tasks.
  */
 
-// Components will be exported here as they are implemented
-export {};
+export { FormWizardController, WizardStepContent } from '../../components/forms/FormWizardController';
+export { DynamicFormBuilder } from '../../components/forms/DynamicFormBuilder';

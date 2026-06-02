@@ -1,8 +1,9 @@
 'use client';
 
+import { memo } from 'react';
 import { useFormContext } from 'react-hook-form';
 
-export default function PreferencesSection() {
+function PreferencesSection() {
   const { register } = useFormContext();
 
   return (
@@ -86,3 +87,5 @@ export default function PreferencesSection() {
     </div>
   );
 }
+
+export default memo(PreferencesSection);

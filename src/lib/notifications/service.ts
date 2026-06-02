@@ -66,9 +66,7 @@ export class NotificationService {
     const category = notification.category || 'system';
     const channels = notification.channels || ['in-app'];
 
-    return channels.some((channel) =>
-      shouldSendNotification(category, channel, preferences),
-    );
+    return channels.some((channel) => shouldSendNotification(category, channel, preferences));
   }
 
   /**
@@ -105,9 +103,10 @@ export class NotificationService {
   /**
    * Validate notification preferences
    */
-  static validatePreferences(
-    prefs: Partial<UserNotificationPreferences>,
-  ): { valid: boolean; errors: string[] } {
+  static validatePreferences(prefs: Partial<UserNotificationPreferences>): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (prefs.channels) {

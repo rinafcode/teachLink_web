@@ -11,12 +11,7 @@ interface FilterHelpPopoverProps {
   onClose: () => void;
 }
 
-export function FilterHelpPopover({
-  content,
-  isOpen,
-  onToggle,
-  onClose,
-}: FilterHelpPopoverProps) {
+export function FilterHelpPopover({ content, isOpen, onToggle, onClose }: FilterHelpPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -97,10 +92,7 @@ export function FilterHelpPopover({
               </h5>
               <ul className="space-y-1">
                 {content.tips.map((tip, i) => (
-                  <li
-                    key={i}
-                    className="text-xs text-slate-500 dark:text-slate-400 pl-4 -indent-3"
-                  >
+                  <li key={i} className="text-xs text-slate-500 dark:text-slate-400 pl-4 -indent-3">
                     <span className="mr-1 text-blue-400">{'>'}</span>
                     {tip}
                   </li>

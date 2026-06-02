@@ -31,12 +31,13 @@ Since GitHub CLI isn't authenticated, create the PR manually:
 1. **Navigate to:** https://github.com/1sraeliteX/teachLink_web
 
 2. **Create PR with:**
+
    - **Base:** `main`
    - **Compare:** `feature/449-certificate-generation-pentest`
    - **Title:** `feat: harden certificate generation with pentest mitigations (#449)`
    - **Description:** Use content from `PR_TEMPLATE.md` in this repo
 
-3. **Alternative (CLI):** 
+3. **Alternative (CLI):**
    ```bash
    gh auth login  # Authenticate first
    gh pr create --title "feat: harden certificate generation with pentest mitigations (#449)" \
@@ -49,6 +50,7 @@ Since GitHub CLI isn't authenticated, create the PR manually:
 ## 📁 Deliverables Summary
 
 ### Documentation (3 files)
+
 ```
 docs/security/certificate-generation.md (552 lines)
 ├─ Threat model (T1-T8)
@@ -74,6 +76,7 @@ CERTIFICATE_IMPLEMENTATION_SUMMARY.md (400 lines)
 ```
 
 ### Code (7 files)
+
 ```
 src/schemas/certificate.schema.ts (83 lines)
 ├─ Input validation with sanitization
@@ -114,6 +117,7 @@ src/app/api/certificates/__tests__/certificate-security.test.ts (450 lines)
 ```
 
 ### Supporting Files
+
 ```
 AUDIT_COMPLETE.md (400 lines)
 ├─ Complete audit report
@@ -136,16 +140,16 @@ DEPLOYMENT_READY.md (this file)
 
 ### All 8 Threats Mitigated
 
-| Threat | Code Location | Test | Status |
-|--------|---------------|------|--------|
-| T1 - IDOR | `[id]/route.ts:59-75` | `test_certificate_idor_blocked` | ✅ |
-| T2 - Injection | `certificate.schema.ts:11-24` | `test_certificate_input_sanitization` | ✅ |
-| T3 - Forgery | `certificate-service.ts:78-160` | `test_certificate_verification` | ✅ |
-| T4 - Auth | All routes line 1-10 | `test_certificate_generation_requires_auth` | ✅ |
-| T5 - Rate Limiting | `generate/route.ts:31-60` | `test_certificate_rate_limit` | ✅ |
-| T6 - Storage | `[id]/download/route.ts:170-180` | Implicit | ✅ |
-| T7 - Enumeration | `certificate-service.ts:190-210` | `test_certificate_id_is_uuid` | ✅ |
-| T8 - Audit Logging | All routes (13 calls) | `test_audit_log_on_generation` | ✅ |
+| Threat             | Code Location                    | Test                                        | Status |
+| ------------------ | -------------------------------- | ------------------------------------------- | ------ |
+| T1 - IDOR          | `[id]/route.ts:59-75`            | `test_certificate_idor_blocked`             | ✅     |
+| T2 - Injection     | `certificate.schema.ts:11-24`    | `test_certificate_input_sanitization`       | ✅     |
+| T3 - Forgery       | `certificate-service.ts:78-160`  | `test_certificate_verification`             | ✅     |
+| T4 - Auth          | All routes line 1-10             | `test_certificate_generation_requires_auth` | ✅     |
+| T5 - Rate Limiting | `generate/route.ts:31-60`        | `test_certificate_rate_limit`               | ✅     |
+| T6 - Storage       | `[id]/download/route.ts:170-180` | Implicit                                    | ✅     |
+| T7 - Enumeration   | `certificate-service.ts:190-210` | `test_certificate_id_is_uuid`               | ✅     |
+| T8 - Audit Logging | All routes (13 calls)            | `test_audit_log_on_generation`              | ✅     |
 
 ---
 
@@ -154,6 +158,7 @@ DEPLOYMENT_READY.md (this file)
 ### Pre-Production Blockers
 
 1. **Course Completion Integration** ⚠️
+
    - Status: Mock implementation
    - Impact: Cannot verify actual course completion
    - Fix: Connect `getCourseCompletion()` to enrollment database
@@ -168,6 +173,7 @@ DEPLOYMENT_READY.md (this file)
 ### Nice-to-Have Before Prod
 
 3. **PDF Generation Timeout**
+
    - Status: TODO
    - Effort: ~1 hour
    - See: `src/app/api/certificates/[id]/download/route.ts:105-108`
@@ -182,11 +188,13 @@ DEPLOYMENT_READY.md (this file)
 ## 🧪 Testing
 
 ### Run Tests
+
 ```bash
 npm test -- src/app/api/certificates/__tests__/certificate-security.test.ts
 ```
 
 ### Test Coverage
+
 - ✅ 40+ test cases
 - ✅ All threat vectors
 - ✅ Happy path + error cases
@@ -194,6 +202,7 @@ npm test -- src/app/api/certificates/__tests__/certificate-security.test.ts
 - ✅ Framework: Vitest (matches project)
 
 ### Manual Testing
+
 See `CERTIFICATE_SECURITY_IMPLEMENTATION.md` for penetration testing checklist.
 
 ---
@@ -217,6 +226,7 @@ See `CERTIFICATE_SECURITY_IMPLEMENTATION.md` for penetration testing checklist.
 **Current Branch:** `feature/449-certificate-generation-pentest`
 
 **Commit:** `4b5bf73`
+
 ```
 feat: harden certificate generation with pentest mitigations (#449)
 
@@ -229,6 +239,7 @@ feat: harden certificate generation with pentest mitigations (#449)
 **Pushed to:** `origin/feature/449-certificate-generation-pentest`
 
 **Local Status:**
+
 ```
 nothing to commit, working tree clean
 ```
@@ -257,16 +268,19 @@ nothing to commit, working tree clean
 ## 🎯 Next Steps
 
 ### Immediately
+
 1. Create PR on GitHub
 2. Share PR link for review
 3. Address code review feedback
 
 ### Before Merge
+
 1. Code review approval
 2. Security review (optional)
 3. Run full test suite: `npm test`
 
 ### Before Production
+
 1. ✅ Complete course completion integration
 2. ✅ Migrate certificate store to database
 3. ✅ Add PDF generation timeout
@@ -276,6 +290,7 @@ nothing to commit, working tree clean
 7. Deploy to production
 
 ### After Merge
+
 1. Close issue #449
 2. Update release notes
 3. Notify stakeholders
@@ -286,6 +301,7 @@ nothing to commit, working tree clean
 ## 📞 Support
 
 For questions about:
+
 - **Implementation:** See `CERTIFICATE_SECURITY_IMPLEMENTATION.md`
 - **Security:** See `docs/security/certificate-generation.md`
 - **Deployment:** See `DEPLOYMENT_READY.md` (this file)
@@ -295,20 +311,20 @@ For questions about:
 
 ## 📊 Metrics
 
-| Metric | Value |
-|--------|-------|
-| Files Created | 12 |
-| Total Lines | ~3,200 |
-| Code Lines | ~1,900 |
-| Test Lines | 450+ |
-| Documentation | ~2,000 |
-| Threats Mitigated | 8/8 |
-| Test Cases | 40+ |
-| API Endpoints | 4 |
-| Security Checks | 13+ per request |
-| Estimated Effort | 40 hours |
-| Performance Overhead | ~65ms/request |
-| Breaking Changes | 0 |
+| Metric               | Value           |
+| -------------------- | --------------- |
+| Files Created        | 12              |
+| Total Lines          | ~3,200          |
+| Code Lines           | ~1,900          |
+| Test Lines           | 450+            |
+| Documentation        | ~2,000          |
+| Threats Mitigated    | 8/8             |
+| Test Cases           | 40+             |
+| API Endpoints        | 4               |
+| Security Checks      | 13+ per request |
+| Estimated Effort     | 40 hours        |
+| Performance Overhead | ~65ms/request   |
+| Breaking Changes     | 0               |
 
 ---
 

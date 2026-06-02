@@ -45,9 +45,18 @@ function ThemeToggleControl() {
     typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false;
 
   const handleToggle = () => {
-    const next = prefersDark ? 'light' : 'dark';
-    setTheme(next);
-    patchSettings({ theme: next });
+    try {
+      const next = prefersDark ? 'light' : 'dark';
+      setTheme(next);
+      patchSettings({ theme: next });
+    } catch (err) {
+      if (typeof errorReportingService?.reportError === 'function') {
+        errorReportingService.reportError(err instanceof Error ? err : new Error(String(err)), {
+          component: 'ThemeToggle',
+          action: 'handleToggle',
+        });
+      }
+    }
   };
 
   return (

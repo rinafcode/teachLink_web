@@ -6,13 +6,7 @@ export type TicketPriority = z.infer<typeof TicketPrioritySchema>;
 export const TicketStatusSchema = z.enum(['open', 'in_progress', 'resolved', 'closed']);
 export type TicketStatus = z.infer<typeof TicketStatusSchema>;
 
-export const TicketCategorySchema = z.enum([
-  'billing',
-  'technical',
-  'account',
-  'content',
-  'other',
-]);
+export const TicketCategorySchema = z.enum(['billing', 'technical', 'account', 'content', 'other']);
 export type TicketCategory = z.infer<typeof TicketCategorySchema>;
 
 /**

@@ -73,20 +73,20 @@ src/
 
 The system includes the following legacy privacy policy URLs that redirect to `/privacy`:
 
-| From | To | Status | Query Params | Hash |
-|------|-----|--------|-------------|------|
-| `/privacy-policy` | `/privacy` | 308 | ✓ | ✓ |
-| `/privacy-notice` | `/privacy` | 308 | ✓ | ✗ |
-| `/policies/privacy` | `/privacy` | 308 | ✓ | ✗ |
-| `/legal/privacy` | `/privacy` | 308 | ✓ | ✗ |
-| `/legal/privacy-policy` | `/privacy` | 308 | ✓ | ✗ |
+| From                    | To         | Status | Query Params | Hash |
+| ----------------------- | ---------- | ------ | ------------ | ---- |
+| `/privacy-policy`       | `/privacy` | 308    | ✓            | ✓    |
+| `/privacy-notice`       | `/privacy` | 308    | ✓            | ✗    |
+| `/policies/privacy`     | `/privacy` | 308    | ✓            | ✗    |
+| `/legal/privacy`        | `/privacy` | 308    | ✓            | ✗    |
+| `/legal/privacy-policy` | `/privacy` | 308    | ✓            | ✗    |
 
 ### Global Redirects
 
-| From | To | Status | Query Params | Hash |
-|------|-----|--------|-------------|------|
-| `/terms-of-service` | `/terms` | 308 | ✓ | ✗ |
-| `/tos` | `/terms` | 308 | ✓ | ✗ |
+| From                | To       | Status | Query Params | Hash |
+| ------------------- | -------- | ------ | ------------ | ---- |
+| `/terms-of-service` | `/terms` | 308    | ✓            | ✗    |
+| `/tos`              | `/terms` | 308    | ✓            | ✗    |
 
 ### HTTP Status Codes
 
@@ -132,22 +132,22 @@ export const GLOBAL_REDIRECTS: RedirectRule[] = [
 interface RedirectRule {
   // Source URL pattern (supports wildcards)
   from: string;
-  
+
   // Destination URL
   to: string;
-  
+
   // HTTP status code (default: 308)
   status?: number;
-  
+
   // Preserve query parameters (default: true)
   preserveQuery?: boolean;
-  
+
   // Preserve hash fragment (default: false)
   preserveHash?: boolean;
-  
+
   // Locale-specific (applies to all if undefined)
   locales?: string[];
-  
+
   // Track as legacy redirect
   isLegacy?: boolean;
 }
@@ -210,10 +210,12 @@ Enable with `preserveHash: true`:
 ### Optimization Strategies
 
 1. **Early Redirect in Middleware**
+
    - Redirects are handled at the middleware level (before route processing)
    - Reduces computational overhead for legacy URLs
 
 2. **Efficient Pattern Matching**
+
    - Exact matches checked first (O(1))
    - Wildcard patterns use compiled regex (O(n) worst case)
 
@@ -237,6 +239,7 @@ Enable with `preserveHash: true`:
 ### 1. Open Redirect Prevention
 
 The system validates redirect destinations:
+
 - Only relative URLs allowed (no protocol/domain changes)
 - Query parameters are URL-encoded
 - No user-controlled redirect destinations
@@ -265,6 +268,7 @@ The system validates redirect destinations:
 Located in `src/lib/__tests__/redirectManagement.test.ts`
 
 **Coverage:**
+
 - Rule matching (exact, wildcard, locale-specific)
 - Query parameter preservation
 - Hash fragment handling
@@ -272,6 +276,7 @@ Located in `src/lib/__tests__/redirectManagement.test.ts`
 - Edge cases (empty params, special characters)
 
 **Run tests:**
+
 ```bash
 pnpm test src/lib/__tests__/redirectManagement.test.ts
 ```
@@ -281,6 +286,7 @@ pnpm test src/lib/__tests__/redirectManagement.test.ts
 Located in `src/middleware/__tests__/redirectManagement.test.ts`
 
 **Coverage:**
+
 - Middleware integration
 - Locale extraction from cookies and paths
 - Multiple redirect chains
@@ -288,6 +294,7 @@ Located in `src/middleware/__tests__/redirectManagement.test.ts`
 - Complex query parameters
 
 **Run tests:**
+
 ```bash
 pnpm test src/middleware/__tests__/redirectManagement.test.ts
 ```
@@ -297,6 +304,7 @@ pnpm test src/middleware/__tests__/redirectManagement.test.ts
 Located in `src/app/privacy/__tests__/privacy-page.test.tsx`
 
 **Coverage:**
+
 - Privacy page rendering
 - Multi-language support
 - Accessibility structure
@@ -304,6 +312,7 @@ Located in `src/app/privacy/__tests__/privacy-page.test.tsx`
 - Links and navigation
 
 **Run tests:**
+
 ```bash
 pnpm test src/app/privacy/__tests__/privacy-page.test.tsx
 ```
@@ -328,21 +337,25 @@ curl -L http://localhost:3000/privacy-policy?utm_source=test
 ### Privacy Policy Page
 
 ✓ **Semantic HTML**
+
 - Proper heading hierarchy (h1, h2, h3)
 - Semantic article, header, footer, nav elements
 - `role="main"` on main content
 
 ✓ **Navigation**
+
 - Table of contents with anchor links
 - Skip links support
 - Keyboard navigation (Tab, Enter)
 
 ✓ **Screen Reader Support**
+
 - `aria-label` on main content area
 - Descriptive link text
 - Proper `<time>` tag for dates
 
 ✓ **Visual Accessibility**
+
 - Sufficient color contrast (WCAG AA compliant)
 - Readable font sizes (16px base)
 - Proper line spacing
@@ -429,12 +442,14 @@ export async function logRedirect(entry: RedirectLog): Promise<void> {
 ### Issue: Redirect Not Working
 
 **Check:**
+
 1. Rule exists in `ALL_REDIRECTS`
 2. Pathname matches rule pattern
 3. Locale restrictions (if any)
 4. Middleware is enabled
 
 **Debug:**
+
 ```typescript
 import { shouldRedirect } from '@/lib/redirectManagement';
 
@@ -457,6 +472,7 @@ console.log('Should redirect:', should); // Should be true
 ### Issue: Wrong Locale Redirect
 
 **Check:**
+
 1. Cookie value: `i18n:language`
 2. Locale-specific rules match user's locale
 3. No conflicting global rules
@@ -491,6 +507,7 @@ console.log('Should redirect:', should); // Should be true
 ## Support
 
 For questions or issues:
+
 - Email: privacy@teachlink.com
 - Documentation: See inline code comments
 - Tests: See test files for usage examples

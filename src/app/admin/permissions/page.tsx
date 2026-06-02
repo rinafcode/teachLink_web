@@ -29,72 +29,74 @@ export default function PermissionsManagementPage() {
               <div className="flex gap-3">
                 <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                 <p className="text-sm text-blue-800 dark:text-blue-300">
-                  <strong>Note:</strong> Permissions are currently read-only in this version. Changes
-                  must be applied to the <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded">acl.ts</code> configuration.
+                  <strong>Note:</strong> Permissions are currently read-only in this version.
+                  Changes must be applied to the{' '}
+                  <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded">acl.ts</code>{' '}
+                  configuration.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-      <div className="overflow-x-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50 dark:bg-gray-800/50">
-              <th className="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-300">
-                Permission / Role
-              </th>
-              {roles.map((role) => (
-                <th
-                  key={role}
-                  className="p-4 border-b border-gray-200 dark:border-gray-700 font-bold text-center text-gray-900 dark:text-white"
-                >
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs uppercase ${getRoleColor(role)}`}
-                  >
-                    {role}
-                  </span>
+        <div className="overflow-x-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 dark:bg-gray-800/50">
+                <th className="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-300">
+                  Permission / Role
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {allPermissions.map((permission) => (
-              <tr
-                key={permission}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
-              >
-                <td className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="font-medium text-gray-800 dark:text-gray-200">{permission}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {getPermissionDesc(permission)}
-                  </div>
-                </td>
-                {roles.map((role) => {
-                  const hasAccess = ROLES_PERMISSIONS[role].includes(permission);
-                  return (
-                    <td
-                      key={`${role}-${permission}`}
-                      className="p-4 border-b border-gray-200 dark:border-gray-700 text-center"
+                {roles.map((role) => (
+                  <th
+                    key={role}
+                    className="p-4 border-b border-gray-200 dark:border-gray-700 font-bold text-center text-gray-900 dark:text-white"
+                  >
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs uppercase ${getRoleColor(role)}`}
                     >
-                      {hasAccess ? (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30">
-                          <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30">
-                          <X className="w-5 h-5 text-red-600 dark:text-red-400" />
-                        </div>
-                      )}
-                    </td>
-                  );
-                })}
+                      {role}
+                    </span>
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {allPermissions.map((permission) => (
+                <tr
+                  key={permission}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                >
+                  <td className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="font-medium text-gray-800 dark:text-gray-200">{permission}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {getPermissionDesc(permission)}
+                    </div>
+                  </td>
+                  {roles.map((role) => {
+                    const hasAccess = ROLES_PERMISSIONS[role].includes(permission);
+                    return (
+                      <td
+                        key={`${role}-${permission}`}
+                        className="p-4 border-b border-gray-200 dark:border-gray-700 text-center"
+                      >
+                        {hasAccess ? (
+                          <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30">
+                            <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30">
+                            <X className="w-5 h-5 text-red-600 dark:text-red-400" />
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

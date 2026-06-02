@@ -244,5 +244,89 @@
     "ctaSubtitle": "Join thousands of learners on TeachLink today",
     "ctaPrimary": "Get Started",
     "ctaSecondary": "Sign In"
+  },
+  "performance": {
+    "dashboard": {
+      "title": "Panel de rendimiento",
+      "subtitle": "Core Web Vitals, alertas recientes y muestras de tendencias de la sesión (almacenadas en sessionStorage).",
+      "navigation": "Navegación del panel de rendimiento",
+      "clearHistory": "Borrar historial de tendencias",
+      "trendsHeading": "Tendencias (esta sesión de pestaña)",
+      "chartPlaceholder": "Aún no hay suficientes muestras. Interactúe con la aplicación o vuelva a cargar para recopilar puntos.",
+      "chartAriaLabel": "Gráfico de tendencia de {{name}}",
+      "xAxisLabel": "Muestra #",
+      "vitals": {
+        "heading": "Core Web Vitals",
+        "ariaLabel": "Core Web Vitals",
+        "waiting": "Esperando...",
+        "ratings": {
+          "good": "Bueno",
+          "needsImprovement": "Necesita mejorar",
+          "poor": "Deficiente"
+        }
+      },
+      "statusPanel": {
+        "heading": "Estado de analíticas",
+        "statusLabel": "Estado",
+        "active": "Activo",
+        "disabled": "Deshabilitado (Desarrollo)",
+        "endpoint": "Punto final",
+        "simulated": "Promedio global simulado (7d)"
+      },
+      "alertsPanel": {
+        "heading": "Alertas",
+        "clearList": "Borrar lista",
+        "empty": "Sin alertas de degradación en esta sesión."
+      }
+    },
+    "monitor": {
+      "heading": "Rendimiento",
+      "dashboardLink": "Panel",
+      "compact": "Compacto",
+      "expand": "Expandir",
+      "ariaLabel": "Últimas métricas de rendimiento",
+      "collecting": "Recopilando métricas..."
+    },
+    "telemetry": {
+      "alerts": {
+        "poor": "{{name}} está en el rango \"deficiente\" ({{value}}). Considere la optimización.",
+        "warning": "{{name}} necesita mejorar ({{value}})."
+      },
+      "suggestions": {
+        "impact": "Impacto {{impact}}",
+        "impactLevels": {
+          "high": "Alto",
+          "medium": "Medio",
+          "low": "Bajo"
+        },
+        "heading": "Sugerencias de optimización",
+        "headingFallback": "Sugerencias",
+        "empty": "No se detectaron problemas a partir de las Core Web Vitals actuales. Siga monitoreando mientras los usuarios interactúan con la aplicación.",
+        "lcp": {
+          "title": "Acelerar el despliegue del elemento visual más grande (LCP)",
+          "detail": "Optimice el elemento LCP: use imágenes adaptables, formatos modernos (AVIF/WebP), ancho/alto explícitos y cargue previamente el recurso hero. Reduzca el tiempo de respuesta del servidor y los scripts que bloquean el renderizado."
+        },
+        "inp": {
+          "title": "Mejorar la capacidad de respuesta a la interacción (INP)",
+          "detail": "Divida las tareas largas, aplace el JavaScript no crítico y evite grandes actualizaciones síncronas en los manejadores de eventos. Prefiera transiciones y árboles de componentes más pequeños en las rutas de interacción."
+        },
+        "cls": {
+          "title": "Estabilizar el diseño (CLS)",
+          "detail": "Reserve espacio para imágenes, elementos incrustados y anuncios. Evite insertar contenido encima del contenido existente sin un marcador de posición. Prefiera animaciones de transformación en lugar de propiedades que desencadenen el diseño."
+        },
+        "fcp": {
+          "title": "Lograr el primer renderizado antes (FCP)",
+          "detail": "Inserte CSS crítico en línea, recorte el CSS no utilizado y reduzca el bloqueo de fuentes. Mantenga los recursos del path crítico y del HTML pequeños y almacenables en caché."
+        },
+        "ttfb": {
+          "title": "Reducir el tiempo al primer byte (TTFB)",
+          "detail": "Mejore el almacenamiento en caché perimetral, optimice la latencia del servidor/API y use una CDN para recursos estáticos y dinámicos donde sea posible."
+        },
+        "slowConnection": {
+          "title": "Adaptarse a redes lentas",
+          "detail": "Se detectó una conexión limitada. Reduzca el tamaño de las cargas útiles, cargue de forma diferida el contenido debajo de la parte visible y evite la precarga agresiva."
+        }
+      }
+    }
   }
 }

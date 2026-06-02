@@ -71,9 +71,7 @@ const AccordionItemContext = createContext<AccordionItemContextValue | undefined
 function useAccordionItemContext(): AccordionItemContextValue {
   const ctx = useContext(AccordionItemContext);
   if (!ctx) {
-    throw new Error(
-      'AccordionTrigger and AccordionContent must be used inside <AccordionItem>.',
-    );
+    throw new Error('AccordionTrigger and AccordionContent must be used inside <AccordionItem>.');
   }
   return ctx;
 }
@@ -134,9 +132,10 @@ export function Accordion({
     () => new Set(defaultOpenIds),
   );
 
-  const openIds: Set<string> = isControlled
-    ? new Set(controlledOpenIds)
-    : uncontrolledOpenIds;
+  const openIds: Set<string> = useMemo(
+    () => (isControlled ? new Set(controlledOpenIds) : uncontrolledOpenIds),
+    [isControlled, controlledOpenIds, uncontrolledOpenIds],
+  );
 
   const setOpenIds = useCallback(
     (updater: (prev: Set<string>) => Set<string>) => {
@@ -181,7 +180,6 @@ export function Accordion({
 
   const contextValue = useMemo<AccordionContextValue>(
     () => ({ openIds, exclusive, variant, size, register, unregister, toggle }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [openIds, exclusive, variant, size, register, unregister, toggle],
   );
 
@@ -254,8 +252,7 @@ export function AccordionItem({
 
   const variantClasses: Record<AccordionVariant, string> = {
     default: 'border-b border-gray-200 dark:border-gray-700',
-    bordered:
-      'border border-gray-200 dark:border-gray-700 rounded-lg mb-2 overflow-hidden',
+    bordered: 'border border-gray-200 dark:border-gray-700 rounded-lg mb-2 overflow-hidden',
     ghost: '',
   };
 

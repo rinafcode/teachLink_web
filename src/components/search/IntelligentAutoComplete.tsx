@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Search, X, Clock, ChevronRight, Sparkles, User, Tag, Type } from 'lucide-react';
 import { getSearchSuggestions, highlightMatch } from '../../utils/searchUtils';
 
@@ -17,7 +17,7 @@ export const IntelligentAutoComplete = React.memo<IntelligentAutoCompleteProps>(
     const [activeIndex, setActiveIndex] = useState(-1);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const suggestions = getSearchSuggestions(value);
+    const suggestions = useMemo(() => getSearchSuggestions(value), [value]);
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {

@@ -43,7 +43,7 @@ export interface TooltipTracker {
 }
 
 export function useTooltipAnomalyDetection(
-  options: UseTooltipAnomalyDetectionOptions = {}
+  options: UseTooltipAnomalyDetectionOptions = {},
 ): TooltipTracker {
   const {
     rapidToggleThreshold = 5,
@@ -67,7 +67,7 @@ export function useTooltipAnomalyDetection(
       setAnomalies((prev) => [...prev, event]);
       onAnomaly?.(event);
     },
-    [onAnomaly]
+    [onAnomaly],
   );
 
   const onOpen = useCallback(
@@ -119,7 +119,7 @@ export function useTooltipAnomalyDetection(
         });
       }
     },
-    [rapidToggleThreshold, rapidToggleWindowMs, longHoverThresholdMs, multiOpenThreshold, report]
+    [rapidToggleThreshold, rapidToggleWindowMs, longHoverThresholdMs, multiOpenThreshold, report],
   );
 
   const onClose = useCallback((tooltipId: string) => {
