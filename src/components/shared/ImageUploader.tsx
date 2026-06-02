@@ -106,6 +106,8 @@ function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: Image
       }
     },
     [onImageSelect, setObjectPreviewUrl],
+  );
+
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
