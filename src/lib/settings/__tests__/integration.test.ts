@@ -13,9 +13,15 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
   };
 })();
 
@@ -85,7 +91,7 @@ describe('Settings System Integration', () => {
         virtualBackgroundBlur: 25,
         virtualBackgroundColor: '#FF5733',
       };
-      
+
       const storeState = SettingsService.createStoreState(settingsWithVB);
       const exported = SettingsService.exportSettings(storeState);
 
@@ -296,7 +302,7 @@ describe('Settings System Integration', () => {
       const importResult = SettingsService.importSettings(invalidExport);
 
       expect(importResult.valid).toBe(false);
-      expect(importResult.errors.some(e => e.includes('version mismatch'))).toBe(true);
+      expect(importResult.errors.some((e) => e.includes('version mismatch'))).toBe(true);
     });
 
     it('rejects malformed export data', () => {

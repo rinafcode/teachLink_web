@@ -18,10 +18,10 @@ const certificateStore = new Map<string, CertificateRecord>();
 
 /**
  * Verify or get course completion status.
- * 
+ *
  * SECURITY: Server-side verification prevents users from generating certificates
  * for courses they haven't completed. Check must happen before generation.
- * 
+ *
  * In production: Query enrollment/progress database with user ID and course ID.
  * Returns: completion record with isCompleted boolean and completedAt timestamp.
  */
@@ -32,7 +32,7 @@ async function getCourseCompletion(
   // MOCK IMPLEMENTATION — Replace with actual database query
   // Pattern: Query IDB or backend progress table for:
   // SELECT * FROM user_progress WHERE userId = ? AND courseId = ? AND isCompleted = true
-  
+
   logger.debug('Checking course completion', {
     context: { userId, courseId },
   });
@@ -58,7 +58,7 @@ async function getCourseById(courseId: string): Promise<{ id: string; name: stri
 /**
  * Get a certificate record by ID.
  * Returns the certificate record or null if not found.
- * 
+ *
  * SECURITY: Caller must verify ownership (userId matches).
  * This function does not check ownership — that's the caller's responsibility.
  */
@@ -69,7 +69,7 @@ export async function getCertificateById(certId: string): Promise<CertificateRec
 /**
  * Verify a certificate's authenticity using stored hash.
  * Public endpoint — no auth required.
- * 
+ *
  * SECURITY: Uses HMAC-SHA256 with a server secret to make forgery cryptographically hard.
  * Even if an attacker has a certificate, they cannot forge a valid hash without the secret.
  */
@@ -100,30 +100,32 @@ export async function verifyCertificate(certId: string): Promise<CertificateVeri
 
 /**
  * Generate a verification hash for a certificate.
- * 
+ *
  * Hash = SHA256(userId + courseId + completionDate + SECRET)
- * 
+ *
  * This hash is stored with the certificate and can be recomputed to verify authenticity.
  * The SECRET must be environment variable (never in code) and rotated periodically.
  */
-function computeCertificateHash(cert: Omit<CertificateRecord, 'verificationHash'> & { certificateId?: string }): string {
+function computeCertificateHash(
+  cert: Omit<CertificateRecord, 'verificationHash'> & { certificateId?: string },
+): string {
   // WARNING: In production, get this from environment variables
   const SECRET = process.env.CERTIFICATE_VERIFICATION_SECRET || 'dev-secret-DO-NOT-USE-IN-PROD';
-  
+
   const data = `${cert.userId}:${cert.courseId}:${cert.completionDate}:${SECRET}`;
   return createHash('sha256').update(data).digest('hex');
 }
 
 /**
  * Generate a new certificate for a user who has completed a course.
- * 
+ *
  * SECURITY CHECKS:
  * 1. User must be authenticated (verified by caller via requireAuth)
  * 2. User must have completed the course (server-side verification)
  * 3. Input must be sanitized (schema validation)
  * 4. Rate limiting applied by caller
  * 5. All changes logged to audit trail by caller
- * 
+ *
  * Returns: Certificate record on success, null if requirements not met
  */
 export async function generateCertificate(
@@ -188,7 +190,9 @@ export async function generateCertificate(
  * Get a certificate for download or viewing (ownership verified by caller).
  * Returns public response (excludes sensitive fields).
  */
-export async function getCertificateForDownload(certId: string): Promise<CertificateResponse | null> {
+export async function getCertificateForDownload(
+  certId: string,
+): Promise<CertificateResponse | null> {
   const cert = await getCertificateById(certId);
   if (!cert || cert.revokedAt) {
     return null;

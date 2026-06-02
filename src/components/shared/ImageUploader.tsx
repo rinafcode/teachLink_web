@@ -11,11 +11,7 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-function ImageUploader({
-  onImageSelect,
-  initialImageUrl,
-  className = '',
-}: ImageUploaderProps) {
+function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: ImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -28,27 +24,23 @@ function ImageUploader({
     };
   }, []);
 
-  const handleFileChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
+  const handleFileChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+        }
+
+        const objectUrl = URL.createObjectURL(file);
+        objectUrlRef.current = objectUrl;
+        setPreviewUrl(objectUrl);
+
+        onImageSelect(file);
       }
-
-      const objectUrl = URL.createObjectURL(file);
-      objectUrlRef.current = objectUrl;
-      setPreviewUrl(objectUrl);
-
-      // Track the image upload event
-      dataWarehouse.trackEvent('IMAGE_UPLOADED', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-      }).catch(console.error);
-
-      onImageSelect(file);
-    }
-  }, [onImageSelect]);
+    },
+    [onImageSelect],
+  );
 
   const handleClick = useCallback(() => {
     fileInputRef.current?.click();

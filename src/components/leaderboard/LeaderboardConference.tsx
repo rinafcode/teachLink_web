@@ -151,16 +151,11 @@ export function LeaderboardConference({
               key={entry.id}
               className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
             >
-              <span
-                className="w-6 flex justify-center"
-                aria-label={`Rank ${entry.rank}`}
-              >
+              <span className="w-6 flex justify-center" aria-label={`Rank ${entry.rank}`}>
                 {entry.rank <= 3 ? (
                   RANK_ICONS[entry.rank - 1]
                 ) : (
-                  <span className="text-sm font-semibold text-slate-500">
-                    {entry.rank}
-                  </span>
+                  <span className="text-sm font-semibold text-slate-500">{entry.rank}</span>
                 )}
               </span>
 
@@ -281,7 +276,9 @@ export function LeaderboardConference({
                 </span>
                 <button
                   type="button"
-                  onClick={() => handleJoinConference(conf)}
+                  onClick={() =>
+                    setActiveConference(activeConference?.id === conf.id ? null : conf)
+                  }
                   className={`rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${
                     activeConference?.id === conf.id
                       ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400'

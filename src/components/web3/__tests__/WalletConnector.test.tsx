@@ -68,7 +68,7 @@ describe('WalletConnector', () => {
 
     render(<WalletConnector />);
     expect(screen.getByText(/some custom starknet connection error occurred/i)).toBeInTheDocument();
-    
+
     const dismissButton = screen.getByRole('button', { name: /dismiss/i });
     expect(dismissButton).toBeInTheDocument();
 

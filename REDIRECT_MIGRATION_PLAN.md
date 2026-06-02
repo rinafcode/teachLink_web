@@ -137,24 +137,28 @@ grep -r "privacy-policy" src/ --include="*.tsx" | wc -l
 **Locations to Update**:
 
 1. **Navigation Components**
+
    - Main header/footer navigation
    - Mobile menu
    - Sidebar navigation
    - Breadcrumb trails
 
 2. **Documentation**
+
    - README files
    - API documentation
    - User guides
    - Help pages
 
 3. **Email Templates**
+
    - Account creation emails
    - Password reset emails
    - Newsletter templates
    - Policy update notifications
 
 4. **Social Media & Marketing**
+
    - Website meta tags (canonical URLs)
    - Social media bios
    - Marketing emails
@@ -186,9 +190,11 @@ grep -r "privacy-policy" src/ --include="*.tsx" | wc -l
 # In all documentation files:
 
 # OLD
+
 Link to [Privacy Policy](/privacy-policy)
 
 # NEW
+
 Link to [Privacy Policy](/privacy)
 ```
 
@@ -203,26 +209,31 @@ Link to [Privacy Policy](/privacy)
 ### Link Update Schedule
 
 **Monday**
+
 - [ ] Code repository links updated
 - [ ] Component references updated
 - [ ] Tests updated to use new URLs
 
 **Tuesday**
+
 - [ ] Documentation links updated
 - [ ] Email templates updated
 - [ ] Internal wiki pages updated
 
 **Wednesday**
+
 - [ ] External links reviewed
 - [ ] Sitemap updated
 - [ ] SEO tools notified
 
 **Thursday**
+
 - [ ] Third-party services updated
 - [ ] Social media links updated
 - [ ] Marketing content updated
 
 **Friday**
+
 - [ ] Final verification of all links
 - [ ] Broken link scan
 - [ ] Team notification sent
@@ -273,21 +284,25 @@ curl https://teachlink.com/api/analytics/redirects?period=1d
 ### Week 3 Actions
 
 **Monday - Analytics Review**
+
 - Verify redirect volume is expected
 - Check for any anomalies
 - Confirm performance metrics
 
 **Tuesday-Wednesday - Performance Tuning**
+
 - Optimize slow redirects (if any)
 - Analyze redirect patterns
 - Update cache strategy if needed
 
 **Thursday - SEO Validation**
+
 - Check search engine crawl logs
 - Verify redirect chains resolved
 - Monitor ranking impact
 
 **Friday - Weekly Report**
+
 - Compile analytics summary
 - Document findings
 - Update stakeholders
@@ -295,17 +310,20 @@ curl https://teachlink.com/api/analytics/redirects?period=1d
 ### Week 4 Actions
 
 **Ongoing Monitoring**
+
 - Continue tracking redirect metrics
 - Monitor for broken links
 - Verify user experience
 - Collect feedback
 
 **Cleanup Tasks**
+
 - Remove old URL references from comments
 - Archive old redirect logs
 - Update internal documentation
 
 **Final Verification**
+
 - Confirm all redirects working
 - Verify no broken links remain
 - Ensure performance remains optimal
@@ -393,6 +411,7 @@ pnpm build
 ### Internal Communication
 
 **Team Notification** (Before deployment)
+
 ```
 Subject: Privacy Policy URL Migration - Week of [Date]
 
@@ -407,6 +426,7 @@ Questions? See REDIRECT_MANAGEMENT_GUIDE.md
 ```
 
 **Daily Standup Updates**
+
 - Day 1: "Deployed redirect system to production"
 - Day 2: "Link updates in progress"
 - Day 3: "Monitoring redirect analytics"
@@ -416,6 +436,7 @@ Questions? See REDIRECT_MANAGEMENT_GUIDE.md
 ### External Communication
 
 **User Notification** (Optional - if public announcement needed)
+
 ```
 We've reorganized our legal pages for better access.
 The Privacy Policy is now available at: teachlink.com/privacy
@@ -424,6 +445,7 @@ Existing links still work and will automatically redirect.
 ```
 
 **SEO/Search Engine Communication**
+
 - Update sitemap.xml
 - Submit updated sitemap to Google Search Console
 - Monitor search results for changes
@@ -434,18 +456,21 @@ Existing links still work and will automatically redirect.
 ## Success Criteria
 
 ### Phase 1 Success
+
 - ✅ All tests passing (58/58)
 - ✅ Code deployed to production
 - ✅ No production errors
 - ✅ Performance metrics normal
 
 ### Phase 2 Success
+
 - ✅ All internal links updated
 - ✅ Documentation current
 - ✅ No broken links found
 - ✅ Team aware of changes
 
 ### Phase 3 Success
+
 - ✅ Redirect analytics showing expected volume
 - ✅ Processing time < 1ms
 - ✅ Zero redirect errors
@@ -458,17 +483,20 @@ Existing links still work and will automatically redirect.
 ## Resources & References
 
 ### Documentation
+
 - [Redirect Management Guide](./REDIRECT_MANAGEMENT_GUIDE.md)
 - [Implementation Summary](./IMPLEMENTATION_SUMMARY.md)
 - Next.js Redirect Docs: https://nextjs.org/docs/app/api-reference/next-config-js/redirects
 
 ### Tools & Services
+
 - Analytics Dashboard: `/admin/analytics/redirects`
 - Error Monitoring: Sentry/DataDog
 - Performance Monitoring: New Relic/DataDog
 - SEO Tools: Google Search Console, Ahrefs
 
 ### Team Contacts
+
 - Technical Lead: [Name]
 - DevOps: [Name]
 - SEO/Marketing: [Name]
@@ -482,19 +510,19 @@ Existing links still work and will automatically redirect.
 
 ```sql
 -- Find all redirect log entries
-SELECT * FROM redirects 
+SELECT * FROM redirects
 WHERE created_at >= NOW() - INTERVAL '7 days'
 ORDER BY created_at DESC;
 
 -- Analytics by source
-SELECT from_path, COUNT(*) as count 
-FROM redirects 
-GROUP BY from_path 
+SELECT from_path, COUNT(*) as count
+FROM redirects
+GROUP BY from_path
 ORDER BY count DESC;
 
 -- Errors in redirects
-SELECT * FROM redirects 
-WHERE status_code >= 400 
+SELECT * FROM redirects
+WHERE status_code >= 400
 ORDER BY created_at DESC;
 ```
 
@@ -536,9 +564,9 @@ old-privacy.teachlink.com AAAA 2001:db8::1
 // Track redirect events in analytics
 if (document.referrer.includes('/privacy-policy')) {
   gtag('event', 'redirect', {
-    'old_path': '/privacy-policy',
-    'new_path': '/privacy',
-    'timestamp': Date.now()
+    old_path: '/privacy-policy',
+    new_path: '/privacy',
+    timestamp: Date.now(),
   });
 }
 ```

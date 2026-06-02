@@ -26,6 +26,7 @@ export function EditorWorkspace() {
         </h1>
         <button
           onClick={() => setIsPreviewMode((prev) => !prev)}
+          aria-pressed={isPreviewMode}
           className={`rounded-lg px-4 py-2 font-medium transition-colors ${
             isPreviewMode
               ? 'bg-blue-600 text-white hover:bg-blue-700'

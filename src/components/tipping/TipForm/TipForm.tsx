@@ -43,38 +43,90 @@ export default function TipForm({ recipient }: TipFormProps) {
 
   if (success) {
     return (
-      <div
-        className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900"
-        data-testid="success-msg"
-        role="status"
-      >
-        <p>Tip sent successfully! 🎉</p>
-        {proof ? <p className="mt-2">Notarization proof: {proof}</p> : null}
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+        <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+          <Sparkles className="h-5 w-5" />
+          Tip sent successfully!
+        </div>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+          Your support for {recipient.name} has been routed through the{' '}
+          <strong>{selectedGroup.name}</strong> interest group.
+        </p>
       </div>
     );
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} data-testid="tip-form" className="space-y-3">
-      <label htmlFor="tip-amount" className="block text-sm font-medium text-gray-700">
-        Tip {recipient.name}
-      </label>
-      <input
-        id="tip-amount"
-        name="tipAmount"
-        type="number"
-        inputMode="decimal"
-        step="0.001"
-        min="0.001"
-        value={amount}
-        onChange={(event) => setAmount(event.target.value)}
-        placeholder="0.01"
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-        data-testid="tip-amount-input"
-      />
+    <form
+      onSubmit={handleSubmit}
+      data-testid="tip-form"
+      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+    >
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+          <Gift className="h-5 w-5 text-sky-500" />
+          <span>Tip {recipient.name}</span>
+        </div>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Choose a special interest group so your tip supports the right community and content
+          category.
+        </p>
+      </div>
 
-      {error && (
-        <p role="alert" data-testid="tip-error" className="text-sm text-red-700">
+      <div className="grid gap-3">
+        <label
+          className="text-sm font-medium text-slate-800 dark:text-slate-200"
+          htmlFor="tip-group"
+        >
+          Special Interest Group
+        </label>
+        <select
+          id="tip-group"
+          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-500/20"
+          value={selectedGroupId}
+          onChange={(event) => setSelectedGroupId(event.target.value)}
+          aria-describedby="tip-group-description"
+          data-testid="tip-group-select"
+        >
+          {availableGroups.map((group) => (
+            <option key={group.id} value={group.id}>
+              {group.name}
+            </option>
+          ))}
+        </select>
+        <p id="tip-group-description" className="text-xs text-slate-500 dark:text-slate-400">
+          {selectedGroup.description}
+        </p>
+      </div>
+
+      <div className="grid gap-3">
+        <label
+          className="text-sm font-medium text-slate-800 dark:text-slate-200"
+          htmlFor="tip-amount"
+        >
+          Amount (ETH)
+        </label>
+        <input
+          id="tip-amount"
+          name="tip-amount"
+          type="number"
+          inputMode="decimal"
+          step="0.001"
+          min="0.001"
+          value={amount}
+          onChange={(event) => setAmount(event.target.value)}
+          placeholder="0.01"
+          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-500/20"
+          data-testid="tip-amount-input"
+        />
+      </div>
+
+      {error ? (
+        <p
+          role="alert"
+          data-testid="tip-error"
+          className="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-900/20 dark:text-rose-200"
+        >
           {error}
         </p>
       )}

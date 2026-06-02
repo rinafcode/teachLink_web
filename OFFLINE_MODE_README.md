@@ -311,16 +311,19 @@ Tests are organized into logical groups:
 ### Common Issues
 
 1. **Database Initialization Failed**
+
    - Check browser IndexedDB support
    - Clear browser data and retry
    - Check for storage quota issues
 
 2. **Sync Conflicts**
+
    - Review conflict resolution settings
    - Manually resolve conflicts if needed
    - Check network connectivity
 
 3. **Storage Full**
+
    - Use Storage Manager to clear old data
    - Remove unused courses
    - Check browser storage limits

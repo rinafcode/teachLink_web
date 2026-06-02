@@ -48,14 +48,8 @@ export default async function PrivacyPolicyPage() {
               January 1, 2024
             </time>
           </p>
-          <nav
-            className="mt-8 flex flex-wrap gap-4"
-            aria-label="Table of contents"
-          >
-            <a
-              href="#introduction"
-              className="text-blue-600 hover:text-blue-700 underline"
-            >
+          <nav className="mt-8 flex flex-wrap gap-4" aria-label="Table of contents">
+            <a href="#introduction" className="text-blue-600 hover:text-blue-700 underline">
               Introduction
             </a>
             <a
@@ -64,28 +58,16 @@ export default async function PrivacyPolicyPage() {
             >
               Information Collection
             </a>
-            <a
-              href="#information-use"
-              className="text-blue-600 hover:text-blue-700 underline"
-            >
+            <a href="#information-use" className="text-blue-600 hover:text-blue-700 underline">
               Information Use
             </a>
-            <a
-              href="#data-security"
-              className="text-blue-600 hover:text-blue-700 underline"
-            >
+            <a href="#data-security" className="text-blue-600 hover:text-blue-700 underline">
               Data Security
             </a>
-            <a
-              href="#your-rights"
-              className="text-blue-600 hover:text-blue-700 underline"
-            >
+            <a href="#your-rights" className="text-blue-600 hover:text-blue-700 underline">
               Your Rights
             </a>
-            <a
-              href="#contact"
-              className="text-blue-600 hover:text-blue-700 underline"
-            >
+            <a href="#contact" className="text-blue-600 hover:text-blue-700 underline">
               Contact Us
             </a>
           </nav>
@@ -99,8 +81,8 @@ export default async function PrivacyPolicyPage() {
         {/* Footer */}
         <footer className="mt-16 border-t border-gray-200 pt-8">
           <p className="text-sm text-gray-600">
-            This privacy policy applies to all users of TeachLink. If you have questions about
-            this privacy policy or our privacy practices, please contact us at{' '}
+            This privacy policy applies to all users of TeachLink. If you have questions about this
+            privacy policy or our privacy practices, please contact us at{' '}
             <a href="mailto:privacy@teachlink.com" className="text-blue-600 hover:underline">
               privacy@teachlink.com
             </a>
