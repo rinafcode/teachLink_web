@@ -1,6 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { PollCreationModal, type PollDraft } from '@/components/polls/PollCreationModal';
+import { useSettingsStore } from '@/lib/settings/store';
+import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/lib/theme-provider';
 import {
   type ShortcutActionId,
@@ -84,6 +87,10 @@ export function CommandPalette() {
   const [showHelp, setShowHelp] = useState(false);
   const [query, setQuery] = useState('');
   const { theme, setTheme } = useTheme();
+  const [pollModalOpen, setPollModalOpen] = useState(false);
+
+  const settings = useSettingsStore((s) => s.settings);
+  const { info: toastInfo } = useToast();
 
   const commands = useMemo<ShortcutCommand[]>(() => {
     return [
@@ -128,6 +135,18 @@ export function CommandPalette() {
         title: 'Focus search',
         description: 'Focus first available search input',
         run: () => findSearchInput()?.focus(),
+      },
+      {
+        id: 'openPollCreation',
+        title: 'Create poll',
+        description: 'Open poll creation dialog',
+        run: () => {
+          if (!settings.pollCreationEnabled) {
+            toastInfo('Poll creation is disabled in your settings.');
+            return;
+          }
+          setPollModalOpen(true);
+        },
       },
       {
         id: 'openShortcutHelp',
@@ -295,6 +314,17 @@ export function CommandPalette() {
           </div>
         </>
       ) : null}
+
+      <PollCreationModal
+        isOpen={pollModalOpen}
+        onClose={() => setPollModalOpen(false)}
+        onCreate={(draft: PollDraft) => {
+          // TODO: integrate with poll creation backend/GraphQL.
+          // For now, keep placeholder to satisfy typing and modal behavior.
+          // eslint-disable-next-line no-console
+          console.log('Create poll draft', draft);
+        }}
+      />
     </>
   );
 }
