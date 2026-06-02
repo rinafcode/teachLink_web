@@ -7,28 +7,58 @@ vi.mock('yjs', () => {
   class YText {
     content = '';
     observers = new Set<() => void>();
-    toString() { return this.content; }
-    observe(cb: () => void) { this.observers.add(cb); }
-    insert(pos: number, text: string) { this.content = this.content.slice(0, pos) + text + this.content.slice(pos); this.observers.forEach((cb) => cb()); }
-    delete(pos: number, len: number) { this.content = this.content.slice(0, pos) + this.content.slice(pos + len); this.observers.forEach((cb) => cb()); }
+    toString() {
+      return this.content;
+    }
+    observe(cb: () => void) {
+      this.observers.add(cb);
+    }
+    insert(pos: number, text: string) {
+      this.content = this.content.slice(0, pos) + text + this.content.slice(pos);
+      this.observers.forEach((cb) => cb());
+    }
+    delete(pos: number, len: number) {
+      this.content = this.content.slice(0, pos) + this.content.slice(pos + len);
+      this.observers.forEach((cb) => cb());
+    }
   }
 
   class YArray<T = any> {
     items: T[] = [];
     observers = new Set<() => void>();
-    toArray() { return this.items.slice(); }
-    observe(cb: () => void) { this.observers.add(cb); }
-    push(arr: T[]) { this.items.push(...arr); this.observers.forEach((cb) => cb()); }
-    delete(start: number, len: number) { this.items.splice(start, len); this.observers.forEach((cb) => cb()); }
-    get length() { return this.items.length; }
+    toArray() {
+      return this.items.slice();
+    }
+    observe(cb: () => void) {
+      this.observers.add(cb);
+    }
+    push(arr: T[]) {
+      this.items.push(...arr);
+      this.observers.forEach((cb) => cb());
+    }
+    delete(start: number, len: number) {
+      this.items.splice(start, len);
+      this.observers.forEach((cb) => cb());
+    }
+    get length() {
+      return this.items.length;
+    }
   }
 
   class Doc {
     _text?: YText;
     _arrays: Record<string, any> = {};
-    getText(_name: string) { if (!this._text) this._text = new YText(); return this._text; }
-    getArray(name: string) { if (!this._arrays[name]) this._arrays[name] = new YArray(); return this._arrays[name]; }
-    destroy() { /* noop */ }
+    getText(_name: string) {
+      if (!this._text) this._text = new YText();
+      return this._text;
+    }
+    getArray(name: string) {
+      if (!this._arrays[name]) this._arrays[name] = new YArray();
+      return this._arrays[name];
+    }
+    destroy() {
+      /* noop */
+    }
   }
 
   return { Doc, Text: YText, Array: YArray };
@@ -47,9 +77,13 @@ vi.mock('y-websocket', () => ({
         off: () => {},
       };
     }
-    on() { /* noop */ }
-    disconnect() { /* noop */ }
-  }
+    on() {
+      /* noop */
+    }
+    disconnect() {
+      /* noop */
+    }
+  },
 }));
 
 import { CollaborativeEditor } from '../CollaborativeEditor';

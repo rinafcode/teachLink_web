@@ -104,7 +104,16 @@ export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(
       }, interval);
 
       return () => clearInterval(timer);
-    }, [addDataPoint, data, interval, isPaused, language, maxDataPoints, simulationEnabled, updateData]);
+    }, [
+      addDataPoint,
+      data,
+      interval,
+      isPaused,
+      language,
+      maxDataPoints,
+      simulationEnabled,
+      updateData,
+    ]);
 
     const stats = calculateStats();
     const statusKey = isPaused
@@ -172,11 +181,7 @@ export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(
 
           <div className="flex items-center gap-2">
             <label htmlFor="rt-speed" className="sr-only">
-              {translateWithFallback(
-                t,
-                'dashboard.analytics.realtime.updateSpeed',
-                'Update speed',
-              )}
+              {translateWithFallback(t, 'dashboard.analytics.realtime.updateSpeed', 'Update speed')}
             </label>
             <select
               id="rt-speed"
@@ -249,11 +254,7 @@ export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(
             </div>
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
               <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                {translateWithFallback(
-                  t,
-                  'dashboard.analytics.realtime.stats.median',
-                  'Median',
-                )}
+                {translateWithFallback(t, 'dashboard.analytics.realtime.stats.median', 'Median')}
               </div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
                 {formatNumber(stats.median, {

@@ -3,7 +3,14 @@
  * Centralized type definitions for the notification system
  */
 
-export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'message' | 'course' | 'system';
+export type NotificationType =
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'message'
+  | 'course'
+  | 'system';
 export type NotificationChannel = 'push' | 'email' | 'sms' | 'in-app';
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type NotificationCategory =
@@ -93,4 +100,25 @@ export interface NotificationDeliveryResult {
   channel: NotificationChannel;
   error?: string;
   timestamp: Date;
+}
+
+export type RecommendationType =
+  | 'disable_category'
+  | 'add_channel'
+  | 'switch_digest'
+  | 'enable_quiet_hours'
+  | 'reduce_frequency'
+  | 'enable_sms';
+
+export interface NotificationRecommendation {
+  /** Stable deterministic ID — same inputs always produce the same ID. */
+  id: string;
+  type: RecommendationType;
+  title: string;
+  description: string;
+  impact: 'low' | 'medium' | 'high';
+  /** Ready-to-apply diff — pass directly to updatePreferences(). */
+  preferencePatch: Partial<UserNotificationPreferences>;
+  category?: NotificationCategory;
+  channel?: NotificationChannel;
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ToastProvider } from '@/context/ToastContext';
 import { MobileNavigation } from '../MobileNavigation';
 
 describe('MobileNavigation Component', () => {
@@ -11,7 +12,11 @@ describe('MobileNavigation Component', () => {
   });
 
   it('renders all navigation items correctly', () => {
-    render(<MobileNavigation onNavChange={mockOnNavChange} />);
+    render(
+      <ToastProvider>
+        <MobileNavigation onNavChange={mockOnNavChange} />
+      </ToastProvider>,
+    );
 
     expect(screen.getByRole('navigation', { name: /mobile navigation/i })).toBeInTheDocument();
     expect(screen.getByRole('tablist', { name: /navigation tabs/i })).toBeInTheDocument();
@@ -26,11 +31,15 @@ describe('MobileNavigation Component', () => {
   });
 
   it('handles initial active tab setting correctly', () => {
-    render(<MobileNavigation initialActive="courses" onNavChange={mockOnNavChange} />);
+    render(
+      <ToastProvider>
+        <MobileNavigation initialActive="courses" onNavChange={mockOnNavChange} />
+      </ToastProvider>,
+    );
 
     expect(screen.getByRole('tab', { name: /home/i })).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByRole('tab', { name: /courses/i })).toHaveAttribute('aria-selected', 'true');
-    
+
     // Only the active tab should have tabIndex 0, others should have -1
     expect(screen.getByRole('tab', { name: /courses/i })).toHaveAttribute('tabindex', '0');
     expect(screen.getByRole('tab', { name: /home/i })).toHaveAttribute('tabindex', '-1');
@@ -38,7 +47,11 @@ describe('MobileNavigation Component', () => {
 
   it('triggers onNavChange and updates active tab state on click', async () => {
     const user = userEvent.setup();
-    render(<MobileNavigation initialActive="home" onNavChange={mockOnNavChange} />);
+    render(
+      <ToastProvider>
+        <MobileNavigation initialActive="home" onNavChange={mockOnNavChange} />
+      </ToastProvider>,
+    );
 
     const searchTab = screen.getByRole('tab', { name: /search/i });
     const homeTab = screen.getByRole('tab', { name: /home/i });
@@ -54,10 +67,31 @@ describe('MobileNavigation Component', () => {
     expect(homeTab).toHaveAttribute('aria-selected', 'false');
   });
 
+  it('shows the scanner button and opens the scanner dialog', async () => {
+    const user = userEvent.setup();
+    render(
+      <ToastProvider>
+        <MobileNavigation initialActive="home" onNavChange={mockOnNavChange} />
+      </ToastProvider>,
+    );
+
+    const scannerButton = screen.getByRole('button', { name: /open mobile scanner/i });
+    expect(scannerButton).toBeInTheDocument();
+
+    await user.click(scannerButton);
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /mobile scanner/i })).toBeInTheDocument();
+  });
+
   describe('Keyboard Navigation (WAI-ARIA Tablist Compliance)', () => {
     it('moves focus to the next item when ArrowRight or ArrowDown is pressed', async () => {
       const user = userEvent.setup();
-      render(<MobileNavigation initialActive="home" />);
+      render(
+        <ToastProvider>
+          <MobileNavigation initialActive="home" />
+        </ToastProvider>,
+      );
 
       const homeTab = screen.getByRole('tab', { name: /home/i });
       const searchTab = screen.getByRole('tab', { name: /search/i });
@@ -74,7 +108,11 @@ describe('MobileNavigation Component', () => {
 
     it('moves focus to the previous item when ArrowLeft or ArrowUp is pressed', async () => {
       const user = userEvent.setup();
-      render(<MobileNavigation initialActive="search" />);
+      render(
+        <ToastProvider>
+          <MobileNavigation initialActive="search" />
+        </ToastProvider>,
+      );
 
       const searchTab = screen.getByRole('tab', { name: /search/i });
       const homeTab = screen.getByRole('tab', { name: /home/i });
@@ -95,14 +133,18 @@ describe('MobileNavigation Component', () => {
 
     it('moves focus to first and last items on Home and End keys', async () => {
       const user = userEvent.setup();
-      render(<MobileNavigation initialActive="search" />);
+      render(
+        <ToastProvider>
+          <MobileNavigation initialActive="search" />
+        </ToastProvider>,
+      );
 
       const searchTab = screen.getByRole('tab', { name: /search/i });
       const homeTab = screen.getByRole('tab', { name: /home/i });
       const profileTab = screen.getByRole('tab', { name: /profile/i });
 
       searchTab.focus();
-      
+
       await user.keyboard('{Home}');
       expect(document.activeElement).toBe(homeTab);
 
@@ -113,7 +155,11 @@ describe('MobileNavigation Component', () => {
 
   describe('Responsive Design Styling', () => {
     it('applies bottom bar classes by default for compact portrait screens', () => {
-      render(<MobileNavigation />);
+      render(
+        <ToastProvider>
+          <MobileNavigation />
+        </ToastProvider>,
+      );
 
       const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
       const classList = nav.className;
@@ -128,12 +174,16 @@ describe('MobileNavigation Component', () => {
     });
 
     it('only switches to a side rail at landscape mobile/tablet dimensions', () => {
-      render(<MobileNavigation />);
+      render(
+        <ToastProvider>
+          <MobileNavigation />
+        </ToastProvider>,
+      );
 
       const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
       const classList = nav.className;
       const responsiveRailPrefix = '[@media_(min-width:640px)_and_(orientation:landscape)]';
-      
+
       expect(classList).toContain(`${responsiveRailPrefix}:top-0`);
       expect(classList).toContain(`${responsiveRailPrefix}:h-dvh`);
       expect(classList).toContain(`${responsiveRailPrefix}:w-20`);
@@ -141,7 +191,11 @@ describe('MobileNavigation Component', () => {
     });
 
     it('has standard safe-area padding for notches and interactive boundaries', () => {
-      render(<MobileNavigation />);
+      render(
+        <ToastProvider>
+          <MobileNavigation />
+        </ToastProvider>,
+      );
 
       const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
       const styleAttr = nav.getAttribute('style') || '';
@@ -152,7 +206,11 @@ describe('MobileNavigation Component', () => {
     });
 
     it('keeps labels visible in the bottom bar and hides them in the side rail', () => {
-      render(<MobileNavigation />);
+      render(
+        <ToastProvider>
+          <MobileNavigation />
+        </ToastProvider>,
+      );
 
       const label = screen.getByText('Home');
       const responsiveRailPrefix = '[@media_(min-width:640px)_and_(orientation:landscape)]';

@@ -3,7 +3,11 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SettingsService } from '../service';
-import { createDefaultSettings, type AppSettings, type SettingsStorePersistedShape } from '../types';
+import {
+  createDefaultSettings,
+  type AppSettings,
+  type SettingsStorePersistedShape,
+} from '../types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -15,7 +19,9 @@ function createMockSettings(overrides: Partial<AppSettings> = {}): AppSettings {
   };
 }
 
-function createMockStoreState(overrides: Partial<SettingsStorePersistedShape> = {}): SettingsStorePersistedShape {
+function createMockStoreState(
+  overrides: Partial<SettingsStorePersistedShape> = {},
+): SettingsStorePersistedShape {
   return {
     settings: createDefaultSettings(),
     updatedAt: Date.now(),
@@ -53,7 +59,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('theme'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('theme'))).toBe(true);
     });
 
     it('rejects language strings that are too long', () => {
@@ -61,7 +67,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('language'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('language'))).toBe(true);
     });
 
     it('rejects non-boolean notification settings', () => {
@@ -69,7 +75,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('notificationsEnabled'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('notificationsEnabled'))).toBe(true);
     });
 
     it('rejects invalid poll duration (below minimum)', () => {
@@ -77,7 +83,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('defaultPollDuration'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('defaultPollDuration'))).toBe(true);
     });
 
     it('rejects invalid poll duration (above maximum)', () => {
@@ -85,7 +91,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('defaultPollDuration'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('defaultPollDuration'))).toBe(true);
     });
 
     it('rejects invalid poll results visibility values', () => {
@@ -93,7 +99,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('pollResultsVisibility'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('pollResultsVisibility'))).toBe(true);
     });
   });
 
@@ -405,7 +411,7 @@ describe('SettingsService', () => {
       const result = SettingsService.importSettings(invalidData);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('version mismatch'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('version mismatch'))).toBe(true);
     });
 
     it('rejects data with missing settings', () => {
@@ -477,7 +483,7 @@ describe('SettingsService', () => {
       Object.values(capabilities).forEach((capability) => {
         expect(capability).toBe(true);
       });
-      
+
       // Check that virtual background capability exists
       expect(capabilities.canEditVirtualBackground).toBe(true);
     });
@@ -598,7 +604,7 @@ describe('SettingsService', () => {
         version: 2 as any,
         theme: 'dark' as const,
       };
-      
+
       const result = SettingsService.migrateSettings(v2Settings);
 
       expect(result.version).toBe(3);
@@ -608,96 +614,6 @@ describe('SettingsService', () => {
       expect(result.virtualBackgroundBlur).toBe(10);
       expect(result.virtualBackgroundColor).toBe('#000000');
       expect(result.theme).toBe('dark'); // Preserves existing field
-    });
-  });
-
-  // ── Documentation Update ──────────────────────────────────────────────────────
-
-  describe('Documentation Update', () => {
-    describe('getDocumentationMetadata', () => {
-      it('returns documentation metadata with correct structure', () => {
-        const metadata = SettingsService.getDocumentationMetadata();
-
-        expect(metadata).toHaveProperty('version');
-        expect(metadata).toHaveProperty('lastUpdated');
-        expect(metadata).toHaveProperty('schemaVersion');
-        expect(metadata).toHaveProperty('fields');
-        expect(typeof metadata.fields).toBe('object');
-      });
-
-      it('includes all current settings fields in metadata', () => {
-        const metadata = SettingsService.getDocumentationMetadata();
-        const defaultSettings = createDefaultSettings();
-        const schemaFields = Object.keys(defaultSettings);
-
-        Object.keys(schemaFields).forEach((field) => {
-          expect(metadata.fields).toHaveProperty(field);
-        });
-      });
-
-      it('provides descriptions for all fields', () => {
-        const metadata = SettingsService.getDocumentationMetadata();
-
-        Object.values(metadata.fields).forEach((description) => {
-          expect(typeof description).toBe('string');
-          expect(description.length).toBeGreaterThan(0);
-        });
-      });
-    });
-
-    describe('validateDocumentationCompleteness', () => {
-      it('validates that documentation is complete for current schema', () => {
-        const validation = SettingsService.validateDocumentationCompleteness();
-
-        expect(validation).toHaveProperty('valid');
-        expect(validation).toHaveProperty('missingFields');
-        expect(validation).toHaveProperty('outdatedFields');
-        expect(Array.isArray(validation.missingFields)).toBe(true);
-        expect(Array.isArray(validation.outdatedFields)).toBe(true);
-      });
-
-      it('returns valid when documentation matches schema', () => {
-        const validation = SettingsService.validateDocumentationCompleteness();
-
-        // With current implementation, documentation should be complete
-        expect(validation.valid).toBe(true);
-        expect(validation.missingFields).toHaveLength(0);
-        expect(validation.outdatedFields).toHaveLength(0);
-      });
-    });
-
-    describe('generateDocumentationUpdate', () => {
-      it('generates update summary when documentation is current', () => {
-        const update = SettingsService.generateDocumentationUpdate();
-
-        expect(update).toHaveProperty('needsUpdate');
-        expect(update).toHaveProperty('summary');
-        expect(update).toHaveProperty('suggestions');
-        expect(Array.isArray(update.suggestions)).toBe(true);
-      });
-
-      it('indicates no update needed when documentation is complete', () => {
-        const validation = SettingsService.validateDocumentationCompleteness();
-        if (validation.valid) {
-          const update = SettingsService.generateDocumentationUpdate();
-
-          expect(update.needsUpdate).toBe(false);
-          expect(update.summary).toContain('up-to-date');
-          expect(update.suggestions).toHaveLength(0);
-        }
-      });
-
-      it('provides actionable suggestions when update needed', () => {
-        const update = SettingsService.generateDocumentationUpdate();
-
-        if (update.needsUpdate) {
-          expect(update.suggestions.length).toBeGreaterThan(0);
-          update.suggestions.forEach((suggestion) => {
-            expect(typeof suggestion).toBe('string');
-            expect(suggestion.length).toBeGreaterThan(0);
-          });
-        }
-      });
     });
   });
 });

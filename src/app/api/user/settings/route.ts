@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withRateLimit } from '@/lib/ratelimit';
-import { 
-  appSettingsSchema, 
-  createDefaultSettings, 
+import {
+  appSettingsSchema,
+  createDefaultSettings,
   type AppSettings,
   SettingsService,
-  SettingsStorePersistedShape 
+  SettingsStorePersistedShape,
 } from '@/lib/settings';
 import { edgeLog } from '@/../infra/edge-config';
 
@@ -89,16 +89,19 @@ export async function PUT(request: Request) {
     }
 
     const { userId, settings, updatedAt } = parsed.data;
-    
+
     // Validate settings using service layer
     const validation = SettingsService.validateSettings(settings);
     if (!validation.valid) {
       return addHeaders(
-        NextResponse.json({ 
-          success: false, 
-          message: 'Invalid settings',
-          errors: validation.errors 
-        }, { status: 400 }),
+        NextResponse.json(
+          {
+            success: false,
+            message: 'Invalid settings',
+            errors: validation.errors,
+          },
+          { status: 400 },
+        ),
       );
     }
 

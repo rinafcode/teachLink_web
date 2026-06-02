@@ -64,6 +64,7 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/instructor/:path*',
+    '/editor/:path*',
     '/dashboard/:path*',
     '/profile/:path*',
     '/api/:path*',

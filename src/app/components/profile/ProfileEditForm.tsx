@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,6 +24,18 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+const profileFormDefaults: ProfileFormData = {
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john@example.com',
+  bio: 'Software developer and tech enthusiast',
+  location: 'New York, USA',
+  website: 'https://johndoe.com',
+  twitter: '@johndoe',
+  github: 'johndoe',
+  linkedin: 'johndoe',
+};
+
 export default function ProfileEditForm() {
   const { updateProfile, isLoading } = useProfileUpdate();
 
@@ -32,27 +45,22 @@ export default function ProfileEditForm() {
     formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      bio: 'Software developer and tech enthusiast',
-      location: 'New York, USA',
-      website: 'https://johndoe.com',
-      twitter: '@johndoe',
-      github: 'johndoe',
-      linkedin: 'johndoe',
-    },
+    defaultValues: profileFormDefaults,
   });
 
-  const onSubmit = async (data: ProfileFormData) => {
-    try {
-      await updateProfile(data);
-      toast.success('Profile updated successfully!');
-    } catch {
-      toast.error('Failed to update profile. Please try again.');
-    }
-  };
+  const onSubmit = useCallback(
+    async (data: ProfileFormData) => {
+      try {
+        await updateProfile(data);
+        toast.success('Profile updated successfully!');
+      } catch {
+        toast.error('Failed to update profile. Please try again.');
+      }
+    },
+    [updateProfile],
+  );
+
+  const handleImageSelect = useCallback(() => {}, []);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -60,7 +68,7 @@ export default function ProfileEditForm() {
         <h2 className="mb-6 text-xl font-semibold">Personal Information</h2>
 
         <div className="mb-6">
-          <ImageUploader onImageSelect={(file) => {}} />
+          <ImageUploader onImageSelect={handleImageSelect} />
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

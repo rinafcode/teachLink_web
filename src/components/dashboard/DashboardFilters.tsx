@@ -75,7 +75,10 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
       [t],
     );
 
-    const getCategoryLabel = useCallback((category: string) => getDashboardCategoryLabel(category, t), [t]);
+    const getCategoryLabel = useCallback(
+      (category: string) => getDashboardCategoryLabel(category, t),
+      [t],
+    );
     const getMetricLabel = useCallback((metric: string) => getDashboardMetricLabel(metric, t), [t]);
 
     const toggleCategory = useCallback(
@@ -121,9 +124,7 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
               <span className="text-sm font-medium">
                 {translateWithFallback(
                   t,
-                  isOpen
-                    ? 'dashboard.analytics.filters.hide'
-                    : 'dashboard.analytics.filters.show',
+                  isOpen ? 'dashboard.analytics.filters.hide' : 'dashboard.analytics.filters.show',
                   isOpen ? 'Hide Filters' : 'Show Filters',
                 )}
               </span>
@@ -229,11 +230,7 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
                   htmlFor="filter-time-range"
                   className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
                 >
-                  {translateWithFallback(
-                    t,
-                    'dashboard.analytics.filters.timeRange',
-                    'Time Range',
-                  )}
+                  {translateWithFallback(t, 'dashboard.analytics.filters.timeRange', 'Time Range')}
                 </label>
                 <FilterHelpPopover
                   content={support.FILTER_HELP_CONTENT.duration}
@@ -262,11 +259,7 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
                 htmlFor="filter-aggregation"
                 className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"
               >
-                {translateWithFallback(
-                  t,
-                  'dashboard.analytics.filters.aggregation',
-                  'Aggregation',
-                )}
+                {translateWithFallback(t, 'dashboard.analytics.filters.aggregation', 'Aggregation')}
               </label>
               <select
                 id="filter-aggregation"
@@ -319,11 +312,7 @@ export const DashboardFilters = React.memo<DashboardFiltersProps>(
             {/* Categories */}
             <div>
               <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                {translateWithFallback(
-                  t,
-                  'dashboard.analytics.filters.categories',
-                  'Categories',
-                )}
+                {translateWithFallback(t, 'dashboard.analytics.filters.categories', 'Categories')}
               </span>
               <div
                 className="flex flex-wrap gap-2"

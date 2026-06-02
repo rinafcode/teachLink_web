@@ -1,10 +1,16 @@
-import { getServiceAddress, signMessage, sendTransaction, getBalance } from '@/services/serviceAccount';
+import {
+  getServiceAddress,
+  signMessage,
+  sendTransaction,
+  getBalance,
+} from '@/services/serviceAccount';
 import { ethers } from 'ethers';
 
 describe('Service Account utilities', () => {
   beforeAll(() => {
     process.env.SERVICE_ACCOUNT_ADDRESS = '0x1234567890abcdef1234567890abcdef12345678';
-    process.env.SERVICE_PRIVATE_KEY = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    process.env.SERVICE_PRIVATE_KEY =
+      '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
   });
 
   test('getServiceAddress returns address from env', () => {
@@ -18,7 +24,10 @@ describe('Service Account utilities', () => {
   });
 
   test('sendTransaction without provider returns signed tx hex', async () => {
-    const tx = { to: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', value: ethers.parseEther('0.01') };
+    const tx = {
+      to: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+      value: ethers.parseEther('0.01'),
+    };
     const signed = await sendTransaction(tx);
     expect(typeof signed).toBe('string');
     expect(signed).toMatch(/^0x[0-9a-fA-F]+$/);
