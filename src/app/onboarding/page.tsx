@@ -15,18 +15,14 @@ import {
   FileText,
   Loader2,
   BookOpen,
-  Mail
+  Mail,
 } from 'lucide-react';
 
 import { FormWizardController } from '@/form-management/components';
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { useNotification } from '@/hooks/use-notification';
-import type {
-  WizardStep,
-  FieldDescriptor,
-  FormState
-} from '@/form-management/types/core';
+import type { WizardStep, FieldDescriptor, FormState } from '@/form-management/types/core';
 
 // Define field configuration for onboarding
 const onboardingFields: FieldDescriptor[] = [
@@ -38,27 +34,31 @@ const onboardingFields: FieldDescriptor[] = [
     required: true,
     validation: [
       { type: 'required', message: 'Username is required' },
-      { type: 'minLength', message: 'Username must be at least 3 characters', params: { minLength: 3 } },
-      { type: 'pattern', message: 'Username can only contain letters, numbers, and underscores', params: { pattern: '^[a-zA-Z0-9_]+$' } }
-    ]
+      {
+        type: 'minLength',
+        message: 'Username must be at least 3 characters',
+        params: { minLength: 3 },
+      },
+      {
+        type: 'pattern',
+        message: 'Username can only contain letters, numbers, and underscores',
+        params: { pattern: '^[a-zA-Z0-9_]+$' },
+      },
+    ],
   },
   {
     id: 'role',
     type: 'select',
     label: 'Select Role',
     required: true,
-    validation: [
-      { type: 'required', message: 'Please select a role to continue' }
-    ]
+    validation: [{ type: 'required', message: 'Please select a role to continue' }],
   },
   {
     id: 'dob',
     type: 'date',
     label: 'Date of Birth',
     required: true,
-    validation: [
-      { type: 'required', message: 'Date of birth is required' }
-    ]
+    validation: [{ type: 'required', message: 'Date of birth is required' }],
   },
   {
     id: 'bio',
@@ -67,50 +67,48 @@ const onboardingFields: FieldDescriptor[] = [
     placeholder: 'Tell us a bit about yourself, your background, or what you want to achieve...',
     required: false,
     validation: [
-      { type: 'maxLength', message: 'Bio must be under 200 characters', params: { maxLength: 200 } }
-    ]
+      {
+        type: 'maxLength',
+        message: 'Bio must be under 200 characters',
+        params: { maxLength: 200 },
+      },
+    ],
   },
   {
     id: 'interest',
     type: 'select',
     label: 'Learning / Teaching Interest',
     required: true,
-    validation: [
-      { type: 'required', message: 'Please select your primary area of interest' }
-    ]
+    validation: [{ type: 'required', message: 'Please select your primary area of interest' }],
   },
   {
     id: 'notifications',
     type: 'select',
     label: 'Notification Preference',
     required: true,
-    validation: [
-      { type: 'required', message: 'Please select a notification channel' }
-    ]
+    validation: [{ type: 'required', message: 'Please select a notification channel' }],
   },
   {
     id: 'language',
     type: 'select',
     label: 'Preferred Language',
     required: true,
-    validation: [
-      { type: 'required', message: 'Please select your preferred language' }
-    ]
+    validation: [{ type: 'required', message: 'Please select your preferred language' }],
   },
   {
     id: 'newsletter',
     type: 'checkbox',
     label: 'Subscribe to newsletter',
     required: false,
-    validation: []
+    validation: [],
   },
   {
     id: 'walletAddress',
     type: 'text',
     label: 'Starknet Wallet Address',
     required: false,
-    validation: []
-  }
+    validation: [],
+  },
 ];
 
 // Define Wizard steps
@@ -121,7 +119,7 @@ const onboardingSteps: WizardStep[] = [
     title: 'Personal & Role',
     fields: ['username', 'role', 'dob', 'bio'],
     isComplete: false,
-    isValid: false
+    isValid: false,
   },
   {
     index: 1,
@@ -129,7 +127,7 @@ const onboardingSteps: WizardStep[] = [
     title: 'Preferences',
     fields: ['interest', 'notifications', 'language', 'newsletter'],
     isComplete: false,
-    isValid: false
+    isValid: false,
   },
   {
     index: 2,
@@ -137,8 +135,8 @@ const onboardingSteps: WizardStep[] = [
     title: 'Web3 Wallet',
     fields: ['walletAddress'],
     isComplete: false,
-    isValid: false
-  }
+    isValid: false,
+  },
 ];
 
 export default function OnboardingPage() {
@@ -153,14 +151,14 @@ export default function OnboardingPage() {
       newsletter: false,
       language: 'en',
       notifications: 'email',
-      walletAddress: ''
+      walletAddress: '',
     });
     return manager;
   });
 
   const [validationEngine] = useState(() => new ValidationEngineImpl(onboardingFields));
   const [formState, setFormState] = useState<FormState>(stateManager.getState());
-  
+
   // Custom states for interactive elements
   const [connectingWallet, setConnectingWallet] = useState<'argent' | 'braavos' | null>(null);
   const [activeWallet, setActiveWallet] = useState<'argent' | 'braavos' | null>(null);
@@ -180,32 +178,24 @@ export default function OnboardingPage() {
 
   const handleFieldChange = async (fieldId: string, value: any) => {
     stateManager.updateField(fieldId, value);
-    
+
     // Perform real-time validation
-    const result = await validationEngine.validateField(
-      fieldId,
-      value,
-      stateManager.getState()
-    );
+    const result = await validationEngine.validateField(fieldId, value, stateManager.getState());
     stateManager.setValidationState(fieldId, result);
   };
 
   const handleFieldBlur = async (fieldId: string) => {
     stateManager.markFieldTouched(fieldId);
-    
+
     const value = stateManager.getFieldValue(fieldId);
-    const result = await validationEngine.validateField(
-      fieldId,
-      value,
-      stateManager.getState()
-    );
+    const result = await validationEngine.validateField(fieldId, value, stateManager.getState());
     stateManager.setValidationState(fieldId, result);
   };
 
   // Mock Starknet wallet connection
   const handleConnectWallet = (walletType: 'argent' | 'braavos') => {
     setConnectingWallet(walletType);
-    
+
     // Simulate extension pop-up connection delay
     setTimeout(() => {
       let mockAddress = '';
@@ -214,7 +204,7 @@ export default function OnboardingPage() {
       } else {
         mockAddress = '0x01b87a8e734c56e3b8a6a69ef8148b3294c65330e791b8a53e6bcf12921a9876';
       }
-      
+
       handleFieldChange('walletAddress', mockAddress);
       setActiveWallet(walletType);
       setConnectingWallet(null);
@@ -231,20 +221,20 @@ export default function OnboardingPage() {
   // Final onboarding submission
   const handleComplete = async (values: Record<string, any>) => {
     const loadingToastId = loading('Finalizing your registration profile...');
-    
+
     try {
       // Simulate API registration request delay
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      
+
       dismiss(loadingToastId);
       success('Onboarding complete! Welcome to TeachLink.');
-      
+
       // Save onboarding preference state locally so other pages know user is onboarded
       if (typeof window !== 'undefined') {
         localStorage.setItem('teachlink_onboarded', 'true');
         localStorage.setItem('teachlink_user_role', values.role);
       }
-      
+
       // Redirect to main dashboard
       router.push('/dashboard');
     } catch (err) {
@@ -255,21 +245,34 @@ export default function OnboardingPage() {
 
   // Step 1 UI Renderer
   const renderPersonalStep = () => {
-    const usernameError = formState.touched.username && formState.validation.username && !formState.validation.username.isValid;
-    const roleError = formState.touched.role && formState.validation.role && !formState.validation.role.isValid;
-    const dobError = formState.touched.dob && formState.validation.dob && !formState.validation.dob.isValid;
-    const bioError = formState.touched.bio && formState.validation.bio && !formState.validation.bio.isValid;
+    const usernameError =
+      formState.touched.username &&
+      formState.validation.username &&
+      !formState.validation.username.isValid;
+    const roleError =
+      formState.touched.role && formState.validation.role && !formState.validation.role.isValid;
+    const dobError =
+      formState.touched.dob && formState.validation.dob && !formState.validation.dob.isValid;
+    const bioError =
+      formState.touched.bio && formState.validation.bio && !formState.validation.bio.isValid;
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Tell us about yourself</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Establish your basic profile parameters.</p>
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+            Tell us about yourself
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Establish your basic profile parameters.
+          </p>
         </div>
 
         {/* Username */}
         <div className="space-y-2">
-          <label htmlFor="username-input" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label
+            htmlFor="username-input"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+          >
             Username <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -286,7 +289,9 @@ export default function OnboardingPage() {
               aria-invalid={!!usernameError}
               aria-describedby={usernameError ? 'username-error' : undefined}
               className={`w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border ${
-                usernameError ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-800/80'
+                usernameError
+                  ? 'border-red-500 ring-2 ring-red-500/10'
+                  : 'border-slate-200 dark:border-slate-800/80'
               } rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all dark:text-slate-100`}
             />
           </div>
@@ -314,15 +319,20 @@ export default function OnboardingPage() {
                   : 'border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/30'
               }`}
             >
-              <div className={`p-2.5 rounded-lg mr-3 ${
-                formState.values.role === 'student' ? 'bg-cyan-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-              }`}>
+              <div
+                className={`p-2.5 rounded-lg mr-3 ${
+                  formState.values.role === 'student'
+                    ? 'bg-cyan-500 text-white'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                }`}
+              >
                 <GraduationCap size={20} />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800 dark:text-slate-200">Student / Learner</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Explore courses, connect a Starknet wallet to store certificates off-chain, and build your web3 identity.
+                  Explore courses, connect a Starknet wallet to store certificates off-chain, and
+                  build your web3 identity.
                 </p>
               </div>
             </button>
@@ -338,15 +348,22 @@ export default function OnboardingPage() {
                   : 'border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/30'
               }`}
             >
-              <div className={`p-2.5 rounded-lg mr-3 ${
-                formState.values.role === 'instructor' ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-              }`}>
+              <div
+                className={`p-2.5 rounded-lg mr-3 ${
+                  formState.values.role === 'instructor'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                }`}
+              >
                 <BookOpen size={20} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-200">Instructor / Teacher</h3>
+                <h3 className="font-bold text-slate-800 dark:text-slate-200">
+                  Instructor / Teacher
+                </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Share your technical skills, build comprehensive courses, and issue decentralized credentials.
+                  Share your technical skills, build comprehensive courses, and issue decentralized
+                  credentials.
                 </p>
               </div>
             </button>
@@ -360,7 +377,10 @@ export default function OnboardingPage() {
 
         {/* Date of Birth */}
         <div className="space-y-2">
-          <label htmlFor="dob-input" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label
+            htmlFor="dob-input"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+          >
             Date of Birth <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -376,7 +396,9 @@ export default function OnboardingPage() {
               aria-invalid={!!dobError}
               aria-describedby={dobError ? 'dob-error' : undefined}
               className={`w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border ${
-                dobError ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-800/80'
+                dobError
+                  ? 'border-red-500 ring-2 ring-red-500/10'
+                  : 'border-slate-200 dark:border-slate-800/80'
               } rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all dark:text-slate-100`}
             />
           </div>
@@ -389,7 +411,10 @@ export default function OnboardingPage() {
 
         {/* Short Bio */}
         <div className="space-y-2">
-          <label htmlFor="bio-input" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label
+            htmlFor="bio-input"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+          >
             Short Bio <span className="text-xs font-normal text-slate-400">(Optional)</span>
           </label>
           <div className="relative">
@@ -406,7 +431,9 @@ export default function OnboardingPage() {
               aria-invalid={!!bioError}
               aria-describedby={bioError ? 'bio-error' : undefined}
               className={`w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border ${
-                bioError ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-800/80'
+                bioError
+                  ? 'border-red-500 ring-2 ring-red-500/10'
+                  : 'border-slate-200 dark:border-slate-800/80'
               } rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all dark:text-slate-100 resize-none`}
             />
           </div>
@@ -429,20 +456,36 @@ export default function OnboardingPage() {
 
   // Step 2 UI Renderer
   const renderPreferencesStep = () => {
-    const interestError = formState.touched.interest && formState.validation.interest && !formState.validation.interest.isValid;
-    const notificationsError = formState.touched.notifications && formState.validation.notifications && !formState.validation.notifications.isValid;
-    const languageError = formState.touched.language && formState.validation.language && !formState.validation.language.isValid;
+    const interestError =
+      formState.touched.interest &&
+      formState.validation.interest &&
+      !formState.validation.interest.isValid;
+    const notificationsError =
+      formState.touched.notifications &&
+      formState.validation.notifications &&
+      !formState.validation.notifications.isValid;
+    const languageError =
+      formState.touched.language &&
+      formState.validation.language &&
+      !formState.validation.language.isValid;
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Set your preferences</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Configure how you would like to interact with the platform.</p>
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+            Set your preferences
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Configure how you would like to interact with the platform.
+          </p>
         </div>
 
         {/* Learning Interest */}
         <div className="space-y-2">
-          <label htmlFor="interest-select" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label
+            htmlFor="interest-select"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+          >
             Primary Interest <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -454,10 +497,14 @@ export default function OnboardingPage() {
               aria-invalid={!!interestError}
               aria-describedby={interestError ? 'interest-error' : undefined}
               className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border ${
-                interestError ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-800/80'
+                interestError
+                  ? 'border-red-500 ring-2 ring-red-500/10'
+                  : 'border-slate-200 dark:border-slate-800/80'
               } rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all dark:text-slate-100`}
             >
-              <option value="" disabled>Select your primary area</option>
+              <option value="" disabled>
+                Select your primary area
+              </option>
               <option value="web3">Web3 & Starknet Smart Contracts</option>
               <option value="frontend">Frontend Engineering (React / Next.js)</option>
               <option value="devops">DevOps, CI/CD & Cloud Infrastructure</option>
@@ -472,7 +519,10 @@ export default function OnboardingPage() {
 
         {/* Notifications */}
         <div className="space-y-2">
-          <label htmlFor="notifications-select" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label
+            htmlFor="notifications-select"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+          >
             Preferred Notification Channel <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -487,7 +537,9 @@ export default function OnboardingPage() {
               aria-invalid={!!notificationsError}
               aria-describedby={notificationsError ? 'notifications-error' : undefined}
               className={`w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border ${
-                notificationsError ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-800/80'
+                notificationsError
+                  ? 'border-red-500 ring-2 ring-red-500/10'
+                  : 'border-slate-200 dark:border-slate-800/80'
               } rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all dark:text-slate-100`}
             >
               <option value="email">Email Notifications Only</option>
@@ -504,7 +556,10 @@ export default function OnboardingPage() {
 
         {/* Language Preference */}
         <div className="space-y-2">
-          <label htmlFor="language-select" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label
+            htmlFor="language-select"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+          >
             Interface Language <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -519,7 +574,9 @@ export default function OnboardingPage() {
               aria-invalid={!!languageError}
               aria-describedby={languageError ? 'language-error' : undefined}
               className={`w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border ${
-                languageError ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-800/80'
+                languageError
+                  ? 'border-red-500 ring-2 ring-red-500/10'
+                  : 'border-slate-200 dark:border-slate-800/80'
               } rounded-lg outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all dark:text-slate-100`}
             >
               <option value="en">English</option>
@@ -548,11 +605,15 @@ export default function OnboardingPage() {
             />
           </div>
           <div className="ml-3 text-sm">
-            <label htmlFor="newsletter-checkbox" className="font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+            <label
+              htmlFor="newsletter-checkbox"
+              className="font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+            >
               Subscribe to newsletter updates
             </label>
             <p className="text-slate-500 dark:text-slate-400 text-xs">
-              Receive notifications about hot courses, Starknet ecosystem rewards, and technical tutorials once a week.
+              Receive notifications about hot courses, Starknet ecosystem rewards, and technical
+              tutorials once a week.
             </p>
           </div>
         </div>
@@ -567,9 +628,12 @@ export default function OnboardingPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Decentralized Web3 Connection</h2>
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+            Decentralized Web3 Connection
+          </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Connect your Starknet wallet to access offline capability storage hashes and verification tokens.
+            Connect your Starknet wallet to access offline capability storage hashes and
+            verification tokens.
           </p>
         </div>
 
@@ -578,9 +642,13 @@ export default function OnboardingPage() {
             <Wallet size={20} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Why Starknet Wallet Integration?</h3>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Why Starknet Wallet Integration?
+            </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              TeachLink utilizes Starknet to store offline learning progress cryptographic commitments. Connecting your wallet enables you to record accomplishments securely and claim verified course certificates on-chain.
+              TeachLink utilizes Starknet to store offline learning progress cryptographic
+              commitments. Connecting your wallet enables you to record accomplishments securely and
+              claim verified course certificates on-chain.
             </p>
           </div>
         </div>
@@ -613,8 +681,12 @@ export default function OnboardingPage() {
                       A
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Argent X</h4>
-                      <p className="text-xxs text-slate-400 dark:text-slate-500">Starknet's premier smart wallet</p>
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                        Argent X
+                      </h4>
+                      <p className="text-xxs text-slate-400 dark:text-slate-500">
+                        Starknet&apos;s premier smart wallet
+                      </p>
                     </div>
                   </div>
                   {connectingWallet === 'argent' ? (
@@ -640,8 +712,12 @@ export default function OnboardingPage() {
                       B
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Braavos</h4>
-                      <p className="text-xxs text-slate-400 dark:text-slate-500">Fast, secure, and user-friendly wallet</p>
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                        Braavos
+                      </h4>
+                      <p className="text-xxs text-slate-400 dark:text-slate-500">
+                        Fast, secure, and user-friendly wallet
+                      </p>
                     </div>
                   </div>
                   {connectingWallet === 'braavos' ? (
@@ -664,13 +740,17 @@ export default function OnboardingPage() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full ${
-                    activeWallet === 'argent' ? 'bg-orange-500' : 'bg-blue-600'
-                  } flex items-center justify-center font-bold text-white text-xs mr-3`}>
+                  <div
+                    className={`w-8 h-8 rounded-full ${
+                      activeWallet === 'argent' ? 'bg-orange-500' : 'bg-blue-600'
+                    } flex items-center justify-center font-bold text-white text-xs mr-3`}
+                  >
                     {activeWallet === 'argent' ? 'A' : 'B'}
                   </div>
                   <div>
-                    <span className="text-xs font-medium text-slate-400 dark:text-slate-500">Connected Wallet</span>
+                    <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                      Connected Wallet
+                    </span>
                     <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
                       {activeWallet === 'argent' ? 'Argent X' : 'Braavos'} (Starknet Mainnet)
                     </h4>
@@ -717,7 +797,12 @@ export default function OnboardingPage() {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center gap-2 mb-2">
             <div className="w-9 h-9 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-cyan-400/10">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -726,13 +811,16 @@ export default function OnboardingPage() {
                 />
               </svg>
             </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">TeachLink</span>
+            <span className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">
+              TeachLink
+            </span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white sm:text-4xl">
             Welcome to Onboarding
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
-            Set up your identity and technical preferences to get started with TeachLink's decentralized platform.
+            Set up your identity and technical preferences to get started with TeachLink&apos;s
+            decentralized platform.
           </p>
         </div>
 
