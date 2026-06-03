@@ -16,12 +16,12 @@ This directory contains the standardized, structured, context-aware logging syst
 
 Use the appropriate log level depending on the situation:
 
-| Level | Purpose | Example |
-|---|---|---|
-| `debug` | Verbose diagnostic information during development or troubleshooting. Disabled in production. | `logger.debug('Parsing payload cache', { context: { size } })` |
-| `info` | Normal operational events tracking milestone actions in the app lifecycle. | `logger.info('User successfully enrolled in course', { context: { userId, courseId } })` |
-| `warn` | Non-fatal anomalies or degradation of non-core functionality. Needs investigation but doesn't halt operation. | `logger.warn('Stripe checkout session creation delayed', { context: { attempt: 2 } })` |
-| `error` | Operations that failed, threw uncaught errors, or caused a crash/partial failure. | `logger.error('Failed to execute database migration', { error: err })` |
+| Level   | Purpose                                                                                                       | Example                                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `debug` | Verbose diagnostic information during development or troubleshooting. Disabled in production.                 | `logger.debug('Parsing payload cache', { context: { size } })`                           |
+| `info`  | Normal operational events tracking milestone actions in the app lifecycle.                                    | `logger.info('User successfully enrolled in course', { context: { userId, courseId } })` |
+| `warn`  | Non-fatal anomalies or degradation of non-core functionality. Needs investigation but doesn't halt operation. | `logger.warn('Stripe checkout session creation delayed', { context: { attempt: 2 } })`   |
+| `error` | Operations that failed, threw uncaught errors, or caused a crash/partial failure.                             | `logger.error('Failed to execute database migration', { error: err })`                   |
 
 ---
 
@@ -29,11 +29,11 @@ Use the appropriate log level depending on the situation:
 
 The logger is configured using the following environment variables:
 
-| Variable | Description | Default | Values |
-|---|---|---|---|
-| `LOG_LEVEL` | Minimum level of log records to emit. | `info` | `debug`, `info`, `warn`, `error` |
-| `NEXT_PUBLIC_LOG_LEVEL` | Client-side fallback log level. | `info` | `debug`, `info`, `warn`, `error` |
-| `LOG_AGGREGATION_URL` | Optional API endpoint to send JSON logs to via POST requests. | `undefined` | Absolute HTTP URL |
+| Variable                | Description                                                   | Default     | Values                           |
+| ----------------------- | ------------------------------------------------------------- | ----------- | -------------------------------- |
+| `LOG_LEVEL`             | Minimum level of log records to emit.                         | `info`      | `debug`, `info`, `warn`, `error` |
+| `NEXT_PUBLIC_LOG_LEVEL` | Client-side fallback log level.                               | `info`      | `debug`, `info`, `warn`, `error` |
+| `LOG_AGGREGATION_URL`   | Optional API endpoint to send JSON logs to via POST requests. | `undefined` | Absolute HTTP URL                |
 
 ---
 
@@ -67,6 +67,7 @@ try {
 The logger utilizes `AsyncLocalStorage` to tie request tracking metadata together. When wrapping request/job executions in `runWithLogContext`, any logger call executed anywhere inside that thread (even deep in helper functions or async callbacks) will automatically carry the correct `requestId` and `correlationId`.
 
 #### Middleware integration:
+
 ```typescript
 import { runWithLogContext } from '@/lib/logging';
 
@@ -74,7 +75,7 @@ export async function handleUserJob(jobId: string, correlationId: string) {
   return await runWithLogContext({ requestId: jobId, correlationId }, async () => {
     // Both of these logs automatically carry the correlationId & requestId
     logger.info('Processing task step 1');
-    
+
     await performSubtask();
   });
 }
@@ -90,11 +91,13 @@ async function performSubtask() {
 To prevent compliance risks and security issues, the logging service automatically filters out sensitive information. Any log message or payload context property containing keys resembling credentials, keys, or personal identifiers will have their values replaced with `[REDACTED]`.
 
 Redacted keys include:
+
 - `password`, `pwd`, `credentials`
 - `secret`, `token`, `key`
 - `authorization`, `auth`, `bearer`
 - `email`, `phone`, `ssn`, `creditcard`, `card`, `cvv`
 
 Bearer tokens inside string messages are also scanned and masked automatically:
+
 - Message: `"Received token: Bearer eyJhbGciOiJ..."`
 - Redacted output: `"Received token: Bearer [REDACTED]"`

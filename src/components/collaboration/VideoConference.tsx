@@ -1,14 +1,30 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Mic, Video, Monitor, Phone, VideoOff, MicOff } from 'lucide-react';
+import {
+  Mic,
+  Video,
+  Monitor,
+  Phone,
+  VideoOff,
+  MicOff,
+  ShieldAlert,
+  AlertTriangle,
+} from 'lucide-react';
 import { io, type Socket } from 'socket.io-client';
 import type { CollaborationUser } from '../../hooks/useCollaboration';
+import { useFraudDetection } from '../../hooks/useFraudDetection';
+import { useVirtualBackground } from '../../hooks/useVirtualBackground';
+import { fraudDetectionService, FraudDetectionService } from '../../services/fraud-detection';
+import type { FraudDetectionResult } from '../../services/fraud-detection';
 
 interface VideoConferenceProps {
   roomId: string;
   user: CollaborationUser;
   websocketUrl?: string;
+  fraudService?: FraudDetectionService;
+  isHost?: boolean;
+  hostUserId?: string;
 }
 
 type SignalingOffer = {
@@ -29,7 +45,14 @@ type IceCandidatePayload = {
   userId: string;
 };
 
-export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceProps) {
+export function VideoConference({
+  roomId,
+  user,
+  websocketUrl,
+  fraudService = fraudDetectionService,
+  isHost = false,
+  hostUserId,
+}: VideoConferenceProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -42,12 +65,29 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
   const [microphoneEnabled, setMicrophoneEnabled] = useState(true);
   const [sharingScreen, setSharingScreen] = useState(false);
   const [status, setStatus] = useState('Idle');
+  const [fraudWarning, setFraudWarning] = useState<string | null>(null);
+
+  const fraud = useFraudDetection(fraudService, {
+    user,
+    roomId,
+    isHost,
+    hostUserId,
+  });
+
+  const virtualBackground = useVirtualBackground();
 
   const signalingUrl =
     websocketUrl || process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001';
 
   useEffect(() => {
     if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const check = fraud.checkJoin();
+    if (check.blocked) {
+      setStatus('Access blocked by fraud detection');
+      setFraudWarning('Multiple active connections detected');
       return undefined;
     }
 
@@ -58,7 +98,11 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      socket.emit('join-room', { roomId, userId: user.id, userName: user.name });
+      socket.emit('join-room', {
+        roomId,
+        userId: user.id,
+        userName: user.name,
+      });
       setStatus('Connected to signaling');
     });
 
@@ -92,10 +136,12 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
     });
 
     return () => {
+      fraud.checkLeave();
       socket.disconnect();
       socketRef.current = null;
+      virtualBackground.stopProcessing();
     };
-  }, [roomId, signalingUrl, user.id, user.name]);
+  }, [roomId, signalingUrl, user.id, user.name, virtualBackground]);
 
   useEffect(() => {
     if (localVideoRef.current) {
@@ -148,14 +194,18 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
   const startLocalStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setLocalStream(stream);
-      stream.getAudioTracks().forEach((track) => {
+
+      // Apply virtual background if enabled
+      const processedStream = await virtualBackground.applyToStream(stream);
+
+      setLocalStream(processedStream);
+      processedStream.getAudioTracks().forEach((track) => {
         track.enabled = microphoneEnabled;
       });
-      stream.getVideoTracks().forEach((track) => {
+      processedStream.getVideoTracks().forEach((track) => {
         track.enabled = cameraEnabled;
       });
-      return stream;
+      return processedStream;
     } catch (error) {
       setStatus('Unable to access camera or microphone');
       console.error(error);
@@ -167,6 +217,23 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
     const socket = socketRef.current;
     if (!socket) {
       setStatus('Signaling not available');
+      return;
+    }
+
+    const check: FraudDetectionResult = fraud.checkStartCall();
+    if (check.blocked) {
+      setStatus('Call blocked by fraud detection');
+      setFraudWarning('Suspicious activity detected. Please try again later.');
+      return;
+    }
+    if (check.isSuspicious) {
+      setFraudWarning('Unusual activity detected. Your actions are being monitored.');
+    }
+
+    const bombingCheck: FraudDetectionResult = fraud.checkMeetingBombing();
+    if (bombingCheck.blocked) {
+      setStatus('Meeting bombing attempt detected');
+      setFraudWarning('Too many rapid join attempts detected');
       return;
     }
 
@@ -219,12 +286,24 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
       });
       setLocalStream(stream);
       setSharingScreen(false);
-      socketRef.current?.emit('screen-share', { roomId, userId: user.id, sharing: false });
+      fraud.checkScreenShare(false);
+      socketRef.current?.emit('screen-share', {
+        roomId,
+        userId: user.id,
+        sharing: false,
+      });
       return;
     }
 
+    const check = fraud.checkScreenShare(true);
+    if (check.isSuspicious) {
+      setFraudWarning('Screen share abuse detected. Rate limited.');
+    }
+
     try {
-      const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+      });
       const screenTrack = displayStream.getVideoTracks()[0];
       const peerConnection = await createPeerConnection();
       peerConnection.getSenders().forEach((sender) => {
@@ -233,7 +312,11 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
         }
       });
       setSharingScreen(true);
-      socketRef.current?.emit('screen-share', { roomId, userId: user.id, sharing: true });
+      socketRef.current?.emit('screen-share', {
+        roomId,
+        userId: user.id,
+        sharing: true,
+      });
       screenTrack.onended = () => {
         setSharingScreen(false);
         if (localStream) {
@@ -247,6 +330,7 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
   };
 
   const endCall = () => {
+    virtualBackground.stopProcessing();
     pcRef.current?.close();
     pcRef.current = null;
     localStream?.getTracks().forEach((track) => track.stop());
@@ -261,15 +345,43 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
     <div className="rounded-3xl border border-gray-200 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            Video conference
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Video conference
+            </h2>
+            {fraud.fraudScore > 0 && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                  fraud.fraudScore >= 50
+                    ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
+                    : fraud.fraudScore >= 20
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
+                }`}
+                title={`Fraud score: ${fraud.fraudScore}`}
+              >
+                <ShieldAlert size={12} aria-hidden="true" />
+                {fraud.fraudScore}
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Peer-to-peer WebRTC audio/video with screen sharing and signaling.
           </p>
         </div>
-        <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {status}
+        <div className="flex items-center gap-2">
+          {fraudWarning && (
+            <div
+              className="flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+              role="alert"
+            >
+              <AlertTriangle size={12} aria-hidden="true" />
+              {fraudWarning}
+            </div>
+          )}
+          <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+            {status}
+          </div>
         </div>
       </div>
 
@@ -301,7 +413,8 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
             <button
               type="button"
               onClick={startCall}
-              className="inline-flex items-center justify-center gap-2 rounded-3xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+              disabled={fraud.isBlocked}
+              className="inline-flex items-center justify-center gap-2 rounded-3xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Phone size={16} /> Start call
             </button>
@@ -313,6 +426,21 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
               <VideoOff size={16} /> End call
             </button>
           </div>
+
+          {fraud.accessCheck && !fraud.accessCheck.allowed && (
+            <div
+              className="mt-3 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400"
+              role="alert"
+            >
+              <div className="flex items-center gap-2 font-medium">
+                <ShieldAlert size={14} aria-hidden="true" />
+                Access restricted
+              </div>
+              <p className="mt-1 text-xs">
+                {fraud.accessCheck.reason || 'Access to this conference is restricted.'}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
@@ -347,6 +475,14 @@ export function VideoConference({ roomId, user, websocketUrl }: VideoConferenceP
             <div className="mt-3 flex items-center gap-2">
               <Video size={14} />
               <span>{cameraEnabled ? 'Camera active' : 'Camera off'}</span>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <ShieldAlert size={14} />
+              <span>
+                {fraud.fraudScore === 0
+                  ? 'No suspicious activity'
+                  : `Fraud score: ${fraud.fraudScore}`}
+              </span>
             </div>
           </div>
         </div>

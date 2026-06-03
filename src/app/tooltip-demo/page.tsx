@@ -26,9 +26,7 @@ export default function TooltipDemoPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 p-10">
-      <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
-        Tooltip System Demo
-      </h1>
+      <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Tooltip System Demo</h1>
       <p className="mb-10 text-gray-500 dark:text-gray-400">
         Hover or focus the buttons below to see tooltips. Anomaly detection is active — rapidly
         toggling a tooltip or keeping it open for &gt;10 s will log an anomaly.
@@ -63,9 +61,7 @@ export default function TooltipDemoPage() {
 
       {/* Placement showcase */}
       <section className="mb-12">
-        <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
-          Placements
-        </h2>
+        <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">Placements</h2>
         <div className="flex flex-wrap items-center gap-10">
           {PLACEMENTS.map((placement) => (
             <Tooltip
@@ -97,8 +93,7 @@ export default function TooltipDemoPage() {
         <Tooltip
           content={
             <span>
-              <strong>Tip:</strong> This tooltip supports{' '}
-              <em>rich React content</em>.
+              <strong>Tip:</strong> This tooltip supports <em>rich React content</em>.
             </span>
           }
           placement="right"
@@ -118,6 +113,42 @@ export default function TooltipDemoPage() {
         </Tooltip>
       </section>
 
+      {/* YouTube preview tooltip */}
+      <section className="mb-12">
+        <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
+          YouTube Preview
+        </h2>
+        <Tooltip
+          content={
+            <div className="w-[320px] max-w-full overflow-hidden rounded-md">
+              <iframe
+                className="h-44 w-full"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="YouTube preview"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          }
+          placement="bottom"
+          delayMs={100}
+          zoomScale={zoomScale}
+          interactive
+          onAnomaly={(type) => onOpen(`youtube-${type}`)}
+        >
+          <button
+            className="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            onFocus={() => onOpen('youtube')}
+            onBlur={() => onClose('youtube')}
+            onMouseEnter={() => onOpen('youtube')}
+            onMouseLeave={() => onClose('youtube')}
+          >
+            Hover for YouTube preview
+          </button>
+        </Tooltip>
+      </section>
+
       {/* Disabled tooltip */}
       <section className="mb-12">
         <h2 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
@@ -133,9 +164,7 @@ export default function TooltipDemoPage() {
       {/* Anomaly log */}
       <section>
         <div className="mb-3 flex items-center gap-4">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-            Anomaly Log
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Anomaly Log</h2>
           {anomalies.length > 0 && (
             <button
               onClick={clearAnomalies}

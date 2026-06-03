@@ -231,14 +231,14 @@ describe('Redirect Management System', () => {
       expect(legacyRules.length).toBeGreaterThan(0);
 
       // All should be marked as legacy
-      legacyRules.forEach(rule => {
+      legacyRules.forEach((rule) => {
         expect(rule.isLegacy).toBe(true);
       });
     });
 
     it('should include privacy policy legacy redirects', () => {
       const legacyRules = getLegacyRedirects();
-      const hasPrivacyPolicy = legacyRules.some(r => r.from === '/privacy-policy');
+      const hasPrivacyPolicy = legacyRules.some((r) => r.from === '/privacy-policy');
       expect(hasPrivacyPolicy).toBe(true);
     });
   });
@@ -257,7 +257,7 @@ describe('Redirect Management System', () => {
         '/legal/privacy-policy',
       ];
 
-      variants.forEach(variant => {
+      variants.forEach((variant) => {
         const context = {
           pathname: variant,
           searchParams: new URLSearchParams(),
@@ -269,7 +269,7 @@ describe('Redirect Management System', () => {
     });
 
     it('should mark privacy policy redirects as legacy', () => {
-      PRIVACY_POLICY_REDIRECTS.forEach(rule => {
+      PRIVACY_POLICY_REDIRECTS.forEach((rule) => {
         expect(rule.isLegacy).toBe(true);
       });
     });

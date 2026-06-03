@@ -61,11 +61,7 @@ export function SubmitForApproval({
 
   return (
     // Only users with CONTENT_UPLOAD can submit; admins (CONTENT_APPROVE) review instead
-    <PermissionGate
-      user={user}
-      permission={Permission.CONTENT_UPLOAD}
-      fallback={null}
-    >
+    <PermissionGate user={user} permission={Permission.CONTENT_UPLOAD} fallback={null}>
       {/* Hide for admins who have CONTENT_APPROVE — they use ApprovalQueue */}
       <PermissionGate
         user={user}

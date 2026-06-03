@@ -6,7 +6,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { WizardStep, WizardProgress, FormState } from '@/form-management/types/core';
+import {
+  WizardStep,
+  WizardProgress,
+  FormState,
+  FieldDescriptor,
+} from '@/form-management/types/core';
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { useNotification } from '@/hooks/use-notification';
@@ -23,6 +28,7 @@ interface FormWizardControllerProps {
   validateBeforeNext?: boolean;
   className?: string;
   children: (currentStep: WizardStep, progress: WizardProgress) => React.ReactNode;
+  fields?: FieldDescriptor[];
 }
 
 export const FormWizardController: React.FC<FormWizardControllerProps> = ({
@@ -35,10 +41,18 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
   validateBeforeNext = true,
   className = '',
   children,
+  fields = [],
 }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [validationEngine] = useState(() => new ValidationEngineImpl());
+  const [validationEngine] = useState(() => new ValidationEngineImpl(fields));
+
+  useEffect(() => {
+    if (fields && fields.length > 0) {
+      validationEngine.updateFieldDescriptors(fields);
+    }
+  }, [fields, validationEngine]);
+
   const [isValidating, setIsValidating] = useState(false);
   const { error, success } = useNotification();
 

@@ -142,7 +142,7 @@ describe('Redirect Middleware Integration Tests', () => {
     it('should handle various locale codes', () => {
       const locales = ['en', 'es', 'fr', 'de', 'ja', 'zh', 'ar', 'pt'];
 
-      locales.forEach(locale => {
+      locales.forEach((locale) => {
         const request = createMockRequest('/', '', { 'i18n:language': locale });
         expect(extractLocale(request)).toBe(locale);
       });
@@ -153,7 +153,7 @@ describe('Redirect Middleware Integration Tests', () => {
     it('should work with different locales', () => {
       const locales = ['en', 'es', 'fr', 'de'];
 
-      locales.forEach(locale => {
+      locales.forEach((locale) => {
         const request = createMockRequest('/privacy-policy', '', { 'i18n:language': locale });
         const result = handleRedirects(request);
 

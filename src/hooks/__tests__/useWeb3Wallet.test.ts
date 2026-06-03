@@ -28,7 +28,8 @@ describe('useWeb3Wallet', () => {
       // Mock window.starknet
       mockStarknet = {
         enable: vi.fn(),
-        selectedAddress: '0xstarkaddress123456789012345678901234567890123456789012345678901234567890',
+        selectedAddress:
+          '0xstarkaddress123456789012345678901234567890123456789012345678901234567890',
         on: vi.fn(),
         removeListener: vi.fn(),
       };
@@ -83,7 +84,9 @@ describe('useWeb3Wallet', () => {
   });
 
   it('should successfully connect to Starknet', async () => {
-    mockStarknet.enable.mockResolvedValue(['0xstarkaddress123456789012345678901234567890123456789012345678901234567890']);
+    mockStarknet.enable.mockResolvedValue([
+      '0xstarkaddress123456789012345678901234567890123456789012345678901234567890',
+    ]);
 
     const { result } = renderHook(() => useWeb3Wallet());
 
@@ -92,7 +95,9 @@ describe('useWeb3Wallet', () => {
     });
 
     expect(result.current.isConnected).toBe(true);
-    expect(result.current.address).toBe('0xstarkaddress123456789012345678901234567890123456789012345678901234567890');
+    expect(result.current.address).toBe(
+      '0xstarkaddress123456789012345678901234567890123456789012345678901234567890',
+    );
     expect(result.current.provider).toBe('starknet');
     expect(result.current.chainId).toBe('starknet');
     expect(result.current.error).toBeNull();

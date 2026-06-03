@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useNotifications } from '@/app/hooks/useNotifications';
+import RecommendationPanel from './RecommendationPanel';
 import {
   UserNotificationPreferences,
   NotificationChannel,
@@ -65,7 +66,14 @@ const channelIcons: Record<NotificationChannel, React.ReactNode> = {
 };
 
 export default function UserPreferences({ userId, onSave }: UserPreferencesProps) {
-  const { preferences, updatePreferences, isLoading } = useNotifications({ userId });
+  const {
+    preferences,
+    updatePreferences,
+    isLoading,
+    recommendations,
+    applyRecommendation,
+    dismissRecommendation,
+  } = useNotifications({ userId });
 
   const [localPreferences, setLocalPreferences] = useState<UserNotificationPreferences | null>(
     null,
@@ -187,6 +195,13 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
           Customize how and when you receive notifications
         </p>
       </div>
+
+      {/* Recommendation Engine Panel */}
+      <RecommendationPanel
+        recommendations={recommendations}
+        onApply={applyRecommendation}
+        onDismiss={dismissRecommendation}
+      />
 
       {/* Global Channel Settings */}
       <div className="p-4 border-b">

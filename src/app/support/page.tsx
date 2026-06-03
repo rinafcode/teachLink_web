@@ -31,10 +31,7 @@ export default function SupportPage() {
           <h2 className="mb-4 text-base font-medium text-gray-900 dark:text-gray-100">
             New Support Ticket
           </h2>
-          <TicketForm
-            submittedBy={userId}
-            onSuccess={() => setShowForm(false)}
-          />
+          <TicketForm submittedBy={userId} onSuccess={() => setShowForm(false)} />
         </div>
       )}
 

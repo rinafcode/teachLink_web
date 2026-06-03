@@ -40,13 +40,41 @@ interface KeywordSignal {
 }
 
 const KEYWORD_SIGNALS: KeywordSignal[] = [
-  { pattern: /\b(security|breach|hack|exploit|vulnerability)\b/i, score: 20, label: 'Security concern detected' },
-  { pattern: /\b(data.?loss|data.?leak|personal.?data|gdpr|pii)\b/i, score: 20, label: 'Data privacy risk' },
-  { pattern: /\b(payment|fraud|charge|refund|billing.?error)\b/i, score: 15, label: 'Financial risk' },
-  { pattern: /\b(account.?locked|cannot.?login|access.?denied|unauthorized)\b/i, score: 15, label: 'Access/auth issue' },
-  { pattern: /\b(urgent|critical|emergency|asap|immediately)\b/i, score: 10, label: 'User-flagged urgency' },
-  { pattern: /\b(crash|down|outage|unavailable|broken)\b/i, score: 10, label: 'Service disruption' },
-  { pattern: /\b(multiple.?users|all.?users|everyone|widespread)\b/i, score: 10, label: 'Broad user impact' },
+  {
+    pattern: /\b(security|breach|hack|exploit|vulnerability)\b/i,
+    score: 20,
+    label: 'Security concern detected',
+  },
+  {
+    pattern: /\b(data.?loss|data.?leak|personal.?data|gdpr|pii)\b/i,
+    score: 20,
+    label: 'Data privacy risk',
+  },
+  {
+    pattern: /\b(payment|fraud|charge|refund|billing.?error)\b/i,
+    score: 15,
+    label: 'Financial risk',
+  },
+  {
+    pattern: /\b(account.?locked|cannot.?login|access.?denied|unauthorized)\b/i,
+    score: 15,
+    label: 'Access/auth issue',
+  },
+  {
+    pattern: /\b(urgent|critical|emergency|asap|immediately)\b/i,
+    score: 10,
+    label: 'User-flagged urgency',
+  },
+  {
+    pattern: /\b(crash|down|outage|unavailable|broken)\b/i,
+    score: 10,
+    label: 'Service disruption',
+  },
+  {
+    pattern: /\b(multiple.?users|all.?users|everyone|widespread)\b/i,
+    score: 10,
+    label: 'Broad user impact',
+  },
 ];
 
 function scoreToLevel(score: number): RiskLevel {
