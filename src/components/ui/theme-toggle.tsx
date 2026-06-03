@@ -50,12 +50,7 @@ function ThemeToggleControl() {
       setTheme(next);
       patchSettings({ theme: next });
     } catch (err) {
-      if (typeof errorReportingService?.reportError === 'function') {
-        errorReportingService.reportError(err instanceof Error ? err : new Error(String(err)), {
-          component: 'ThemeToggle',
-          action: 'handleToggle',
-        });
-      }
+      console.error('ThemeToggle error:', err);
     }
   };
 

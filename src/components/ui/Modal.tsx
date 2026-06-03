@@ -30,7 +30,14 @@ export interface ModalProps {
  * Accessible modal dialog with focus trap, Escape-to-close, and screen reader announcements.
  * Uses the existing `useFocusTrap` hook from `useAccessibility`.
  */
-export function Modal({ isOpen, onClose, title, children, size = 'md', className = '' }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  className = '',
+}: ModalProps) {
   const titleId = useId();
   const containerRef = useFocusTrap(isOpen);
   const announce = useScreenReaderAnnouncement();

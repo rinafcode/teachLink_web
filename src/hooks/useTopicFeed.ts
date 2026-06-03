@@ -135,6 +135,9 @@ export function useTopicFeed(slug: string): UseTopicFeedReturn {
     sort,
     setSort: handleSetSort,
     loadMore,
+    retry,
+    toggleFollow,
+    followLoading,
     error,
   };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { Sparkles, Gift } from 'lucide-react';
 import { sendTip } from '@/services/tipService';
 
 interface TipFormProps {
@@ -129,7 +130,7 @@ export default function TipForm({ recipient }: TipFormProps) {
         >
           {error}
         </p>
-      )}
+      ) : null}
 
       <button
         type="submit"
