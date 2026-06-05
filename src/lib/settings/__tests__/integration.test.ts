@@ -577,6 +577,3 @@ describe('Settings System Integration', () => {
     });
   });
 });
-    });
-  });
-});

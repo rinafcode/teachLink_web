@@ -11,7 +11,11 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: ImageUploaderProps) {
+function ImageUploader({
+  onImageSelect,
+  initialImageUrl,
+  className = '',
+}: ImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -130,6 +134,13 @@ function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: Image
                   const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
                     type: 'image/jpeg',
                   });
+
+                  dataWarehouse.trackEvent('IMAGE_UPLOADED', {
+                    fileName: optimizedFile.name,
+                    fileSize: optimizedFile.size,
+                    fileType: optimizedFile.type,
+                  }).catch(console.error);
+
                   onImageSelect(optimizedFile);
                 }
               },
@@ -153,6 +164,7 @@ function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: Image
             fileType: file.type,
           })
           .catch(console.error);
+
         onImageSelect(file);
       }
 
