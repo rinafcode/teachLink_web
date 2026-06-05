@@ -63,4 +63,46 @@ describe('ThemeToggle', () => {
       ]),
     );
   });
+
+  it('safely catches and logs errors inside event handler without crashing', async () => {
+    const spyReport = vi.spyOn(errorReportingService, 'reportError').mockResolvedValue({} as any);
+
+    // Render under custom provider where setTheme throws
+    const ThrowingProvider = ({ children }: { children: React.ReactNode }) => {
+      const mockValue = {
+        theme: 'light' as const,
+        resolvedTheme: 'light' as const,
+        setTheme: () => {
+          throw new Error('Mutation failed');
+        },
+      };
+      const ThemeContext = (require('@/contexts/ThemeContext') as any).ThemeContext;
+      if (!ThemeContext) {
+        // Fallback if imported context format differs
+        throw new Error('ThemeContext not exportable');
+      }
+      return <ThemeContext.Provider value={mockValue}>{children}</ThemeContext.Provider>;
+    };
+
+    render(
+      <ThrowingProvider>
+        <ThemeToggle />
+      </ThrowingProvider>,
+    );
+
+    const toggle = await screen.findByRole('button', { name: /switch to dark mode/i });
+
+    // Clicking should not crash the rendering tree
+    expect(() => fireEvent.click(toggle)).not.toThrow();
+
+    expect(spyReport).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        component: 'ThemeToggle',
+        action: 'handleToggle',
+      }),
+    );
+
+    spyReport.mockRestore();
+  });
 });

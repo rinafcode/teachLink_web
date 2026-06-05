@@ -1,17 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import {
-  Trophy,
-  Medal,
-  Crown,
-  Users,
-  Plus,
-  Trash2,
-  Video,
-  ShieldAlert,
-  Lock,
-} from 'lucide-react';
+import { Trophy, Medal, Crown, Users, Plus, Trash2, Video, ShieldAlert, Lock } from 'lucide-react';
 import { VideoConference } from '@/components/collaboration/VideoConference';
 import { fraudDetectionService, FraudDetectionService } from '@/services/fraud-detection';
 import type { ConferenceAccessCheck } from '@/services/fraud-detection';
@@ -102,31 +92,23 @@ export function LeaderboardConference({
         return;
       }
 
-      const accessCheck: ConferenceAccessCheck =
-        fraudService.checkConferenceAccess(
-          currentUserId,
-          conf.roomId,
-          conf.hostUserId === currentUserId,
-          conf.hostUserId,
-        );
+      const accessCheck: ConferenceAccessCheck = fraudService.checkConferenceAccess(
+        currentUserId,
+        conf.roomId,
+        conf.hostUserId === currentUserId,
+        conf.hostUserId,
+      );
 
       if (!accessCheck.allowed) {
-        setAccessError(
-          accessCheck.reason ||
-            'Access denied by fraud detection.',
-        );
+        setAccessError(accessCheck.reason || 'Access denied by fraud detection.');
         return;
       }
 
       if (accessCheck.requiresVerification) {
-        setAccessError(
-          accessCheck.reason || 'Access granted with monitoring.',
-        );
+        setAccessError(accessCheck.reason || 'Access granted with monitoring.');
       }
 
-      setActiveConference(
-        activeConference?.id === conf.id ? null : conf,
-      );
+      setActiveConference(activeConference?.id === conf.id ? null : conf);
     },
     [activeConference, currentUserId, fraudService],
   );
@@ -140,9 +122,7 @@ export function LeaderboardConference({
       >
         <div className="flex items-center gap-2 mb-4">
           <Trophy size={20} className="text-yellow-500" aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            Leaderboard
-          </h2>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Leaderboard</h2>
         </div>
 
         <ol className="space-y-2" aria-label="Top participants">
@@ -207,9 +187,7 @@ export function LeaderboardConference({
               type="text"
               value={newConferenceName}
               onChange={(e) => setNewConferenceName(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === 'Enter' && handleCreateConference()
-              }
+              onKeyDown={(e) => e.key === 'Enter' && handleCreateConference()}
               placeholder="Conference name"
               className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Conference name"
@@ -254,17 +232,9 @@ export function LeaderboardConference({
                 className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
               >
                 {conf.locked ? (
-                  <Lock
-                    size={16}
-                    className="text-red-400 shrink-0"
-                    aria-hidden="true"
-                  />
+                  <Lock size={16} className="text-red-400 shrink-0" aria-hidden="true" />
                 ) : (
-                  <Video
-                    size={16}
-                    className="text-slate-400 shrink-0"
-                    aria-hidden="true"
-                  />
+                  <Video size={16} className="text-slate-400 shrink-0" aria-hidden="true" />
                 )}
                 <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                   {conf.name}

@@ -47,7 +47,9 @@ interface VerificationStore {
   records: EmailVerificationRecord[];
 }
 
-const VERIFICATION_TOKEN_TTL_MS = Number(process.env.EMAIL_VERIFICATION_TOKEN_TTL_MS ?? 15 * 60 * 1000);
+const VERIFICATION_TOKEN_TTL_MS = Number(
+  process.env.EMAIL_VERIFICATION_TOKEN_TTL_MS ?? 15 * 60 * 1000,
+);
 const VERIFICATION_BACKUP_CODE_TTL_MS = Number(
   process.env.EMAIL_VERIFICATION_BACKUP_CODE_TTL_MS ?? 24 * 60 * 60 * 1000,
 );
@@ -55,7 +57,9 @@ const VERIFICATION_RESEND_COOLDOWN_MS = Number(
   process.env.EMAIL_VERIFICATION_RESEND_COOLDOWN_MS ?? 60 * 1000,
 );
 
-const DEFAULT_STORE_PATH = process.env.EMAIL_VERIFICATION_STORE_PATH ?? path.join(process.cwd(), '.data', 'email-verification.json');
+const DEFAULT_STORE_PATH =
+  process.env.EMAIL_VERIFICATION_STORE_PATH ??
+  path.join(process.cwd(), '.data', 'email-verification.json');
 
 let verificationStorePath = DEFAULT_STORE_PATH;
 let cachedStore: Promise<VerificationStore> | null = null;
@@ -139,7 +143,10 @@ async function withStore<T>(updater: (store: VerificationStore) => Promise<T> | 
   return next;
 }
 
-function findRecordByEmail(store: VerificationStore, emailNormalized: string): EmailVerificationRecord | undefined {
+function findRecordByEmail(
+  store: VerificationStore,
+  emailNormalized: string,
+): EmailVerificationRecord | undefined {
   return store.records.find((record) => record.emailNormalized === emailNormalized);
 }
 
@@ -159,7 +166,11 @@ function sweepExpiredRecords(store: VerificationStore): void {
   });
 }
 
-function buildFreshRecord(params: { email: string; name: string; existing?: EmailVerificationRecord }): VerificationIssueResult {
+function buildFreshRecord(params: {
+  email: string;
+  name: string;
+  existing?: EmailVerificationRecord;
+}): VerificationIssueResult {
   const verificationToken = createVerificationToken();
   const backupCode = createBackupCode();
   const now = nowIso();
@@ -221,7 +232,9 @@ export function buildVerificationMailContext(
 export async function createOrRestoreVerification(params: {
   email: string;
   name: string;
-}): Promise<VerificationIssueResult | { status: 'already_verified'; record: EmailVerificationRecord }> {
+}): Promise<
+  VerificationIssueResult | { status: 'already_verified'; record: EmailVerificationRecord }
+> {
   return withStore(async (store) => {
     sweepExpiredRecords(store);
 
@@ -238,7 +251,9 @@ export async function createOrRestoreVerification(params: {
       existing,
     });
 
-    store.records = store.records.filter((recordItem) => recordItem.emailNormalized !== emailNormalized);
+    store.records = store.records.filter(
+      (recordItem) => recordItem.emailNormalized !== emailNormalized,
+    );
     store.records.push(record);
 
     return { record, verificationToken, backupCode };
@@ -273,7 +288,9 @@ export async function verifyEmailToken(token: string): Promise<VerificationLooku
   });
 }
 
-export async function resendVerificationEmail(email: string): Promise<VerificationIssueResult | VerificationLookupResult> {
+export async function resendVerificationEmail(
+  email: string,
+): Promise<VerificationIssueResult | VerificationLookupResult> {
   return withStore(async (store) => {
     sweepExpiredRecords(store);
     const emailNormalized = normalizeEmail(email);
@@ -298,7 +315,9 @@ export async function resendVerificationEmail(email: string): Promise<Verificati
     });
     record.resendCount = existing.resendCount + 1;
 
-    store.records = store.records.filter((recordItem) => recordItem.emailNormalized !== emailNormalized);
+    store.records = store.records.filter(
+      (recordItem) => recordItem.emailNormalized !== emailNormalized,
+    );
     store.records.push(record);
 
     return { record, verificationToken, backupCode };
@@ -337,7 +356,9 @@ export async function restoreVerificationEmail(params: {
     });
     record.resendCount = existing.resendCount + 1;
 
-    store.records = store.records.filter((recordItem) => recordItem.emailNormalized !== emailNormalized);
+    store.records = store.records.filter(
+      (recordItem) => recordItem.emailNormalized !== emailNormalized,
+    );
     store.records.push(record);
 
     return { record, verificationToken, backupCode };
@@ -352,7 +373,9 @@ export async function getVerificationStatus(email: string): Promise<Verification
   });
 }
 
-export async function getVerificationBySessionId(sessionId: string): Promise<EmailVerificationRecord | null> {
+export async function getVerificationBySessionId(
+  sessionId: string,
+): Promise<EmailVerificationRecord | null> {
   return withStore(async (store) => {
     sweepExpiredRecords(store);
     return store.records.find((record) => record.verificationId === sessionId) ?? null;

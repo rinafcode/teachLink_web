@@ -33,10 +33,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     edgeLog('error', '/api/auth/discord', `Error: ${error}`);
 
     return addHeaders(
-      NextResponse.json(
-        { message: 'Failed to initiate Discord OAuth' },
-        { status: 500 },
-      ),
+      NextResponse.json({ message: 'Failed to initiate Discord OAuth' }, { status: 500 }),
     ) as NextResponse;
   }
 }

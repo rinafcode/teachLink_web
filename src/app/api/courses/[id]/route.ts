@@ -13,10 +13,6 @@ import {
 
 export const runtime = 'edge';
 
-// ---------------------------------------------------------------------------
-// GET /api/courses/[id]
-// ---------------------------------------------------------------------------
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -53,21 +49,13 @@ export async function GET(
     return withSecurityHeaders(addHeaders(result.error)) as NextResponse<CourseResponseDTO>;
   }
 
-  // Mock course lookup — replace with real DB query
-  const course = {
-    id: result.data.id,
-    title: 'Web3 UX Design Principles',
-    description: 'Create intuitive interfaces for decentralized applications',
-    instructor: 'Sarah Johnson',
-    duration: '24 hours',
-    totalLessons: 12,
-    progress: 68,
-    category: 'Design',
-    size: '250MB',
-    thumbnailUrl:
-      'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
-    downloaded: false,
-  };
+  const course = getCourseById(result.data.id);
+  if (!course) {
+    const notFound = addHeaders(
+      NextResponse.json({ data: null as unknown as CourseResponseDTO['data'], success: false, message: 'Course not found' }, { status: 404 }),
+    );
+    return notFound as NextResponse<CourseResponseDTO>;
+  }
 
   const sanitizedCourse = sanitizeObject(course);
 

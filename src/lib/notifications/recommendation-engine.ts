@@ -24,10 +24,10 @@ import {
 
 // ─── Thresholds ────────────────────────────────────────────────────────────────
 
-const LOW_READ_RATE = 20;       // % — below this → suggest disabling category
-const HIGH_CLICK_RATE = 60;     // % — above this → suggest adding push
+const LOW_READ_RATE = 20; // % — below this → suggest disabling category
+const HIGH_CLICK_RATE = 60; // % — above this → suggest adding push
 const LOW_EMAIL_READ_RATE = 10; // % — below this → suggest digest mode
-const QUIET_READ_RATE = 40;     // % — below this (overall) → suggest quiet hours
+const QUIET_READ_RATE = 40; // % — below this (overall) → suggest quiet hours
 const HIGH_FREQ_READ_RATE = 30; // % — below this at maxPerDay ≥ 50 → suggest reducing
 const HIGH_PUSH_READ_RATE = 70; // % — above this → suggest SMS
 
@@ -77,7 +77,7 @@ export function generateRecommendations(
     const catPrefs = preferences.categories[category];
 
     if (!catPrefs?.enabled) continue; // already disabled
-    if (catStats.sent < 5) continue;  // not enough data
+    if (catStats.sent < 5) continue; // not enough data
 
     const readRate = pct(catStats.read, catStats.sent);
 
@@ -86,7 +86,9 @@ export function generateRecommendations(
         id: makeId('disable_category', category),
         type: 'disable_category',
         title: `Disable "${formatCategory(category)}" notifications`,
-        description: `Only ${readRate.toFixed(0)}% of "${formatCategory(category)}" notifications are read. Disabling this category will reduce noise.`,
+        description: `Only ${readRate.toFixed(0)}% of "${formatCategory(
+          category,
+        )}" notifications are read. Disabling this category will reduce noise.`,
         impact: readRate < 10 ? 'high' : 'medium',
         category,
         preferencePatch: {
@@ -122,7 +124,9 @@ export function generateRecommendations(
         id: makeId('add_channel', category, 'push'),
         type: 'add_channel',
         title: `Enable push for "${formatCategory(category)}"`,
-        description: `${clickRate.toFixed(0)}% of "${formatCategory(category)}" notifications are clicked — you'd benefit from instant push delivery.`,
+        description: `${clickRate.toFixed(0)}% of "${formatCategory(
+          category,
+        )}" notifications are clicked — you'd benefit from instant push delivery.`,
         impact: 'medium',
         category,
         channel: 'push',
@@ -153,7 +157,9 @@ export function generateRecommendations(
           id: makeId('switch_digest', 'daily'),
           type: 'switch_digest',
           title: 'Switch email to daily digest',
-          description: `Only ${emailReadRate.toFixed(0)}% of email notifications are read immediately. A daily digest reduces inbox clutter while keeping you informed.`,
+          description: `Only ${emailReadRate.toFixed(
+            0,
+          )}% of email notifications are read immediately. A daily digest reduces inbox clutter while keeping you informed.`,
           impact: 'medium',
           channel: 'email',
           preferencePatch: {
@@ -176,7 +182,9 @@ export function generateRecommendations(
       id: makeId('enable_quiet_hours'),
       type: 'enable_quiet_hours',
       title: 'Enable quiet hours',
-      description: `Your overall read rate is ${overallReadRate.toFixed(0)}%. Enabling quiet hours (e.g. 22:00–08:00) can reduce interruptions during low-engagement periods.`,
+      description: `Your overall read rate is ${overallReadRate.toFixed(
+        0,
+      )}%. Enabling quiet hours (e.g. 22:00–08:00) can reduce interruptions during low-engagement periods.`,
       impact: 'low',
       preferencePatch: {
         quietHours: {
@@ -192,15 +200,16 @@ export function generateRecommendations(
   // ── Rule 5: reduce_frequency ──────────────────────────────────────────────────
   // maxPerDay >= 50 and overall read-rate < HIGH_FREQ_READ_RATE → reduce to 20.
 
-  if (
-    preferences.frequency.maxPerDay >= 50 &&
-    overallReadRate < HIGH_FREQ_READ_RATE
-  ) {
+  if (preferences.frequency.maxPerDay >= 50 && overallReadRate < HIGH_FREQ_READ_RATE) {
     recommendations.push({
       id: makeId('reduce_frequency'),
       type: 'reduce_frequency',
       title: 'Reduce daily notification limit',
-      description: `You receive up to ${preferences.frequency.maxPerDay} notifications/day but only read ${overallReadRate.toFixed(0)}% of them. Lowering the limit to 20 will surface the most important ones.`,
+      description: `You receive up to ${
+        preferences.frequency.maxPerDay
+      } notifications/day but only read ${overallReadRate.toFixed(
+        0,
+      )}% of them. Lowering the limit to 20 will surface the most important ones.`,
       impact: 'high',
       preferencePatch: {
         frequency: {
@@ -225,7 +234,9 @@ export function generateRecommendations(
           id: makeId('enable_sms'),
           type: 'enable_sms',
           title: 'Consider enabling SMS for critical alerts',
-          description: `You read ${pushReadRate.toFixed(0)}% of push notifications. Adding SMS ensures you never miss urgent or payment notifications even when your device is silenced.`,
+          description: `You read ${pushReadRate.toFixed(
+            0,
+          )}% of push notifications. Adding SMS ensures you never miss urgent or payment notifications even when your device is silenced.`,
           impact: 'low',
           channel: 'sms',
           preferencePatch: {

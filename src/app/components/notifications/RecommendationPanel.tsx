@@ -48,9 +48,7 @@ export default function RecommendationPanel({
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <Lightbulb size={16} className="text-indigo-600" />
-        <h3 className="text-sm font-semibold text-indigo-900">
-          Recommendations
-        </h3>
+        <h3 className="text-sm font-semibold text-indigo-900">Recommendations</h3>
         <span className="ml-auto text-xs text-indigo-600 font-medium bg-indigo-100 px-2 py-0.5 rounded-full">
           {recommendations.length}
         </span>
@@ -76,9 +74,7 @@ export default function RecommendationPanel({
                     >
                       {impact.label}
                     </span>
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {rec.title}
-                    </p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{rec.title}</p>
                   </div>
                   {/* Dismiss */}
                   <button
@@ -91,9 +87,7 @@ export default function RecommendationPanel({
                 </div>
 
                 {/* Description */}
-                <p className="text-xs text-gray-500 mb-3 leading-relaxed">
-                  {rec.description}
-                </p>
+                <p className="text-xs text-gray-500 mb-3 leading-relaxed">{rec.description}</p>
 
                 {/* Apply button */}
                 <button

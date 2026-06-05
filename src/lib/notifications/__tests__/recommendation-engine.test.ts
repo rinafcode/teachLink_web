@@ -30,9 +30,7 @@ function makeAnalytics(
     totalSent: overrides.totalSent ?? 0,
     totalRead: overrides.totalRead ?? 0,
     totalClicked: overrides.totalClicked ?? 0,
-    readRate: overrides.totalSent
-      ? ((overrides.totalRead ?? 0) / overrides.totalSent) * 100
-      : 0,
+    readRate: overrides.totalSent ? ((overrides.totalRead ?? 0) / overrides.totalSent) * 100 : 0,
     clickRate: overrides.totalSent
       ? ((overrides.totalClicked ?? 0) / overrides.totalSent) * 100
       : 0,

@@ -99,12 +99,7 @@ export function useFraudDetection(
   );
 
   const checkAccess = useCallback((): ConferenceAccessCheck => {
-    const result = service.checkConferenceAccess(
-      user.id,
-      roomId,
-      isHost,
-      hostUserId,
-    );
+    const result = service.checkConferenceAccess(user.id, roomId, isHost, hostUserId);
     setAccessCheck(result);
     return result;
   }, [service, user.id, roomId, isHost, hostUserId]);

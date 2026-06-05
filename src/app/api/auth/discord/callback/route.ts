@@ -28,10 +28,7 @@ export async function GET(
     if (error) {
       edgeLog('error', '/api/auth/discord/callback', `OAuth error: ${error}`);
       return addHeaders(
-        NextResponse.json(
-          { message: `Discord OAuth error: ${error}` },
-          { status: 400 },
-        ),
+        NextResponse.json({ message: `Discord OAuth error: ${error}` }, { status: 400 }),
       ) as NextResponse;
     }
 
@@ -69,10 +66,7 @@ export async function GET(
     // Validate email is verified
     if (!discordUser.verified) {
       return addHeaders(
-        NextResponse.json(
-          { message: 'Discord email must be verified' },
-          { status: 400 },
-        ),
+        NextResponse.json({ message: 'Discord email must be verified' }, { status: 400 }),
       ) as NextResponse;
     }
 

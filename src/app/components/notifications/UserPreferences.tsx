@@ -66,7 +66,14 @@ const channelIcons: Record<NotificationChannel, React.ReactNode> = {
 };
 
 export default function UserPreferences({ userId, onSave }: UserPreferencesProps) {
-  const { preferences, updatePreferences, isLoading, recommendations, applyRecommendation, dismissRecommendation } = useNotifications({ userId });
+  const {
+    preferences,
+    updatePreferences,
+    isLoading,
+    recommendations,
+    applyRecommendation,
+    dismissRecommendation,
+  } = useNotifications({ userId });
 
   const [localPreferences, setLocalPreferences] = useState<UserNotificationPreferences | null>(
     null,

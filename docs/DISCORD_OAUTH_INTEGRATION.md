@@ -19,6 +19,7 @@ The Discord OAuth integration allows users to authenticate using their Discord a
 ### Components
 
 1. **OAuth Utilities** (`src/lib/discord/oauth.ts`)
+
    - `getDiscordAuthUrl()`: Generates Discord authorization URL
    - `exchangeCodeForToken()`: Exchanges authorization code for access token
    - `getDiscordUser()`: Fetches user information from Discord
@@ -26,6 +27,7 @@ The Discord OAuth integration allows users to authenticate using their Discord a
    - `generateState()`: Generates random state for CSRF protection
 
 2. **API Routes**
+
    - `GET /api/auth/discord`: Initiates OAuth flow
    - `GET /api/auth/discord/callback`: Handles OAuth callback
 
@@ -79,6 +81,7 @@ DISCORD_REDIRECT_URI=http://localhost:3000/api/auth/discord/callback
 ### Production Redirect URI
 
 For production, use your actual domain:
+
 ```env
 DISCORD_REDIRECT_URI=https://yourdomain.com/api/auth/discord/callback
 ```
@@ -106,11 +109,13 @@ Initiates Discord OAuth flow.
 Handles Discord OAuth callback.
 
 **Query Parameters:**
+
 - `code`: Authorization code from Discord
 - `state`: State parameter for CSRF validation
 - `error`: OAuth error (if any)
 
 **Response:**
+
 ```json
 {
   "message": "Discord authentication successful",
@@ -127,6 +132,7 @@ Handles Discord OAuth callback.
 ```
 
 **Error Responses:**
+
 - `400`: Invalid parameters, unverified email, or OAuth error
 - `500`: Internal server error
 
@@ -135,6 +141,7 @@ Handles Discord OAuth callback.
 ### Unit Tests
 
 Test OAuth utility functions:
+
 ```bash
 pnpm test src/lib/discord/__tests__/oauth.test.ts
 ```
@@ -142,6 +149,7 @@ pnpm test src/lib/discord/__tests__/oauth.test.ts
 ### Integration Tests
 
 Test API routes:
+
 ```bash
 pnpm test src/app/api/auth/discord/__tests__/route.test.ts
 pnpm test src/app/api/auth/discord/callback/__tests__/route.test.ts
@@ -150,6 +158,7 @@ pnpm test src/app/api/auth/discord/callback/__tests__/route.test.ts
 ### E2E Tests
 
 Test complete OAuth flow:
+
 ```bash
 pnpm test:e2e e2e/auth/discord.spec.ts
 ```
@@ -167,14 +176,17 @@ pnpm test:e2e e2e/auth/discord.spec.ts
 ### Common Issues
 
 1. **"Discord OAuth configuration is missing"**
+
    - Ensure all environment variables are set
    - Check that variables are loaded in the Edge runtime
 
 2. **"Invalid state parameter"**
+
    - Clear cookies and try again
    - Ensure state cookie is being set correctly
 
 3. **"Discord email must be verified"**
+
    - User must verify their email on Discord first
    - Cannot use Discord accounts without verified email
 

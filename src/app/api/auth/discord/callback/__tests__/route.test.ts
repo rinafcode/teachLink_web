@@ -50,7 +50,9 @@ describe('Discord OAuth Callback API Route', () => {
       });
 
       const mockRequest = {
-        nextUrl: new URL('http://localhost:3000/api/auth/discord/callback?code=test_code&state=test_state'),
+        nextUrl: new URL(
+          'http://localhost:3000/api/auth/discord/callback?code=test_code&state=test_state',
+        ),
         headers: new Headers(),
         cookies: {
           get: vi.fn((name: string) => {
@@ -107,7 +109,9 @@ describe('Discord OAuth Callback API Route', () => {
 
     it('should validate state parameter', async () => {
       const mockRequest = {
-        nextUrl: new URL('http://localhost:3000/api/auth/discord/callback?code=test_code&state=wrong_state'),
+        nextUrl: new URL(
+          'http://localhost:3000/api/auth/discord/callback?code=test_code&state=wrong_state',
+        ),
         headers: new Headers(),
         cookies: {
           get: vi.fn((name: string) => {
@@ -150,7 +154,9 @@ describe('Discord OAuth Callback API Route', () => {
       });
 
       const mockRequest = {
-        nextUrl: new URL('http://localhost:3000/api/auth/discord/callback?code=test_code&state=test_state'),
+        nextUrl: new URL(
+          'http://localhost:3000/api/auth/discord/callback?code=test_code&state=test_state',
+        ),
         headers: new Headers(),
         cookies: {
           get: vi.fn((name: string) => {
@@ -193,7 +199,9 @@ describe('Discord OAuth Callback API Route', () => {
       });
 
       const mockRequest = {
-        nextUrl: new URL('http://localhost:3000/api/auth/discord/callback?code=test_code&state=test_state'),
+        nextUrl: new URL(
+          'http://localhost:3000/api/auth/discord/callback?code=test_code&state=test_state',
+        ),
         headers: new Headers(),
         cookies: {
           get: vi.fn((name: string) => {
