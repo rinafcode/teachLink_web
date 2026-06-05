@@ -6,7 +6,7 @@ export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -14,7 +14,7 @@ export default function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const { notificationId, event, userId, timestamp, message, title, error } = req.body;
-      
+
       // Enhanced logging - shows full message body
       console.log('\n========================================');
       console.log('[📨 NOTIFICATION EVENT]');
@@ -27,7 +27,7 @@ export default function handler(req, res) {
         console.log(`   ❌ Error: ${error}`);
       }
       console.log('========================================\n');
-      
+
       const logEntry = {
         id: notificationId || `unknown_${Date.now()}`,
         userId: userId || 'anonymous',
@@ -36,15 +36,15 @@ export default function handler(req, res) {
         createdAt: new Date().toISOString(),
         message: message || title || '',
         title: title || '',
-        error: error || null
+        error: error || null,
       };
-      
+
       trackingLogs.unshift(logEntry);
-      
+
       if (trackingLogs.length > 200) {
         trackingLogs = trackingLogs.slice(0, 200);
       }
-      
+
       res.status(200).json({ success: true, logCount: trackingLogs.length });
     } catch (error) {
       console.error('[ERROR] Tracking failed:', error);
@@ -54,19 +54,21 @@ export default function handler(req, res) {
     try {
       const recentLogs = trackingLogs.slice(0, 100);
       const metrics = {
-        delivered: trackingLogs.filter(l => l.event === 'delivered').length,
-        clicked: trackingLogs.filter(l => l.event === 'clicked').length,
-        failed: trackingLogs.filter(l => l.event === 'failed').length,
-        sent: trackingLogs.filter(l => l.event === 'sent').length
+        delivered: trackingLogs.filter((l) => l.event === 'delivered').length,
+        clicked: trackingLogs.filter((l) => l.event === 'clicked').length,
+        failed: trackingLogs.filter((l) => l.event === 'failed').length,
+        sent: trackingLogs.filter((l) => l.event === 'sent').length,
       };
-      
-      console.log(`[📊 METRICS] Sent: ${metrics.sent}, Delivered: ${metrics.delivered}, Clicked: ${metrics.clicked}, Failed: ${metrics.failed}`);
-      
+
+      console.log(
+        `[📊 METRICS] Sent: ${metrics.sent}, Delivered: ${metrics.delivered}, Clicked: ${metrics.clicked}, Failed: ${metrics.failed}`,
+      );
+
       res.status(200).json({
         total: trackingLogs.length,
         logs: recentLogs,
         metrics: metrics,
-        activeSubscriptions: subscriptions.size
+        activeSubscriptions: subscriptions.size,
       });
     } catch (error) {
       console.error('Error fetching logs:', error);

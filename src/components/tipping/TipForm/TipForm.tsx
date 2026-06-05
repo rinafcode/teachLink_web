@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { Sparkles, Gift } from 'lucide-react';
 import { sendTip } from '@/services/tipService';
 
 interface TipFormProps {
@@ -10,12 +11,38 @@ interface TipFormProps {
   };
 }
 
+interface Group {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export default function TipForm({ recipient }: TipFormProps) {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [proof, setProof] = useState<string | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState('default');
+  const availableGroups: Group[] = [
+    {
+      id: 'default',
+      name: 'General Support',
+      description: 'Your tip will support the creator across all their content areas.'
+    },
+    {
+      id: 'education',
+      name: 'Education',
+      description: 'Support educational content and courses.'
+    },
+    {
+      id: 'research',
+      name: 'Research',
+      description: 'Support research and development activities.'
+    }
+  ];
+
+  const selectedGroup = availableGroups.find(g => g.id === selectedGroupId) || availableGroups[0];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -129,7 +156,7 @@ export default function TipForm({ recipient }: TipFormProps) {
         >
           {error}
         </p>
-      )}
+      ) : null}
 
       <button
         type="submit"

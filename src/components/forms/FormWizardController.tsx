@@ -6,7 +6,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { WizardStep, WizardProgress, FormState } from '@/form-management/types/core';
+import {
+  WizardStep,
+  WizardProgress,
+  FormState,
+  FieldDescriptor,
+} from '@/form-management/types/core';
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { useNotification } from '@/hooks/use-notification';

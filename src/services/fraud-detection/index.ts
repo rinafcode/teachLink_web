@@ -94,13 +94,7 @@ export class FraudDetectionService {
     this.events.push(event);
 
     const scoreIncrement =
-      severity === 'critical'
-        ? 40
-        : severity === 'high'
-          ? 20
-          : severity === 'medium'
-            ? 10
-            : 5;
+      severity === 'critical' ? 40 : severity === 'high' ? 20 : severity === 'medium' ? 10 : 5;
     const currentScore = this.userScores.get(context.userId) ?? 0;
     this.userScores.set(context.userId, currentScore + scoreIncrement);
 
@@ -136,9 +130,7 @@ export class FraudDetectionService {
 
     const recentJoins = this.actionLog.filter(
       (a) =>
-        a.userId === context.userId &&
-        a.action === 'join' &&
-        a.timestamp > Date.now() - 60_000,
+        a.userId === context.userId && a.action === 'join' && a.timestamp > Date.now() - 60_000,
     );
 
     if (recentJoins.length >= this.config.maxJoinLeavePerMinute) {
@@ -195,18 +187,14 @@ export class FraudDetectionService {
     let score = 0;
 
     const connections = this.connections.get(context.userId) ?? [];
-    const activeConnection = connections.find(
-      (c) => c.roomId === context.roomId && c.active,
-    );
+    const activeConnection = connections.find((c) => c.roomId === context.roomId && c.active);
     if (activeConnection) {
       activeConnection.active = false;
     }
 
     const recentLeaves = this.actionLog.filter(
       (a) =>
-        a.userId === context.userId &&
-        a.action === 'leave' &&
-        a.timestamp > Date.now() - 60_000,
+        a.userId === context.userId && a.action === 'leave' && a.timestamp > Date.now() - 60_000,
     );
 
     if (recentLeaves.length >= this.config.maxJoinLeavePerMinute) {
@@ -231,10 +219,7 @@ export class FraudDetectionService {
     };
   }
 
-  checkScreenShare(
-    context: UserActionContext,
-    enabled: boolean,
-  ): FraudDetectionResult {
+  checkScreenShare(context: UserActionContext, enabled: boolean): FraudDetectionResult {
     const events: FraudEvent[] = [];
     let score = 0;
 
@@ -342,8 +327,7 @@ export class FraudDetectionService {
     if (userScore >= 80) {
       return {
         allowed: false,
-        reason:
-          'Account temporarily restricted due to suspicious activity',
+        reason: 'Account temporarily restricted due to suspicious activity',
         requiresVerification: true,
       };
     }
@@ -366,9 +350,7 @@ export class FraudDetectionService {
 
     const recentJoinsFromIp = this.actionLog.filter(
       (a) =>
-        a.action === 'join' &&
-        a.roomId === context.roomId &&
-        a.timestamp > Date.now() - 10_000,
+        a.action === 'join' && a.roomId === context.roomId && a.timestamp > Date.now() - 10_000,
     );
 
     if (recentJoinsFromIp.length >= 3) {

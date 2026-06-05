@@ -39,8 +39,13 @@ export default function SignupPage() {
     {
       onSuccess: (data, variables) => {
         if (data.verification?.required) {
-          setSuccessMessage('Account created successfully! Check your email to verify your account.');
-          setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(variables.email)}`), 1500);
+          setSuccessMessage(
+            'Account created successfully! Check your email to verify your account.',
+          );
+          setTimeout(
+            () => router.push(`/verify-email?email=${encodeURIComponent(variables.email)}`),
+            1500,
+          );
           return;
         }
 
@@ -180,6 +185,20 @@ export default function SignupPage() {
                 </button>
               </div>
               <FieldError error={errors.confirmPassword?.message} id="confirmPassword-error" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Referral Code (Optional)</label>
+              <input
+                type="text"
+                placeholder="Enter referral code"
+                className={`w-full px-4 py-3 border ${errors.referralCode ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all uppercase`}
+                aria-invalid={!!errors.referralCode}
+                aria-describedby="referralCode-error"
+                {...register('referralCode')}
+              />
+              <FieldError error={errors.referralCode?.message} id="referralCode-error" />
+              <p className="text-xs text-gray-500 mt-1">Have a referral code? Enter it here for benefits.</p>
             </div>
 
             <FormError error={signupMutation.error?.message} id="signup-api-error" />

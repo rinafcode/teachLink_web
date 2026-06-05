@@ -141,10 +141,7 @@ describe('FraudDetectionService', () => {
       const ctx = createContext();
       for (let i = 0; i < 3; i++) {
         vi.advanceTimersByTime(1000);
-        const result = service.checkScreenShare(
-          { ...ctx, timestamp: Date.now() },
-          true,
-        );
+        const result = service.checkScreenShare({ ...ctx, timestamp: Date.now() }, true);
         expect(result.blocked).toBe(false);
         expect(result.events).toHaveLength(0);
       }
@@ -159,10 +156,7 @@ describe('FraudDetectionService', () => {
         service.checkScreenShare({ ...ctx, timestamp: Date.now() }, true);
       }
 
-      const result = service.checkScreenShare(
-        { ...ctx, timestamp: Date.now() },
-        true,
-      );
+      const result = service.checkScreenShare({ ...ctx, timestamp: Date.now() }, true);
       expect(result.isSuspicious).toBe(true);
       expect(result.events.some((e) => e.category === 'SCREEN_SHARE_ABUSE')).toBe(true);
     });
@@ -214,9 +208,7 @@ describe('FraudDetectionService', () => {
           timestamp: Date.now(),
         });
         if (result.blocked) {
-          expect(
-            result.events.some((e) => e.category === 'SUSPICIOUS_IDENTITY'),
-          ).toBe(true);
+          expect(result.events.some((e) => e.category === 'SUSPICIOUS_IDENTITY')).toBe(true);
           return;
         }
       }
@@ -251,11 +243,7 @@ describe('FraudDetectionService', () => {
         service.checkStartCall({ ...ctx, timestamp: Date.now() });
       }
 
-      const result = service.checkConferenceAccess(
-        'user-1',
-        'room-1',
-        false,
-      );
+      const result = service.checkConferenceAccess('user-1', 'room-1', false);
       expect(result.allowed).toBe(false);
       expect(result.requiresVerification).toBe(true);
       expect(result.reason).toContain('restricted');
@@ -270,12 +258,7 @@ describe('FraudDetectionService', () => {
         service.checkStartCall({ ...hostCtx, timestamp: Date.now() });
       }
 
-      const result = service.checkConferenceAccess(
-        'user-2',
-        'room-1',
-        false,
-        'host-1',
-      );
+      const result = service.checkConferenceAccess('user-2', 'room-1', false, 'host-1');
       expect(result.allowed).toBe(false);
       expect(result.reason).toContain('Host');
     });
@@ -290,11 +273,7 @@ describe('FraudDetectionService', () => {
         service.checkStartCall({ ...ctx, timestamp: Date.now() });
       }
 
-      const result = service.checkConferenceAccess(
-        'user-1',
-        'room-1',
-        false,
-      );
+      const result = service.checkConferenceAccess('user-1', 'room-1', false);
       expect(result.allowed).toBe(true);
       expect(result.requiresVerification).toBe(true);
     });

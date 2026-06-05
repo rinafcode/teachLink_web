@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  getDiscordAuthUrl,
-  generateState,
-  getDiscordAvatarUrl,
-} from '../oauth';
+import { getDiscordAuthUrl, generateState, getDiscordAvatarUrl } from '../oauth';
 
 // Mock environment variables
 const mockEnv = {
@@ -45,12 +41,16 @@ describe('Discord OAuth Utilities', () => {
 
     it('should throw error when DISCORD_CLIENT_ID is missing', () => {
       process.env.DISCORD_CLIENT_ID = '';
-      expect(() => getDiscordAuthUrl('test_state')).toThrow('Discord OAuth configuration is missing');
+      expect(() => getDiscordAuthUrl('test_state')).toThrow(
+        'Discord OAuth configuration is missing',
+      );
     });
 
     it('should throw error when DISCORD_REDIRECT_URI is missing', () => {
       process.env.DISCORD_REDIRECT_URI = '';
-      expect(() => getDiscordAuthUrl('test_state')).toThrow('Discord OAuth configuration is missing');
+      expect(() => getDiscordAuthUrl('test_state')).toThrow(
+        'Discord OAuth configuration is missing',
+      );
     });
   });
 

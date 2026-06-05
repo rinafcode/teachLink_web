@@ -14,7 +14,9 @@ interface MobileNavigationScannerProps {
 const INITIAL_MESSAGE = 'Choose camera scan or upload an image file to detect a QR code.';
 
 export function MobileNavigationScanner({ isOpen, onClose }: MobileNavigationScannerProps) {
-  const [status, setStatus] = useState<'idle' | 'requesting' | 'scanning' | 'success' | 'failure'>('idle');
+  const [status, setStatus] = useState<'idle' | 'requesting' | 'scanning' | 'success' | 'failure'>(
+    'idle',
+  );
   const [feedbackMessage, setFeedbackMessage] = useState(INITIAL_MESSAGE);
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [cameraSupported, setCameraSupported] = useState(false);
@@ -222,7 +224,10 @@ export function MobileNavigationScanner({ isOpen, onClose }: MobileNavigationSca
             <Camera size={18} aria-hidden="true" />
             <p className="font-medium">Mobile Scanner</p>
           </div>
-          <p className="mt-2">Camera scan works best for QR codes, with image upload as a fallback when permissions are unavailable.</p>
+          <p className="mt-2">
+            Camera scan works best for QR codes, with image upload as a fallback when permissions
+            are unavailable.
+          </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -262,12 +267,26 @@ export function MobileNavigationScanner({ isOpen, onClose }: MobileNavigationSca
         <div className="rounded-3xl border border-dashed border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-950">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Scan status</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                Scan status
+              </h3>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{feedbackMessage}</p>
             </div>
             <div className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-200">
-              {status === 'success' ? <CheckCircle2 size={16} /> : status === 'failure' ? <AlertTriangle size={16} /> : <Camera size={16} />}
-              {status === 'success' ? 'Success' : status === 'failure' ? 'Error' : status === 'scanning' ? 'Scanning' : 'Ready'}
+              {status === 'success' ? (
+                <CheckCircle2 size={16} />
+              ) : status === 'failure' ? (
+                <AlertTriangle size={16} />
+              ) : (
+                <Camera size={16} />
+              )}
+              {status === 'success'
+                ? 'Success'
+                : status === 'failure'
+                ? 'Error'
+                : status === 'scanning'
+                ? 'Scanning'
+                : 'Ready'}
             </div>
           </div>
 
@@ -288,7 +307,10 @@ export function MobileNavigationScanner({ isOpen, onClose }: MobileNavigationSca
             </div>
 
             {scanResult && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-700 dark:bg-green-950 dark:text-green-200" role="status">
+              <div
+                className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-700 dark:bg-green-950 dark:text-green-200"
+                role="status"
+              >
                 <span className="font-semibold">QR code found:</span> {scanResult}
               </div>
             )}

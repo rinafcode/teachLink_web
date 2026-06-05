@@ -14,7 +14,10 @@ import { notificationService } from '@/services/notifications';
 export const runtime = 'nodejs';
 
 type ResendResponseDTO =
-  | { message: string; verification: { status: 'pending' | 'already_verified' | 'expired' | 'cooldown' } }
+  | {
+      message: string;
+      verification: { status: 'pending' | 'already_verified' | 'expired' | 'cooldown' };
+    }
   | AuthErrorDTO;
 
 export async function POST(request: NextRequest): Promise<NextResponse<ResendResponseDTO>> {
@@ -28,7 +31,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<ResendRes
     const result = await resendVerificationEmail(payload.data.email);
 
     if ('verificationToken' in result) {
-      const mailContext = buildVerificationMailContext(result.record, result.verificationToken, result.backupCode);
+      const mailContext = buildVerificationMailContext(
+        result.record,
+        result.verificationToken,
+        result.backupCode,
+      );
       await notificationService.sendEmailVerificationEmail(mailContext);
 
       return addHeaders(
@@ -41,21 +48,30 @@ export async function POST(request: NextRequest): Promise<NextResponse<ResendRes
 
     if (result.status === 'already_verified') {
       return addHeaders(
-        NextResponse.json({ message: 'Email already verified', verification: { status: 'already_verified' } }),
+        NextResponse.json({
+          message: 'Email already verified',
+          verification: { status: 'already_verified' },
+        }),
       );
     }
 
     if (result.status === 'cooldown') {
       return addHeaders(
         NextResponse.json(
-          { message: 'Please wait before requesting another verification email', verification: { status: 'cooldown' } },
+          {
+            message: 'Please wait before requesting another verification email',
+            verification: { status: 'cooldown' },
+          },
           { status: 429 },
         ),
       );
     }
 
     return addHeaders(
-      NextResponse.json({ message: 'Verification request not found', verification: { status: 'expired' } }, { status: 410 }),
+      NextResponse.json(
+        { message: 'Verification request not found', verification: { status: 'expired' } },
+        { status: 410 },
+      ),
     );
   } catch (error) {
     edgeLog('error', '/api/auth/email-verification/resend', 'Unhandled resend error', {
@@ -65,4 +81,3 @@ export async function POST(request: NextRequest): Promise<NextResponse<ResendRes
     return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
 }
-

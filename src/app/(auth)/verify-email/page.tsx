@@ -28,14 +28,16 @@ export default function VerifyEmailPage() {
   const [statusMessage, setStatusMessage] = useState('');
 
   const verifyMutation = useMutation(
-    async () => apiClient.post<VerificationResponse>('/api/auth/email-verification/verify', { token, email }),
+    async () =>
+      apiClient.post<VerificationResponse>('/api/auth/email-verification/verify', { token, email }),
     {
       onSuccess: (data) => setStatusMessage(data.message),
     },
   );
 
   const resendMutation = useMutation(
-    async () => apiClient.post<VerificationResponse>('/api/auth/email-verification/resend', { email }),
+    async () =>
+      apiClient.post<VerificationResponse>('/api/auth/email-verification/resend', { email }),
     {
       onSuccess: (data) => setStatusMessage(data.message),
     },
@@ -56,10 +58,13 @@ export default function VerifyEmailPage() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-lg space-y-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-cyan-600">Email verification</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-cyan-600">
+            Email verification
+          </p>
           <h1 className="mt-2 text-3xl font-bold text-slate-900">Recover or verify your account</h1>
           <p className="mt-3 text-slate-600">
-            Use the verification link, resend a fresh email, or restore access with your backup code.
+            Use the verification link, resend a fresh email, or restore access with your backup
+            code.
           </p>
         </div>
 
@@ -68,7 +73,9 @@ export default function VerifyEmailPage() {
             type="button"
             onClick={() => setRestoreMode(false)}
             className={`rounded-lg border px-4 py-2 ${
-              !restoreMode ? 'border-cyan-600 bg-cyan-600 text-white' : 'border-slate-300 text-slate-700'
+              !restoreMode
+                ? 'border-cyan-600 bg-cyan-600 text-white'
+                : 'border-slate-300 text-slate-700'
             }`}
           >
             Verify
@@ -77,7 +84,9 @@ export default function VerifyEmailPage() {
             type="button"
             onClick={() => setRestoreMode(true)}
             className={`rounded-lg border px-4 py-2 ${
-              restoreMode ? 'border-cyan-600 bg-cyan-600 text-white' : 'border-slate-300 text-slate-700'
+              restoreMode
+                ? 'border-cyan-600 bg-cyan-600 text-white'
+                : 'border-slate-300 text-slate-700'
             }`}
           >
             Restore
@@ -103,7 +112,9 @@ export default function VerifyEmailPage() {
 
           {!restoreMode ? (
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Verification token</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Verification token
+              </label>
               <input
                 value={token}
                 onChange={(event) => setToken(event.target.value)}
@@ -184,4 +195,3 @@ export default function VerifyEmailPage() {
     </div>
   );
 }
-

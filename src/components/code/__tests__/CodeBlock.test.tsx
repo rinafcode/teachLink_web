@@ -67,17 +67,13 @@ describe('CodeBlock', () => {
   });
 
   it('uses collapseThreshold prop for max-height style', () => {
-    const { container } = render(
-      <CodeBlock code={LONG_CODE} collapseThreshold={10} />,
-    );
+    const { container } = render(<CodeBlock code={LONG_CODE} collapseThreshold={10} />);
     const codeArea = container.querySelector('[style*="max-height"]') as HTMLElement;
     expect(codeArea.style.maxHeight).toBe(`${10 * 1.625}rem`);
   });
 
   it('removes max-height constraint when expanded', () => {
-    const { container } = render(
-      <CodeBlock code={LONG_CODE} collapseThreshold={10} />,
-    );
+    const { container } = render(<CodeBlock code={LONG_CODE} collapseThreshold={10} />);
     const toggle = screen.getByRole('button', { name: /show \d+ more line/i });
     fireEvent.click(toggle);
     const codeArea = container.querySelector('[style*="max-height"]') as HTMLElement;

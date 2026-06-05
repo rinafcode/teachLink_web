@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRatingStore } from '@/app/store/ratingStore';
 
 interface Review {
   id: string;
@@ -54,16 +54,7 @@ export default function CourseReviews({
     },
   ],
 }: CourseReviewsProps) {
-  const [helpful, setHelpful] = useState<Record<string, number>>(
-    reviews.reduce((acc, review) => ({ ...acc, [review.id]: review.helpful }), {}),
-  );
-
-  const markHelpful = (reviewId: string) => {
-    setHelpful((prev) => ({
-      ...prev,
-      [reviewId]: (prev[reviewId] || 0) + 1,
-    }));
-  };
+  const { markHelpful, getHelpfulCount, hasVotedHelpful } = useRatingStore();
 
   const renderStars = (rating: number) => {
     return (
@@ -162,8 +153,10 @@ export default function CourseReviews({
                   {review.comment}
                 </p>
                 <button
-                  onClick={() => markHelpful(review.id)}
-                  className="inline-flex items-center gap-2 text-sm text-[#64748B] transition-colors hover:text-[#0066FF] dark:text-[#94A3B8] dark:hover:text-[#00C2FF]"
+                  onClick={() => markHelpful(review.id, review.helpful)}
+                  disabled={hasVotedHelpful(review.id)}
+                  aria-pressed={hasVotedHelpful(review.id)}
+                  className="inline-flex items-center gap-2 text-sm text-[#64748B] transition-colors hover:text-[#0066FF] dark:text-[#94A3B8] dark:hover:text-[#00C2FF] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -173,7 +166,7 @@ export default function CourseReviews({
                       d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
                     />
                   </svg>
-                  Helpful ({helpful[review.id]})
+                  Helpful ({getHelpfulCount(review.id, review.helpful)})
                 </button>
               </div>
             </div>

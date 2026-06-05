@@ -99,7 +99,10 @@ class MockProvider implements EmailProvider {
 export function createEmailProvider(providerType?: string): EmailProvider {
   const type = (providerType ?? process.env.EMAIL_PROVIDER ?? 'sendgrid').toLowerCase();
 
-  if (type === 'mock' || (type === 'sendgrid' && !process.env.SENDGRID_API_KEY && process.env.NODE_ENV !== 'production')) {
+  if (
+    type === 'mock' ||
+    (type === 'sendgrid' && !process.env.SENDGRID_API_KEY && process.env.NODE_ENV !== 'production')
+  ) {
     return new MockProvider();
   }
 
