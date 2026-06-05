@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import type { FeatureFlag, TargetingRule, RolloutStrategy, AuditEntry } from '@/lib/feature-flags';
 import { useAllFeatureFlags } from '@/hooks/useFeatureFlag';
+import AdminThemeToggle from '@/components/admin/AdminThemeToggle';
 
 // ─── Small shared UI ──────────────────────────────────────────────────────────
 
@@ -656,6 +657,7 @@ export default function FeatureFlagsPage() {
             <Badge variant="blue">{flags.length}</Badge>
           </div>
           <div className="flex items-center gap-2">
+            <AdminThemeToggle />
             <button
               onClick={() => {
                 setShowAudit(true);

@@ -7,22 +7,19 @@ const logger = createLogger('certificates-verify');
 
 /**
  * GET /api/certificates/verify/:id
- * 
+ *
  * Public endpoint to verify certificate authenticity.
  * No authentication required.
- * 
+ *
  * SECURITY: Uses cryptographic hash verification to ensure certificate integrity.
  * Third parties can verify certificates without accessing any user credentials.
- * 
+ *
  * SECURITY CHECKS:
  * ✓ T3: Hash verification prevents forgery
  * ✓ T8: Access is logged for audit purposes (optional)
  * ✓ Rate limiting not applied (public endpoint, non-resource-intensive)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const certificateId = params.id;
 
   try {
@@ -73,9 +70,6 @@ export async function GET(
       error,
     });
 
-    return NextResponse.json(
-      { error: 'Failed to verify certificate' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to verify certificate' }, { status: 500 });
   }
 }
