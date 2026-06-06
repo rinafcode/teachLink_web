@@ -158,12 +158,9 @@ function parsePath(url: string): { pathname: string; hash: string } {
 /**
  * Build destination URL with parameters
  */
-function buildDestinationUrl(
-  rule: RedirectRule,
-  context: RedirectContext,
-): string {
+function buildDestinationUrl(rule: RedirectRule, context: RedirectContext): string {
   let destination = rule.to;
-  
+
   // Preserve hash if configured
   if (rule.preserveHash && context.hash) {
     destination += context.hash;
@@ -172,7 +169,7 @@ function buildDestinationUrl(
   // Preserve query parameters if configured
   if (rule.preserveQuery && context.searchParams) {
     const params = new URLSearchParams();
-    
+
     if (context.searchParams instanceof URLSearchParams) {
       context.searchParams.forEach((value, key) => {
         params.append(key, value);
@@ -180,7 +177,7 @@ function buildDestinationUrl(
     } else if (typeof context.searchParams === 'object') {
       Object.entries(context.searchParams).forEach(([key, value]) => {
         if (Array.isArray(value)) {
-          value.forEach(v => params.append(key, v));
+          value.forEach((v) => params.append(key, v));
         } else {
           params.append(key, value);
         }
@@ -226,11 +223,8 @@ export function findRedirectRule(
 /**
  * Check if a pathname should be redirected
  */
-export function shouldRedirect(
-  pathname: string,
-  rules: RedirectRule[] = ALL_REDIRECTS,
-): boolean {
-  return rules.some(rule => matchesPattern(rule.from, pathname));
+export function shouldRedirect(pathname: string, rules: RedirectRule[] = ALL_REDIRECTS): boolean {
+  return rules.some((rule) => matchesPattern(rule.from, pathname));
 }
 
 /**
@@ -240,16 +234,14 @@ export function getRedirectsForLocale(
   locale: string,
   rules: RedirectRule[] = ALL_REDIRECTS,
 ): RedirectRule[] {
-  return rules.filter(rule => !rule.locales || rule.locales.includes(locale));
+  return rules.filter((rule) => !rule.locales || rule.locales.includes(locale));
 }
 
 /**
  * Get legacy redirect rules (for migration tracking)
  */
-export function getLegacyRedirects(
-  rules: RedirectRule[] = ALL_REDIRECTS,
-): RedirectRule[] {
-  return rules.filter(rule => rule.isLegacy);
+export function getLegacyRedirects(rules: RedirectRule[] = ALL_REDIRECTS): RedirectRule[] {
+  return rules.filter((rule) => rule.isLegacy);
 }
 
 /**

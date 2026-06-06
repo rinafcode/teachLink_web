@@ -24,11 +24,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {translateWithFallback(
-              t,
-              'dashboard.analytics.title',
-              'Analytics Dashboard',
-            )}
+            {translateWithFallback(t, 'dashboard.analytics.title', 'Analytics Dashboard')}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {translateWithFallback(

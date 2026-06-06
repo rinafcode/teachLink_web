@@ -293,15 +293,19 @@ describe('ActivityFeed', () => {
 
 describe('SocialInteractions', () => {
   beforeEach(() => {
-    vi.mocked(apiClient.get).mockResolvedValue({ likes: 10, liked: false, comments: [] });
-    vi.mocked(apiClient.post).mockResolvedValue({
+    vi.mocked(apiClient.get).mockClear().mockResolvedValue({
+      likes: 10,
+      liked: false,
+      comments: [],
+    });
+    vi.mocked(apiClient.post).mockClear().mockResolvedValue({
       id: 'c1',
       authorId: 'u1',
       authorName: 'Alice',
       body: 'Great post!',
       createdAt: new Date(),
     });
-    vi.mocked(apiClient.delete).mockResolvedValue({});
+    vi.mocked(apiClient.delete).mockClear().mockResolvedValue({});
     // jsdom doesn't implement clipboard; define it once with a spy
     const clipboardMock = { writeText: vi.fn().mockResolvedValue(undefined) };
     Object.defineProperty(navigator, 'clipboard', {
@@ -340,5 +344,70 @@ describe('SocialInteractions', () => {
     await user_.click(screen.getByLabelText('Copy link'));
     await waitFor(() => expect(screen.getByText('Copied!')).toBeInTheDocument());
     vi.unstubAllGlobals();
+  });
+
+  it('renders comment list when comments are present', async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      likes: 10,
+      liked: false,
+      comments: [
+        {
+          id: 'c1',
+          authorId: 'u1',
+          authorName: 'Alice',
+          body: 'This is a comment.',
+          createdAt: new Date(),
+        },
+      ],
+    });
+
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user_.click(screen.getByLabelText('Toggle comments'));
+
+    expect(await screen.findByText('This is a comment.')).toBeInTheDocument();
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+  });
+
+  it('submits a new comment and displays it in the comment list', async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({
+      id: 'c2',
+      authorId: 'u1',
+      authorName: 'Alice',
+      body: 'Nice post!',
+      createdAt: new Date(),
+    });
+
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user_.click(screen.getByLabelText('Toggle comments'));
+
+    const commentInput = screen.getByPlaceholderText('Add a comment…');
+    const submitButton = screen.getByRole('button', { name: /post/i });
+
+    await user_.type(commentInput, 'Nice post!');
+    await user_.click(submitButton);
+
+    await waitFor(() => expect(screen.getByText('Nice post!')).toBeInTheDocument());
+    expect(apiClient.post).toHaveBeenCalledWith('/api/social/interactions/post-1/comments', {
+      body: 'Nice post!',
+    });
+  });
+
+  it('does not allow submitting whitespace-only comments', async () => {
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user_.click(screen.getByLabelText('Toggle comments'));
+
+    const commentInput = screen.getByPlaceholderText('Add a comment…');
+    const submitButton = screen.getByRole('button', { name: /post/i });
+
+    await user_.type(commentInput, '   ');
+    expect(submitButton).toBeDisabled();
+    await user_.click(submitButton);
+    expect(apiClient.post).not.toHaveBeenCalledWith(
+      '/api/social/interactions/post-1/comments',
+      expect.anything(),
+    );
   });
 });

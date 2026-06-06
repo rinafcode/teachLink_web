@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Search, BookOpen, User } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Home, Search, BookOpen, User, Camera } from 'lucide-react';
+import { MobileNavigationScanner } from './MobileNavigationScanner';
 
 interface NavItem {
   id: string;
@@ -49,6 +49,11 @@ export const MobileNavigation: React.FC<{
   const [activeTab, setActiveTab] = useState(initialActive);
   const [isFloating, setIsFloating] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+
+  const openScanner = () => setIsScannerOpen(true);
+  const closeScanner = () => setIsScannerOpen(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -58,6 +63,15 @@ export const MobileNavigation: React.FC<{
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!navRef.current) return;
+
+    navRef.current.setAttribute(
+      'style',
+      'padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);',
+    );
   }, []);
 
   const iconSize = isLandscape ? 18 : 22;
@@ -120,9 +134,9 @@ export const MobileNavigation: React.FC<{
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out
-        sm:bottom-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[90%] sm:max-w-md sm:rounded-2xl sm:border sm:shadow-xl sm:pb-0 px-4`}
-      style={!isFloating ? { paddingBottom: 'env(safe-area-inset-bottom)' } : undefined}
+      ref={navRef}
+      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden lg:hidden min-h-16 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out
+        sm:bottom-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[90%] sm:max-w-md sm:rounded-2xl sm:border sm:shadow-xl sm:pb-0 px-4 ${railNavClasses}`}
       aria-label="Mobile Navigation"
       role="navigation"
     >
@@ -130,7 +144,7 @@ export const MobileNavigation: React.FC<{
         role="tablist"
         aria-label="Navigation Tabs"
         onKeyDown={handleKeyDown}
-        className="flex justify-around items-center h-16 landscape:h-12 px-2"
+        className={`flex justify-around items-center h-16 landscape:h-12 px-2 ${railListClasses}`}
       >
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
@@ -181,6 +195,18 @@ export const MobileNavigation: React.FC<{
           );
         })}
       </ul>
+      <div className="mt-2 flex justify-center sm:mt-0">
+        <button
+          type="button"
+          onClick={openScanner}
+          className="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+          aria-label="Open mobile scanner"
+        >
+          <Camera size={18} className="mr-2" aria-hidden="true" />
+          Scan
+        </button>
+      </div>
+      <MobileNavigationScanner isOpen={isScannerOpen} onClose={closeScanner} />
     </nav>
   );
 };

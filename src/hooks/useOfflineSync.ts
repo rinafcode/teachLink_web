@@ -19,7 +19,7 @@ export function useOfflineSync(syncCallback?: () => Promise<void>) {
 
   const triggerSync = useCallback(async () => {
     if (isOffline) return;
-    
+
     setIsSyncing(true);
     try {
       // Fire local UI-bound sync callback if provided
@@ -31,7 +31,7 @@ export function useOfflineSync(syncCallback?: () => Promise<void>) {
         // @ts-ignore - SyncManager is not fully typed in all TS DOM libs yet
         await registration.sync.register('teachlink-offline-sync');
       }
-      
+
       setLastSynced(new Date());
     } catch (error) {
       console.error('Offline synchronization failed:', error);
@@ -41,11 +41,17 @@ export function useOfflineSync(syncCallback?: () => Promise<void>) {
   }, [isOffline, syncCallback]);
 
   useEffect(() => {
-    const handleOnline = () => { setIsOffline(false); triggerSync(); };
+    const handleOnline = () => {
+      setIsOffline(false);
+      triggerSync();
+    };
     const handleOffline = () => setIsOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline); };
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [triggerSync]);
 
   return { isOffline, isSyncing, lastSynced, triggerSync };

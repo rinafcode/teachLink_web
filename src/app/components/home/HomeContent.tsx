@@ -3,9 +3,61 @@
 import Link from 'next/link';
 import { useInternationalization } from '@/hooks/useInternationalization';
 import CourseCard from '../courses/CourseCard';
+import type { CourseEntry } from '@/lib/course-config/types';
 
-export default function HomeContent() {
+interface FeaturedCourseData {
+  title: string;
+  subtitle: string;
+  author: string;
+  progress: number;
+  timeRemaining: string;
+  imageUrl?: string;
+  courseHref: string;
+}
+
+interface HomeContentProps {
+  featuredCourses?: FeaturedCourseData[];
+}
+
+function fallbackFeaturedCourses(): FeaturedCourseData[] {
+  return [
+    {
+      title: 'Web3 UX Design Principles',
+      subtitle: 'Create intuitive interfaces for decentralized applications',
+      author: 'Sarah Johnson',
+      progress: 68,
+      timeRemaining: '12h remaining',
+      imageUrl:
+        'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
+      courseHref: '/courses/1',
+    },
+    {
+      title: 'Smart Contract Security Best Practices',
+      subtitle: 'Learn to secure your Cairo smart contracts against vulnerabilities',
+      author: 'Michael Chen',
+      progress: 45,
+      timeRemaining: '12h remaining',
+      imageUrl:
+        'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
+      courseHref: '/courses/2',
+    },
+    {
+      title: 'Scaling DAPps on Starknet',
+      subtitle: 'Techniques for building scalable decentralized applications',
+      author: 'Alex Rivera',
+      progress: 12,
+      timeRemaining: '12h remaining',
+      imageUrl:
+        'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',
+      courseHref: '/courses/3',
+    },
+  ];
+}
+
+export default function HomeContent({ featuredCourses }: HomeContentProps) {
   const { t, language, changeLanguage, isLoading } = useInternationalization();
+
+  const courses = featuredCourses ?? fallbackFeaturedCourses();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
@@ -88,6 +140,7 @@ export default function HomeContent() {
               author="Sarah Johnson"
               progress={68}
               timeRemaining="12h remaining"
+              courseHref="/courses/web3-ux-design"
               imageUrl="https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg"
             />
 
@@ -97,6 +150,7 @@ export default function HomeContent() {
               author="Michael Chen"
               progress={45}
               timeRemaining="12h remaining"
+              courseHref="/courses/smart-contract-security"
               imageUrl="https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png"
             />
 
@@ -106,6 +160,7 @@ export default function HomeContent() {
               author="Alex Rivera"
               progress={12}
               timeRemaining="12h remaining"
+              courseHref="/courses/scaling-dapps-starknet"
               imageUrl="https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg"
             />
           </div>
