@@ -8,6 +8,7 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
+import { walletConnectionQueue } from '@/utils/web3/walletQueue';
 
 // Environment validation for wallet config
 const validateWalletEnv = () => {
@@ -70,48 +71,51 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const connect = useCallback(async () => {
     setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
-    try {
-      if (typeof window === 'undefined') {
-        throw new Error('Window not available');
-      }
-
-      const starknet = (
-        window as Window & {
-          starknet?: {
-            enable: () => Promise<string[]>;
-            selectedAddress?: string;
-            isConnected?: boolean;
-          };
+    return walletConnectionQueue.enqueue(async () => {
+      try {
+        if (typeof window === 'undefined') {
+          throw new Error('Window not available');
         }
-      ).starknet;
 
-      if (!starknet) {
-        throw new Error('No Starknet wallet detected. Please install ArgentX or Braavos.');
+        const starknet = (
+          window as Window & {
+            starknet?: {
+              enable: () => Promise<string[]>;
+              selectedAddress?: string;
+              isConnected?: boolean;
+            };
+          }
+        ).starknet;
+
+        if (!starknet) {
+          throw new Error('No Starknet wallet detected. Please install ArgentX or Braavos.');
+        }
+
+        const accounts = await starknet.enable();
+        const address = accounts[0] || starknet.selectedAddress;
+
+        if (!address) {
+          throw new Error('No account available');
+        }
+
+        setState((prev) => ({
+          ...prev,
+          address,
+          isConnected: true,
+          isConnecting: false,
+          error: null,
+        }));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to connect wallet';
+        setState((prev) => ({
+          ...prev,
+          isConnecting: false,
+          error: message,
+        }));
+        console.error('[WalletProvider] Connection failed:', message);
+        throw error;
       }
-
-      const accounts = await starknet.enable();
-      const address = accounts[0] || starknet.selectedAddress;
-
-      if (!address) {
-        throw new Error('No account available');
-      }
-
-      setState((prev) => ({
-        ...prev,
-        address,
-        isConnected: true,
-        isConnecting: false,
-        error: null,
-      }));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to connect wallet';
-      setState((prev) => ({
-        ...prev,
-        isConnecting: false,
-        error: message,
-      }));
-      console.error('[WalletProvider] Connection failed:', message);
-    }
+    });
   }, []);
 
   const disconnect = useCallback(async () => {

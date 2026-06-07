@@ -42,6 +42,26 @@ describe('FormInput', () => {
     expect(input).toHaveAttribute('aria-invalid', 'false');
   });
 
+  it('renders certification program metadata and includes it in accessible description', () => {
+    renderWithForm(
+      <FormInput
+        name="name"
+        label="Student Name"
+        helperText="Enter the full name to display on the certificate."
+        certificationProgram="Certificate of completion"
+      />,
+    );
+
+    expect(
+      screen.getByText('Certification program: Certificate of completion'),
+    ).toBeInTheDocument();
+
+    const input = screen.getByRole('textbox', { name: 'Student Name' });
+    expect(input).toHaveAccessibleDescription(
+      'Enter the full name to display on the certificate. Certification program: Certificate of completion',
+    );
+  });
+
   it('announces validation errors through aria-describedby and alert role', async () => {
     renderWithForm(
       <FormInput

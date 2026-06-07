@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useId } from 'react';
 import { FiSend, FiPaperclip, FiX, FiFile, FiImage, FiFileText } from 'react-icons/fi';
 import RichTextEditor from '@/app/components/ui/RichTextEditor';
 
@@ -39,6 +39,7 @@ export default function MessageComposer({
 }: MessageComposerProps) {
   const [content, setContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorHelpId = useId();
 
   const handleContentChange = useCallback(
     (newContent: string) => {
@@ -161,6 +162,8 @@ export default function MessageComposer({
               content={content}
               onChange={handleContentChange}
               placeholder="Type your message..."
+              ariaLabel="Message content"
+              describedBy={editorHelpId}
             />
           </div>
 
@@ -182,7 +185,7 @@ export default function MessageComposer({
         </div>
 
         {/* Helper Text */}
-        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 ml-12">
+        <p id={editorHelpId} className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 ml-12">
           Press{' '}
           <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[10px] font-mono">
             Enter

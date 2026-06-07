@@ -45,9 +45,13 @@ function ThemeToggleControl() {
     typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false;
 
   const handleToggle = () => {
-    const next = prefersDark ? 'light' : 'dark';
-    setTheme(next);
-    patchSettings({ theme: next });
+    try {
+      const next = prefersDark ? 'light' : 'dark';
+      setTheme(next);
+      patchSettings({ theme: next });
+    } catch (err) {
+      console.error('ThemeToggle error:', err);
+    }
   };
 
   return (

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Users, BarChart3, BookOpen, TrendingUp, Settings } from 'lucide-react';
+import { Settings, TrendingUp, DollarSign, Users, BarChart3, BookOpen } from 'lucide-react';
+import { AccessibleLoading } from '../../accessibility/ScreenReaderOptimizer';
 
 interface ProgressSummaryWidgetProps {
   id: string;
@@ -162,7 +163,7 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
         layout
         className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
       >
-        {isLoading && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+        {isLoading && <AccessibleLoading isLoading={true} message="Loading…" />}
         {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
         <div className="flex items-start justify-between mb-4">
@@ -321,7 +322,7 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
 
       {/* Content */}
       <div className="p-6">
-        {isLoading && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+        {isLoading && <AccessibleLoading isLoading={true} message="Loading…" />}
         {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
         <div className="flex items-start justify-between mb-4">

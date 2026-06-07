@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
+import { Footer } from '@/components/layout/Footer';
 
 // Languages supported at startup — extend as new locale files are added.
 const VALID_LOCALES = new Set([
@@ -81,10 +82,11 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50 flex flex-col min-h-screen`}
       >
         <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
-          {children}
+          <main className="flex-grow">{children}</main>
+          <Footer />
         </RootProviders>
 
         {/* Non-essential analytics — loaded after page is interactive */}

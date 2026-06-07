@@ -52,6 +52,8 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
+      aria-pressed={isActive}
+      aria-label={title}
       className={`p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
         isActive ? 'bg-gray-200 dark:bg-gray-600 text-blue-600' : 'text-gray-600 dark:text-gray-300'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -65,7 +67,11 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
     <div className="flex h-[calc(100vh-100px)] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="flex flex-col flex-1 w-full min-w-0">
         {/* Toolbar */}
-        <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-x-auto">
+        <div
+          role="toolbar"
+          aria-label="Text formatting"
+          className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-x-auto"
+        >
           <div className="flex items-center gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBold().run()}
@@ -88,7 +94,7 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
             >
               <Strikethrough className="w-4 h-4" />
             </ToolbarButton>
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" aria-hidden="true" />
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
               isActive={editor.isActive('heading', { level: 1 })}
@@ -103,7 +109,7 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
             >
               <Heading2 className="w-4 h-4" />
             </ToolbarButton>
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" aria-hidden="true" />
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               isActive={editor.isActive('bulletList')}
@@ -118,7 +124,7 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
             >
               <ListOrdered className="w-4 h-4" />
             </ToolbarButton>
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" aria-hidden="true" />
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleCodeBlock().run()}
               isActive={editor.isActive('codeBlock')}
@@ -133,9 +139,9 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
             >
               <Quote className="w-4 h-4" />
             </ToolbarButton>
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" aria-hidden="true" />
             <MediaEmbedder onAddImage={addImage} onAddYoutube={addYoutubeVideo} />
-            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1" aria-hidden="true" />
             <ToolbarButton
               onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().undo()}
@@ -158,7 +164,10 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
         </div>
 
         {/* Editor Content */}
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-800">
+        <div
+          className="flex-1 overflow-y-auto bg-white dark:bg-gray-800"
+          aria-label="Post content editor"
+        >
           <EditorContent editor={editor} className="h-full p-8" />
         </div>
       </div>

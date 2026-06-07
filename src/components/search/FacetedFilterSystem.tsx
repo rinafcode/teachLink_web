@@ -1,10 +1,22 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { BarChart, DollarSign, Tag as TagIcon, Star, Filter, RotateCcw, Check } from 'lucide-react';
+import {
+  BarChart,
+  DollarSign,
+  Tag as TagIcon,
+  Star,
+  Filter,
+  RotateCcw,
+  Check,
+  LifeBuoy,
+} from 'lucide-react';
 import { SearchFilters, SearchContentType } from '../../utils/searchUtils';
 import { MultiSelect } from '../ui/MultiSelect';
 import { RangeSlider } from '../ui/RangeSlider';
+import { FilterHelpPopover } from './FilterHelpPopover';
+import { FilterSupportGuide } from './FilterSupportGuide';
+import { useFilterCustomerSupport } from '../../hooks/useFilterCustomerSupport';
 
 interface FacetedFilterSystemProps {
   filters: SearchFilters;
@@ -39,6 +51,8 @@ const DIFFICULTY_LEVELS = [
 
 export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(
   ({ filters, onFilterChange, onReset }) => {
+    const support = useFilterCustomerSupport();
+
     const toggleContentType = useCallback(
       (type: SearchContentType) => {
         let newTypes: SearchContentType[];
@@ -76,6 +90,12 @@ export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Filter className="w-3 h-3" /> Content Type
+              <FilterHelpPopover
+                content={support.FILTER_HELP_CONTENT['content-type']}
+                isOpen={support.activeHelpId === 'content-type'}
+                onToggle={() => support.toggleHelp('content-type')}
+                onClose={support.closeHelp}
+              />
             </h3>
             <button
               onClick={onReset}
@@ -109,6 +129,12 @@ export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(
           <div className="glass-panel p-6 rounded-2xl">
             <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
               <TagIcon className="w-3 h-3" /> Targeted Topics
+              <FilterHelpPopover
+                content={support.FILTER_HELP_CONTENT.topics}
+                isOpen={support.activeHelpId === 'topics'}
+                onToggle={() => support.toggleHelp('topics')}
+                onClose={support.closeHelp}
+              />
             </h3>
             <MultiSelect
               options={TOPIC_OPTIONS}
@@ -122,6 +148,12 @@ export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(
           <div className="glass-panel p-6 rounded-2xl">
             <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
               <BarChart className="w-3 h-3" /> Complexity Level
+              <FilterHelpPopover
+                content={support.FILTER_HELP_CONTENT.difficulty}
+                isOpen={support.activeHelpId === 'difficulty'}
+                onToggle={() => support.toggleHelp('difficulty')}
+                onClose={support.closeHelp}
+              />
             </h3>
             <div className="flex flex-col gap-2">
               {DIFFICULTY_LEVELS.map((level) => {
@@ -153,6 +185,12 @@ export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(
           <div className="glass-panel p-6 rounded-2xl md:col-span-2">
             <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-6">
               <DollarSign className="w-3 h-3" /> Price Ceiling (USD)
+              <FilterHelpPopover
+                content={support.FILTER_HELP_CONTENT.price}
+                isOpen={support.activeHelpId === 'price'}
+                onToggle={() => support.toggleHelp('price')}
+                onClose={support.closeHelp}
+              />
             </h3>
             <RangeSlider
               min={0}
@@ -181,6 +219,12 @@ export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(
           <div className="glass-panel p-6 rounded-2xl">
             <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
               <Star className="w-3 h-3" /> Min Rating
+              <FilterHelpPopover
+                content={support.FILTER_HELP_CONTENT.rating}
+                isOpen={support.activeHelpId === 'rating'}
+                onToggle={() => support.toggleHelp('rating')}
+                onClose={support.closeHelp}
+              />
             </h3>
             <div className="flex flex-col gap-2">
               {[4, 3, 2].map((min) => {
@@ -210,6 +254,21 @@ export const FacetedFilterSystem = React.memo<FacetedFilterSystemProps>(
             </div>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={support.openGuide}
+          className="w-full py-3 px-4 bg-blue-50 border border-blue-200 text-blue-700 font-mono text-xs uppercase tracking-wider rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
+        >
+          <LifeBuoy className="w-4 h-4" />
+          Need Help?
+        </button>
+
+        <FilterSupportGuide
+          isOpen={support.guideOpen}
+          onClose={support.closeGuide}
+          helpContent={support.FILTER_HELP_CONTENT}
+        />
       </div>
     );
   },
