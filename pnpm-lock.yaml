@@ -9971,7 +9971,6 @@ snapshots:
       - ioredis
       - react
       - typescript
-      - uploadthing
       - utf-8-validate
       - zod
 
