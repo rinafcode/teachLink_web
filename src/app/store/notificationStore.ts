@@ -35,11 +35,25 @@ interface NotificationState {
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: load<AppNotification[]>(STORAGE_KEY, []),
   addNotification: (n) => {
-    const notif = NotificationService.createNotification({
+    const created = NotificationService.createNotification({
       message: n.message,
       type: n.type,
       meta: n.meta,
     });
+    const incoming = n as Partial<AppNotification>;
+    const notif: AppNotification = {
+      ...created,
+      ...incoming,
+      id: incoming.id ?? created.id,
+      createdAt: incoming.createdAt ?? created.createdAt,
+      timestamp: incoming.timestamp ?? created.timestamp,
+      read: incoming.read ?? created.read,
+      title: incoming.title ?? created.title,
+      meta: {
+        ...created.meta,
+        ...incoming.meta,
+      },
+    };
     const next = [notif, ...get().notifications].slice(0, 200);
     set({ notifications: next });
     save(STORAGE_KEY, next);

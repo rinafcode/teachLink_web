@@ -115,6 +115,15 @@ Enhanced React hook with:
 - Improved preference validation
 - Better multi-channel delivery support
 - Enhanced analytics integration
+- Notification preference heartbeat state for liveness monitoring
+
+The notification preferences heartbeat runs from `useNotifications` after preferences load. It
+writes `notification_preferences_heartbeat_v1` to `localStorage` with the current `userId`,
+`lastBeatAt`, `intervalMs`, and `staleAfterMs`. Consumers can read
+`preferencesHeartbeat.status` (`online`, `stale`, or `offline`) and call
+`refreshPreferencesHeartbeat()` to re-check the stored heartbeat without waiting for the next
+interval. The preferences UI surfaces this as a compact sync status so users are not left guessing
+when preference persistence is delayed or unavailable.
 
 ## Migration Guide
 
