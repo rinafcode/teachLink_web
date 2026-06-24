@@ -262,3 +262,25 @@ a[data-skip-link]:focus {
 .btn-complete {
   @apply px-6 py-2 text-sm md:text-base rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-600 hover:shadow-emerald-600/25 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 outline-none;
 }
+@layer components {
+  .env-banner {
+    width: 100%;
+    text-align: center;
+    font-weight: 600;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  .env-dev {
+    background-color: #ff4d4f; /* red */
+    color: #ffffff;
+  }
+  .env-staging {
+    background-color: #fa8c16; /* orange */
+    color: #ffffff;
+  }
+  .env-prod {
+    background-color: #52c41a; /* subtle green */
+    color: #ffffff;
+  }
+}
