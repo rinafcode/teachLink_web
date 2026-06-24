@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Loader2, XCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { ValidationResult, ValidationRule, FormState } from '@/form-management/types/core';
 
@@ -77,17 +78,17 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
   return (
     <div className={`advanced-validation ${className}`}>
       {isValidating && (
-        <div className="validation-loading">
-          <span className="spinner">⏳</span>
+        <div className="validation-loading flex items-center gap-1.5 text-sm text-gray-500">
+          <Loader2 size={14} className="animate-spin" aria-hidden="true" />
           <span>Validating...</span>
         </div>
       )}
 
       {showErrors && hasErrors && (
-        <div className="validation-errors">
+        <div className="validation-errors space-y-1">
           {validationResult.errors.map((error, idx) => (
-            <div key={idx} className="validation-error">
-              <span className="error-icon">❌</span>
+            <div key={idx} className="validation-error flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
+              <XCircle size={14} aria-hidden="true" className="shrink-0" />
               <span className="error-message">{error.message}</span>
             </div>
           ))}
@@ -95,10 +96,10 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
       )}
 
       {showErrors && hasWarnings && (
-        <div className="validation-warnings">
+        <div className="validation-warnings space-y-1">
           {validationResult.warnings!.map((warning, idx) => (
-            <div key={idx} className="validation-warning">
-              <span className="warning-icon">⚠️</span>
+            <div key={idx} className="validation-warning flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400">
+              <AlertTriangle size={14} aria-hidden="true" className="shrink-0" />
               <span className="warning-message">{warning.message}</span>
             </div>
           ))}
@@ -106,8 +107,8 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
       )}
 
       {showErrors && validationResult && validationResult.isValid && !hasWarnings && (
-        <div className="validation-success">
-          <span className="success-icon">✅</span>
+        <div className="validation-success flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+          <CheckCircle2 size={14} aria-hidden="true" className="shrink-0" />
           <span className="success-message">Valid</span>
         </div>
       )}

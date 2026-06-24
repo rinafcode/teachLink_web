@@ -1,9 +1,80 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useInternationalization } from '@/hooks/useInternationalization';
-import { Award, Briefcase, ChevronRight, FileText, Globe, HelpCircle } from 'lucide-react';
+import { Award, Briefcase, ChevronRight, FileText, Globe, HelpCircle, Tag, CheckCircle2, AlertCircle } from 'lucide-react';
+
+type CouponStatus = 'idle' | 'loading' | 'success' | 'error';
+
+function CouponCode() {
+  const [code, setCode] = useState('');
+  const [status, setStatus] = useState<CouponStatus>('idle');
+  const [message, setMessage] = useState('');
+
+  const handleApply = async () => {
+    if (!code.trim()) return;
+    setStatus('loading');
+    setMessage('');
+    try {
+      const res = await fetch('/api/v1/coupons/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Invalid coupon code.');
+      setStatus('success');
+      setMessage(data.message || 'Coupon applied successfully!');
+    } catch (err) {
+      setStatus('error');
+      setMessage(err instanceof Error ? err.message : 'Could not apply coupon.');
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+        Have a Coupon?
+      </h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+        Enter your promo code to unlock a discount.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => { setCode(e.target.value); setStatus('idle'); setMessage(''); }}
+          onKeyDown={(e) => e.key === 'Enter' && handleApply()}
+          placeholder="e.g. TEACH20"
+          aria-label="Coupon code"
+          maxLength={32}
+          className="flex-1 min-w-0 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+        />
+        <button
+          onClick={handleApply}
+          disabled={!code.trim() || status === 'loading'}
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          {status === 'loading' ? 'Applying…' : 'Apply'}
+        </button>
+      </div>
+      {status === 'success' && (
+        <p role="status" className="mt-2 flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+          <CheckCircle2 size={14} aria-hidden="true" className="shrink-0" />
+          {message}
+        </p>
+      )}
+      {status === 'error' && (
+        <p role="alert" className="mt-2 flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
+          <AlertCircle size={14} aria-hidden="true" className="shrink-0" />
+          {message}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export const Footer: React.FC = () => {
   const { t } = useInternationalization();
@@ -19,7 +90,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="no-print bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 transition-colors duration-200 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-1">
             <Link
@@ -66,6 +137,11 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
             </ul>
+          </div>
+
+          {/* Coupon Section */}
+          <div>
+            <CouponCode />
           </div>
 
           {/* Grant Management Section */}
