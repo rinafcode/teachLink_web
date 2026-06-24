@@ -1,9 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, AlertCircle, Users } from 'lucide-react';
 import { useHelpDocumentation } from '@/hooks/useHelpDocumentation';
 import type { HelpArticle } from '@/hooks/useHelpDocumentation';
+
+/** Article IDs for the mentorship program help section */
+export const MENTORSHIP_ARTICLE_IDS = [
+  'mentorship-overview',
+  'find-a-mentor',
+  'becoming-a-mentor',
+  'mentorship-sessions',
+  'mentorship-goals',
+];
 
 export interface HelpDocumentationProps {
   /** Article ids to load on mount */
@@ -116,6 +125,32 @@ export function HelpDocumentation({
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+/**
+ * MentorshipHelp
+ *
+ * Pre-configured HelpDocumentation section for the Mentorship Program.
+ * Renders collapsible help articles covering mentor discovery, session
+ * management, and program goals.
+ */
+export function MentorshipHelp({ className = '' }: { className?: string }) {
+  return (
+    <section
+      aria-label="Mentorship Program Help"
+      className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 ${className}`}
+    >
+      <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-50">
+        <Users size={18} aria-hidden="true" className="text-blue-500" />
+        Mentorship Program Help
+      </h2>
+      <HelpDocumentation
+        articleIds={MENTORSHIP_ARTICLE_IDS}
+        title=""
+        className="border-0 bg-transparent p-0 shadow-none"
+      />
     </section>
   );
 }
