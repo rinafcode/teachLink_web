@@ -234,6 +234,28 @@ The refactoring maintains performance characteristics:
 - LocalStorage operations remain unchanged
 - WebSocket integration unaffected
 
+## WebSocket Reconnection (Issue #405)
+
+The real-time notification provider now uses a dedicated `NotificationSocketService`
+(`src/lib/notifications/socket.ts`) with production-ready reconnection behavior:
+
+- **Exponential backoff** with configurable jitter to avoid thundering herds
+- **Automatic reconnect** on unexpected disconnects and connection errors
+- **Outbound message queue** so read/clear actions are sent after reconnect
+- **Browser lifecycle hooks** (`online`, `visibilitychange`) for faster recovery
+- **Connection state API** exposed via `NotificationProvider` context (`connectionState`)
+- **Graceful shutdown** that clears timers, listeners, and pending reconnect attempts
+
+Example:
+
+```typescript
+const { connectionState } = useNotifications();
+
+if (connectionState.status === 'reconnecting') {
+  // show subtle reconnecting indicator in the notification UI
+}
+```
+
 ## Future Enhancements
 
 Potential areas for future improvement:
