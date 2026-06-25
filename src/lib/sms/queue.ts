@@ -1,4 +1,12 @@
-import { SMSMessage, SMSProvider, SMSSendResult, QueueJob, QueueOptions, SMSProviderType, SMSDeliveryLog } from './types';
+import {
+  SMSMessage,
+  SMSProvider,
+  SMSSendResult,
+  QueueJob,
+  QueueOptions,
+  SMSProviderType,
+  SMSDeliveryLog,
+} from './types';
 import { createLogger } from '@/lib/logging';
 import { createCounterMetric, measureAsync } from '@/lib/logging/performance';
 
@@ -123,7 +131,7 @@ export class SMSQueue {
           result = await this.provider.send(job.message);
           return result;
         },
-        { provider: this.provider.type }
+        { provider: this.provider.type },
       );
 
       // Log delivery attempt
@@ -193,7 +201,12 @@ export class SMSQueue {
     };
   }
 
-  private logDeliveryAttempt(job: QueueJob, phoneNumber: any, result: SMSSendResult, attempt: number): void {
+  private logDeliveryAttempt(
+    job: QueueJob,
+    phoneNumber: any,
+    result: SMSSendResult,
+    attempt: number,
+  ): void {
     const formattedNumber = `+${phoneNumber.countryCode}${phoneNumber.number}`;
     const logId = `${job.id}_${formattedNumber}`;
 
@@ -203,7 +216,7 @@ export class SMSQueue {
       phoneNumber: formattedNumber,
       messageBody: job.message.body.substring(0, 100), // Truncate for log
       messageId: result.messageId,
-      status: result.success ? 'sent' : (attempt < this.options.maxRetries ? 'retrying' : 'failed'),
+      status: result.success ? 'sent' : attempt < this.options.maxRetries ? 'retrying' : 'failed',
       attempts: attempt,
       maxRetries: this.options.maxRetries,
       error: result.error,

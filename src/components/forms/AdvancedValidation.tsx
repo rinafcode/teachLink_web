@@ -87,7 +87,10 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
       {showErrors && hasErrors && (
         <div className="validation-errors space-y-1">
           {validationResult.errors.map((error, idx) => (
-            <div key={idx} className="validation-error flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
+            <div
+              key={idx}
+              className="validation-error flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400"
+            >
               <XCircle size={14} aria-hidden="true" className="shrink-0" />
               <span className="error-message">{error.message}</span>
             </div>
@@ -98,7 +101,10 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
       {showErrors && hasWarnings && (
         <div className="validation-warnings space-y-1">
           {validationResult.warnings!.map((warning, idx) => (
-            <div key={idx} className="validation-warning flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400">
+            <div
+              key={idx}
+              className="validation-warning flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400"
+            >
               <AlertTriangle size={14} aria-hidden="true" className="shrink-0" />
               <span className="warning-message">{warning.message}</span>
             </div>

@@ -9,9 +9,7 @@ export const runtime = 'edge';
 // GET /api/referral/validate?code=XXXX
 // ---------------------------------------------------------------------------
 
-export async function GET(
-  request: NextRequest,
-): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const route = '/api/referral/validate';
   edgeLog('info', route, 'GET request received');
 
@@ -32,9 +30,15 @@ export async function GET(
     // Validate format
     const formatValidation = validateReferralCode(code);
     if (!formatValidation.isValid) {
-      edgeLog('warn', route, 'Validation failed', { reason: 'invalid_format', error: formatValidation.error });
+      edgeLog('warn', route, 'Validation failed', {
+        reason: 'invalid_format',
+        error: formatValidation.error,
+      });
       return addHeaders(
-        NextResponse.json({ message: formatValidation.error || 'Invalid referral code format' }, { status: 400 }),
+        NextResponse.json(
+          { message: formatValidation.error || 'Invalid referral code format' },
+          { status: 400 },
+        ),
       );
     }
 

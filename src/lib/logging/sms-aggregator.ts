@@ -146,9 +146,7 @@ export class SMSLogAggregator {
    */
   static getMetrics(timeRangeMs: number = 24 * 60 * 60 * 1000): SMSLogMetrics {
     const cutoffTime = Date.now() - timeRangeMs;
-    const recentLogs = smsLogStore.filter(
-      (log) => new Date(log.timestamp).getTime() >= cutoffTime
-    );
+    const recentLogs = smsLogStore.filter((log) => new Date(log.timestamp).getTime() >= cutoffTime);
 
     const metrics: SMSLogMetrics = {
       totalMessages: 0,
@@ -218,7 +216,7 @@ export class SMSLogAggregator {
       const providerDeliveryTimes = providerLogs
         .filter((log) => log.metrics)
         .flatMap((log) =>
-          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value)
+          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value),
         );
 
       metrics.byProvider[provider] = {
@@ -243,7 +241,7 @@ export class SMSLogAggregator {
       const eventDeliveryTimes = eventLogs
         .filter((log) => log.metrics)
         .flatMap((log) =>
-          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value)
+          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value),
         );
 
       metrics.byEventType[eventType] = {
@@ -274,9 +272,7 @@ export class SMSLogAggregator {
    * Get failed message logs for investigation and recovery
    */
   static getFailedMessages(limit: number = 100) {
-    const failed = smsLogStore
-      .filter((log) => log.context.status === 'failed')
-      .slice(-limit);
+    const failed = smsLogStore.filter((log) => log.context.status === 'failed').slice(-limit);
 
     logger.info('Failed messages retrieved', {
       context: {
@@ -304,10 +300,7 @@ export class SMSLogAggregator {
         return log.context.attempt && log.context.attempt >= 2;
       }),
       configurationErrors: smsLogStore.filter((log) => {
-        return (
-          log.context.missingCredentials ||
-          log.error?.message.includes('not configured')
-        );
+        return log.context.missingCredentials || log.error?.message.includes('not configured');
       }),
     };
 
