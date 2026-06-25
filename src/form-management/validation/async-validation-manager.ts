@@ -95,6 +95,8 @@ export class AsyncValidationManager {
     const existingTimer = this.debounceTimers.get(fieldId);
     if (existingTimer) {
       clearTimeout(existingTimer);
+      this.debounceTimers.delete(fieldId);
+      this.pendingValidations.delete(fieldId);
     }
 
     // Return existing validation if in progress
