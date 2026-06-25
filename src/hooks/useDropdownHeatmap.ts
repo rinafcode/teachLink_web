@@ -59,9 +59,7 @@ export function useDropdownHeatmap(dropdownId: string) {
       writeEvents(events);
 
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('dropdown:heatmap:click', { detail: event }),
-        );
+        window.dispatchEvent(new CustomEvent('dropdown:heatmap:click', { detail: event }));
       }
     },
     [dropdownId],

@@ -12,28 +12,25 @@ import type { QuoteProps } from '@/components/ui/Quote';
 ## Basic Usage
 
 ```tsx
-<Quote
-  text="The only way to do great work is to love what you do."
-  author="Steve Jobs"
-/>
+<Quote text="The only way to do great work is to love what you do." author="Steve Jobs" />
 ```
 
 ## Props
 
-| Prop             | Type                      | Default     | Description                                          |
-| ---------------- | ------------------------- | ----------- | ---------------------------------------------------- |
-| `text`           | `string`                  | —           | **Required.** The quote text to display.             |
-| `author`         | `string`                  | `undefined` | Name of the person being quoted.                     |
-| `source`         | `string`                  | `undefined` | Optional source, book title, or citation.            |
-| `onCopy`         | `(text: string) => void`  | `undefined` | Called with the quote text after it is copied.       |
-| `onSwipeLeft`    | `() => void`              | `undefined` | Called on a left swipe (or left-arrow click).        |
-| `onSwipeRight`   | `() => void`              | `undefined` | Called on a right swipe (or right-arrow click).      |
-| `onPinchIn`      | `() => void`              | `undefined` | Called when a pinch-in gesture is detected.          |
-| `onPinchOut`     | `() => void`              | `undefined` | Called when a pinch-out gesture is detected.         |
-| `className`      | `string`                  | `''`        | Extra Tailwind classes applied to the root element.  |
-| `showNavigation` | `boolean`                 | `false`     | Show previous/next arrow buttons.                    |
-| `showCopyButton` | `boolean`                 | `true`      | Show the clipboard copy button.                      |
-| `icon`           | `React.ReactNode`         | `undefined` | Replace the default quote icon with a custom node.   |
+| Prop             | Type                     | Default     | Description                                         |
+| ---------------- | ------------------------ | ----------- | --------------------------------------------------- |
+| `text`           | `string`                 | —           | **Required.** The quote text to display.            |
+| `author`         | `string`                 | `undefined` | Name of the person being quoted.                    |
+| `source`         | `string`                 | `undefined` | Optional source, book title, or citation.           |
+| `onCopy`         | `(text: string) => void` | `undefined` | Called with the quote text after it is copied.      |
+| `onSwipeLeft`    | `() => void`             | `undefined` | Called on a left swipe (or left-arrow click).       |
+| `onSwipeRight`   | `() => void`             | `undefined` | Called on a right swipe (or right-arrow click).     |
+| `onPinchIn`      | `() => void`             | `undefined` | Called when a pinch-in gesture is detected.         |
+| `onPinchOut`     | `() => void`             | `undefined` | Called when a pinch-out gesture is detected.        |
+| `className`      | `string`                 | `''`        | Extra Tailwind classes applied to the root element. |
+| `showNavigation` | `boolean`                | `false`     | Show previous/next arrow buttons.                   |
+| `showCopyButton` | `boolean`                | `true`      | Show the clipboard copy button.                     |
+| `icon`           | `React.ReactNode`        | `undefined` | Replace the default quote icon with a custom node.  |
 
 ## Examples
 
@@ -53,7 +50,9 @@ Pass `showNavigation` together with `onSwipeLeft` / `onSwipeRight` to enable bot
 
 ```tsx
 const [index, setIndex] = useState(0);
-const quotes = [/* ... */];
+const quotes = [
+  /* ... */
+];
 
 <Quote
   text={quotes[index].text}
@@ -61,7 +60,7 @@ const quotes = [/* ... */];
   showNavigation
   onSwipeLeft={() => setIndex((i) => Math.min(i + 1, quotes.length - 1))}
   onSwipeRight={() => setIndex((i) => Math.max(i - 1, 0))}
-/>
+/>;
 ```
 
 ### Copy Callback
@@ -98,13 +97,13 @@ const quotes = [/* ... */];
 
 The component wraps its content in `GestureHandler`, which listens for touch events and maps them to the corresponding callbacks:
 
-| Gesture         | Prop triggered   | Notes                                                              |
-| --------------- | ---------------- | ------------------------------------------------------------------ |
-| Swipe left      | `onSwipeLeft`    | Default threshold: 50 px                                           |
-| Swipe right     | `onSwipeRight`   | Default threshold: 50 px                                           |
-| Pinch in        | `onPinchIn`      | Two-finger pinch closed                                            |
-| Pinch out       | `onPinchOut`     | Two-finger pinch open                                              |
-| Tap             | —                | Triggers the copy action when `showCopyButton` is `true`           |
+| Gesture     | Prop triggered | Notes                                                    |
+| ----------- | -------------- | -------------------------------------------------------- |
+| Swipe left  | `onSwipeLeft`  | Default threshold: 50 px                                 |
+| Swipe right | `onSwipeRight` | Default threshold: 50 px                                 |
+| Pinch in    | `onPinchIn`    | Two-finger pinch closed                                  |
+| Pinch out   | `onPinchOut`   | Two-finger pinch open                                    |
+| Tap         | —              | Triggers the copy action when `showCopyButton` is `true` |
 
 ### iOS behaviour
 
@@ -118,14 +117,14 @@ On iOS, custom gestures are disabled by default to avoid conflicting with the na
 
 ## Accessibility
 
-| Feature                     | Implementation                                                     |
-| --------------------------- | ------------------------------------------------------------------ |
-| Landmark role               | `role="article"` on the root element                               |
-| Accessible name             | `aria-label="Quote by {author}"` (falls back to "Unknown author") |
-| Copy button label           | `aria-label="Copy quote to clipboard"` / `"Copied to clipboard"`  |
-| Navigation button labels    | `aria-label="Previous quote"` / `"Next quote"`                    |
-| Semantic quote markup       | `<blockquote>` + `<cite>` for screen-reader context               |
-| Keyboard focus ring         | `focus:ring-2 focus:ring-purple-500` on interactive controls       |
+| Feature                  | Implementation                                                    |
+| ------------------------ | ----------------------------------------------------------------- |
+| Landmark role            | `role="article"` on the root element                              |
+| Accessible name          | `aria-label="Quote by {author}"` (falls back to "Unknown author") |
+| Copy button label        | `aria-label="Copy quote to clipboard"` / `"Copied to clipboard"`  |
+| Navigation button labels | `aria-label="Previous quote"` / `"Next quote"`                    |
+| Semantic quote markup    | `<blockquote>` + `<cite>` for screen-reader context               |
+| Keyboard focus ring      | `focus:ring-2 focus:ring-purple-500` on interactive controls      |
 
 ## Dark Mode
 
@@ -133,8 +132,5 @@ All colours use Tailwind `dark:` variants and adapt automatically when the appli
 
 ```tsx
 // Renders correctly in both light and dark themes
-<Quote
-  text="The best way to predict the future is to create it."
-  author="Peter Drucker"
-/>
+<Quote text="The best way to predict the future is to create it." author="Peter Drucker" />
 ```

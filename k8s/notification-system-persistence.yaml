@@ -38,29 +38,29 @@ spec:
       securityContext:
         fsGroup: 1001
       containers:
-      - name: notification-system
-        image: rinafcode/teachlink-notification-system:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 3000
-        resources:
-          requests:
-            cpu: 250m
-            memory: 256Mi
-          limits:
-            cpu: 1000m
-            memory: 512Mi
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: PORT
-          value: "3000"
-        - name: NOTIFICATION_STORAGE_PATH
-          value: "/var/lib/teachlink/notifications"
-        volumeMounts:
-        - name: notification-data
-          mountPath: /var/lib/teachlink/notifications
+        - name: notification-system
+          image: rinafcode/teachlink-notification-system:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '3000'
+            - name: NOTIFICATION_STORAGE_PATH
+              value: '/var/lib/teachlink/notifications'
+          volumeMounts:
+            - name: notification-data
+              mountPath: /var/lib/teachlink/notifications
       volumes:
-      - name: notification-data
-        persistentVolumeClaim:
-          claimName: teachlink-notification-data
+        - name: notification-data
+          persistentVolumeClaim:
+            claimName: teachlink-notification-data

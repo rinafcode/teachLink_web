@@ -360,11 +360,15 @@ export class SettingsService {
     const suggestions: string[] = [];
 
     if (validation.missingFields.length > 0) {
-      suggestions.push(`Add documentation for missing fields: ${validation.missingFields.join(', ')}`);
+      suggestions.push(
+        `Add documentation for missing fields: ${validation.missingFields.join(', ')}`,
+      );
     }
 
     if (validation.outdatedFields.length > 0) {
-      suggestions.push(`Remove documentation for deprecated fields: ${validation.outdatedFields.join(', ')}`);
+      suggestions.push(
+        `Remove documentation for deprecated fields: ${validation.outdatedFields.join(', ')}`,
+      );
     }
 
     suggestions.push(`Update documentation version to reflect changes`);

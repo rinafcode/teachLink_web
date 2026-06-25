@@ -46,7 +46,7 @@ describe('Onboarding Page', () => {
     expect(screen.getByText('Tell us about yourself')).toBeInTheDocument();
     expect(screen.getByLabelText(/Username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Date of Birth/i)).toBeInTheDocument();
-    
+
     // Check that we display the two role options
     expect(screen.getByText('Student / Learner')).toBeInTheDocument();
     expect(screen.getByText('Instructor / Teacher')).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe('Onboarding Page', () => {
     render(<OnboardingPage />);
 
     const nextButton = screen.getByRole('button', { name: /Next/i });
-    
+
     await act(async () => {
       fireEvent.click(nextButton);
     });
@@ -91,7 +91,7 @@ describe('Onboarding Page', () => {
 
     // Click Next
     const nextButton = screen.getByRole('button', { name: /Next/i });
-    
+
     await act(async () => {
       fireEvent.click(nextButton);
     });
@@ -110,7 +110,7 @@ describe('Onboarding Page', () => {
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
     fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
     fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
-    
+
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Next/i }));
     });
@@ -119,14 +119,16 @@ describe('Onboarding Page', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Next/i }));
     });
-    
+
     await waitFor(() => {
       expect(screen.getByText('Please select your primary area of interest')).toBeInTheDocument();
     });
 
     // Fill Step 2 fields
     fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
-    fireEvent.change(screen.getByLabelText(/Preferred Notification Channel/i), { target: { value: 'email' } });
+    fireEvent.change(screen.getByLabelText(/Preferred Notification Channel/i), {
+      target: { value: 'email' },
+    });
     fireEvent.change(screen.getByLabelText(/Interface Language/i), { target: { value: 'en' } });
 
     // Click Next
@@ -148,10 +150,14 @@ describe('Onboarding Page', () => {
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
     fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
     fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     // Click connect Argent X
     const argentButton = screen.getByRole('button', { name: /Argent X/i });
@@ -180,14 +186,18 @@ describe('Onboarding Page', () => {
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
     fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
     fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     // Complete onboarding (wallet connection is optional, so we can skip connecting it)
     const completeButton = screen.getByRole('button', { name: /Complete/i });
-    
+
     await act(async () => {
       fireEvent.click(completeButton);
     });
