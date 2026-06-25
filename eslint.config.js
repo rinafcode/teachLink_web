@@ -48,6 +48,9 @@ const eslintConfig = [
       prettier: prettierPlugin,
       'unused-imports': unusedImportsPlugin,
     },
+    linterOptions: {
+      reportUnusedDisableDirectives: 'off',
+    },
     rules: {
       // TypeScript & General Rules
       '@typescript-eslint/no-explicit-any': 'off',
