@@ -6,7 +6,6 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "ignoreDeprecations": "5.0",
     "plugins": [
       {
         "name": "next"
@@ -62,7 +61,7 @@
     "**/pdf-generation.ts",
     "**/serviceAccount.ts",
     "**/virtualBackgroundUtils.ts",
-    "**/sms-cluster-worker.ts"
+    "**/sms-cluster-worker.ts",
     "src/form-management",
     "src/hooks/useCodeEditor.tsx",
     "src/hooks/useCollaboration.ts",
