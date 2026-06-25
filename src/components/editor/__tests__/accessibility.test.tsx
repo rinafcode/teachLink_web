@@ -107,8 +107,7 @@ describe('ContentTemplateLibrary accessibility', () => {
   it('template icons are hidden from assistive technology', () => {
     render(<ContentTemplateLibrary editor={mockEditor} />);
     // Icon wrappers should carry aria-hidden="true"
-    const hiddenEls = document
-      .querySelectorAll('[aria-hidden="true"]');
+    const hiddenEls = document.querySelectorAll('[aria-hidden="true"]');
     expect(hiddenEls.length).toBeGreaterThan(0);
   });
 });

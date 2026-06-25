@@ -14,11 +14,13 @@ export default function NotFoundPage() {
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-300">404 error</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-300">
+            404 error
+          </p>
           <h1 className="text-4xl font-semibold sm:text-5xl">Page not found</h1>
           <p className="mx-auto max-w-2xl text-lg text-slate-300">
-            The page you were looking for doesn&apos;t exist or may have moved. You can return to the
-            home page or head back to the previous screen.
+            The page you were looking for doesn&apos;t exist or may have moved. You can return to
+            the home page or head back to the previous screen.
           </p>
         </div>
 

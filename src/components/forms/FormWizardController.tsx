@@ -223,7 +223,7 @@ const WizardProgressBar: React.FC<WizardProgressBarProps> = ({
         return (
           <div
             key={step.id}
-            className={`progress-step ${isCurrent ? 'current' : ''} ${
+            className={`progress-step group ${isCurrent ? 'current' : ''} ${
               isCompleted ? 'completed' : ''
             } ${isAccessible ? 'accessible' : 'locked'}`}
             onClick={() => isAccessible && onStepClick(index)}

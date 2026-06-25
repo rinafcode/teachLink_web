@@ -42,19 +42,19 @@ SMSLogAggregator       ← metrics, anomaly detection, export
 
 ## New Files
 
-| File | Purpose |
-|------|---------|
-| `src/lib/sms/types.ts` | SMS types: `SMSMessage`, `SMSSendResult`, `SMSDeliveryLog`, etc. |
-| `src/lib/sms/provider.ts` | Provider implementations: Twilio, AWS SNS, Vonage + factory |
-| `src/lib/sms/queue.ts` | Queue with retry, exponential backoff, per-job delivery logs |
-| `src/lib/sms/service.ts` | High-level service: event dispatch, message templates |
-| `src/lib/sms/index.ts` | Barrel export |
-| `src/lib/logging/sms-aggregator.ts` | Aggregation layer: metrics, anomaly detection, export |
-| `src/app/api/sms/send/route.ts` | `POST /api/sms/send` — send SMS via HTTP |
-| `src/app/api/sms/logs/route.ts` | `GET /api/sms/logs` — query logs, metrics, anomalies, export |
-| `src/__tests__/sms/queue.test.ts` | Queue unit tests |
-| `src/__tests__/sms/service.test.ts` | Service unit tests |
-| `src/__tests__/logging/sms-aggregator.test.ts` | Aggregator unit tests |
+| File                                           | Purpose                                                          |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| `src/lib/sms/types.ts`                         | SMS types: `SMSMessage`, `SMSSendResult`, `SMSDeliveryLog`, etc. |
+| `src/lib/sms/provider.ts`                      | Provider implementations: Twilio, AWS SNS, Vonage + factory      |
+| `src/lib/sms/queue.ts`                         | Queue with retry, exponential backoff, per-job delivery logs     |
+| `src/lib/sms/service.ts`                       | High-level service: event dispatch, message templates            |
+| `src/lib/sms/index.ts`                         | Barrel export                                                    |
+| `src/lib/logging/sms-aggregator.ts`            | Aggregation layer: metrics, anomaly detection, export            |
+| `src/app/api/sms/send/route.ts`                | `POST /api/sms/send` — send SMS via HTTP                         |
+| `src/app/api/sms/logs/route.ts`                | `GET /api/sms/logs` — query logs, metrics, anomalies, export     |
+| `src/__tests__/sms/queue.test.ts`              | Queue unit tests                                                 |
+| `src/__tests__/sms/service.test.ts`            | Service unit tests                                               |
+| `src/__tests__/logging/sms-aggregator.test.ts` | Aggregator unit tests                                            |
 
 ---
 
@@ -85,17 +85,17 @@ LOG_AGGREGATION_URL=https://your-log-aggregation-endpoint.com/logs
 
 Every SMS operation emits structured log records with the following context fields:
 
-| Field | Description |
-|-------|-------------|
-| `jobId` | Unique queue job identifier |
-| `provider` | Active SMS provider (`twilio`, `sns`, `vonage`) |
-| `phoneNumber` | Recipient (E.164 format) |
-| `messageId` | Provider-assigned message ID on success |
-| `status` | `pending` / `sent` / `failed` / `retrying` |
-| `attempt` | Current attempt number |
-| `maxRetries` | Configured retry limit |
-| `eventType` | SMS event type (e.g. `verification-code`) |
-| `tags` | Message tags for filtering |
+| Field         | Description                                     |
+| ------------- | ----------------------------------------------- |
+| `jobId`       | Unique queue job identifier                     |
+| `provider`    | Active SMS provider (`twilio`, `sns`, `vonage`) |
+| `phoneNumber` | Recipient (E.164 format)                        |
+| `messageId`   | Provider-assigned message ID on success         |
+| `status`      | `pending` / `sent` / `failed` / `retrying`      |
+| `attempt`     | Current attempt number                          |
+| `maxRetries`  | Configured retry limit                          |
+| `eventType`   | SMS event type (e.g. `verification-code`)       |
+| `tags`        | Message tags for filtering                      |
 
 Performance metrics (`sms.send_duration_ms`, `sms.sent`, `sms.failed`, `sms.retry`, `sms.enqueued`) are emitted via the existing `createCounterMetric` / `measureAsync` infrastructure.
 
@@ -107,18 +107,18 @@ Performance metrics (`sms.send_duration_ms`, `sms.sent`, `sms.failed`, `sms.retr
 
 Query aggregated SMS logs.
 
-| Query param | Default | Description |
-|-------------|---------|-------------|
-| `action` | `query` | `query` \| `metrics` \| `failed` \| `anomalies` \| `store-stats` \| `export` |
-| `level` | — | Filter by log level (`info`, `warn`, `error`) |
-| `provider` | — | Filter by provider |
-| `eventType` | — | Filter by event type |
-| `status` | — | Filter by delivery status |
-| `since` | — | Unix timestamp (ms) lower bound |
-| `limit` | `100` | Max records returned |
-| `offset` | `0` | Pagination offset |
-| `timeRangeMs` | `86400000` | Time window for `metrics` action (ms) |
-| `format` | `json` | `json` \| `csv` for `export` action |
+| Query param   | Default    | Description                                                                  |
+| ------------- | ---------- | ---------------------------------------------------------------------------- |
+| `action`      | `query`    | `query` \| `metrics` \| `failed` \| `anomalies` \| `store-stats` \| `export` |
+| `level`       | —          | Filter by log level (`info`, `warn`, `error`)                                |
+| `provider`    | —          | Filter by provider                                                           |
+| `eventType`   | —          | Filter by event type                                                         |
+| `status`      | —          | Filter by delivery status                                                    |
+| `since`       | —          | Unix timestamp (ms) lower bound                                              |
+| `limit`       | `100`      | Max records returned                                                         |
+| `offset`      | `0`        | Pagination offset                                                            |
+| `timeRangeMs` | `86400000` | Time window for `metrics` action (ms)                                        |
+| `format`      | `json`     | `json` \| `csv` for `export` action                                          |
 
 **Examples:**
 
@@ -184,8 +184,7 @@ const metrics = SMSLogAggregator.getMetrics();
 // { totalMessages, successRate, errorRate, averageDeliveryTimeMs, byProvider, byEventType }
 
 // Anomaly detection
-const { slowDeliveries, highRetryAttempts, configurationErrors } =
-  SMSLogAggregator.getAnomalies();
+const { slowDeliveries, highRetryAttempts, configurationErrors } = SMSLogAggregator.getAnomalies();
 
 // Export for external systems
 const csv = SMSLogAggregator.exportLogs('csv');

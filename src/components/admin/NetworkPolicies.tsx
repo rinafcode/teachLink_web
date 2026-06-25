@@ -42,7 +42,12 @@ function ActionBadge({ action }: { action: PolicyAction }) {
   );
 }
 
-const EMPTY_FORM = { scope: 'IP' as PolicyScope, value: '', action: 'ALLOW' as PolicyAction, description: '' };
+const EMPTY_FORM = {
+  scope: 'IP' as PolicyScope,
+  value: '',
+  action: 'ALLOW' as PolicyAction,
+  description: '',
+};
 
 /**
  * NetworkPolicies component for the Admin Panel.
@@ -131,7 +136,9 @@ export function NetworkPolicies({ user }: NetworkPoliciesProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Network Policies</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Network Policies
+            </h2>
           </div>
           <button
             onClick={fetchPolicies}
@@ -158,14 +165,18 @@ export function NetworkPolicies({ user }: NetworkPoliciesProps) {
               aria-label="Policy scope"
             >
               {(Object.keys(SCOPE_LABELS) as PolicyScope[]).map((s) => (
-                <option key={s} value={s}>{SCOPE_LABELS[s]}</option>
+                <option key={s} value={s}>
+                  {SCOPE_LABELS[s]}
+                </option>
               ))}
             </select>
             <input
               type="text"
               value={form.value}
               onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
-              placeholder={form.scope === 'IP' ? '192.168.1.1' : form.scope === 'CIDR' ? '10.0.0.0/8' : 'US'}
+              placeholder={
+                form.scope === 'IP' ? '192.168.1.1' : form.scope === 'CIDR' ? '10.0.0.0/8' : 'US'
+              }
               required
               className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Policy value"
@@ -201,7 +212,10 @@ export function NetworkPolicies({ user }: NetworkPoliciesProps) {
 
         {/* Error */}
         {error && (
-          <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
+          <div
+            className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400"
+            role="alert"
+          >
             <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
             {error}
           </div>
@@ -221,10 +235,16 @@ export function NetworkPolicies({ user }: NetworkPoliciesProps) {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ActionBadge action={policy.action} />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{SCOPE_LABELS[policy.scope]}</span>
-                  <span className="font-mono text-sm text-gray-900 dark:text-white truncate">{policy.value}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {SCOPE_LABELS[policy.scope]}
+                  </span>
+                  <span className="font-mono text-sm text-gray-900 dark:text-white truncate">
+                    {policy.value}
+                  </span>
                   {policy.description && (
-                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">{policy.description}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">
+                      {policy.description}
+                    </span>
                   )}
                 </div>
                 <button

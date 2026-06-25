@@ -95,7 +95,10 @@ function getCertificateStatus(certificate: Pick<ForumCertificate, 'validUntil' |
 }
 
 function normalizeFingerprint(fingerprint: string): string {
-  return fingerprint.trim().replace(/[^a-fA-F0-9]/g, '').toUpperCase();
+  return fingerprint
+    .trim()
+    .replace(/[^a-fA-F0-9]/g, '')
+    .toUpperCase();
 }
 
 function assertValidCertificate(input: {
