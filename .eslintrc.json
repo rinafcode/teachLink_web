@@ -8,9 +8,9 @@
     "unused-imports/no-unused-vars": "off",
     "react/no-unescaped-entities": "warn",
     "react/display-name": "warn",
-    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-unsafe-function-type": "warn",
     "@typescript-eslint/no-unused-expressions": "warn",
-    "prettier/prettier": "error"
+    "prettier/prettier": ["error", { "endOfLine": "auto" }]
   }
 }
