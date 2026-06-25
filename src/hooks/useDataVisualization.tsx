@@ -103,6 +103,7 @@ export const useDataVisualization = (
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);

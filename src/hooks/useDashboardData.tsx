@@ -15,7 +15,11 @@ import {
 import type { ChartData } from '@/utils/visualizationUtils';
 import { useInternationalization } from '@/hooks/useInternationalization';
 import { useAnalyticsErrorTracking } from './useAnalyticsErrorTracking';
-import type { AnalyticsErrorType } from './useAnalyticsErrorTracking';
+import type {
+  AnalyticsErrorContext,
+  AnalyticsErrorType,
+  TrackedError,
+} from './useAnalyticsErrorTracking';
 import {
   getDashboardDatasetLabel,
   getDashboardPanelTitle,
@@ -53,6 +57,17 @@ export interface UseDashboardDataReturn {
   reorderPanels: (fromIndex: number, toIndex: number) => void;
   generateShareURL: () => string;
   exportPanel: (id: string, format: 'csv' | 'json') => void;
+  errors: TrackedError[];
+  hasErrors: boolean;
+  getLatestError: () => TrackedError | null;
+  dismissError: (errorId: string) => void;
+  clearAllErrors: () => void;
+  trackError: (
+    type: AnalyticsErrorType,
+    message: string,
+    additionalContext?: Partial<AnalyticsErrorContext>,
+    error?: Error,
+  ) => void;
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -116,9 +131,10 @@ const buildDefaultPanels = (
 
 export const useDashboardData = (): UseDashboardDataReturn => {
   const { language, t } = useInternationalization();
-  const { trackError, errors, hasErrors, getLatestError } = useAnalyticsErrorTracking({
-    componentName: 'useDashboardData',
-  });
+  const { trackError, errors, hasErrors, getLatestError, dismissError, clearErrors } =
+    useAnalyticsErrorTracking({
+      componentName: 'useDashboardData',
+    });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -317,7 +333,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
     hasErrors,
     getLatestError,
     dismissError,
-    clearAllErrors,
+    clearAllErrors: clearErrors,
     trackError,
   };
 };

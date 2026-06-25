@@ -3,7 +3,7 @@ import {
   ImageOptimizationTaskManager,
   ImageOptimizationTask,
 } from './image-optimization-task-manager.js';
-import * as optimizerModule from './image-optimizer.js';
+import * as optimizerModule from './image-optimizer';
 
 describe('ImageOptimizationTaskManager', () => {
   let manager: ImageOptimizationTaskManager;

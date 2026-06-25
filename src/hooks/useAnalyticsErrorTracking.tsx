@@ -24,6 +24,7 @@ export interface AnalyticsErrorContext {
   panelId?: string;
   timeRange?: string;
   aggregation?: string;
+  websocketUrl?: string;
   userId?: string;
   sessionId: string;
   url: string;
