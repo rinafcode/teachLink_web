@@ -199,7 +199,7 @@ a[data-skip-link]:focus {
 }
 
 .progress-step {
-  @apply flex flex-col items-center flex-1 relative cursor-pointer group transition-all duration-200;
+  @apply flex flex-col items-center flex-1 relative cursor-pointer transition-all duration-200;
 }
 
 .progress-step:not(:last-child)::after {

@@ -12,7 +12,7 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
-import { DiscordButton } from '../../../components/auth/DiscordButton';
+import { DiscordButton } from '@/app/components/auth/DiscordButton';
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);

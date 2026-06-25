@@ -51,3 +51,12 @@ export {
   type ImageOptimizationOptions,
   type ImageDimensionConstraints,
 } from './image-optimizer.js';
+
+// Image optimization task manager exports
+export {
+  ImageOptimizationTaskManager,
+  type ImageOptimizationTask,
+  type ImageOptimizationTaskState,
+  type TaskManagerOptions,
+  type TaskChangeCallback,
+} from './image-optimization-task-manager';

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ImageUploader from './ImageUploader';
 import { dataWarehouse } from '@/lib/dataWarehouse';
 
+// Mock Next.js Image component to render a standard <img> element for testing purposes
 vi.mock('next/image', () => ({
   default: ({
     src,
