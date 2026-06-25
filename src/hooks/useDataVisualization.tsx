@@ -15,6 +15,12 @@ import {
   exportToCSV,
   exportToJSON,
 } from '@/utils/visualizationUtils';
+import { useAnalyticsErrorTracking } from './useAnalyticsErrorTracking';
+import type {
+  AnalyticsErrorType,
+  TrackedError,
+  AnalyticsErrorContext,
+} from './useAnalyticsErrorTracking';
 
 export interface VisualizationConfig {
   chartType: ChartType;
@@ -38,7 +44,10 @@ export interface UseDataVisualizationReturn {
   data: ChartData | null;
   config: VisualizationConfig;
   isLoading: boolean;
-  error: string | null;
+  error: string | null; // Legacy support - will be removed in future versions
+  errors: TrackedError[];
+  hasErrors: boolean;
+  latestError: TrackedError | null;
   isConnected: boolean;
   updateData: (newData: ChartData) => void;
   updateConfig: (newConfig: Partial<VisualizationConfig>) => void;
@@ -52,6 +61,12 @@ export interface UseDataVisualizationReturn {
     median: number;
     trend: { direction: 'up' | 'down' | 'neutral'; percentage: number };
   } | null;
+  trackError: (
+    type: AnalyticsErrorType,
+    message: string,
+    additionalContext?: Partial<AnalyticsErrorContext>,
+    error?: Error,
+  ) => void;
 }
 
 const defaultConfig: VisualizationConfig = {
@@ -75,13 +90,18 @@ export const useDataVisualization = (
     refreshInterval = 30000,
   } = options;
 
+  // Initialize error tracking
+  const { trackError, errors, hasErrors, getLatestError } = useAnalyticsErrorTracking({
+    componentName: 'useDataVisualization',
+    websocketUrl,
+  });
+
   const [data, setData] = useState<ChartData | null>(initialData);
   const [config, setConfig] = useState<VisualizationConfig>({
     ...defaultConfig,
     ...initialConfig,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
@@ -138,12 +158,18 @@ export const useDataVisualization = (
       });
 
       socket.on('error', (err: Error) => {
-        setError(err.message);
+        trackError('WEBSOCKET_CONNECTION_ERROR', err.message, { metadata: { websocketUrl } }, err);
       });
 
       socketRef.current = socket;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'WebSocket connection failed');
+      const errorMessage = err instanceof Error ? err.message : 'WebSocket connection failed';
+      trackError(
+        'WEBSOCKET_CONNECTION_ERROR',
+        errorMessage,
+        { metadata: { websocketUrl } },
+        err instanceof Error ? err : undefined,
+      );
       return undefined;
     }
 
@@ -151,14 +177,13 @@ export const useDataVisualization = (
       socket?.disconnect();
       socketRef.current = null;
     };
-  }, [websocketUrl, config.realTimeEnabled]);
+  }, [websocketUrl, config.realTimeEnabled, trackError]);
 
   /**
    * Refresh data (placeholder for API call)
    */
   const refreshData = useCallback(async () => {
     setIsLoading(true);
-    setError(null);
 
     try {
       // Simulate API call - replace with actual data fetching
@@ -166,14 +191,25 @@ export const useDataVisualization = (
 
       // In real implementation, fetch data from API
       // const response = await fetch('/api/analytics/data');
+      // if (!response.ok) throw new Error('Failed to fetch analytics data');
       // const newData = await response.json();
       // setData(newData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh data');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh data';
+      trackError(
+        'DATA_FETCH_ERROR',
+        errorMessage,
+        {
+          timeRange: config.timeRange,
+          aggregation: config.aggregation,
+          metadata: { autoRefresh, refreshInterval },
+        },
+        err instanceof Error ? err : undefined,
+      );
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [config.timeRange, config.aggregation, autoRefresh, refreshInterval, trackError]);
 
   /**
    * Auto-refresh data at specified interval
@@ -197,17 +233,43 @@ export const useDataVisualization = (
   /**
    * Update chart data
    */
-  const updateData = useCallback((newData: ChartData) => {
-    setData(newData);
-    setError(null);
-  }, []);
+  const updateData = useCallback(
+    (newData: ChartData) => {
+      try {
+        setData(newData);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to update chart data';
+        trackError(
+          'DATA_PROCESSING_ERROR',
+          errorMessage,
+          {},
+          err instanceof Error ? err : undefined,
+        );
+      }
+    },
+    [trackError],
+  );
 
   /**
    * Update visualization configuration
    */
-  const updateConfig = useCallback((newConfig: Partial<VisualizationConfig>) => {
-    setConfig((prev) => ({ ...prev, ...newConfig }));
-  }, []);
+  const updateConfig = useCallback(
+    (newConfig: Partial<VisualizationConfig>) => {
+      try {
+        setConfig((prev) => ({ ...prev, ...newConfig }));
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to update visualization config';
+        trackError(
+          'FILTER_APPLICATION_ERROR',
+          errorMessage,
+          { metadata: { newConfig } },
+          err instanceof Error ? err : undefined,
+        );
+      }
+    },
+    [trackError],
+  );
 
   /**
    * Export data to file
@@ -215,7 +277,7 @@ export const useDataVisualization = (
   const exportData = useCallback(
     (format: 'csv' | 'json', filename: string) => {
       if (!data) {
-        setError('No data to export');
+        trackError('EXPORT_ERROR', 'No data available to export');
         return;
       }
 
@@ -226,54 +288,85 @@ export const useDataVisualization = (
           exportToJSON(data, filename);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Export failed');
+        const errorMessage = err instanceof Error ? err.message : 'Export failed';
+        trackError(
+          'EXPORT_ERROR',
+          errorMessage,
+          { metadata: { format, filename } },
+          err instanceof Error ? err : undefined,
+        );
       }
     },
-    [data],
+    [data, trackError],
   );
 
   /**
    * Add a new data point
    */
-  const addDataPoint = useCallback((datasetIndex: number, value: number, label?: string) => {
-    setData((prevData) => {
-      if (!prevData) return prevData;
+  const addDataPoint = useCallback(
+    (datasetIndex: number, value: number, label?: string) => {
+      try {
+        setData((prevData) => {
+          if (!prevData) return prevData;
 
-      const newData = { ...prevData };
+          const newData = { ...prevData };
 
-      if (label && !newData.labels.includes(label)) {
-        newData.labels.push(label);
+          if (label && !newData.labels.includes(label)) {
+            newData.labels.push(label);
+          }
+
+          if (newData.datasets[datasetIndex]) {
+            newData.datasets[datasetIndex].data.push(value);
+          }
+
+          return newData;
+        });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to add data point';
+        trackError(
+          'REAL_TIME_SYNC_ERROR',
+          errorMessage,
+          { metadata: { datasetIndex, value, label } },
+          err instanceof Error ? err : undefined,
+        );
       }
-
-      if (newData.datasets[datasetIndex]) {
-        newData.datasets[datasetIndex].data.push(value);
-      }
-
-      return newData;
-    });
-  }, []);
+    },
+    [trackError],
+  );
 
   /**
    * Remove a data point
    */
-  const removeDataPoint = useCallback((datasetIndex: number, index: number) => {
-    setData((prevData) => {
-      if (!prevData) return prevData;
+  const removeDataPoint = useCallback(
+    (datasetIndex: number, index: number) => {
+      try {
+        setData((prevData) => {
+          if (!prevData) return prevData;
 
-      const newData = { ...prevData };
-      newData.labels.splice(index, 1);
-      newData.datasets[datasetIndex].data.splice(index, 1);
+          const newData = { ...prevData };
+          newData.labels.splice(index, 1);
+          newData.datasets[datasetIndex].data.splice(index, 1);
 
-      return newData;
-    });
-  }, []);
+          return newData;
+        });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to remove data point';
+        trackError(
+          'DATA_PROCESSING_ERROR',
+          errorMessage,
+          { metadata: { datasetIndex, index } },
+          err instanceof Error ? err : undefined,
+        );
+      }
+    },
+    [trackError],
+  );
 
   /**
    * Clear all data
    */
   const clearData = useCallback(() => {
     setData(null);
-    setError(null);
   }, []);
 
   /**
@@ -299,11 +392,18 @@ export const useDataVisualization = (
     return { mean, median, trend };
   }, [data]);
 
+  // For legacy compatibility, set the simple error string to the latest error message
+  const latestError = getLatestError();
+  const legacyError = latestError ? latestError.message : null;
+
   return {
     data,
     config,
     isLoading,
-    error,
+    error: legacyError, // Legacy support
+    errors,
+    hasErrors,
+    latestError,
     isConnected,
     updateData,
     updateConfig,
@@ -313,5 +413,6 @@ export const useDataVisualization = (
     removeDataPoint,
     clearData,
     calculateStats,
+    trackError,
   };
 };
