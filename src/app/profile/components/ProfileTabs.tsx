@@ -44,9 +44,7 @@ const ProfileTabButton = memo(function ProfileTabButton({
       tabIndex={isActive ? 0 : -1}
       onClick={handleClick}
       className={`rounded-lg px-4 py-2 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-        isActive
-          ? 'bg-blue-500 text-white'
-          : 'bg-white text-gray-700 hover:bg-gray-100'
+        isActive ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
       }`}
     >
       {tab.label}
@@ -63,11 +61,7 @@ export default function ProfileTabs() {
 
   return (
     <>
-      <div
-        className="mb-8 flex flex-wrap gap-3"
-        role="tablist"
-        aria-label="Profile sections"
-      >
+      <div className="mb-8 flex flex-wrap gap-3" role="tablist" aria-label="Profile sections">
         {profileTabs.map((tab) => (
           <ProfileTabButton
             key={tab.id}

@@ -3,7 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useInternationalization } from '@/hooks/useInternationalization';
-import { Award, Briefcase, ChevronRight, FileText, Globe, HelpCircle, Tag, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Award,
+  Briefcase,
+  ChevronRight,
+  FileText,
+  Globe,
+  HelpCircle,
+  Tag,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
 
 type CouponStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -45,7 +55,11 @@ function CouponCode() {
         <input
           type="text"
           value={code}
-          onChange={(e) => { setCode(e.target.value); setStatus('idle'); setMessage(''); }}
+          onChange={(e) => {
+            setCode(e.target.value);
+            setStatus('idle');
+            setMessage('');
+          }}
           onKeyDown={(e) => e.key === 'Enter' && handleApply()}
           placeholder="e.g. TEACH20"
           aria-label="Coupon code"
@@ -61,13 +75,19 @@ function CouponCode() {
         </button>
       </div>
       {status === 'success' && (
-        <p role="status" className="mt-2 flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+        <p
+          role="status"
+          className="mt-2 flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400"
+        >
           <CheckCircle2 size={14} aria-hidden="true" className="shrink-0" />
           {message}
         </p>
       )}
       {status === 'error' && (
-        <p role="alert" className="mt-2 flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
+        <p
+          role="alert"
+          className="mt-2 flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400"
+        >
           <AlertCircle size={14} aria-hidden="true" className="shrink-0" />
           {message}
         </p>

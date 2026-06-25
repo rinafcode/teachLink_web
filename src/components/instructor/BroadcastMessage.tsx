@@ -47,7 +47,12 @@ export function BroadcastMessage({
     setErrorMsg('');
 
     try {
-      const payload: BroadcastPayload = { lessonId, subject: subject.trim(), body: body.trim(), priority };
+      const payload: BroadcastPayload = {
+        lessonId,
+        subject: subject.trim(),
+        body: body.trim(),
+        priority,
+      };
       if (onSend) {
         await onSend(payload);
       } else {
@@ -140,7 +145,10 @@ export function BroadcastMessage({
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Priority:</span>
           {(['normal', 'urgent'] as const).map((p) => (
-            <label key={p} className="flex cursor-pointer items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+            <label
+              key={p}
+              className="flex cursor-pointer items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400"
+            >
               <input
                 type="radio"
                 name="priority"

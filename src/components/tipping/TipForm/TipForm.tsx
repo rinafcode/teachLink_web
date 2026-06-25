@@ -28,21 +28,21 @@ export default function TipForm({ recipient }: TipFormProps) {
     {
       id: 'default',
       name: 'General Support',
-      description: 'Your tip will support the creator across all their content areas.'
+      description: 'Your tip will support the creator across all their content areas.',
     },
     {
       id: 'education',
       name: 'Education',
-      description: 'Support educational content and courses.'
+      description: 'Support educational content and courses.',
     },
     {
       id: 'research',
       name: 'Research',
-      description: 'Support research and development activities.'
-    }
+      description: 'Support research and development activities.',
+    },
   ];
 
-  const selectedGroup = availableGroups.find(g => g.id === selectedGroupId) || availableGroups[0];
+  const selectedGroup = availableGroups.find((g) => g.id === selectedGroupId) || availableGroups[0];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

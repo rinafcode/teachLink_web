@@ -1,6 +1,6 @@
 /**
  * Referral Code Utilities
- * 
+ *
  * This module provides utilities for generating and validating referral codes
  * as part of the Authentication Flow Referral Program implementation.
  */
@@ -30,14 +30,14 @@ export function isValidReferralCodeFormat(code: string): boolean {
   if (!code || code.length !== REFERRAL_CODE_LENGTH) {
     return false;
   }
-  
+
   // Check that all characters are valid
   for (const char of code) {
     if (!REFERRAL_CODE_CHARSET.includes(char)) {
       return false;
     }
   }
-  
+
   return true;
 }
 
@@ -50,17 +50,17 @@ export function validateReferralCode(code: string): { isValid: boolean; error?: 
   if (!code) {
     return { isValid: false, error: 'Referral code is required' };
   }
-  
+
   if (code.length !== REFERRAL_CODE_LENGTH) {
     return { isValid: false, error: 'Referral code must be 8 characters' };
   }
-  
+
   for (const char of code) {
     if (!REFERRAL_CODE_CHARSET.includes(char)) {
       return { isValid: false, error: 'Referral code contains invalid characters' };
     }
   }
-  
+
   return { isValid: true };
 }
 

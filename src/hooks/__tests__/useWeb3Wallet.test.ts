@@ -226,10 +226,7 @@ describe('useWeb3Wallet', () => {
     const { result } = renderHook(() => useWeb3Wallet());
 
     await act(async () => {
-      await Promise.all([
-        result.current.connect('metamask'),
-        result.current.connect('metamask'),
-      ]);
+      await Promise.all([result.current.connect('metamask'), result.current.connect('metamask')]);
       vi.runAllTimers();
     });
 
