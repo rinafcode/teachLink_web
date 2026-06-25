@@ -72,7 +72,16 @@
     "src/serviceWorker.ts",
     "src/services/pdf-generation.ts",
     "src/services/serviceAccount.ts",
-    "src/utils/virtualBackgroundUtils.ts",
-    "src/workers/sms-cluster-worker.ts"
+    "src/workers/sms-cluster-worker.ts",
+    "src/app/api/courses",
+    "src/app/components/courses/CourseReviews.tsx",
+    "src/app/web3-demo/page.tsx",
+    "src/components/ai/LearningAssistant.tsx",
+    "src/components/layout/HeaderComponent.tsx",
+    "src/components/mobile/MobileNavigation.tsx",
+    "src/components/shared/ImageUploader.tsx",
+    "src/components/web3/index.ts",
+    "src/lib/settings/constants.ts",
+    "src/providers/WalletProvider.tsx"
   ]
 }
