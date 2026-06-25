@@ -9,10 +9,15 @@ import { apiClient } from '@/lib/api';
 import { FormInput } from '@/components/forms/FormInput';
 import { FieldError, FormError } from '@/components/forms/FormError';
 import { SubmitButton } from '@/components/forms/SubmitButton';
+import { CertificateStats, type CourseCertCount } from '@/components/certificates/CertificateStats';
 
 export default function CertificateGenerationPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Stats state — tracks per-course counts across all successful generations in this session
+  const [courseCounts, setCourseCounts] = useState<CourseCertCount[]>([]);
+  const [totalGenerated, setTotalGenerated] = useState(0);
 
   const methods = useForm<CertificateInput>({
     resolver: zodResolver(CertificateInputSchema),
@@ -35,6 +40,21 @@ export default function CertificateGenerationPage() {
         data,
       );
       setSuccessMessage(`Certificate generated successfully. ID: ${result.certificateId}`);
+
+      // Update visualization stats
+      setTotalGenerated((prev) => prev + 1);
+      setCourseCounts((prev) => {
+        const existing = prev.find((c) => c.course === data.courseId);
+        if (existing) {
+          return prev.map((c) =>
+            c.course === data.courseId ? { ...c, count: c.count + 1 } : c,
+          );
+        }
+        // Truncate courseId UUID to last 8 chars for display readability
+        const shortId = data.courseId.slice(-8);
+        return [...prev, { course: `…${shortId}`, count: 1 }];
+      });
+
       reset();
     } catch (error) {
       setApiError(
@@ -47,11 +67,11 @@ export default function CertificateGenerationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-3xl space-y-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-8 shadow-sm"
+          className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-8 shadow-sm"
         >
           <div className="mb-6">
             <p className="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
@@ -116,6 +136,21 @@ export default function CertificateGenerationPage() {
             </motion.form>
           </FormProvider>
         </motion.div>
+
+        {/* Stats panel — visible once at least one certificate has been generated */}
+        {totalGenerated > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-8 shadow-sm"
+          >
+            <CertificateStats
+              data={courseCounts}
+              totalGenerated={totalGenerated}
+              distinctCourses={courseCounts.length}
+            />
+          </motion.div>
+        )}
       </div>
     </div>
   );
