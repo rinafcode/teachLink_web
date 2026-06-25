@@ -13,7 +13,7 @@ import {
   ValidationFunction,
   FieldDescriptor,
 } from '../types/core.js';
-import { ImageOptimizationTaskManager } from './image-optimization-task-manager.js';
+import { ImageOptimizationTaskManager } from './image-optimization-task-manager';
 
 export interface ValidationEngine {
   validateField(fieldId: string, value: any, context: FormState): ValidationResult;

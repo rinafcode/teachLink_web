@@ -59,4 +59,4 @@ export {
   type ImageOptimizationTaskState,
   type TaskManagerOptions,
   type TaskChangeCallback,
-} from './image-optimization-task-manager.js';
+} from './image-optimization-task-manager';

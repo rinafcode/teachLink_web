@@ -1,4 +1,4 @@
-import { optimizeImage, ImageOptimizationOptions } from './image-optimizer.js';
+import { optimizeImage, ImageOptimizationOptions } from './image-optimizer';
 
 export interface ImageOptimizationTask {
   id: string;
