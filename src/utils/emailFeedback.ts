@@ -5,10 +5,7 @@
  * Persistence is delegated to a caller-supplied sink function so the
  * module works with any database or analytics pipeline.
  */
-import {
-  FeedbackEntrySchema,
-  type FeedbackEntry,
-} from '@/schemas/feedback.schema';
+import { FeedbackEntrySchema, type FeedbackEntry } from '@/schemas/feedback.schema';
 
 export type FeedbackSink = (entry: FeedbackEntry) => void | Promise<void>;
 
