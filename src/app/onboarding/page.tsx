@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -23,6 +23,7 @@ import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { useNotification } from '@/hooks/use-notification';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import type { EventProperties } from '@/utils/analytics';
 import type { WizardStep, FieldDescriptor, FormState } from '@/form-management/types/core';
 
 // Define field configuration for onboarding
@@ -148,13 +149,16 @@ export default function OnboardingPage() {
   const [hasFinishedOnboarding, setHasFinishedOnboarding] = useState(false);
   const currentStepRef = React.useRef<WizardStep>(onboardingSteps[0]);
 
-  const safeTrack = (name: string, properties: Record<string, unknown> = {}) => {
-    try {
-      track(name as any, properties);
-    } catch (err) {
-      console.warn('[Onboarding Analytics] Failed to track event', err);
-    }
-  };
+  const safeTrack = useCallback(
+    (name: string, properties: EventProperties = {}) => {
+      try {
+        track(name as any, properties);
+      } catch (err) {
+        console.warn('[Onboarding Analytics] Failed to track event', err);
+      }
+    },
+    [track],
+  );
 
   // Initialize state manager and validation engine
   const [stateManager] = useState(() => {
@@ -195,8 +199,7 @@ export default function OnboardingPage() {
       stepIndex: currentStep.index,
       stepTitle: currentStep.title,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [safeTrack, currentStep.id, currentStep.index, currentStep.title]);
 
   useEffect(() => {
     currentStepRef.current = currentStep;
@@ -218,7 +221,7 @@ export default function OnboardingPage() {
       handleAbandon();
       window.removeEventListener('beforeunload', handleAbandon);
     };
-  }, [hasFinishedOnboarding]);
+  }, [hasFinishedOnboarding, safeTrack]);
 
   const handleFieldChange = async (fieldId: string, value: any) => {
     stateManager.updateField(fieldId, value);
