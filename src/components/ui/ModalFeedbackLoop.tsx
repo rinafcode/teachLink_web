@@ -11,11 +11,7 @@ export interface ModalFeedbackLoopProps<T> {
   children: React.ReactNode;
   /** Arbitrary context passed back via onFeedback; e.g. modal id, form values. */
   modalData: T;
-  onFeedback: (entry: {
-    rating: Rating;
-    comment?: string;
-    sourceData: T;
-  }) => Promise<void> | void;
+  onFeedback: (entry: { rating: Rating; comment?: string; sourceData: T }) => Promise<void> | void;
   onClose: () => void;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }

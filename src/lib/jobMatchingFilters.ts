@@ -47,10 +47,7 @@ export interface JobQuery {
   minSalary?: number;
 }
 
-export function applyQuery(
-  postings: JobPosting[],
-  query: JobQuery,
-): JobPosting[] {
+export function applyQuery(postings: JobPosting[], query: JobQuery): JobPosting[] {
   const text = query.text?.toLowerCase().trim();
   const skillSet = new Set((query.skills ?? []).map((s) => s.toLowerCase()));
   return postings.filter((j) => {
@@ -87,8 +84,7 @@ export function matchJobs(
     const skillScore = candSkills.size === 0 ? 0 : overlap.length / candSkills.size;
 
     const locMatch =
-      candidate.preferredLocations.includes(job.location) ||
-      (candidate.openToRemote && job.remote)
+      candidate.preferredLocations.includes(job.location) || (candidate.openToRemote && job.remote)
         ? 1
         : 0;
 
@@ -96,13 +92,10 @@ export function matchJobs(
       candidate.minSalary == null || job.salaryMax == null
         ? 0.5
         : job.salaryMax >= candidate.minSalary
-          ? 1
-          : 0;
+        ? 1
+        : 0;
 
-    const ageDays = Math.max(
-      1,
-      Math.floor((now - Date.parse(job.postedAt)) / 86_400_000),
-    );
+    const ageDays = Math.max(1, Math.floor((now - Date.parse(job.postedAt)) / 86_400_000));
     const recencyScore = Math.max(0, 1 - ageDays / 60);
 
     const score =
