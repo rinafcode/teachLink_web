@@ -54,10 +54,7 @@ export class RewardPointsEngine {
   private seenEventIds = new Set<string>();
   private state: UserRewardState;
 
-  constructor(
-    userId: string,
-    achievements: Achievement[] = DEFAULT_ACHIEVEMENTS,
-  ) {
+  constructor(userId: string, achievements: Achievement[] = DEFAULT_ACHIEVEMENTS) {
     for (const a of achievements) {
       this.achievements.set(a.id, a);
     }
