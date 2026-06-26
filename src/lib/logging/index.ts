@@ -19,7 +19,7 @@ class SimpleAsyncLocalStorage<T> {
 let nodeAsyncLocalStorage: NodeAsyncLocalStorage<LogContextStore> | null = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const asyncHooks = require('node:async_hooks');
+  const asyncHooks = require('node:async_hooks') as typeof import('node:async_hooks');
   if (asyncHooks?.AsyncLocalStorage) {
     nodeAsyncLocalStorage = new asyncHooks.AsyncLocalStorage<LogContextStore>();
   }
