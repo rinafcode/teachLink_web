@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teachlink-faq-system
+  namespace: production
+  labels:
+    app: teachlink
+    component: faq-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: teachlink
+      component: faq-system
+  template:
+    metadata:
+      labels:
+        app: teachlink
+        component: faq-system
+    spec:
+      containers:
+        - name: faq-system
+          image: rinafcode/teachlink-faq-system:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '3000'
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
