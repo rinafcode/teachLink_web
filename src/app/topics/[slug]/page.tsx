@@ -13,6 +13,18 @@ export async function generateMetadata({ params }: TopicPageProps): Promise<Meta
   return {
     title: `#${name} · TeachLink`,
     description: `Explore posts and discussions about ${name} on TeachLink.`,
+    openGraph: {
+      title: `#${name} · TeachLink`,
+      description: `Explore posts and discussions about ${name} on TeachLink.`,
+      type: 'website',
+      siteName: 'TeachLink',
+    },
+    twitter: {
+      card: 'summary',
+      site: '@teachlink',
+      title: `#${name} · TeachLink`,
+      description: `Explore posts and discussions about ${name} on TeachLink.`,
+    },
   };
 }
 
