@@ -11,7 +11,10 @@
  */
 
 export type ConformanceLevel =
-  'supports' | 'partially-supports' | 'does-not-support' | 'not-applicable';
+  | 'supports'
+  | 'partially-supports'
+  | 'does-not-support'
+  | 'not-applicable';
 
 export type WCAGCriterion = {
   id: string; // e.g. "1.1.1"

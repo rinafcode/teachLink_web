@@ -283,10 +283,10 @@ export function MobileNavigationScanner({ isOpen, onClose }: MobileNavigationSca
               {status === 'success'
                 ? 'Success'
                 : status === 'failure'
-                  ? 'Error'
-                  : status === 'scanning'
-                    ? 'Scanning'
-                    : 'Ready'}
+                ? 'Error'
+                : status === 'scanning'
+                ? 'Scanning'
+                : 'Ready'}
             </div>
           </div>
 

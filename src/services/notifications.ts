@@ -155,7 +155,7 @@ export class NotificationService {
 
     const result: MultiChannelResult = {
       email: emailResult.status === 'fulfilled' ? emailResult.value : undefined,
-      sms: smsResult.status === 'fulfilled' ? (smsResult.value ?? undefined) : undefined,
+      sms: smsResult.status === 'fulfilled' ? smsResult.value ?? undefined : undefined,
     };
 
     logger.info('Multi-channel security alert sent', {
@@ -201,7 +201,7 @@ export class NotificationService {
 
     const result: MultiChannelResult = {
       email: emailResult.status === 'fulfilled' ? emailResult.value : undefined,
-      sms: smsResult.status === 'fulfilled' ? (smsResult.value ?? undefined) : undefined,
+      sms: smsResult.status === 'fulfilled' ? smsResult.value ?? undefined : undefined,
     };
 
     logger.info('Multi-channel course enrollment sent', {

@@ -128,8 +128,8 @@ export default function EnrollmentCTA({
                     isEnrolled
                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                       : option.popular
-                        ? 'bg-[#0066FF] dark:bg-[#00C2FF] text-white hover:bg-[#0052CC] dark:hover:bg-[#00A8E0] shadow-lg shadow-[#0066FF]/20 dark:shadow-[#00C2FF]/20'
-                        : 'bg-[#F1F5F9] dark:bg-[#334155] text-[#0F172A] dark:text-white hover:bg-[#E2E8F0] dark:hover:bg-[#475569]'
+                      ? 'bg-[#0066FF] dark:bg-[#00C2FF] text-white hover:bg-[#0052CC] dark:hover:bg-[#00A8E0] shadow-lg shadow-[#0066FF]/20 dark:shadow-[#00C2FF]/20'
+                      : 'bg-[#F1F5F9] dark:bg-[#334155] text-[#0F172A] dark:text-white hover:bg-[#E2E8F0] dark:hover:bg-[#475569]'
                   }`}
                 >
                   {isEnrolled ? '✓ Enrolled' : 'Enroll Now'}

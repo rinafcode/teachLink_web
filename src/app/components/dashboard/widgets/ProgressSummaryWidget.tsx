@@ -107,12 +107,12 @@ export const ProgressSummaryWidget: React.FC<ProgressSummaryWidgetProps> = ({
     (title.toLowerCase().includes('revenue')
       ? 'revenue'
       : title.toLowerCase().includes('student')
-        ? 'students'
-        : title.toLowerCase().includes('view')
-          ? 'views'
-          : title.toLowerCase().includes('course')
-            ? 'courses'
-            : 'revenue');
+      ? 'students'
+      : title.toLowerCase().includes('view')
+      ? 'views'
+      : title.toLowerCase().includes('course')
+      ? 'courses'
+      : 'revenue');
 
   const statData = getStatData(statType);
   const Icon = statData.icon;

@@ -300,12 +300,16 @@ const courseData = {
   datasets: [
     {
       label: 'Course Completions',
-      data: [/* completion data */],
+      data: [
+        /* completion data */
+      ],
       backgroundColor: '#3b82f6',
     },
     {
       label: 'Active Students',
-      data: [/* student data */],
+      data: [
+        /* student data */
+      ],
       backgroundColor: '#10b981',
     },
   ],

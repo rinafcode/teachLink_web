@@ -10,11 +10,10 @@
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
-  --font-sans:
-    'Segoe UI', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue',
-    Arial, sans-serif;
-  --font-mono:
-    'Cascadia Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Monaco, monospace;
+  --font-sans: 'Segoe UI', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Monaco,
+    monospace;
 }
 
 html {

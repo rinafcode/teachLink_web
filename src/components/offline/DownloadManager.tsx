@@ -209,8 +209,8 @@ export const DownloadManager: React.FC<DownloadManagerProps> = ({
                     {available
                       ? 'Downloaded'
                       : status === 'downloading'
-                        ? 'Downloading'
-                        : 'Download'}
+                      ? 'Downloading'
+                      : 'Download'}
                   </button>
                 </div>
               </div>

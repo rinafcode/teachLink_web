@@ -119,16 +119,16 @@ export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(
     const statusKey = isPaused
       ? 'paused'
       : isConnected
-        ? 'connected'
-        : simulationEnabled
-          ? 'simulating'
-          : 'disconnected';
+      ? 'connected'
+      : simulationEnabled
+      ? 'simulating'
+      : 'disconnected';
 
     const statusColor = isPaused
       ? 'text-yellow-600 dark:text-yellow-400'
       : isConnected || simulationEnabled
-        ? 'text-green-600 dark:text-green-400'
-        : 'text-red-600 dark:text-red-400';
+      ? 'text-green-600 dark:text-green-400'
+      : 'text-red-600 dark:text-red-400';
 
     const handleReset = useCallback(() => {
       updateData({
@@ -272,8 +272,8 @@ export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(
                   stats.trend.direction === 'up'
                     ? 'text-green-600 dark:text-green-400'
                     : stats.trend.direction === 'down'
-                      ? 'text-red-600 dark:text-red-400'
-                      : 'text-gray-600 dark:text-gray-400'
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-600 dark:text-gray-400'
                 }`}
               >
                 {translateWithFallback(

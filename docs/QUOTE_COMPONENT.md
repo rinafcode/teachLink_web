@@ -50,7 +50,9 @@ Pass `showNavigation` together with `onSwipeLeft` / `onSwipeRight` to enable bot
 
 ```tsx
 const [index, setIndex] = useState(0);
-const quotes = [/* ... */];
+const quotes = [
+  /* ... */
+];
 
 <Quote
   text={quotes[index].text}

@@ -92,8 +92,8 @@ export function matchJobs(
       candidate.minSalary == null || job.salaryMax == null
         ? 0.5
         : job.salaryMax >= candidate.minSalary
-          ? 1
-          : 0;
+        ? 1
+        : 0;
 
     const ageDays = Math.max(1, Math.floor((now - Date.parse(job.postedAt)) / 86_400_000));
     const recencyScore = Math.max(0, 1 - ageDays / 60);

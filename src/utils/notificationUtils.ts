@@ -6,7 +6,13 @@
 export type NotificationChannel = 'push' | 'email' | 'sms' | 'in-app';
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type NotificationCategory =
-  'course_update' | 'message' | 'achievement' | 'reminder' | 'system' | 'social' | 'payment';
+  | 'course_update'
+  | 'message'
+  | 'achievement'
+  | 'reminder'
+  | 'system'
+  | 'social'
+  | 'payment';
 
 export interface NotificationTemplate {
   id: string;

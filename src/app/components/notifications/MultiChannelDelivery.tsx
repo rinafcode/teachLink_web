@@ -309,8 +309,8 @@ export default function MultiChannelDelivery({
                         status.status === 'success'
                           ? 'text-green-600'
                           : status.status === 'failed'
-                            ? 'text-red-600'
-                            : 'text-gray-500'
+                          ? 'text-red-600'
+                          : 'text-gray-500'
                       }`}
                     >
                       {status.message || 'Pending'}

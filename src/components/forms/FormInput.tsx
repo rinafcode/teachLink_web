@@ -4,9 +4,8 @@ import React, { useId } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { LucideIcon } from 'lucide-react';
 
-interface FormInputProps extends React.InputHTMLAttributes<
-  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-> {
+interface FormInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> {
   name: string;
   label: string;
   icon?: LucideIcon;

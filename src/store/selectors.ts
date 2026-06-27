@@ -31,7 +31,7 @@ export const useUnreadCount = () =>
 // â”€â”€ Quiz selectors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const useCurrentQuestion = () =>
   useQuizStore((s) =>
-    s.currentQuiz ? (s.currentQuiz.questions[s.currentQuestionIndex] ?? null) : null,
+    s.currentQuiz ? s.currentQuiz.questions[s.currentQuestionIndex] ?? null : null,
   );
 
 export const useQuizProgress = () =>

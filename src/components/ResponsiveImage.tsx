@@ -50,7 +50,7 @@ export function ResponsiveImage({
   const resolvedSizes =
     sizes ??
     (responsiveSizes
-      ? (SIZES[responsiveSizes as keyof typeof SIZES] ?? responsiveSizes)
+      ? SIZES[responsiveSizes as keyof typeof SIZES] ?? responsiveSizes
       : SIZES.full);
 
   return (

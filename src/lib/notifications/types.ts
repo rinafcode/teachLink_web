@@ -4,11 +4,23 @@
  */
 
 export type NotificationType =
-  'info' | 'success' | 'warning' | 'error' | 'message' | 'course' | 'system';
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'message'
+  | 'course'
+  | 'system';
 export type NotificationChannel = 'push' | 'email' | 'sms' | 'in-app';
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type NotificationCategory =
-  'course_update' | 'message' | 'achievement' | 'reminder' | 'system' | 'social' | 'payment';
+  | 'course_update'
+  | 'message'
+  | 'achievement'
+  | 'reminder'
+  | 'system'
+  | 'social'
+  | 'payment';
 
 export interface BaseNotification {
   id: string;

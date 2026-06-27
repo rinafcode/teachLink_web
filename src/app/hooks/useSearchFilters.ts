@@ -60,7 +60,7 @@ export const useSearchFilters = () => {
       params.set('affinity', filters.nodeAffinity);
     }
 
-    const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : (pathname ?? '/');
+    const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '/';
     router.replace(newUrl, { scroll: false });
   }, [filters, pathname, router]);
 

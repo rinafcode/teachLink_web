@@ -61,8 +61,8 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
     const isDrillDown = drillDownIndex !== null;
     const drillDownData = isDrillDown ? getDrillDownData(data, drillDownIndex) : null;
     const drillDownLabel = isDrillDown
-      ? (data.labels[drillDownIndex] ??
-        translateWithFallback(t, 'dashboard.analytics.drillDown.selected', 'Selected'))
+      ? data.labels[drillDownIndex] ??
+        translateWithFallback(t, 'dashboard.analytics.drillDown.selected', 'Selected')
       : null;
 
     // Build breadcrumb items for drill-down navigation

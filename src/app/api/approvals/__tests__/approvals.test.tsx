@@ -27,7 +27,7 @@ const makeUser = (role: string, overrides: Partial<User> = {}): User =>
     email: 'test@example.com',
     role: role as User['role'],
     ...overrides,
-  }) as User;
+  } as User);
 
 // ---------------------------------------------------------------------------
 // 1. ACL — permission assignment

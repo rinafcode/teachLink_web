@@ -330,8 +330,8 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                         tx.status === 'success'
                           ? 'text-green-600 dark:text-green-400'
                           : tx.status === 'pending'
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-red-600 dark:text-red-400'
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-red-600 dark:text-red-400'
                       }`}
                     >
                       {tx.status}

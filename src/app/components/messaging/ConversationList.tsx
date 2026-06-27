@@ -124,8 +124,8 @@ export default function ConversationList({
                     isActive
                       ? 'bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/40 dark:to-purple-950/40 shadow-sm ring-1 ring-violet-200/50 dark:ring-violet-800/30'
                       : hasUnread
-                        ? 'bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      ? 'bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                   }`}
                   id={`conversation-${conversation.id}`}
                 >

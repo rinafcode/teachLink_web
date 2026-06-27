@@ -29,8 +29,9 @@ describe('createBatcher', () => {
   });
 
   it('batches multiple queued requests into a single executor call', async () => {
-    const executor = vi.fn(async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
-      reqs.map((r) => ({ id: r.id, data: `result-${r.path}` })),
+    const executor = vi.fn(
+      async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
+        reqs.map((r) => ({ id: r.id, data: `result-${r.path}` })),
     );
 
     const batcher = createBatcher({ executor, debounceMs: 10 });
@@ -52,8 +53,9 @@ describe('createBatcher', () => {
   });
 
   it('resolves each promise with its matching response', async () => {
-    const executor = vi.fn(async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
-      reqs.map((r) => ({ id: r.id, data: r.path.toUpperCase() })),
+    const executor = vi.fn(
+      async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
+        reqs.map((r) => ({ id: r.id, data: r.path.toUpperCase() })),
     );
 
     const batcher = createBatcher({ executor, debounceMs: 0 });
@@ -68,8 +70,9 @@ describe('createBatcher', () => {
   });
 
   it('rejects a promise when the response contains an error', async () => {
-    const executor = vi.fn(async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
-      reqs.map((r) => ({ id: r.id, error: 'not found' })),
+    const executor = vi.fn(
+      async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
+        reqs.map((r) => ({ id: r.id, error: 'not found' })),
     );
 
     const batcher = createBatcher({ executor, debounceMs: 0 });
@@ -105,8 +108,9 @@ describe('createBatcher', () => {
   });
 
   it('respects maxBatchSize and sends overflow in a second batch', async () => {
-    const executor = vi.fn(async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
-      reqs.map((r) => ({ id: r.id, data: r.path })),
+    const executor = vi.fn(
+      async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
+        reqs.map((r) => ({ id: r.id, data: r.path })),
     );
 
     const batcher = createBatcher({ executor, debounceMs: 0, maxBatchSize: 2 });
@@ -128,8 +132,9 @@ describe('createBatcher', () => {
   });
 
   it('flushNow sends pending requests immediately', async () => {
-    const executor = vi.fn(async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
-      reqs.map((r) => ({ id: r.id, data: r.path })),
+    const executor = vi.fn(
+      async (reqs: BatchRequest[]): Promise<BatchResponse[]> =>
+        reqs.map((r) => ({ id: r.id, data: r.path })),
     );
 
     const batcher = createBatcher({ executor, debounceMs: 5000 });
