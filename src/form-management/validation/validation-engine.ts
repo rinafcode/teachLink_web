@@ -647,7 +647,7 @@ export class ValidationEngineImpl implements ValidationEngine {
     const maxHeight = rule.params?.maxHeight;
 
     try {
-      const { validateImageDimensions } = await import('./image-optimizer.js');
+      const { validateImageDimensions } = await import('./image-optimizer');
       const result = await validateImageDimensions(file, {
         minWidth,
         maxWidth,

@@ -50,7 +50,7 @@ export {
   validateImageDimensions,
   type ImageOptimizationOptions,
   type ImageDimensionConstraints,
-} from './image-optimizer.js';
+} from './image-optimizer';
 
 // Image optimization task manager exports
 export {

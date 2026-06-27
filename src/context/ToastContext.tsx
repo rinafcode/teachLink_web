@@ -11,7 +11,11 @@ import React, {
   useRef,
 } from 'react';
 import { Toast, ToastType } from '@/components/ui/Toast';
-import { createToastCircuitBreaker, CircuitBreakerMetrics } from '@/utils/circuitBreaker';
+import {
+  createToastCircuitBreaker,
+  type CircuitBreakerConfig,
+  type CircuitBreakerMetrics,
+} from '@/utils/circuitBreaker';
 
 export interface ToastMessage {
   id: string;
@@ -33,7 +37,13 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export function ToastProvider({ children }: { children: ReactNode }) {
+export function ToastProvider({
+  children,
+  circuitBreakerConfig,
+}: {
+  children: ReactNode;
+  circuitBreakerConfig?: Partial<CircuitBreakerConfig>;
+}) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const circuitBreaker = useRef(
     createToastCircuitBreaker({
@@ -42,6 +52,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       timeout: 60000,
       monitoringPeriod: 10000,
       maxConcurrentRequests: 10,
+      ...circuitBreakerConfig,
     }),
   ).current;
 

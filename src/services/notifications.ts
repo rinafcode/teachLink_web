@@ -214,7 +214,6 @@ export class NotificationService {
 
     return result;
   }
-
   sendEmailVerificationEmail(data: EmailVerificationInput): Promise<EmailSendResult> {
     return this.sendEvent({ type: 'email-verification', data });
   }

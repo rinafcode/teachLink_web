@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { optimizeImage, validateImageDimensions } from './image-optimizer.js';
+import { optimizeImage, validateImageDimensions } from './image-optimizer';
 import { FieldDescriptor } from '../types/core.js';
 
 describe('Image Optimization', () => {
