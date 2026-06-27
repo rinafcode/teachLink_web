@@ -12,7 +12,7 @@ spec:
     kind: Deployment
     name: teachlink-faq-system
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: 'Auto'
   resourcePolicy:
     containerPolicies:
       - containerName: faq-system
