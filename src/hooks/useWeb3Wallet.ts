@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { validateWalletInteraction, safeWalletCall } from '@/utils/web3/walletValidation';
 import { walletCache, walletCacheKeys, CACHE_TTL } from '@/utils/web3/walletCache';
+import { walletConnectionQueue } from '@/utils/web3/walletQueue';
 
 /**
  * Supported wallet providers
