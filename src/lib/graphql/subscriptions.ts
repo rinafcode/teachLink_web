@@ -305,7 +305,10 @@ export function isSubscription(document: DocumentNode): boolean {
  * Subscription error handler
  */
 export class SubscriptionError extends Error {
-  constructor(public code: string, public details?: Record<string, any>) {
+  constructor(
+    public code: string,
+    public details?: Record<string, any>,
+  ) {
     super(`Subscription error: ${code}`);
     this.name = 'SubscriptionError';
   }

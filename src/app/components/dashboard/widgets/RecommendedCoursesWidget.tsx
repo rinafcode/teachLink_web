@@ -41,9 +41,7 @@ function buildRecommendedCourses() {
       students: [12450, 8920, 15680][i] ?? 10000,
       duration: c.duration,
       level: (i === 2 ? 'beginner' : i === 1 ? 'intermediate' : 'advanced') as
-        | 'beginner'
-        | 'intermediate'
-        | 'advanced',
+        'beginner' | 'intermediate' | 'advanced',
       category: c.category,
       image:
         c.thumbnailUrl ??

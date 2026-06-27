@@ -35,7 +35,7 @@ describe('ImageUploader', () => {
             () =>
               ({
                 drawImage: vi.fn(),
-              } as any),
+              }) as any,
           );
           canvas.toBlob = vi.fn((callback) => {
             callback(new Blob(['mock-image-data'], { type: 'image/jpeg' }));

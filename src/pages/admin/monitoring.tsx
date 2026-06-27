@@ -72,8 +72,8 @@ const MonitoringDashboard: React.FC = () => {
                     metric.value > 80
                       ? 'bg-red-500'
                       : metric.value > 50
-                      ? 'bg-amber-500'
-                      : 'bg-emerald-500'
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
                   }`}
                   style={{ width: `${Math.min(100, Math.max(0, metric.value))}%` }}
                 />

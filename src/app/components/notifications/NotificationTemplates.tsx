@@ -281,10 +281,10 @@ export default function NotificationTemplates({
                                 template.priority === 'urgent'
                                   ? 'bg-red-100 text-red-800'
                                   : template.priority === 'high'
-                                  ? 'bg-orange-100 text-orange-800'
-                                  : template.priority === 'medium'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-gray-100 text-gray-800'
+                                    ? 'bg-orange-100 text-orange-800'
+                                    : template.priority === 'medium'
+                                      ? 'bg-blue-100 text-blue-800'
+                                      : 'bg-gray-100 text-gray-800'
                               }`}
                             >
                               {template.priority}

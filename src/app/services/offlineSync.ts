@@ -142,13 +142,16 @@ class OfflineSyncService {
   }
 
   private groupItemsByType(items: SyncItem[]): Record<string, SyncItem[]> {
-    return items.reduce((groups, item) => {
-      if (!groups[item.type]) {
-        groups[item.type] = [];
-      }
-      groups[item.type].push(item);
-      return groups;
-    }, {} as Record<string, SyncItem[]>);
+    return items.reduce(
+      (groups, item) => {
+        if (!groups[item.type]) {
+          groups[item.type] = [];
+        }
+        groups[item.type].push(item);
+        return groups;
+      },
+      {} as Record<string, SyncItem[]>,
+    );
   }
 
   private async syncItemType(

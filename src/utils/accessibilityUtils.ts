@@ -146,8 +146,8 @@ function inputHasAccessibleLabel(input: Element, container: HTMLElement): boolea
       typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
         ? CSS.escape(id)
         : /^[a-zA-Z][\w:.-]*$/.test(id)
-        ? id
-        : null;
+          ? id
+          : null;
     if (safeFor && container.querySelector(`label[for="${safeFor}"]`)) return true;
   }
   return false;

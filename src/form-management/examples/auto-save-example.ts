@@ -97,9 +97,7 @@ export async function draftCleanupExample() {
   };
 
   // After successful submission, clear the draft
-  const result = await submitForm({
-    /* form data */
-  });
+  const result = await submitForm({/* form data */});
 
   if (result.success) {
     await autoSaveManager.clearDraft(formId);

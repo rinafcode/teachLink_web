@@ -1,11 +1,7 @@
 import { EmailTemplate, EmailTemplatePayload } from '@/lib/email/types';
 
 export type TransactionalTemplateId =
-  | 'welcome'
-  | 'password-reset'
-  | 'security-alert'
-  | 'course-enrollment'
-  | 'email-verification';
+  'welcome' | 'password-reset' | 'security-alert' | 'course-enrollment' | 'email-verification';
 
 const TEMPLATE_SUBJECTS: Record<TransactionalTemplateId, string> = {
   welcome: 'Welcome to TeachLink',

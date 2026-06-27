@@ -321,8 +321,8 @@ export const CourseCreationWizard = () => {
                       currentStep > step.id
                         ? 'bg-green-600 text-white'
                         : currentStep === step.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-600'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-600'
                     }`}
                   >
                     {currentStep > step.id ? (

@@ -249,10 +249,10 @@ export default function LearningChallengeBoard({
                                     i === 0
                                       ? 'bg-yellow-500'
                                       : i === 1
-                                      ? 'bg-gray-400'
-                                      : i === 2
-                                      ? 'bg-amber-700'
-                                      : 'bg-purple-500'
+                                        ? 'bg-gray-400'
+                                        : i === 2
+                                          ? 'bg-amber-700'
+                                          : 'bg-purple-500'
                                   }`}
                                 />
                               </div>

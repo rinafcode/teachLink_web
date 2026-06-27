@@ -59,17 +59,17 @@ export const DragDropContainer = ({
                 saveError
                   ? 'bg-red-100 text-red-700'
                   : isSaving
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-emerald-100 text-emerald-700'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-emerald-100 text-emerald-700'
               }`}
             >
               {saveError
                 ? `Save error: ${saveError}`
                 : isSaving
-                ? 'Saving...'
-                : lastSavedAt
-                ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}`
-                : 'Ready'}
+                  ? 'Saving...'
+                  : lastSavedAt
+                    ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}`
+                    : 'Ready'}
             </span>
             <button
               type="button"

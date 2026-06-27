@@ -355,8 +355,8 @@ export function VideoConference({
                   fraud.fraudScore >= 50
                     ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
                     : fraud.fraudScore >= 20
-                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
-                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
+                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
                 }`}
                 title={`Fraud score: ${fraud.fraudScore}`}
               >

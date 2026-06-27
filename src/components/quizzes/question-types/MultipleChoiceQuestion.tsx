@@ -28,11 +28,11 @@ export default function MultipleChoiceQuestion({
             ? option.isCorrect
               ? 'border-[#0066FF] dark:border-[#00C2FF] bg-[#F0F9FF] dark:bg-[#1E3A8A]/20'
               : isSelected
-              ? 'border-red-500 bg-red-50'
-              : 'border-[#E2E8F0] dark:border-[#334155]'
+                ? 'border-red-500 bg-red-50'
+                : 'border-[#E2E8F0] dark:border-[#334155]'
             : isSelected
-            ? 'border-[#0066FF] dark:border-[#00C2FF] bg-[#F0F9FF] dark:bg-[#1E3A8A]/20'
-            : 'border-[#E2E8F0] dark:border-[#334155] hover:border-[#CBD5E1] dark:hover:border-[#475569]';
+              ? 'border-[#0066FF] dark:border-[#00C2FF] bg-[#F0F9FF] dark:bg-[#1E3A8A]/20'
+              : 'border-[#E2E8F0] dark:border-[#334155] hover:border-[#CBD5E1] dark:hover:border-[#475569]';
 
           return (
             <button

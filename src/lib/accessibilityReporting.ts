@@ -11,10 +11,7 @@
  */
 
 export type ConformanceLevel =
-  | 'supports'
-  | 'partially-supports'
-  | 'does-not-support'
-  | 'not-applicable';
+  'supports' | 'partially-supports' | 'does-not-support' | 'not-applicable';
 
 export type WCAGCriterion = {
   id: string; // e.g. "1.1.1"
@@ -66,14 +63,10 @@ export function buildReport(input: BuildReportInput): VPATReport {
   }
   for (const f of input.findings) {
     if (!CRITERION_INDEX.has(f.criterionId)) {
-      throw new Error(
-        `VPAT report: unknown criterion id "${f.criterionId}"`,
-      );
+      throw new Error(`VPAT report: unknown criterion id "${f.criterionId}"`);
     }
     if (!f.remark.trim()) {
-      throw new Error(
-        `VPAT report: remark is required for criterion ${f.criterionId}`,
-      );
+      throw new Error(`VPAT report: remark is required for criterion ${f.criterionId}`);
     }
   }
   return {
@@ -87,10 +80,7 @@ export function buildReport(input: BuildReportInput): VPATReport {
 
 export type ReportSink = (report: VPATReport) => void | Promise<void>;
 
-export async function submitReport(
-  input: BuildReportInput,
-  sink: ReportSink,
-): Promise<VPATReport> {
+export async function submitReport(input: BuildReportInput, sink: ReportSink): Promise<VPATReport> {
   const report = buildReport(input);
   await sink(report);
   return report;

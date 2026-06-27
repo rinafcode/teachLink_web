@@ -37,8 +37,8 @@ export default function MultipleChoiceQuestion({ question }: MultipleChoiceQuest
                   ? isCorrect
                     ? 'bg-green-50 border-green-500'
                     : isSelected
-                    ? 'bg-red-50 border-red-500'
-                    : ''
+                      ? 'bg-red-50 border-red-500'
+                      : ''
                   : ''
               }`}
             >

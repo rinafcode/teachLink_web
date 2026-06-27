@@ -24,14 +24,7 @@ export interface Dataset {
 }
 
 export type ChartType =
-  | 'line'
-  | 'bar'
-  | 'pie'
-  | 'doughnut'
-  | 'area'
-  | 'scatter'
-  | 'radar'
-  | 'heatmap';
+  'line' | 'bar' | 'pie' | 'doughnut' | 'area' | 'scatter' | 'radar' | 'heatmap';
 
 export type TimeRange = '7d' | '30d' | '90d' | '1y' | 'all';
 

@@ -21,8 +21,8 @@ export function CollaborativeEditor({ roomId, user, websocketUrl }: Collaborativ
   const connectionStatus = connected
     ? 'Connected'
     : status === 'connecting'
-    ? 'Connecting...'
-    : 'Offline';
+      ? 'Connecting...'
+      : 'Offline';
 
   const handleTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     updateText(event.target.value);

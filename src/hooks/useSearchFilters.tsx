@@ -110,7 +110,7 @@ export const useSearchFilters = () => {
 
       const newUrl = params.toString()
         ? `${pPathname ?? ''}?${params.toString()}`
-        : pPathname ?? '/';
+        : (pPathname ?? '/');
       const currentSearch = pSearchParams?.toString() || '';
       const nextSearch = params.toString();
 

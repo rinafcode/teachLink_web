@@ -15,13 +15,7 @@ import {
 } from '@/lib/notifications/socket';
 
 export type NotificationType =
-  | 'info'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'message'
-  | 'course'
-  | 'system';
+  'info' | 'success' | 'warning' | 'error' | 'message' | 'course' | 'system';
 
 export interface Notification {
   id: string;

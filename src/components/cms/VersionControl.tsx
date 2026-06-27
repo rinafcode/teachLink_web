@@ -33,8 +33,8 @@ export const VersionControl: React.FC = () => {
                           isCurrent
                             ? 'bg-blue-500 border-blue-200 dark:border-blue-800 animate-pulse'
                             : isPast
-                            ? 'bg-green-500 border-green-200 dark:border-green-800'
-                            : 'bg-gray-300 border-white dark:border-gray-800'
+                              ? 'bg-green-500 border-green-200 dark:border-green-800'
+                              : 'bg-gray-300 border-white dark:border-gray-800'
                         }`}
                       />
 

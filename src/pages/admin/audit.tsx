@@ -155,8 +155,8 @@ export default function AdminAuditPage() {
                           entry.action === 'create'
                             ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-900/20'
                             : entry.action === 'update'
-                            ? 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/20'
-                            : 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/20'
+                              ? 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/20'
+                              : 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/20'
                         }`}
                       >
                         {entry.action}

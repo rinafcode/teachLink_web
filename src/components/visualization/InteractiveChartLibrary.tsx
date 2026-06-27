@@ -37,7 +37,7 @@ function pickColor(value: string | string[] | undefined, index: number): string 
     return CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length];
   }
   return Array.isArray(value)
-    ? value[0] ?? CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length]
+    ? (value[0] ?? CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length])
     : value;
 }
 

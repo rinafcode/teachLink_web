@@ -255,8 +255,8 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
                       warning?.level === 'critical'
                         ? 'bg-red-500'
                         : warning?.level === 'warning'
-                        ? 'bg-yellow-500'
-                        : 'bg-green-500'
+                          ? 'bg-yellow-500'
+                          : 'bg-green-500'
                     }`}
                     style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                   />

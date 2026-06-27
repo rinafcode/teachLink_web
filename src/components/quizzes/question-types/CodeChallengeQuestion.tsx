@@ -99,15 +99,15 @@ export default function CodeChallengeQuestion({ question, quizState }: CodeChall
               overallPassed
                 ? 'text-[#0066FF] dark:text-[#00C2FF]'
                 : partialPass
-                ? 'text-amber-700 dark:text-amber-300'
-                : 'text-red-700'
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-red-700'
             }`}
           >
             {overallPassed
               ? 'All tests passed'
               : partialPass
-              ? `${passedTests} of ${totalTests} tests passed`
-              : 'Some tests failed'}
+                ? `${passedTests} of ${totalTests} tests passed`
+                : 'Some tests failed'}
           </div>
 
           {partialPass && question.gradingPolicy?.partialCredit ? (
@@ -124,8 +124,8 @@ export default function CodeChallengeQuestion({ question, quizState }: CodeChall
                 testResults[index]
                   ? 'bg-[#F0F9FF] dark:bg-[#1E3A8A]/20 border-[#0066FF]/20 dark:border-[#00C2FF]/20'
                   : partialPass
-                  ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-700'
-                  : 'bg-red-50 border-red-200'
+                    ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-700'
+                    : 'bg-red-50 border-red-200'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
@@ -145,8 +145,8 @@ export default function CodeChallengeQuestion({ question, quizState }: CodeChall
                     testResults[index]
                       ? 'text-[#0066FF] dark:text-[#00C2FF]'
                       : partialPass
-                      ? 'text-amber-700 dark:text-amber-300'
-                      : 'text-red-700'
+                        ? 'text-amber-700 dark:text-amber-300'
+                        : 'text-red-700'
                   }`}
                 >
                   {testResults[index] ? 'Pass' : 'Fail'}

@@ -78,8 +78,7 @@ export class BulkWorker<T> extends EventEmitter {
   private onItemSuccess: ((item: T, result: unknown) => void) | undefined;
   private onItemError: ((item: T, error: Error) => void) | undefined;
   private onBatchComplete:
-    | ((batchIndex: number, batchResults: WorkerResult<T>[]) => void)
-    | undefined;
+    ((batchIndex: number, batchResults: WorkerResult<T>[]) => void) | undefined;
 
   /**
    * Start processing.

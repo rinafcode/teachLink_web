@@ -245,8 +245,8 @@ export default function OfflineContentManager() {
                   storagePercent > 90
                     ? 'bg-red-500'
                     : storagePercent > 70
-                    ? 'bg-orange-500'
-                    : 'bg-blue-500'
+                      ? 'bg-orange-500'
+                      : 'bg-blue-500'
                 }`}
                 style={{ width: `${Math.min(storagePercent, 100)}%` }}
               />
@@ -255,8 +255,8 @@ export default function OfflineContentManager() {
               {storagePercent > 90
                 ? 'Storage almost full'
                 : storagePercent > 70
-                ? 'Storage getting full'
-                : 'Plenty of space available'}
+                  ? 'Storage getting full'
+                  : 'Plenty of space available'}
             </p>
           </div>
         </div>
@@ -310,10 +310,10 @@ export default function OfflineContentManager() {
                           {downloadStatus.status === 'downloading'
                             ? 'Downloading...'
                             : downloadStatus.status === 'error'
-                            ? 'Download failed'
-                            : downloadStatus.status === 'cancelled'
-                            ? 'Cancelled'
-                            : 'Downloaded!'}
+                              ? 'Download failed'
+                              : downloadStatus.status === 'cancelled'
+                                ? 'Cancelled'
+                                : 'Downloaded!'}
                         </span>
                         <span>{downloadStatus.progress}%</span>
                       </div>
@@ -323,8 +323,8 @@ export default function OfflineContentManager() {
                             downloadStatus.status === 'error'
                               ? 'bg-red-500'
                               : downloadStatus.status === 'cancelled'
-                              ? 'bg-gray-500'
-                              : 'bg-blue-500'
+                                ? 'bg-gray-500'
+                                : 'bg-blue-500'
                           }`}
                           style={{ width: `${downloadStatus.progress}%` }}
                         />

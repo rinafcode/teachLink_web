@@ -574,10 +574,10 @@ export default function SystemHealthDashboard() {
                         {log.event === 'sent'
                           ? ' Sent'
                           : log.event === 'delivered'
-                          ? ' Delivered'
-                          : log.event === 'clicked'
-                          ? ' Clicked'
-                          : ' Failed'}
+                            ? ' Delivered'
+                            : log.event === 'clicked'
+                              ? ' Clicked'
+                              : ' Failed'}
                       </span>
                     </td>
                     <td style={styles.td}>{log.message || '-'}</td>
@@ -668,10 +668,10 @@ export default function SystemHealthDashboard() {
                             {log.event === 'sent'
                               ? ' Sent'
                               : log.event === 'delivered'
-                              ? ' Delivered'
-                              : log.event === 'clicked'
-                              ? ' Clicked'
-                              : ' Failed'}
+                                ? ' Delivered'
+                                : log.event === 'clicked'
+                                  ? ' Clicked'
+                                  : ' Failed'}
                           </span>
                         </td>
                         <td style={{ ...styles.td, maxWidth: '250px', wordBreak: 'break-word' }}>

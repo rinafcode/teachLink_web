@@ -245,8 +245,8 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
     error instanceof ApolloError
       ? error.message || 'Subscription error'
       : error instanceof SubscriptionError
-      ? formatSubscriptionError(error)
-      : (error as any)?.message || null;
+        ? formatSubscriptionError(error)
+        : (error as any)?.message || null;
 
   return {
     data,

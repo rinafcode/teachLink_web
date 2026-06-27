@@ -26,15 +26,15 @@ const QuestionCard = React.memo(({ question, quizState }: QuestionCardProps) => 
               answer?.feedback === 'correct'
                 ? 'text-[#0066FF] dark:text-[#00C2FF]'
                 : feedbackIsPartial
-                ? 'text-amber-700 dark:text-amber-300'
-                : 'text-red-700'
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-red-700'
             }`}
           >
             {answer?.feedback === 'correct'
               ? 'Correct'
               : feedbackIsPartial
-              ? 'Partially correct'
-              : 'Incorrect'}
+                ? 'Partially correct'
+                : 'Incorrect'}
           </div>
         ) : null}
       </div>

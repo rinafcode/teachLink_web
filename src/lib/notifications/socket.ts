@@ -3,11 +3,7 @@ import type { BaseNotification, NotificationEvent } from './types';
 export type NotificationEventType = NotificationEvent['event'];
 
 export type NotificationSocketStatus =
-  | 'idle'
-  | 'connecting'
-  | 'connected'
-  | 'disconnected'
-  | 'reconnecting';
+  'idle' | 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
 
 export interface NotificationSocketConnectionState {
   status: NotificationSocketStatus;
@@ -65,7 +61,10 @@ export class NotificationSocketService {
     }
   };
 
-  constructor(private readonly url: string, options: NotificationSocketOptions = {}) {
+  constructor(
+    private readonly url: string,
+    options: NotificationSocketOptions = {},
+  ) {
     this.initialReconnectDelay = options.initialReconnectDelay ?? DEFAULT_INITIAL_RECONNECT_DELAY;
     this.maxReconnectDelay = options.maxReconnectDelay ?? DEFAULT_MAX_RECONNECT_DELAY;
     this.maxReconnectAttempts = options.maxReconnectAttempts ?? DEFAULT_MAX_RECONNECT_ATTEMPTS;

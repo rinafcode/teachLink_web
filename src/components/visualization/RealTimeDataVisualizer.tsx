@@ -196,15 +196,15 @@ export const RealTimeDataVisualizer: React.FC<RealTimeDataVisualizerProps> = ({
                   stats.trend.direction === 'up'
                     ? 'text-green-600'
                     : stats.trend.direction === 'down'
-                    ? 'text-red-600'
-                    : 'text-gray-600'
+                      ? 'text-red-600'
+                      : 'text-gray-600'
                 }`}
               >
                 {stats.trend.direction === 'up'
                   ? '↑'
                   : stats.trend.direction === 'down'
-                  ? '↓'
-                  : '→'}
+                    ? '↓'
+                    : '→'}
                 {stats.trend.percentage.toFixed(1)}%
               </div>
             </div>
