@@ -11,11 +11,7 @@ export const TrackNotificationSchema = z.object({
   notificationId: z.string().max(100).optional(),
   event: z.enum(['sent', 'delivered', 'clicked', 'failed', 'unknown']),
   userId: z.string().max(100).optional(),
-  timestamp: z
-    .string()
-    .datetime({ precision: true, offset: true })
-    .or(z.string().datetime())
-    .optional(),
+  timestamp: z.string().datetime().optional(),
   message: z.string().max(5000).optional(),
   title: z.string().max(200).optional(),
   error: z.string().max(1000).nullable().optional(),
