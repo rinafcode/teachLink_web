@@ -137,35 +137,50 @@ export const Header: React.FC = () => {
             <Link
               href="/"
               className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
-              onClick={() => { trackClick(t('navigation.home'), 0); setIsMobileMenuOpen(false); }}
+              onClick={() => {
+                trackClick(t('navigation.home'), 0);
+                setIsMobileMenuOpen(false);
+              }}
             >
               {t('navigation.home')}
             </Link>
             <Link
               href="/courses"
               className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
-              onClick={() => { trackClick(t('navigation.courses'), 1); setIsMobileMenuOpen(false); }}
+              onClick={() => {
+                trackClick(t('navigation.courses'), 1);
+                setIsMobileMenuOpen(false);
+              }}
             >
               {t('navigation.courses')}
             </Link>
             <Link
               href="/instructor"
               className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
-              onClick={() => { trackClick(t('navigation.teach'), 2); setIsMobileMenuOpen(false); }}
+              onClick={() => {
+                trackClick(t('navigation.teach'), 2);
+                setIsMobileMenuOpen(false);
+              }}
             >
               {t('navigation.teach')}
             </Link>
             <Link
               href="/settings"
               className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded transition-colors"
-              onClick={() => { trackClick('Settings', 3); setIsMobileMenuOpen(false); }}
+              onClick={() => {
+                trackClick('Settings', 3);
+                setIsMobileMenuOpen(false);
+              }}
             >
               Settings
             </Link>
             <Link
               href="/dashboard"
               className="block px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
-              onClick={() => { trackClick(t('navigation.dashboard'), 4); setIsMobileMenuOpen(false); }}
+              onClick={() => {
+                trackClick(t('navigation.dashboard'), 4);
+                setIsMobileMenuOpen(false);
+              }}
             >
               {t('navigation.dashboard')}
             </Link>

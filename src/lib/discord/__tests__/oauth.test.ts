@@ -30,13 +30,14 @@ describe('Discord OAuth Utilities', () => {
     it('should generate correct Discord authorization URL', () => {
       const state = 'test_state_123';
       const url = getDiscordAuthUrl(state);
+      const params = new URL(url).searchParams;
 
       expect(url).toContain('https://discord.com/api/v10/oauth2/authorize');
-      expect(url).toContain('client_id=test_client_id');
-      expect(url).toContain('redirect_uri=' + encodeURIComponent(mockEnv.DISCORD_REDIRECT_URI));
-      expect(url).toContain('response_type=code');
-      expect(url).toContain('scope=identify%20email');
-      expect(url).toContain(`state=${state}`);
+      expect(params.get('client_id')).toBe(mockEnv.DISCORD_CLIENT_ID);
+      expect(params.get('redirect_uri')).toBe(mockEnv.DISCORD_REDIRECT_URI);
+      expect(params.get('response_type')).toBe('code');
+      expect(params.get('scope')).toBe('identify email');
+      expect(params.get('state')).toBe(state);
     });
 
     it('should throw error when DISCORD_CLIENT_ID is missing', () => {

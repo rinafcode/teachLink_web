@@ -87,7 +87,7 @@ export default async function RootLayout({
       >
         <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
           <EnvironmentBanner />
-            <main className="flex-grow">{children}</main>
+          <main className="flex-grow">{children}</main>
           <Footer />
         </RootProviders>
 

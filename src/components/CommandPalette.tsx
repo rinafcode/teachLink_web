@@ -155,7 +155,7 @@ export function CommandPalette() {
         run: () => setShowHelp(true),
       },
     ];
-  }, [setTheme, theme]);
+  }, [setTheme, theme, settings.pollCreationEnabled, toastInfo]);
 
   const {
     shortcuts,
@@ -321,7 +321,6 @@ export function CommandPalette() {
         onCreate={(draft: PollDraft) => {
           // TODO: integrate with poll creation backend/GraphQL.
           // For now, keep placeholder to satisfy typing and modal behavior.
-          // eslint-disable-next-line no-console
           console.log('Create poll draft', draft);
         }}
       />

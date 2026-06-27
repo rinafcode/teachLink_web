@@ -196,10 +196,7 @@ function calculateBackoffDelay(retryCount: number, config: SubscriptionConfig): 
  * Evaluate a feature gate against the in-process flag store.
  * Returns true when no gate is configured (opt-in, non-breaking).
  */
-export function isFeatureEnabled(
-  flagId: string,
-  context: Record<string, string> = {},
-): boolean {
+export function isFeatureEnabled(flagId: string, context: Record<string, string> = {}): boolean {
   const flag = flagStore.get(flagId);
   if (!flag) return false;
   return evaluateFlag(flag, context);
@@ -263,8 +260,7 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
           ({ query }) => {
             const definition = getMainDefinition(query);
             return (
-              definition.kind === 'OperationDefinition' &&
-              definition.operation === 'subscription'
+              definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
             );
           },
           wsLink,
