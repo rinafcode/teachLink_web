@@ -24,6 +24,17 @@ export const useContentEditor = ({
   ariaDescribedBy,
   onUpdate,
 }: UseContentEditorProps) => {
+  const editorAttributes: Record<string, string> = {
+    role: 'textbox',
+    'aria-multiline': 'true',
+    'aria-placeholder': placeholder,
+    spellcheck: 'true',
+    class:
+      'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto min-h-[300px] p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
+    ...(ariaLabelledBy ? { 'aria-labelledby': ariaLabelledBy } : { 'aria-label': ariaLabel }),
+    ...(ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {}),
+  };
+
   const editor = useEditor(
     {
       extensions: [
@@ -52,17 +63,7 @@ export const useContentEditor = ({
       },
       // Ensure responsiveness and consistency
       editorProps: {
-        attributes: {
-          role: 'textbox',
-          'aria-label': ariaLabelledBy ? undefined : ariaLabel,
-          'aria-labelledby': ariaLabelledBy,
-          'aria-describedby': ariaDescribedBy,
-          'aria-multiline': 'true',
-          'aria-placeholder': placeholder,
-          spellcheck: 'true',
-          class:
-            'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto min-h-[300px] p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
-        },
+        attributes: editorAttributes,
       },
     },
     [initialContent, placeholder, ariaLabel, ariaLabelledBy, ariaDescribedBy, onUpdate],
