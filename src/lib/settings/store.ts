@@ -43,12 +43,13 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { SETTINGS_SCHEMA_VERSION, SETTINGS_STORAGE_KEY } from './constants';
 import { type AppSettings, appSettingsSchema, createDefaultSettings } from './types';
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/locales/config';
 
 interface SettingsStoreActions {
   /**
    * Merge a partial update into the current settings.
    * Validates the merged result against `appSettingsSchema`; silently ignores invalid patches.
-   * `language` is trimmed and clamped to 24 chars; empty strings fall back to `'en'`.
+   * `language` must be a key in `SUPPORTED_LANGUAGES`; unsupported values fall back to `DEFAULT_LANGUAGE`.
    * Automatically updates `updatedAt` to `Date.now()`.
    */
   patchSettings: (partial: Partial<AppSettings>) => void;
@@ -112,7 +113,12 @@ export const useSettingsStore = create<SettingsSlice>()(
           version: SETTINGS_SCHEMA_VERSION,
           ...(partial.language !== undefined
             ? {
-                language: partial.language.trim().slice(0, 24) || 'en',
+                // Validate against the supported locale allowlist.
+                // Unsupported values fall back to DEFAULT_LANGUAGE instead of being
+                // stored — the allowlist is the single source of truth.
+                language: partial.language in SUPPORTED_LANGUAGES
+                  ? partial.language
+                  : DEFAULT_LANGUAGE,
               }
             : {}),
         };
