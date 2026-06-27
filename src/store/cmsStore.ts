@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { CMSCourse, MediaUploadTask, ContentTemplate } from '../types/cms';
 
 interface CMSState {
@@ -29,95 +30,115 @@ interface CMSState {
   setTemplates: (templates: ContentTemplate[]) => void;
 }
 
-export const useCMSStore = create<CMSState>((set) => ({
-  course: {
-    id: '',
-    title: '',
-    description: '',
-    modules: [],
-  },
-  history: [],
-  historyIndex: -1,
-  mediaQueue: [],
-  templates: [],
-  isSaving: false,
+export const useCMSStore = create<CMSState>()(
+  persist(
+    (set) => ({
+      course: {
+        id: '',
+        title: '',
+        description: '',
+        modules: [],
+      },
+      history: [],
+      historyIndex: -1,
+      mediaQueue: [],
+      templates: [],
+      isSaving: false,
 
-  setCourse: (course) => {
-    set((state) => {
-      const newHistory = state.history.slice(0, state.historyIndex + 1);
-      newHistory.push(course);
-      return {
-        course,
-        history: newHistory,
-        historyIndex: newHistory.length - 1,
-      };
-    });
-  },
+      setCourse: (course) => {
+        set((state) => {
+          let newHistory = state.history.slice(0, state.historyIndex + 1);
+          newHistory.push(course);
+          
+          if (newHistory.length > 20) {
+            newHistory = newHistory.slice(newHistory.length - 20);
+          }
+          
+          return {
+            course,
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+          };
+        });
+      },
 
-  updateCourse: (updates) => {
-    set((state) => {
-      const updatedCourse = { ...state.course, ...updates };
-      const newHistory = state.history.slice(0, state.historyIndex + 1);
+      updateCourse: (updates) => {
+        set((state) => {
+          const updatedCourse = { ...state.course, ...updates };
+          let newHistory = state.history.slice(0, state.historyIndex + 1);
 
-      // Limit history to 50 items
-      if (newHistory.length > 50) newHistory.shift();
+          newHistory.push(updatedCourse);
+          
+          if (newHistory.length > 20) {
+            newHistory = newHistory.slice(newHistory.length - 20);
+          }
 
-      newHistory.push(updatedCourse);
-      return {
-        course: updatedCourse,
-        history: newHistory,
-        historyIndex: newHistory.length - 1,
-      };
-    });
-  },
+          return {
+            course: updatedCourse,
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+          };
+        });
+      },
 
-  undo: () => {
-    set((state) => {
-      if (state.historyIndex > 0) {
-        const prevIndex = state.historyIndex - 1;
-        return {
-          course: state.history[prevIndex],
-          historyIndex: prevIndex,
-        };
-      }
-      return state;
-    });
-  },
+      undo: () => {
+        set((state) => {
+          if (state.historyIndex > 0) {
+            const prevIndex = state.historyIndex - 1;
+            return {
+              course: state.history[prevIndex],
+              historyIndex: prevIndex,
+            };
+          }
+          return state;
+        });
+      },
 
-  redo: () => {
-    set((state) => {
-      if (state.historyIndex < state.history.length - 1) {
-        const nextIndex = state.historyIndex + 1;
-        return {
-          course: state.history[nextIndex],
-          historyIndex: nextIndex,
-        };
-      }
-      return state;
-    });
-  },
+      redo: () => {
+        set((state) => {
+          if (state.historyIndex < state.history.length - 1) {
+            const nextIndex = state.historyIndex + 1;
+            return {
+              course: state.history[nextIndex],
+              historyIndex: nextIndex,
+            };
+          }
+          return state;
+        });
+      },
 
-  addToQueue: (tasks) => {
-    set((state) => ({
-      mediaQueue: [...state.mediaQueue, ...tasks],
-    }));
-  },
+      addToQueue: (tasks) => {
+        set((state) => ({
+          mediaQueue: [...state.mediaQueue, ...tasks],
+        }));
+      },
 
-  updateUploadProgress: (id, progress) => {
-    set((state) => ({
-      mediaQueue: state.mediaQueue.map((task) => (task.id === id ? { ...task, progress } : task)),
-    }));
-  },
+      updateUploadProgress: (id, progress) => {
+        set((state) => ({
+          mediaQueue: state.mediaQueue.map((task) => (task.id === id ? { ...task, progress } : task)),
+        }));
+      },
 
-  setUploadStatus: (id, status, url, error) => {
-    set((state) => ({
-      mediaQueue: state.mediaQueue.map((task) =>
-        task.id === id ? { ...task, status, url, error } : task,
-      ),
-    }));
-  },
+      setUploadStatus: (id, status, url, error) => {
+        set((state) => ({
+          mediaQueue: state.mediaQueue.map((task) =>
+            task.id === id ? { ...task, status, url, error } : task,
+          ),
+        }));
+      },
 
-  setTemplates: (templates) => {
-    set({ templates });
-  },
-}));
+      setTemplates: (templates) => {
+        set({ templates });
+      },
+    }),
+    {
+      name: 'cms-storage',
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({
+        course: state.course,
+        history: state.history,
+        historyIndex: state.historyIndex,
+      }),
+    }
+  )
+);
