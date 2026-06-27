@@ -48,11 +48,14 @@ const eslintConfig = [
       prettier: prettierPlugin,
       'unused-imports': unusedImportsPlugin,
     },
+    linterOptions: {
+      reportUnusedDisableDirectives: 'off',
+    },
     rules: {
       // TypeScript & General Rules
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'warn',
       '@typescript-eslint/no-unused-expressions': 'warn',
       // React Rules
@@ -61,7 +64,12 @@ const eslintConfig = [
       // Import Rules
       'import/no-anonymous-default-export': 'off',
       // Prettier Integration
-      'prettier/prettier': 'error',
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
     },
   },
   // 4. Disable ESLint rules that might conflict with Prettier

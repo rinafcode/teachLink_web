@@ -10,10 +10,8 @@ import {
   NotificationCategory,
   UserNotificationPreferences,
   NotificationDeliveryResult,
-  generateNotificationId,
-  shouldSendNotification,
-  isWithinQuietHours,
-} from './index';
+} from './types';
+import { generateNotificationId, shouldSendNotification } from '@/utils/notificationUtils';
 
 export class NotificationService {
   /**
@@ -110,16 +108,16 @@ export class NotificationService {
     const errors: string[] = [];
 
     if (prefs.channels) {
-      if (typeof prefs.channels.push !== 'boolean') {
+      if (prefs.channels.push !== undefined && typeof prefs.channels.push !== 'boolean') {
         errors.push('channels.push must be a boolean');
       }
-      if (typeof prefs.channels.email !== 'boolean') {
+      if (prefs.channels.email !== undefined && typeof prefs.channels.email !== 'boolean') {
         errors.push('channels.email must be a boolean');
       }
-      if (typeof prefs.channels.sms !== 'boolean') {
+      if (prefs.channels.sms !== undefined && typeof prefs.channels.sms !== 'boolean') {
         errors.push('channels.sms must be a boolean');
       }
-      if (typeof prefs.channels.inApp !== 'boolean') {
+      if (prefs.channels.inApp !== undefined && typeof prefs.channels.inApp !== 'boolean') {
         errors.push('channels.inApp must be a boolean');
       }
     }

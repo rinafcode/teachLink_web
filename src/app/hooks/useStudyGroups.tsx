@@ -16,11 +16,29 @@ export type Attachment = {
 export type GroupMessage = {
   id: string;
   groupId: string;
+  parentId?: string | null;
   senderId: string;
   senderName: string;
   contentHtml: string; // rich text HTML
   createdAt: string; // ISO
   attachments?: Attachment[];
+};
+
+export type ForumCertificateStatus = 'active' | 'expired' | 'revoked';
+
+export type ForumCertificate = {
+  id: string;
+  groupId: string;
+  subjectUserId: string;
+  subjectName: string;
+  issuerId: string;
+  issuerName: string;
+  fingerprint: string;
+  validFrom: string;
+  validUntil: string;
+  issuedAt: string;
+  revokedAt?: string;
+  status: ForumCertificateStatus;
 };
 
 export type GroupResource = {
@@ -68,7 +86,37 @@ const STORAGE_KEYS = {
   messages: 'sl_group_messages_v1',
   resources: 'sl_group_resources_v1',
   challenges: 'sl_group_challenges_v1',
+  certificates: 'sl_group_certificates_v1',
 };
+
+function getCertificateStatus(certificate: Pick<ForumCertificate, 'validUntil' | 'revokedAt'>) {
+  if (certificate.revokedAt) return 'revoked';
+  return new Date(certificate.validUntil).getTime() < Date.now() ? 'expired' : 'active';
+}
+
+function normalizeFingerprint(fingerprint: string): string {
+  return fingerprint
+    .trim()
+    .replace(/[^a-fA-F0-9]/g, '')
+    .toUpperCase();
+}
+
+function assertValidCertificate(input: {
+  fingerprint: string;
+  validFrom: string;
+  validUntil: string;
+}) {
+  const fingerprint = normalizeFingerprint(input.fingerprint);
+  if (!/^[A-F0-9]{64}$/.test(fingerprint)) {
+    throw new Error('Certificate fingerprint must be a 64-character SHA-256 hex value.');
+  }
+
+  if (new Date(input.validFrom).getTime() >= new Date(input.validUntil).getTime()) {
+    throw new Error('Certificate expiry must be after its start date.');
+  }
+
+  return fingerprint;
+}
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -98,13 +146,31 @@ export type UseStudyGroupsApi = {
   messages: GroupMessage[];
   resources: GroupResource[];
   challenges: GroupChallenge[];
+  certificates: ForumCertificate[];
   currentUser: { id: string; name: string };
   // group
   createGroup: (input: { name: string; description?: string }) => StudyGroup;
   joinGroup: (groupId: string) => void;
   leaveGroup: (groupId: string) => void;
   // discussion
-  postMessage: (groupId: string, contentHtml: string, attachments?: Attachment[]) => GroupMessage;
+  postMessage: (
+    groupId: string,
+    contentHtml: string,
+    attachments?: Attachment[],
+    parentId?: string | null,
+  ) => GroupMessage;
+  issueCertificate: (
+    groupId: string,
+    certificate: {
+      subjectUserId: string;
+      subjectName: string;
+      fingerprint: string;
+      validFrom: string;
+      validUntil: string;
+    },
+  ) => ForumCertificate;
+  revokeCertificate: (certificateId: string) => ForumCertificate | undefined;
+  groupCertificates: (groupId: string) => ForumCertificate[];
   // resources
   addResource: (
     groupId: string,
@@ -138,17 +204,21 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   const [challenges, setChallenges] = useState<GroupChallenge[]>(() =>
     load(STORAGE_KEYS.challenges, [] as GroupChallenge[]),
   );
+  const [certificates, setCertificates] = useState<ForumCertificate[]>(() =>
+    load(STORAGE_KEYS.certificates, [] as ForumCertificate[]),
+  );
 
   const me = currentUser ?? { id: 'current-user', name: 'You' };
 
   const persistAll = useCallback(
-    (g = groups, m = messages, r = resources, c = challenges) => {
+    (g = groups, m = messages, r = resources, c = challenges, certs = certificates) => {
       save(STORAGE_KEYS.groups, g);
       save(STORAGE_KEYS.messages, m);
       save(STORAGE_KEYS.resources, r);
       save(STORAGE_KEYS.challenges, c);
+      save(STORAGE_KEYS.certificates, certs);
     },
-    [groups, messages, resources, challenges],
+    [groups, messages, resources, challenges, certificates],
   );
 
   // Sync across instances in the same window/process
@@ -158,6 +228,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       setMessages(load(STORAGE_KEYS.messages, []));
       setResources(load(STORAGE_KEYS.resources, []));
       setChallenges(load(STORAGE_KEYS.challenges, []));
+      setCertificates(load(STORAGE_KEYS.certificates, []));
     };
 
     window.addEventListener('sl_sync', handleSync);
@@ -261,10 +332,11 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   );
 
   const postMessage = useCallback<UseStudyGroupsApi['postMessage']>(
-    (groupId, contentHtml, attachments) => {
+    (groupId, contentHtml, attachments, parentId = null) => {
       const msg: GroupMessage = {
         id: uid('msg'),
         groupId,
+        parentId,
         senderId: me.id,
         senderName: me.name,
         contentHtml,
@@ -290,6 +362,65 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       return msg;
     },
     [me.id, me.name, groups, triggerSync],
+  );
+
+  const issueCertificate = useCallback<UseStudyGroupsApi['issueCertificate']>(
+    (groupId, input) => {
+      const fingerprint = assertValidCertificate(input);
+      const duplicateActiveCertificate = certificates.find(
+        (certificate) =>
+          certificate.groupId === groupId &&
+          certificate.fingerprint === fingerprint &&
+          getCertificateStatus(certificate) === 'active',
+      );
+
+      if (duplicateActiveCertificate) {
+        throw new Error('An active certificate with this fingerprint already exists.');
+      }
+
+      const certificate: ForumCertificate = {
+        id: uid('cert'),
+        groupId,
+        subjectUserId: input.subjectUserId,
+        subjectName: input.subjectName.trim(),
+        issuerId: me.id,
+        issuerName: me.name,
+        fingerprint,
+        validFrom: input.validFrom,
+        validUntil: input.validUntil,
+        issuedAt: new Date().toISOString(),
+        status: 'active',
+      };
+
+      setCertificates((prev) => {
+        const next = [certificate, ...prev];
+        save(STORAGE_KEYS.certificates, next);
+        triggerSync();
+        return next;
+      });
+
+      return certificate;
+    },
+    [certificates, me.id, me.name, triggerSync],
+  );
+
+  const revokeCertificate = useCallback<UseStudyGroupsApi['revokeCertificate']>(
+    (certificateId) => {
+      let revoked: ForumCertificate | undefined;
+      setCertificates((prev) => {
+        const now = new Date().toISOString();
+        const next = prev.map((certificate) => {
+          if (certificate.id !== certificateId) return certificate;
+          revoked = { ...certificate, revokedAt: now, status: 'revoked' };
+          return revoked;
+        });
+        save(STORAGE_KEYS.certificates, next);
+        triggerSync();
+        return next;
+      });
+      return revoked;
+    },
+    [triggerSync],
   );
 
   const addResource = useCallback<UseStudyGroupsApi['addResource']>(
@@ -427,6 +558,19 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, []);
 
+  const groupCertificates = useCallback<UseStudyGroupsApi['groupCertificates']>(
+    (groupId) => {
+      return certificates
+        .filter((certificate) => certificate.groupId === groupId)
+        .map((certificate) => ({
+          ...certificate,
+          status: getCertificateStatus(certificate),
+        }))
+        .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
+    },
+    [certificates],
+  );
+
   const challengeLeaderboard = useCallback<UseStudyGroupsApi['challengeLeaderboard']>(
     (challengeId) => {
       const persistedChallenges = load(STORAGE_KEYS.challenges, [] as GroupChallenge[]);
@@ -441,18 +585,22 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
 
   // Persist when state changes (robust against batch updates via persistAll)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => persistAll(), [groups, messages, resources, challenges, persistAll]);
+  useMemo(() => persistAll(), [groups, messages, resources, challenges, certificates, persistAll]);
 
   return {
     groups,
     messages,
     resources,
     challenges,
+    certificates,
     currentUser: me,
     createGroup,
     joinGroup,
     leaveGroup,
     postMessage,
+    issueCertificate,
+    revokeCertificate,
+    groupCertificates,
     addResource,
     createChallenge,
     updateChallengeProgress,

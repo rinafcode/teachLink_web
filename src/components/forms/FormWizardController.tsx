@@ -6,7 +6,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { WizardStep, WizardProgress, FormState } from '@/form-management/types/core';
+import {
+  WizardStep,
+  WizardProgress,
+  FormState,
+  FieldDescriptor,
+} from '@/form-management/types/core';
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { useNotification } from '@/hooks/use-notification';
@@ -18,6 +23,7 @@ interface FormWizardControllerProps {
   formState: FormState;
   stateManager: FormStateManager;
   onStepChange?: (step: WizardStep) => void;
+  onStepComplete?: (step: WizardStep) => void;
   onComplete?: (values: Record<string, any>) => void | Promise<void>;
   allowNonLinearNavigation?: boolean;
   validateBeforeNext?: boolean;
@@ -31,6 +37,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
   formState,
   stateManager,
   onStepChange,
+  onStepComplete,
   onComplete,
   allowNonLinearNavigation = false,
   validateBeforeNext = true,
@@ -94,6 +101,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
       let allValid = true;
 
       for (const fieldId of stepFields) {
+        stateManager.markFieldTouched(fieldId);
         const value = formState.values[fieldId];
         const result = await validationEngine.validateField(fieldId, value, formState);
         stateManager.setValidationState(fieldId, result);
@@ -126,6 +134,8 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
     if (!completedSteps.includes(currentStepIndex)) {
       setCompletedSteps([...completedSteps, currentStepIndex]);
     }
+
+    onStepComplete?.(currentStep);
 
     if (currentStep.conditionalNext) {
       const nextStepIndex = currentStep.conditionalNext(formState);
@@ -160,6 +170,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
     const isValid = await validateCurrentStep();
     if (!isValid) return;
 
+    onStepComplete?.(currentStep);
     await completeMutation.mutate(formState.values);
   };
 
@@ -218,7 +229,7 @@ const WizardProgressBar: React.FC<WizardProgressBarProps> = ({
         return (
           <div
             key={step.id}
-            className={`progress-step ${isCurrent ? 'current' : ''} ${
+            className={`progress-step group ${isCurrent ? 'current' : ''} ${
               isCompleted ? 'completed' : ''
             } ${isAccessible ? 'accessible' : 'locked'}`}
             onClick={() => isAccessible && onStepClick(index)}

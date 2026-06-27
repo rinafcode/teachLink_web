@@ -115,6 +115,15 @@ Enhanced React hook with:
 - Improved preference validation
 - Better multi-channel delivery support
 - Enhanced analytics integration
+- Notification preference heartbeat state for liveness monitoring
+
+The notification preferences heartbeat runs from `useNotifications` after preferences load. It
+writes `notification_preferences_heartbeat_v1` to `localStorage` with the current `userId`,
+`lastBeatAt`, `intervalMs`, and `staleAfterMs`. Consumers can read
+`preferencesHeartbeat.status` (`online`, `stale`, or `offline`) and call
+`refreshPreferencesHeartbeat()` to re-check the stored heartbeat without waiting for the next
+interval. The preferences UI surfaces this as a compact sync status so users are not left guessing
+when preference persistence is delayed or unavailable.
 
 ## Migration Guide
 
@@ -233,6 +242,28 @@ The refactoring maintains performance characteristics:
 - Service layer methods are lightweight and fast
 - LocalStorage operations remain unchanged
 - WebSocket integration unaffected
+
+## WebSocket Reconnection (Issue #405)
+
+The real-time notification provider now uses a dedicated `NotificationSocketService`
+(`src/lib/notifications/socket.ts`) with production-ready reconnection behavior:
+
+- **Exponential backoff** with configurable jitter to avoid thundering herds
+- **Automatic reconnect** on unexpected disconnects and connection errors
+- **Outbound message queue** so read/clear actions are sent after reconnect
+- **Browser lifecycle hooks** (`online`, `visibilitychange`) for faster recovery
+- **Connection state API** exposed via `NotificationProvider` context (`connectionState`)
+- **Graceful shutdown** that clears timers, listeners, and pending reconnect attempts
+
+Example:
+
+```typescript
+const { connectionState } = useNotifications();
+
+if (connectionState.status === 'reconnecting') {
+  // show subtle reconnecting indicator in the notification UI
+}
+```
 
 ## Future Enhancements
 

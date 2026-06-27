@@ -33,7 +33,7 @@ export async function POST(
       return addHeaders(result.error) as NextResponse;
     }
 
-    const { name, email, password, confirmPassword } = result.data;
+    const { name, email, password, confirmPassword, referralCode } = result.data;
 
     // Basic validation
     if (!name || !email || !password || !confirmPassword) {
@@ -51,6 +51,40 @@ export async function POST(
       return addHeaders(
         NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 }),
       );
+    }
+
+    // Validate referral code if provided
+    if (referralCode) {
+      const validation = validateReferralCode(referralCode);
+      if (!validation.isValid) {
+        edgeLog('warn', route, 'Validation failed', {
+          reason: 'invalid_referral_code',
+          error: validation.error,
+        });
+        return addHeaders(
+          NextResponse.json(
+            { message: validation.error || 'Invalid referral code' },
+            { status: 400 },
+          ),
+        );
+      }
+
+      // Check if referral code exists (mock implementation)
+      if (!referralCodeExists(referralCode)) {
+        edgeLog('warn', route, 'Validation failed', { reason: 'referral_code_not_found' });
+        return addHeaders(
+          NextResponse.json({ message: 'Referral code not found' }, { status: 404 }),
+        );
+      }
+
+      // Prevent self-referral (check if the referral code belongs to the same email)
+      const referrerEmail = getReferralCodeOwner(referralCode);
+      if (referrerEmail === email) {
+        edgeLog('warn', route, 'Validation failed', { reason: 'self_referral' });
+        return addHeaders(
+          NextResponse.json({ message: 'Cannot use your own referral code' }, { status: 400 }),
+        );
+      }
     }
 
     // Mock: block already-registered email
@@ -91,7 +125,15 @@ export async function POST(
       NextResponse.json(
         {
           message: 'Account created successfully',
-          user: { id: userId, name, email },
+          user: {
+            id: userId,
+            name,
+            email,
+            referralCode: userReferralCode,
+            referredBy: referralCode || null,
+            referralCount: 0,
+            role: 'STUDENT',
+          },
           token: `mock-jwt-token-${Date.now()}`,
           verification: {
             required: true,

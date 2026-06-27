@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SETTINGS_SCHEMA_VERSION } from './constants';
+import { SETTINGS_SCHEMA_VERSION, SETTINGS_DOCUMENTATION_VERSION } from './constants';
 
 /** User-selectable colour scheme. `'system'` follows the OS preference. */
 export const themePreferenceSchema = z.enum(['light', 'dark', 'system']);

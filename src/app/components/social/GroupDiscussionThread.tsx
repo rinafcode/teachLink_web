@@ -5,11 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Paperclip, Send } from 'lucide-react';
 import RichTextEditor from '@/app/components/ui/RichTextEditor';
 import type { GroupMessage, Attachment } from '@/app/hooks/useStudyGroups';
+import {
+  buildAccessibleThreadTree,
+  getThreadPositionLabel,
+  type ThreadNode,
+} from '@/lib/accessibility/threadSupport';
 import { formatDistanceToNow } from 'date-fns';
 
 interface GroupDiscussionThreadProps {
   messages: GroupMessage[];
-  onPost: (contentHtml: string, attachments?: Attachment[]) => void;
+  onPost: (contentHtml: string, attachments?: Attachment[], parentId?: string | null) => void;
 }
 
 const getInitials = (name: string) => {
@@ -24,6 +29,7 @@ const getInitials = (name: string) => {
 export default function GroupDiscussionThread({ messages, onPost }: GroupDiscussionThreadProps) {
   const [content, setContent] = useState<string>('');
   const [files, setFiles] = useState<File[]>([]);
+  const [replyTo, setReplyTo] = useState<GroupMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorHelpId = useId();
@@ -38,6 +44,7 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
       })),
     [files],
   );
+  const threadedMessages = useMemo(() => buildAccessibleThreadTree(messages), [messages]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -49,9 +56,10 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
 
   const handlePost = () => {
     if (!content || content === '<p></p>' || content.trim() === '') return;
-    onPost(content, attachments.length ? attachments : undefined);
+    onPost(content, attachments.length ? attachments : undefined, replyTo?.id ?? null);
     setContent('');
     setFiles([]);
+    setReplyTo(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

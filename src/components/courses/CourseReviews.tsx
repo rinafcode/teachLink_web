@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { searchReviews, highlightTerms, type ReviewSortKey } from '@/utils/reviewSearch';
+import { useRatingStore } from '@/app/store/ratingStore';
 
 interface Review {
   id: string;
@@ -58,29 +59,24 @@ export default function CourseReviews({
     },
   ],
 }: CourseReviewsProps) {
-  const [helpful, setHelpful] = useState<Record<string, number>>(
-    reviews.reduce((acc, review) => ({ ...acc, [review.id]: review.helpful }), {}),
-  );
+  const { markHelpful, getHelpfulCount, hasVotedHelpful } = useRatingStore();
   const [query, setQuery] = useState('');
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState<ReviewSortKey>('relevance');
-
-  const markHelpful = (reviewId: string) => {
-    setHelpful((prev) => ({
-      ...prev,
-      [reviewId]: (prev[reviewId] || 0) + 1,
-    }));
-  };
 
   // Run the search engine over the reviews whenever a control changes. Helpful
   // counts are kept live so "most helpful" sorting reflects the latest votes.
   const filteredReviews = useMemo(
     () =>
       searchReviews(
-        reviews.map((review) => ({ ...review, helpful: helpful[review.id] ?? review.helpful })),
+        reviews.map((review) => ({
+          ...review,
+          helpful: getHelpfulCount(review.id, review.helpful),
+        })),
         { query, minRating, sortBy },
       ).map((scored) => scored.review),
-    [reviews, helpful, query, minRating, sortBy],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reviews, query, minRating, sortBy],
   );
 
   const sortOptions: { value: ReviewSortKey; label: string }[] = [
@@ -272,8 +268,10 @@ export default function CourseReviews({
                   )}
                 </p>
                 <button
-                  onClick={() => markHelpful(review.id)}
-                  className="inline-flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8] hover:text-[#0066FF] dark:hover:text-[#00C2FF] transition-colors"
+                  onClick={() => markHelpful(review.id, review.helpful)}
+                  disabled={hasVotedHelpful(review.id)}
+                  aria-pressed={hasVotedHelpful(review.id)}
+                  className="inline-flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8] hover:text-[#0066FF] dark:hover:text-[#00C2FF] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -283,7 +281,7 @@ export default function CourseReviews({
                       d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
                     />
                   </svg>
-                  Helpful ({helpful[review.id]})
+                  Helpful ({getHelpfulCount(review.id, review.helpful)})
                 </button>
               </div>
             </div>

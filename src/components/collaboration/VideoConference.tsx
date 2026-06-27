@@ -14,6 +14,7 @@ import {
 import { io, type Socket } from 'socket.io-client';
 import type { CollaborationUser } from '../../hooks/useCollaboration';
 import { useFraudDetection } from '../../hooks/useFraudDetection';
+import { useVirtualBackground } from '../../hooks/useVirtualBackground';
 import { fraudDetectionService, FraudDetectionService } from '../../services/fraud-detection';
 import type { FraudDetectionResult } from '../../services/fraud-detection';
 
@@ -72,6 +73,8 @@ export function VideoConference({
     isHost,
     hostUserId,
   });
+
+  const virtualBackground = useVirtualBackground();
 
   const signalingUrl =
     websocketUrl || process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001';

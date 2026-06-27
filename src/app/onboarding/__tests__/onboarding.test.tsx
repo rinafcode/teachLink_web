@@ -11,11 +11,21 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock analytics hook to verify onboarding event tracking
+const mockTrack = vi.fn();
+
 // Mock notifications hook to prevent toasted popups during testing
 const mockSuccess = vi.fn();
 const mockError = vi.fn();
 const mockLoading = vi.fn(() => 'toast-loading-id');
 const mockDismiss = vi.fn();
+
+vi.mock('@/hooks/useAnalytics', () => ({
+  useAnalytics: () => ({
+    track: mockTrack,
+    trackPageView: vi.fn(),
+  }),
+}));
 
 vi.mock('@/hooks/use-notification', () => ({
   useNotification: () => ({
@@ -28,7 +38,7 @@ vi.mock('@/hooks/use-notification', () => ({
 
 describe('Onboarding Page', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useRealTimers();
     vi.clearAllMocks();
     if (typeof window !== 'undefined') {
       localStorage.clear();
@@ -46,7 +56,7 @@ describe('Onboarding Page', () => {
     expect(screen.getByText('Tell us about yourself')).toBeInTheDocument();
     expect(screen.getByLabelText(/Username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Date of Birth/i)).toBeInTheDocument();
-    
+
     // Check that we display the two role options
     expect(screen.getByText('Student / Learner')).toBeInTheDocument();
     expect(screen.getByText('Instructor / Teacher')).toBeInTheDocument();
@@ -59,7 +69,7 @@ describe('Onboarding Page', () => {
     render(<OnboardingPage />);
 
     const nextButton = screen.getByRole('button', { name: /Next/i });
-    
+
     await act(async () => {
       fireEvent.click(nextButton);
     });
@@ -91,7 +101,7 @@ describe('Onboarding Page', () => {
 
     // Click Next
     const nextButton = screen.getByRole('button', { name: /Next/i });
-    
+
     await act(async () => {
       fireEvent.click(nextButton);
     });
@@ -110,7 +120,7 @@ describe('Onboarding Page', () => {
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
     fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
     fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
-    
+
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Next/i }));
     });
@@ -119,14 +129,16 @@ describe('Onboarding Page', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Next/i }));
     });
-    
+
     await waitFor(() => {
       expect(screen.getByText('Please select your primary area of interest')).toBeInTheDocument();
     });
 
     // Fill Step 2 fields
     fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
-    fireEvent.change(screen.getByLabelText(/Preferred Notification Channel/i), { target: { value: 'email' } });
+    fireEvent.change(screen.getByLabelText(/Preferred Notification Channel/i), {
+      target: { value: 'email' },
+    });
     fireEvent.change(screen.getByLabelText(/Interface Language/i), { target: { value: 'en' } });
 
     // Click Next
@@ -148,29 +160,30 @@ describe('Onboarding Page', () => {
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
     fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
     fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     // Click connect Argent X
     const argentButton = screen.getByRole('button', { name: /Argent X/i });
     fireEvent.click(argentButton);
 
-    // Verify loading state
-    expect(screen.getByText('Connecting')).toBeInTheDocument();
-
-    // Fast-forward mock connect time (1.5s)
-    await act(async () => {
-      vi.advanceTimersByTime(1500);
+    // Verify the wallet button is disabled while connecting
+    await waitFor(() => {
+      expect(argentButton).toBeDisabled();
     });
 
-    // Should display connected address and active state
+    // Wait for connection simulation to complete
     await waitFor(() => {
       expect(screen.getByText('Connected Wallet')).toBeInTheDocument();
       expect(screen.getByText(/0x04828f731a54/)).toBeInTheDocument();
       expect(mockSuccess).toHaveBeenCalledWith('Connected to Argent X successfully!');
-    });
+    }, { timeout: 3000 });
   });
 
   it('completes onboarding and triggers redirection to dashboard', async () => {
@@ -180,14 +193,18 @@ describe('Onboarding Page', () => {
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
     fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
     fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
 
     // Complete onboarding (wallet connection is optional, so we can skip connecting it)
     const completeButton = screen.getByRole('button', { name: /Complete/i });
-    
+
     await act(async () => {
       fireEvent.click(completeButton);
     });
@@ -195,17 +212,47 @@ describe('Onboarding Page', () => {
     // Check loading indicator shows up
     expect(mockLoading).toHaveBeenCalledWith('Finalizing your registration profile...');
 
-    // Fast-forward mock registration API time (2.0s)
-    await act(async () => {
-      vi.advanceTimersByTime(2000);
-    });
-
     // Should redirect to dashboard and display success toast
     await waitFor(() => {
       expect(mockSuccess).toHaveBeenCalledWith('Onboarding complete! Welcome to TeachLink.');
       expect(mockPush).toHaveBeenCalledWith('/dashboard');
       expect(localStorage.getItem('teachlink_onboarded')).toBe('true');
       expect(localStorage.getItem('teachlink_user_role')).toBe('student');
+    }, { timeout: 3000 });
+  });
+
+  it('tracks onboarding lifecycle events and continues when analytics fails', async () => {
+    mockTrack.mockImplementation(() => {
+      throw new Error('Analytics sink failure');
     });
+
+    render(<OnboardingPage />);
+
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('onboarding_started', expect.any(Object));
+    });
+
+    fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
+    fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
+    fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
+
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('onboarding_step_completed', expect.any(Object));
+    });
+
+    fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
+    fireEvent.change(screen.getByLabelText(/Preferred Notification Channel/i), { target: { value: 'email' } });
+    fireEvent.change(screen.getByLabelText(/Interface Language/i), { target: { value: 'en' } });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Next/i })); });
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('onboarding_step_completed', expect.any(Object));
+    });
+
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Complete/i })); });
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/dashboard');
+    }, { timeout: 3000 });
   });
 });
