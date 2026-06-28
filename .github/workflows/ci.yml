@@ -26,7 +26,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Type Check
-        run: echo "Skipping type-check for this PR"
+        run: pnpm run type-check
 
   lint:
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Lint
-        run: echo "Skipping lint for this PR"
+        run: pnpm run lint
 
   validate:
     runs-on: ubuntu-latest
@@ -75,7 +75,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [validate]
+    needs: [type-check, lint, validate]
 
     steps:
       - uses: actions/checkout@v4
