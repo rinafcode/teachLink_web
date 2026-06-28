@@ -187,14 +187,8 @@ export function AccessibilityConferenceManagement() {
   );
 
   return (
-    <section
-      aria-labelledby="a11y-conf-heading"
-      className="space-y-6"
-    >
-      <h3
-        id="a11y-conf-heading"
-        className="text-lg font-semibold text-gray-900 dark:text-white"
-      >
+    <section aria-labelledby="a11y-conf-heading" className="space-y-6">
+      <h3 id="a11y-conf-heading" className="text-lg font-semibold text-gray-900 dark:text-white">
         Accessibility Conferences
       </h3>
 
@@ -284,7 +278,9 @@ export function AccessibilityConferenceManagement() {
               Virtual / Online conference
             </label>
             {formError && (
-              <p className="text-xs text-red-600 dark:text-red-400" role="alert">{formError}</p>
+              <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+                {formError}
+              </p>
             )}
             <button
               type="submit"

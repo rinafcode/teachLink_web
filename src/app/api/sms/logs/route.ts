@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Internal server error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'clear-old': {
         const olderThanMs = parseInt(
-          (await request.json()).olderThanMs || '2592000000' // 30 days
+          (await request.json()).olderThanMs || '2592000000', // 30 days
         );
         const deletedCount = SMSLogAggregator.clearOldLogs(olderThanMs);
 
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
             success: false,
             error: 'Unknown action',
           },
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (error) {
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Internal server error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

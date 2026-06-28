@@ -164,10 +164,10 @@ describe('Referral Code Utilities', () => {
     it('should increment the referral count', () => {
       storeReferralCode('user@example.com', 'ABCDEFGH');
       expect(getReferralCount('ABCDEFGH')).toBe(0);
-      
+
       incrementReferralCount('ABCDEFGH');
       expect(getReferralCount('ABCDEFGH')).toBe(1);
-      
+
       incrementReferralCount('ABCDEFGH');
       expect(getReferralCount('ABCDEFGH')).toBe(2);
     });
@@ -185,7 +185,7 @@ describe('Referral Code Utilities', () => {
     it('should return the correct count for stored codes', () => {
       storeReferralCode('user@example.com', 'ABCDEFGH');
       expect(getReferralCount('ABCDEFGH')).toBe(0);
-      
+
       incrementReferralCount('ABCDEFGH');
       expect(getReferralCount('ABCDEFGH')).toBe(1);
     });

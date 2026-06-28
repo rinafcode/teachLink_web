@@ -15,9 +15,13 @@ import {
 } from './lib/apiVersioning';
 
 export function middleware(request: NextRequest) {
+  const traceId = crypto.randomUUID();
+  request.headers.set('x-trace-id', traceId);
+
   // Handle redirects first (early in the chain)
   const redirectResponse = handleRedirects(request);
   if (redirectResponse) {
+    redirectResponse.headers.set('x-trace-id', traceId);
     return redirectResponse;
   }
 
@@ -26,6 +30,7 @@ export function middleware(request: NextRequest) {
   const userRole = roleCookie || null;
 
   const withHeaders = (response: NextResponse) => {
+    response.headers.set('x-trace-id', traceId);
     const withSecurity = applySecurityHeaders(response, request);
     return applyCspHeaders(withSecurity, request);
   };

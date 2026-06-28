@@ -10,9 +10,7 @@ export default function NetworkPoliciesPage() {
       <div className="container mx-auto py-8 px-4 max-w-4xl">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Network Policies
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Network Policies</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               Define IP, CIDR, and country-level access rules for the platform.
             </p>

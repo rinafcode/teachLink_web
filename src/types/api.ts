@@ -105,7 +105,9 @@ export type AnalyticsEventPayload = ZodAnalyticsEventPayload;
 // Approvals
 // ---------------------------------------------------------------------------
 
-export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+import type { ApprovalStatus, ReviewDecision } from './approvals';
+
+export type { ApprovalStatus, ReviewDecision } from './approvals';
 
 export interface ApprovalItem {
   id: string;
@@ -127,6 +129,6 @@ export interface SubmitApprovalRequest {
 }
 
 export interface ReviewApprovalRequest {
-  status: 'APPROVED' | 'REJECTED';
+  status: ReviewDecision;
   reviewNote?: string;
 }

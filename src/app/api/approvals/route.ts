@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { withRateLimit } from '@/lib/ratelimit';
 import { logAuditMutation } from '@/middleware/audit';
 import { validateBody, validateQuery } from '@/lib/validation';
-import type { ApprovalItem } from '@/types/api';
+import { ApprovalStatus } from '@/types/approvals';
+import type { ApprovalItem, ReviewDecision } from '@/types/api';
 
 export const runtime = 'edge';
 
@@ -26,13 +27,15 @@ const SubmitSchema = z.object({
 
 const ReviewSchema = z.object({
   id: z.string().min(1),
-  status: z.enum(['APPROVED', 'REJECTED']),
+  status: z.enum([ApprovalStatus.APPROVED, ApprovalStatus.REJECTED]),
   reviewedBy: z.string().min(1),
   reviewNote: z.string().max(500).optional(),
 });
 
 const ListQuerySchema = z.object({
-  status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+  status: z
+    .enum([ApprovalStatus.PENDING, ApprovalStatus.APPROVED, ApprovalStatus.REJECTED])
+    .optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -73,7 +76,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     title: result.data.title,
     submittedBy: result.data.submittedBy,
     submittedAt: new Date().toISOString(),
-    status: 'PENDING',
+    status: ApprovalStatus.PENDING,
   };
 
   approvalsStore.set(item.id, item);
@@ -108,7 +111,7 @@ export async function PATCH(request: Request): Promise<NextResponse> {
     );
   }
 
-  if (existing.status !== 'PENDING') {
+  if (existing.status !== ApprovalStatus.PENDING) {
     return addHeaders(
       NextResponse.json(
         { success: false, message: 'Only PENDING approvals can be reviewed' },

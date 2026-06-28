@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { BookOpen, Layout, ListChecks, FileVideo } from 'lucide-react';
 import { Editor } from '@tiptap/react';
 import { TEMPLATES, insertTemplate } from '@/utils/editorUtils';
@@ -8,6 +8,8 @@ interface ContentTemplateLibraryProps {
 }
 
 export const ContentTemplateLibrary: React.FC<ContentTemplateLibraryProps> = ({ editor }) => {
+  const headingId = useId();
+
   if (!editor) return null;
 
   const getIcon = (id: string) => {
@@ -27,10 +29,19 @@ export const ContentTemplateLibrary: React.FC<ContentTemplateLibraryProps> = ({ 
 
   return (
     <aside
-      aria-label="Content templates sidebar"
-      className="p-4 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 h-full w-64 hidden lg:block"
-    >
-      <h2 className="font-semibold text-sm text-gray-500 uppercase mb-4 tracking-wider">
+<aside
+  aria-labelledby={headingId}
+  className="p-4 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 h-full w-64 hidden lg:block"
+>
+  <h3
+    id={headingId}
+    className="font-semibold text-sm text-gray-500 uppercase mb-4 tracking-wider"
+  >
+    Content Templates
+  </h3>
+
+  {/* Sidebar content */}
+</aside>
         Templates
       </h2>
       <nav aria-label="Template selection">

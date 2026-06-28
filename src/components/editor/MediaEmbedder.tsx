@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useId, useState, useEffect, useRef } from 'react'; main
 import { Image as ImageIcon, Youtube as YoutubeIcon } from 'lucide-react';
 import { sanitizeUrl } from '@/utils/sanitize';
 
@@ -12,65 +12,68 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
   const [url, setUrl] = useState('');
   const [type, setType] = useState<'image' | 'youtube'>('image');
   const [urlError, setUrlError] = useState('');
-  const dialogTitleId = 'media-embedder-title';
-  const errorId = 'media-embedder-error';
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const triggerButtonRef = useRef<HTMLButtonElement>(null);
+const id = useId();
+const dialogTitleId = `${id}-title`;
+const errorId = `${id}-error`;
+const inputId = `${id}-url`;
 
-  // Focus trap implementation
-  useEffect(() => {
-    if (!isOpen) return;
+const dialogRef = useRef<HTMLDivElement>(null);
+const triggerButtonRef = useRef<HTMLButtonElement>(null);
 
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+// Focus trap implementation
+useEffect(() => {
+  if (!isOpen) return;
 
-    const focusableElements = dialog.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+  const dialog = dialogRef.current;
+  if (!dialog) return;
 
-    // Focus first element when dialog opens
-    firstElement?.focus();
+  const focusableElements = dialog.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
 
-    const handleTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+  const firstElement = focusableElements[0] as HTMLElement;
+  const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          e.preventDefault();
-          lastElement?.focus();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          e.preventDefault();
-          firstElement?.focus();
-        }
+  firstElement?.focus();
+
+  const handleTab = (e: KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement?.focus();
       }
-    };
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsOpen(false);
-        triggerButtonRef.current?.focus();
+    } else {
+      if (document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement?.focus();
       }
-    };
-
-    document.addEventListener('keydown', handleTab);
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('keydown', handleTab);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen]);
-
-  // Return focus to trigger button when dialog closes
-  useEffect(() => {
-    if (!isOpen && triggerButtonRef.current) {
-      triggerButtonRef.current.focus();
     }
-  }, [isOpen]);
+  };
+
+  const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+      triggerButtonRef.current?.focus();
+    }
+  };
+
+  document.addEventListener('keydown', handleTab);
+  document.addEventListener('keydown', handleEscape);
+
+  return () => {
+    document.removeEventListener('keydown', handleTab);
+    document.removeEventListener('keydown', handleEscape);
+  };
+}, [isOpen]);
+
+// Return focus to trigger button when dialog closes
+useEffect(() => {
+  if (!isOpen) {
+    triggerButtonRef.current?.focus();
+  }
+}, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +102,11 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
     return (
       <div className="flex gap-2">
         <button
-          ref={triggerButtonRef}
+<button
+  ref={triggerButtonRef}
+  type="button"
+  // other props...
+>main
           onClick={() => {
             setType('image');
             setIsOpen(true);
@@ -111,6 +118,7 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
           <ImageIcon className="w-5 h-5" aria-hidden="true" />
         </button>
         <button
+          type="button"
           onClick={() => {
             setType('youtube');
             setIsOpen(true);
@@ -137,11 +145,11 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
           Add {type === 'image' ? 'Image' : 'YouTube Video'}
         </h3>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="media-url" className="sr-only">
+          <label htmlFor={inputId} className="sr-only">
             {type === 'image' ? 'Image URL' : 'YouTube video URL'}
           </label>
           <input
-            id="media-url"
+            id={inputId}
             type="url"
             value={url}
             onChange={(e) => {
