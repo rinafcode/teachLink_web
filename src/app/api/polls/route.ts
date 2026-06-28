@@ -40,9 +40,9 @@ export async function POST(request: Request) {
     `);
     
     const result = await query(
-      \`INSERT INTO polls (id, question, options, course_id, created_by)
+      `INSERT INTO polls (id, question, options, course_id, created_by)
        VALUES ($1, $2, $3, $4, $5)
-       RETURNING *\`,
+       RETURNING *`,
       [
         id || crypto.randomUUID(),
         question,
