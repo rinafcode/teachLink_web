@@ -65,7 +65,7 @@ export async function preloadTranslations(languages: LanguageCode[]): Promise<vo
 export function getTranslation(
   translations: Translations,
   key: string,
-  params?: Record<string, string | number>,
+  params?: Record<string, unknown>,
 ): string {
   const keys = key.split('.');
   let value: any = translations;
@@ -83,9 +83,24 @@ export function getTranslation(
   }
 
   // Replace parameters in translation string
+  // Regex supports dot-separated nested keys, e.g. {{user.name}}
   if (params) {
-    return value.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
-      return params[paramKey]?.toString() || match;
+    return value.replace(/\{\{([\w][\w.]*)\}\}/g, (match, paramPath: string) => {
+      const resolved = paramPath.split('.').reduce((obj: unknown, key: string) => {
+        if (obj !== null && obj !== undefined && typeof obj === 'object') {
+          return (obj as Record<string, unknown>)[key];
+        }
+        return undefined;
+      }, params as unknown);
+
+      if (resolved === undefined || resolved === null) {
+        console.warn(
+          `[translationManager] Missing interpolation key "${paramPath}" in translation template.`,
+        );
+        return match; // leave placeholder visible
+      }
+
+      return String(resolved);
     });
   }
 

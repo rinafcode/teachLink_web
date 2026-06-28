@@ -149,7 +149,7 @@ export function I18nProvider({
 
   // Translation function
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>) => {
+    (key: string, params?: Record<string, unknown>) => {
       return getTranslation(translations, key, params);
     },
     [translations],
@@ -247,7 +247,7 @@ export function useInternationalization(): I18nContextValue {
   if (!context) {
     const fallbackLanguage: LanguageCode = DEFAULT_LANGUAGE;
     const fallbackPreferences = getCulturalPreferences(fallbackLanguage);
-    const fallbackT = (key: string, params?: Record<string, string | number>) =>
+    const fallbackT = (key: string, params?: Record<string, unknown>) =>
       getTranslation({}, key, params);
 
     return {

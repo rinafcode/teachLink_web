@@ -225,10 +225,16 @@ describe('useWeb3Wallet', () => {
 
     const { result } = renderHook(() => useWeb3Wallet());
 
+    let connectPromise: Promise<any>;
     await act(async () => {
-      await Promise.all([result.current.connect('metamask'), result.current.connect('metamask')]);
-      vi.runAllTimers();
+      connectPromise = Promise.all([
+        result.current.connect('metamask'),
+        result.current.connect('metamask'),
+      ]);
+      await vi.runAllTimersAsync();
     });
+
+    await connectPromise;
 
     // FIFO: first call's eth_requestAccounts resolves before the second call starts
     expect(callOrder[0]).toBeLessThan(callOrder[callOrder.length - 1]);
