@@ -6,6 +6,7 @@ import { useCourseCreation, Lesson } from '@/hooks/useCourseCreation';
 import { ContentUploader } from './ContentUploader';
 import { LessonBuilder } from './LessonBuilder';
 import { AssessmentCreator } from './AssessmentCreator';
+import { DiscountCreator } from './DiscountCreator';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -29,7 +30,8 @@ const STEPS = [
   { id: 1, name: 'Lessons', description: 'Build curriculum' },
   { id: 2, name: 'Content', description: 'Upload materials' },
   { id: 3, name: 'Assessments', description: 'Create quizzes' },
-  { id: 4, name: 'Preview', description: 'Review & publish' },
+  { id: 4, name: 'Discounts', description: 'Manage promotions' },
+  { id: 5, name: 'Preview', description: 'Review & publish' },
 ];
 
 export const CourseCreationWizard = () => {
@@ -41,6 +43,9 @@ export const CourseCreationWizard = () => {
     deleteLesson,
     reorderLessons,
     addAssessment,
+    addDiscount,
+    updateDiscount,
+    deleteDiscount,
     nextStep,
     previousStep,
     goToStep,
@@ -270,6 +275,16 @@ export const CourseCreationWizard = () => {
 
       case 4:
         return (
+          <DiscountCreator
+            discounts={courseData.discounts}
+            onAddDiscount={addDiscount}
+            onUpdateDiscount={updateDiscount}
+            onDeleteDiscount={deleteDiscount}
+          />
+        );
+
+      case 5:
+        return (
           <div className="space-y-4 sm:space-y-6">
             <h2 className="text-xl font-bold sm:text-2xl">Preview & Publish</h2>
             <div className="p-4 space-y-4 bg-white border rounded-lg sm:p-6 dark:bg-gray-800 dark:border-gray-700">
@@ -292,7 +307,38 @@ export const CourseCreationWizard = () => {
                 <div className="dark:text-gray-300">
                   <span className="font-medium">Assessments:</span> {courseData.assessments.length}
                 </div>
+                <div className="dark:text-gray-300">
+                  <span className="font-medium">Pricing:</span> {courseData.pricing.type}
+                  {courseData.pricing.amount && ` - $${courseData.pricing.amount}`}
+                </div>
+                <div className="dark:text-gray-300">
+                  <span className="font-medium">Active Discounts:</span>{' '}
+                  {courseData.discounts.filter((d) => d.isActive).length}
+                </div>
               </div>
+              {courseData.discounts.length > 0 && (
+                <div className="mt-4 pt-4 border-t dark:border-gray-700">
+                  <h4 className="font-medium mb-2 dark:text-white">Discount Codes:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {courseData.discounts.map((discount) => (
+                      <span
+                        key={discount.id}
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          discount.isActive
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {discount.code} -{' '}
+                        {discount.type === 'percentage'
+                          ? `${discount.value}%`
+                          : `$${discount.value}`}{' '}
+                        off
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="pt-4 border-t">
                 <button className="w-full px-6 py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700">
                   Publish Course

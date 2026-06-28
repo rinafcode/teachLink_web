@@ -104,11 +104,7 @@ export default function FeedbackWidget({
           {error}
         </p>
       ) : null}
-      <button
-        type="button"
-        disabled={!rating || status === 'sending'}
-        onClick={submit}
-      >
+      <button type="button" disabled={!rating || status === 'sending'} onClick={submit}>
         {status === 'sending' ? 'Sending…' : 'Send feedback'}
       </button>
     </section>
