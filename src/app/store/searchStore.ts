@@ -21,6 +21,10 @@ interface FilterState {
 }
 
 interface SearchStore extends FilterState {
+  searchQuery: string;
+  cursor: string | undefined;
+  setSearchQuery: (query: string) => void;
+  setCursor: (cursor: string | undefined) => void;
   setDifficulty: (difficulty: Difficulty[]) => void;
   setDuration: (duration: [number, number]) => void;
   setTopics: (topics: string[]) => void;
@@ -28,14 +32,14 @@ interface SearchStore extends FilterState {
   setSortBy: (sortBy: SortOption) => void;
   setPrice: (price: [number, number]) => void;
   clearFilters: () => void;
-  syncWithUrl: () => void;
+  syncWithUrl: (options?: { push?: boolean }) => void;
   updateFromUrl: (params: URLSearchParams) => void;
   searchHistory: string[];
   addToSearchHistory: (term: string) => void;
   clearSearchHistory: () => void;
 }
 
-const initialState: FilterState = {
+const initialFilterState: FilterState = {
   difficulty: [],
   duration: [0, 20],
   topics: [],
@@ -47,34 +51,80 @@ const initialState: FilterState = {
 export const useSearchStore = create<SearchStore>()(
   persist(
     (set, get) => ({
-      ...initialState,
+      ...initialFilterState,
+      searchQuery: '',
+      cursor: undefined,
       searchHistory: [],
-      setDifficulty: (difficulty) => set({ difficulty }),
-      setDuration: (duration) => set({ duration }),
-      setTopics: (topics) => set({ topics }),
-      setInstructors: (instructors) => set({ instructors }),
-      setSortBy: (sortBy) => set({ sortBy }),
-      setPrice: (price) => set({ price }),
-      clearFilters: () => set(initialState),
+
+      setSearchQuery: (query) => {
+        set({ searchQuery: query, cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
+      setCursor: (cursor) => {
+        set({ cursor });
+        get().syncWithUrl({ push: false });
+      },
+
+      setDifficulty: (difficulty) => {
+        set({ difficulty, cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
+      setDuration: (duration) => {
+        set({ duration, cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
+      setTopics: (topics) => {
+        set({ topics, cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
+      setInstructors: (instructors) => {
+        set({ instructors, cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
+      setSortBy: (sortBy) => {
+        set({ sortBy, cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
+      setPrice: (price) => {
+        set({ price, cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
+      clearFilters: () => {
+        set({ ...initialFilterState, searchQuery: '', cursor: undefined });
+        get().syncWithUrl({ push: true });
+      },
+
       addToSearchHistory: (term: string) => {
         if (!term.trim()) return;
 
         const current = get().searchHistory;
-        const updated = [term, ...current.filter((item) => item !== term)].slice(0, 10); // Keep last 10 searches
+        const updated = [term, ...current.filter((item) => item !== term)].slice(0, 10);
 
         set({ searchHistory: updated });
       },
+
       clearSearchHistory: () => set({ searchHistory: [] }),
-      syncWithUrl: () => {
+
+      syncWithUrl: (options = { push: true }) => {
         const params = new URLSearchParams(window.location.search);
         const state = get();
 
+        if (state.searchQuery) {
+          params.set('q', state.searchQuery);
+        }
         if (state.difficulty.length) {
           params.set('difficulty', state.difficulty.join(','));
         }
         if (
-          state.duration[0] !== initialState.duration[0] ||
-          state.duration[1] !== initialState.duration[1]
+          state.duration[0] !== initialFilterState.duration[0] ||
+          state.duration[1] !== initialFilterState.duration[1]
         ) {
           params.set('duration', `${state.duration[0]},${state.duration[1]}`);
         }
@@ -84,26 +134,39 @@ export const useSearchStore = create<SearchStore>()(
         if (state.instructors.length) {
           params.set('instructors', state.instructors.join(','));
         }
-        if (state.sortBy !== initialState.sortBy) {
+        if (state.sortBy !== initialFilterState.sortBy) {
           params.set('sort', state.sortBy);
         }
-        if (state.price[0] !== initialState.price[0] || state.price[1] !== initialState.price[1]) {
+        if (
+          state.price[0] !== initialFilterState.price[0] ||
+          state.price[1] !== initialFilterState.price[1]
+        ) {
           params.set('price', `${state.price[0]},${state.price[1]}`);
         }
+        if (state.cursor) {
+          params.set('cursor', state.cursor);
+        }
 
-        window.history.replaceState(
-          {},
-          '',
-          `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`,
-        );
+        const url = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+
+        if (options.push) {
+          window.history.pushState({ searchState: { ...state } }, '', url);
+        } else {
+          window.history.replaceState({ searchState: { ...state } }, '', url);
+        }
       },
+
       updateFromUrl: (params) => {
-        const newState = { ...initialState };
+        const newState: Record<string, unknown> = {};
+
+        newState.searchQuery = params.get('q') ?? '';
 
         const difficulty = params.get('difficulty');
         if (difficulty) {
           const validated = difficulty.split(',').map(sanitizeString).filter(isValidDifficulty);
           if (validated.length) newState.difficulty = validated;
+        } else {
+          newState.difficulty = [];
         }
 
         const duration = params.get('duration');
@@ -111,24 +174,32 @@ export const useSearchStore = create<SearchStore>()(
           const parts = duration.split(',').map(Number);
           const validated = validateNumericRange(parts[0], parts[1], 0, 100);
           if (validated) newState.duration = validated;
+        } else {
+          newState.duration = [0, 20];
         }
 
         const topics = params.get('topics');
         if (topics) {
           const validated = validateStringArray(topics.split(','));
           if (validated.length) newState.topics = validated;
+        } else {
+          newState.topics = [];
         }
 
         const instructors = params.get('instructors');
         if (instructors) {
           const validated = validateStringArray(instructors.split(','));
           if (validated.length) newState.instructors = validated;
+        } else {
+          newState.instructors = [];
         }
 
         const sort = params.get('sort');
         if (sort) {
           const sanitized = sanitizeString(sort);
           if (isValidSortOption(sanitized)) newState.sortBy = sanitized;
+        } else {
+          newState.sortBy = 'relevance';
         }
 
         const price = params.get('price');
@@ -136,6 +207,15 @@ export const useSearchStore = create<SearchStore>()(
           const parts = price.split(',').map(Number);
           const validated = validateNumericRange(parts[0], parts[1], 0, 10000);
           if (validated) newState.price = validated;
+        } else {
+          newState.price = [0, 1000];
+        }
+
+        const cursor = params.get('cursor');
+        if (cursor !== null) {
+          newState.cursor = cursor;
+        } else {
+          newState.cursor = undefined;
         }
 
         set(newState);
@@ -146,3 +226,10 @@ export const useSearchStore = create<SearchStore>()(
     },
   ),
 );
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    const params = new URLSearchParams(window.location.search);
+    useSearchStore.getState().updateFromUrl(params);
+  });
+}
