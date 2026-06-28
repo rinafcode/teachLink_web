@@ -2,12 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-export type ReleaseNoteKind =
-  | 'added'
-  | 'changed'
-  | 'fixed'
-  | 'security'
-  | 'deprecated';
+export type ReleaseNoteKind = 'added' | 'changed' | 'fixed' | 'security' | 'deprecated';
 
 export interface ReleaseNote {
   kind: ReleaseNoteKind;
@@ -47,10 +42,7 @@ function slug(version: string): string {
   return version.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 }
 
-export default function PrivacyReleaseNotes({
-  notes,
-  initialVersion,
-}: PrivacyReleaseNotesProps) {
+export default function PrivacyReleaseNotes({ notes, initialVersion }: PrivacyReleaseNotesProps) {
   const sorted = useMemo(
     () => [...notes].sort((a, b) => b.effectiveAt.localeCompare(a.effectiveAt)),
     [notes],
@@ -80,21 +72,14 @@ export default function PrivacyReleaseNotes({
                 type="button"
                 aria-expanded={open}
                 aria-controls={`rel-${slug(release.version)}`}
-                onClick={() =>
-                  setOpenVersion(open ? null : release.version)
-                }
+                onClick={() => setOpenVersion(open ? null : release.version)}
                 className="w-full text-left"
               >
                 <span className="font-medium">v{release.version}</span>{' '}
-                <span className="text-sm text-gray-500">
-                  — effective {release.effectiveAt}
-                </span>
+                <span className="text-sm text-gray-500">— effective {release.effectiveAt}</span>
               </button>
               {open ? (
-                <ul
-                  id={`rel-${slug(release.version)}`}
-                  className="mt-2 space-y-2"
-                >
+                <ul id={`rel-${slug(release.version)}`} className="mt-2 space-y-2">
                   {release.notes.map((n, idx) => (
                     <li key={idx} className="flex gap-3">
                       <span

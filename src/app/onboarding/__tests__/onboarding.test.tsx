@@ -11,11 +11,21 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock analytics hook to verify onboarding event tracking
+const mockTrack = vi.fn();
+
 // Mock notifications hook to prevent toasted popups during testing
 const mockSuccess = vi.fn();
 const mockError = vi.fn();
 const mockLoading = vi.fn(() => 'toast-loading-id');
 const mockDismiss = vi.fn();
+
+vi.mock('@/hooks/useAnalytics', () => ({
+  useAnalytics: () => ({
+    track: mockTrack,
+    trackPageView: vi.fn(),
+  }),
+}));
 
 vi.mock('@/hooks/use-notification', () => ({
   useNotification: () => ({
@@ -28,7 +38,7 @@ vi.mock('@/hooks/use-notification', () => ({
 
 describe('Onboarding Page', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useRealTimers();
     vi.clearAllMocks();
     if (typeof window !== 'undefined') {
       localStorage.clear();
@@ -163,20 +173,20 @@ describe('Onboarding Page', () => {
     const argentButton = screen.getByRole('button', { name: /Argent X/i });
     fireEvent.click(argentButton);
 
-    // Verify loading state
-    expect(screen.getByText('Connecting')).toBeInTheDocument();
-
-    // Fast-forward mock connect time (1.5s)
-    await act(async () => {
-      vi.advanceTimersByTime(1500);
-    });
-
-    // Should display connected address and active state
+    // Verify the wallet button is disabled while connecting
     await waitFor(() => {
-      expect(screen.getByText('Connected Wallet')).toBeInTheDocument();
-      expect(screen.getByText(/0x04828f731a54/)).toBeInTheDocument();
-      expect(mockSuccess).toHaveBeenCalledWith('Connected to Argent X successfully!');
+      expect(argentButton).toBeDisabled();
     });
+
+    // Wait for connection simulation to complete
+    await waitFor(
+      () => {
+        expect(screen.getByText('Connected Wallet')).toBeInTheDocument();
+        expect(screen.getByText(/0x04828f731a54/)).toBeInTheDocument();
+        expect(mockSuccess).toHaveBeenCalledWith('Connected to Argent X successfully!');
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('completes onboarding and triggers redirection to dashboard', async () => {
@@ -205,17 +215,61 @@ describe('Onboarding Page', () => {
     // Check loading indicator shows up
     expect(mockLoading).toHaveBeenCalledWith('Finalizing your registration profile...');
 
-    // Fast-forward mock registration API time (2.0s)
-    await act(async () => {
-      vi.advanceTimersByTime(2000);
+    // Should redirect to dashboard and display success toast
+    await waitFor(
+      () => {
+        expect(mockSuccess).toHaveBeenCalledWith('Onboarding complete! Welcome to TeachLink.');
+        expect(mockPush).toHaveBeenCalledWith('/dashboard');
+        expect(localStorage.getItem('teachlink_onboarded')).toBe('true');
+        expect(localStorage.getItem('teachlink_user_role')).toBe('student');
+      },
+      { timeout: 3000 },
+    );
+  });
+
+  it('tracks onboarding lifecycle events and continues when analytics fails', async () => {
+    mockTrack.mockImplementation(() => {
+      throw new Error('Analytics sink failure');
     });
 
-    // Should redirect to dashboard and display success toast
+    render(<OnboardingPage />);
+
     await waitFor(() => {
-      expect(mockSuccess).toHaveBeenCalledWith('Onboarding complete! Welcome to TeachLink.');
-      expect(mockPush).toHaveBeenCalledWith('/dashboard');
-      expect(localStorage.getItem('teachlink_onboarded')).toBe('true');
-      expect(localStorage.getItem('teachlink_user_role')).toBe('student');
+      expect(mockTrack).toHaveBeenCalledWith('onboarding_started', expect.any(Object));
     });
+
+    fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'janedoe' } });
+    fireEvent.click(screen.getByText('Student / Learner').closest('button')!);
+    fireEvent.change(screen.getByLabelText(/Date of Birth/i), { target: { value: '1995-05-15' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('onboarding_step_completed', expect.any(Object));
+    });
+
+    fireEvent.change(screen.getByLabelText(/Primary Interest/i), { target: { value: 'web3' } });
+    fireEvent.change(screen.getByLabelText(/Preferred Notification Channel/i), {
+      target: { value: 'email' },
+    });
+    fireEvent.change(screen.getByLabelText(/Interface Language/i), { target: { value: 'en' } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+    });
+    await waitFor(() => {
+      expect(mockTrack).toHaveBeenCalledWith('onboarding_step_completed', expect.any(Object));
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Complete/i }));
+    });
+
+    await waitFor(
+      () => {
+        expect(mockPush).toHaveBeenCalledWith('/dashboard');
+      },
+      { timeout: 3000 },
+    );
   });
 });
