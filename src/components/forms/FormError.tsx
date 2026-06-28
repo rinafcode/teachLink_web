@@ -19,7 +19,7 @@ interface FormErrorProps {
 }
 
 function isStructuredErrors(value: FormErrorValue): value is ApiFieldError[] {
-  return Array.isArray(value) && value.length > 0 && 'field' in value[0];
+  return Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null && 'field' in value[0];
 }
 
 export function FormError({ error, className = '', id }: FormErrorProps) {
