@@ -12,7 +12,7 @@ type AnalyticsEvent = {
   payload: Record<string, unknown>;
 };
 
-const analyticsStore = new Map<string, AnalyticsEvent[]>();
+export const analyticsStore = new Map<string, AnalyticsEvent[]>();
 
 const keyFor = (userId: string | undefined, lessonId: string) => {
   const safeUserId = encodeURIComponent(userId ?? 'anon');
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const key = keyFor(body.userId, body.lessonId);
   const prev = analyticsStore.get(key) ?? [];
-  analyticsStore.set(key, [event, ...prev].slice(0, 1000));
+  analyticsStore.set(key, [...prev, event].slice(-1000));
 
   return addHeaders(NextResponse.json({ success: true }));
 }
