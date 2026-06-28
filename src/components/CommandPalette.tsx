@@ -351,6 +351,8 @@ export function CommandPalette() {
                 });
               }
             }
+          } catch {
+            toastInfo('Failed to submit poll.');
           } finally {
             setIsSubmittingPoll(false);
           }
