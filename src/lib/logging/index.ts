@@ -15,7 +15,8 @@ try {
   nodeAsyncLocalStorage = null;
 }
 
-export const logContextStorage: AsyncContextStorage<LogContextStore> = nodeAsyncLocalStorage ?? simpleStorage;
+export const logContextStorage: AsyncContextStorage<LogContextStore> =
+  nodeAsyncLocalStorage ?? simpleStorage;
 
 export function runWithLogContext<T>(context: LogContextStore, callback: () => T): T {
   return logContextStorage.run(context, callback);
@@ -238,10 +239,7 @@ class Logger implements AppLogger {
       (this.baseContext.correlationId as string) ||
       activeRequestId;
     const activeTraceId =
-      payload.traceId ||
-      contextStore?.traceId ||
-      (this.baseContext.traceId as string) ||
-      '';
+      payload.traceId || contextStore?.traceId || (this.baseContext.traceId as string) || '';
 
     const baseRecord: LogRecord = {
       level,

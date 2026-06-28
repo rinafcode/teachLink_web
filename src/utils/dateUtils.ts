@@ -18,9 +18,7 @@ export function formatShortDate(date: Date | string | number, locale?: string): 
 }
 
 export function formatTime(date: Date | string | number, locale?: string): string {
-  return getDateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(
-    new Date(date),
-  );
+  return getDateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(date));
 }
 
 export function formatRelative(date: Date | string | number, locale?: string): string {

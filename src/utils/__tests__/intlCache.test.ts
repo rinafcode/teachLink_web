@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getNumberFormat, getDateTimeFormat, clearIntlCache, getNumberFormatCacheSize, getDateTimeFormatCacheSize } from '../intlCache';
+import {
+  getNumberFormat,
+  getDateTimeFormat,
+  clearIntlCache,
+  getNumberFormatCacheSize,
+  getDateTimeFormatCacheSize,
+} from '../intlCache';
 
 describe('intlCache', () => {
   beforeEach(() => {

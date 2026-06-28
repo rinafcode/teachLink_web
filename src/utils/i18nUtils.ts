@@ -6,9 +6,7 @@ import type { LanguageCode, CulturalPreferences } from '@/locales/types';
 import { getLocaleConfig } from '@/locales/config';
 import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import { enUS, es, fr, de, ar, he, ja, zhCN, ptBR, ru, it, ko } from 'date-fns/locale';
-import {
-  getNumberFormat,
-} from './intlCache';
+import { getNumberFormat } from './intlCache';
 
 // Date-fns locale mapping
 const dateFnsLocales: Record<LanguageCode, Locale> = {
