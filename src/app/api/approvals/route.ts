@@ -33,7 +33,9 @@ const ReviewSchema = z.object({
 });
 
 const ListQuerySchema = z.object({
-  status: z.enum([ApprovalStatus.PENDING, ApprovalStatus.APPROVED, ApprovalStatus.REJECTED]).optional(),
+  status: z
+    .enum([ApprovalStatus.PENDING, ApprovalStatus.APPROVED, ApprovalStatus.REJECTED])
+    .optional(),
 });
 
 // ---------------------------------------------------------------------------
