@@ -166,11 +166,7 @@ export const LessonBuilder: React.FC<LessonBuilderProps> = ({
           </p>
         </div>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={lessons.map((l) => l.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
               {lessons.map((lesson, index) => (

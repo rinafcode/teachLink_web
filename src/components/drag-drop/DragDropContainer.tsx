@@ -65,7 +65,7 @@ export const DragDropContainer = ({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -88,23 +88,23 @@ export const DragDropContainer = ({
     const activeZoneId = activeData.zoneId as string;
 
     const overType = overData.type;
-    
+
     if (overType === 'COURSE_CONTENT_ITEM') {
       const overItem = overData.item as DragDropItem;
       const overZoneId = overData.zoneId as string;
-      
+
       if (activeZoneId !== overZoneId) {
         // Move item to new zone (temporary while dragging, or handled at dragEnd depending on preference)
         // For simpler implementation without intermediate state updates, we can just let handleDragEnd deal with it.
         // But for smooth dragging between lists, we might need to handle moving items between zones here.
         // In useDragDrop, state updates are batched, so calling moveToZone is fine.
-        
+
         // Find index of over item
         const overZoneItems = state[overZoneId] || [];
         const overIndex = overZoneItems.findIndex((i) => i.id === overItem.id);
-        
+
         moveToZone(activeItem.id, activeZoneId, overZoneId, overIndex);
-        
+
         // Mutate active.data.current so it points to the new zoneId for subsequent events
         active.data.current = {
           ...active.data.current,
@@ -113,11 +113,11 @@ export const DragDropContainer = ({
       }
     } else if (overType === 'ZONE') {
       const overZone = overData.zone as DragDropZone;
-      
+
       if (activeZoneId !== overZone.id) {
         const overZoneItems = state[overZone.id] || [];
         moveToZone(activeItem.id, activeZoneId, overZone.id, overZoneItems.length);
-        
+
         active.data.current = {
           ...active.data.current,
           zoneId: overZone.id,
@@ -137,16 +137,16 @@ export const DragDropContainer = ({
     if (!activeData || !overData) return;
 
     const activeZoneId = activeData.zoneId as string;
-    
+
     if (overData.type === 'COURSE_CONTENT_ITEM') {
       const overItem = overData.item as DragDropItem;
       const overZoneId = overData.zoneId as string;
-      
+
       if (activeZoneId === overZoneId) {
         const zoneItems = state[activeZoneId] || [];
-        const oldIndex = zoneItems.findIndex(i => i.id === active.id);
-        const newIndex = zoneItems.findIndex(i => i.id === over.id);
-        
+        const oldIndex = zoneItems.findIndex((i) => i.id === active.id);
+        const newIndex = zoneItems.findIndex((i) => i.id === over.id);
+
         if (oldIndex !== newIndex) {
           reorderInZone(activeZoneId, oldIndex, newIndex);
         }
@@ -175,17 +175,17 @@ export const DragDropContainer = ({
                 saveError
                   ? 'bg-red-100 text-red-700'
                   : isSaving
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-emerald-100 text-emerald-700'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-emerald-100 text-emerald-700'
               }`}
             >
               {saveError
                 ? `Save error: ${saveError}`
                 : isSaving
-                ? 'Saving...'
-                : lastSavedAt
-                ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}`
-                : 'Ready'}
+                  ? 'Saving...'
+                  : lastSavedAt
+                    ? `Saved ${new Date(lastSavedAt).toLocaleTimeString()}`
+                    : 'Ready'}
             </span>
             <button
               type="button"
@@ -204,14 +204,9 @@ export const DragDropContainer = ({
           </div>
         </div>
 
-        <DropZones
-          zones={zones}
-          state={state}
-        />
+        <DropZones zones={zones} state={state} />
       </div>
-      <DragOverlay>
-        {activeItem ? <DragPreview item={activeItem} /> : null}
-      </DragOverlay>
+      <DragOverlay>{activeItem ? <DragPreview item={activeItem} /> : null}</DragOverlay>
     </DndContext>
   );
 };

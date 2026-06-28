@@ -14,14 +14,7 @@ interface SortableListProps {
 }
 
 const SortableRow = ({ item, zoneId }: { item: DragDropItem; zoneId: string }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     data: {
       type: 'COURSE_CONTENT_ITEM',
@@ -79,7 +72,11 @@ export const SortableList = ({
   }
 
   return (
-    <SortableContext id={zoneId} items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+    <SortableContext
+      id={zoneId}
+      items={items.map((i) => i.id)}
+      strategy={verticalListSortingStrategy}
+    >
       <div role="listbox" aria-label="Sortable content list" className="min-h-[50px]">
         {items.map((item) => (
           <SortableRow key={item.id} item={item} zoneId={zoneId} />
