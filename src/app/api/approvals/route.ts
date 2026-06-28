@@ -4,15 +4,10 @@ import { withRateLimit } from '@/lib/ratelimit';
 import { logAuditMutation } from '@/middleware/audit';
 import { validateBody, validateQuery } from '@/lib/validation';
 import { ApprovalStatus } from '@/types/approvals';
+import { query } from '@/lib/db/pool';
 import type { ApprovalItem, ReviewDecision } from '@/types/api';
 
-export const runtime = 'edge';
-
-// ---------------------------------------------------------------------------
-// In-memory store (replace with DB in production)
-// ---------------------------------------------------------------------------
-
-const approvalsStore = new Map<string, ApprovalItem>();
+export const runtime = 'nodejs';
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -38,6 +33,19 @@ const ListQuerySchema = z.object({
     .optional(),
 });
 
+const COLUMNS = `
+  id::text,
+  content_id AS "contentId",
+  content_type AS "contentType",
+  title,
+  submitted_by AS "submittedBy",
+  submitted_at AS "submittedAt",
+  status,
+  reviewed_by AS "reviewedBy",
+  reviewed_at AS "reviewedAt",
+  review_note AS "reviewNote"
+` as const;
+
 // ---------------------------------------------------------------------------
 // GET /api/approvals — list submissions (admin: all; others: filtered by submittedBy)
 // ---------------------------------------------------------------------------
@@ -47,15 +55,22 @@ export async function GET(request: Request): Promise<NextResponse> {
   if (rateLimitResponse) return rateLimitResponse;
 
   const { searchParams } = new URL(request.url);
-  const result = validateQuery(ListQuerySchema, searchParams);
-  if (!result.ok) return addHeaders(result.error);
+  const validation = validateQuery(ListQuerySchema, searchParams);
+  if (!validation.ok) return addHeaders(validation.error);
 
-  let items = Array.from(approvalsStore.values());
-  if (result.data.status) {
-    items = items.filter((item) => item.status === result.data.status);
+  try {
+    const dbResult = await query(
+      `SELECT ${COLUMNS} FROM content_approvals WHERE ($1::text IS NULL OR status = $1) ORDER BY submitted_at DESC`,
+      [validation.data.status ?? null],
+    );
+
+    return addHeaders(NextResponse.json({ success: true, data: dbResult.rows }));
+  } catch (error) {
+    console.error('[approvals] GET error:', error);
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Database error' }, { status: 500 }),
+    );
   }
-
-  return addHeaders(NextResponse.json({ success: true, data: items }));
 }
 
 // ---------------------------------------------------------------------------
@@ -66,31 +81,38 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse;
 
-  const result = validateBody(SubmitSchema, await request.json());
-  if (!result.ok) return addHeaders(result.error);
+  const validation = validateBody(SubmitSchema, await request.json());
+  if (!validation.ok) return addHeaders(validation.error);
 
-  const item: ApprovalItem = {
-    id: `approval-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    contentId: result.data.contentId,
-    contentType: result.data.contentType,
-    title: result.data.title,
-    submittedBy: result.data.submittedBy,
-    submittedAt: new Date().toISOString(),
-    status: ApprovalStatus.PENDING,
-  };
+  try {
+    const dbResult = await query(
+      `INSERT INTO content_approvals (content_id, content_type, title, submitted_by) VALUES ($1, $2, $3, $4) RETURNING ${COLUMNS}`,
+      [
+        validation.data.contentId,
+        validation.data.contentType,
+        validation.data.title,
+        validation.data.submittedBy,
+      ],
+    );
 
-  approvalsStore.set(item.id, item);
+    const item = dbResult.rows[0] as ApprovalItem;
 
-  const response = addHeaders(NextResponse.json({ success: true, data: item }, { status: 201 }));
-  logAuditMutation(request, {
-    action: 'create',
-    targetType: 'approval',
-    targetId: item.id,
-    statusCode: response.status,
-    metadata: { contentId: item.contentId, contentType: item.contentType },
-  });
+    const response = addHeaders(NextResponse.json({ success: true, data: item }, { status: 201 }));
+    logAuditMutation(request, {
+      action: 'create',
+      targetType: 'approval',
+      targetId: item.id,
+      statusCode: response.status,
+      metadata: { contentId: item.contentId, contentType: item.contentType },
+    });
 
-  return response;
+    return response;
+  } catch (error) {
+    console.error('[approvals] POST error:', error);
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Database error' }, { status: 500 }),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -101,43 +123,53 @@ export async function PATCH(request: Request): Promise<NextResponse> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse;
 
-  const result = validateBody(ReviewSchema, await request.json());
-  if (!result.ok) return addHeaders(result.error);
+  const validation = validateBody(ReviewSchema, await request.json());
+  if (!validation.ok) return addHeaders(validation.error);
 
-  const existing = approvalsStore.get(result.data.id);
-  if (!existing) {
+  try {
+    const dbResult = await query(
+      `UPDATE content_approvals SET status = $2, reviewed_by = $3, reviewed_at = NOW(), review_note = $4 WHERE id = $1::uuid AND status = 'PENDING' RETURNING ${COLUMNS}`,
+      [
+        validation.data.id,
+        validation.data.status,
+        validation.data.reviewedBy,
+        validation.data.reviewNote ?? null,
+      ],
+    );
+
+    if (dbResult.rows.length === 0) {
+      const exists = await query('SELECT id FROM content_approvals WHERE id = $1::uuid', [
+        validation.data.id,
+      ]);
+      if (exists.rows.length === 0) {
+        return addHeaders(
+          NextResponse.json({ success: false, message: 'Approval not found' }, { status: 404 }),
+        );
+      }
+      return addHeaders(
+        NextResponse.json(
+          { success: false, message: 'Only PENDING approvals can be reviewed' },
+          { status: 409 },
+        ),
+      );
+    }
+
+    const updated = dbResult.rows[0] as ApprovalItem;
+
+    const response = addHeaders(NextResponse.json({ success: true, data: updated }));
+    logAuditMutation(request, {
+      action: 'update',
+      targetType: 'approval',
+      targetId: updated.id,
+      statusCode: response.status,
+      metadata: { status: updated.status, reviewedBy: updated.reviewedBy },
+    });
+
+    return response;
+  } catch (error) {
+    console.error('[approvals] PATCH error:', error);
     return addHeaders(
-      NextResponse.json({ success: false, message: 'Approval not found' }, { status: 404 }),
+      NextResponse.json({ success: false, message: 'Database error' }, { status: 500 }),
     );
   }
-
-  if (existing.status !== ApprovalStatus.PENDING) {
-    return addHeaders(
-      NextResponse.json(
-        { success: false, message: 'Only PENDING approvals can be reviewed' },
-        { status: 409 },
-      ),
-    );
-  }
-
-  const updated: ApprovalItem = {
-    ...existing,
-    status: result.data.status,
-    reviewedBy: result.data.reviewedBy,
-    reviewedAt: new Date().toISOString(),
-    reviewNote: result.data.reviewNote,
-  };
-
-  approvalsStore.set(updated.id, updated);
-
-  const response = addHeaders(NextResponse.json({ success: true, data: updated }));
-  logAuditMutation(request, {
-    action: 'update',
-    targetType: 'approval',
-    targetId: updated.id,
-    statusCode: response.status,
-    metadata: { status: updated.status, reviewedBy: updated.reviewedBy },
-  });
-
-  return response;
 }
