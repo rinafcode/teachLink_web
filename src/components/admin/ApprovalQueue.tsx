@@ -38,6 +38,8 @@ function StatusBadge({ status }: { status: ApprovalStatus }) {
   );
 }
 
+type ApiFieldError = { field: string; message: string };
+
 export function ApprovalQueue({ user }: ApprovalQueueProps) {
   const [items, setItems] = useState<ApprovalItem[]>([]);
   const [filter, setFilter] = useState<ApprovalStatus | 'ALL'>('PENDING');
@@ -45,6 +47,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
   const [reviewNote, setReviewNote] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ApiFieldError[]>([]);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -54,7 +57,10 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       const res = await fetch(`/api/approvals${params}`);
       const json = await res.json();
       if (json.success) setItems(json.data);
-      else setError(json.message ?? 'Failed to load approvals');
+      else {
+        const apiErrors = json.errors as ApiFieldError[] | undefined;
+        setError(apiErrors && apiErrors.length > 0 ? apiErrors.map((e) => `${e.field}: ${e.message}`).join('; ') : (json.message ?? 'Failed to load approvals'));
+      }
     } catch {
       setError('Network error');
     } finally {
@@ -85,7 +91,8 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       if (json.success) {
         setItems((prev) => prev.map((item) => (item.id === id ? json.data : item)));
       } else {
-        setError(json.message ?? 'Review failed already');
+        const apiErrors = json.errors as ApiFieldError[] | undefined;
+        setError(apiErrors && apiErrors.length > 0 ? apiErrors.map((e) => `${e.field}: ${e.message}`).join('; ') : (json.message ?? 'Review failed already'));
       }
     } catch {
       setError('Network error');
@@ -141,6 +148,15 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
           <p role="alert" className="text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
+        )}
+        {fieldErrors.length > 0 && (
+          <div role="alert" className="text-sm text-red-600 dark:text-red-400 space-y-0.5">
+            {fieldErrors.map((fe, i) => (
+              <p key={i}>
+                <span className="font-semibold">{fe.field}</span>: {fe.message}
+              </p>
+            ))}
+          </div>
         )}
 
         {/* List */}

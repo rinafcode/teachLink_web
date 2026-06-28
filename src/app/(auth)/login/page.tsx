@@ -12,6 +12,7 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/utils/error-handler';
 import { DiscordButton } from '@/app/components/auth/DiscordButton';
 
 export default function LoginPage() {
@@ -26,6 +27,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -44,7 +46,17 @@ export default function LoginPage() {
   );
 
   const onSubmit = async (data: LoginFormData) => {
-    await loginMutation.mutate(data);
+    try {
+      await loginMutation.mutateAsync(data);
+    } catch (error) {
+      if (error instanceof ApiError && error.errors) {
+        for (const fieldError of error.errors) {
+          setError(fieldError.field as keyof LoginFormData, {
+            message: fieldError.message,
+          });
+        }
+      }
+    }
   };
 
   return (
@@ -141,7 +153,10 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <FormError error={loginMutation.error?.message} id="login-api-error" />
+            <FormError
+              error={(loginMutation.error as ApiError)?.errors ?? loginMutation.error?.message}
+              id="login-api-error"
+            />
 
             {successMessage && (
               <motion.div
