@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
-import { type ApprovalStatus, type ReviewDecision } from '@/types/approvals';
+import { ApprovalStatus, ReviewDecision } from '@/types/approvals';
 import { PermissionGate } from '@/app/components/auth/PermissionGate';
 import { Permission, User } from '@/types/api';
 import type { ApprovalItem } from '@/types/api';
