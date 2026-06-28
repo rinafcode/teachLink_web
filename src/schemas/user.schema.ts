@@ -7,6 +7,9 @@ export const UserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   role: UserRoleSchema,
+  referralCode: z.string().optional(),
+  referredBy: z.string().optional(),
+  referralCount: z.number().default(0),
 });
 
 export type User = z.infer<typeof UserSchema>;

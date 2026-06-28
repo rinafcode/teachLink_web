@@ -5,9 +5,12 @@ import { CardSkeleton, ListSkeleton } from '@/components/ui/LoadingSkeleton';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatusIndicator';
 import { DownloadManager } from '@/components/offline/DownloadManager';
 import { useInternationalization } from '@/hooks/useInternationalization';
+import { SidebarNavigation } from '@/components/navigation/SidebarNavigation';
+import { AnalyticsErrorDisplay } from '@/components/dashboard/AnalyticsErrorDisplay';
+import { useAnalyticsErrorTracking } from '@/hooks/useAnalyticsErrorTracking';
 
 export default function Dashboard() {
-  const { isLoading } = useDashboardData();
+  const { isLoading, errors, hasErrors, dismissError, clearAllErrors } = useDashboardData();
   const { t } = useInternationalization();
 
   return (
@@ -25,6 +28,13 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {hasErrors && (
+          <AnalyticsErrorDisplay
+            errors={errors}
+            onDismiss={dismissError}
+            onClearAll={clearAllErrors}
+          />
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">

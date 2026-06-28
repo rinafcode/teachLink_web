@@ -12,6 +12,15 @@ export const CourseListQuerySchema = z.object({
     .transform((val) => (val !== undefined ? parseInt(val, 10) : 10))
     .pipe(z.number().int().min(1).max(100)),
   cursor: z.string().optional(),
+  featured: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === 'true') return true;
+      if (val === 'false') return false;
+      return undefined;
+    })
+    .pipe(z.boolean().optional()),
 });
 
 export const CourseByIdParamsSchema = z.object({

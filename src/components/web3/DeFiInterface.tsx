@@ -4,6 +4,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { TrendingUp, Lock, Loader2, ArrowUpRight, Zap, Info, Check } from 'lucide-react';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
 import { InvestmentSearchBar, InvestmentItem } from './InvestmentSearchBar';
+import { walletCache, walletCacheKeys, CACHE_TTL } from '@/utils/web3/walletCache';
 
 interface StakingPosition {
   id: string;
@@ -89,6 +90,14 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
       setStakingPositions([]);
       return;
     }
+
+    const cacheKey = walletCacheKeys.defiPositions(wallet.address);
+    const cached = walletCache.get<StakingPosition[]>(cacheKey);
+    if (cached) {
+      setStakingPositions(cached);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const positions: StakingPosition[] = [
@@ -105,6 +114,7 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         },
       ];
       await new Promise((resolve) => setTimeout(resolve, 300));
+      walletCache.set(cacheKey, positions, CACHE_TTL.DEFI_POSITIONS);
       setStakingPositions(positions);
     } catch (error) {
       console.error('[DeFiInterface] Error fetching positions:', error);
@@ -134,7 +144,17 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         startDate: Date.now(),
         endDate: Date.now() + duration * 24 * 60 * 60 * 1000,
       };
-      setStakingPositions((prev) => [...prev, newPosition]);
+      setStakingPositions((prev) => {
+        const updated = [...prev, newPosition];
+        if (wallet.address) {
+          walletCache.set(
+            walletCacheKeys.defiPositions(wallet.address),
+            updated,
+            CACHE_TTL.DEFI_POSITIONS,
+          );
+        }
+        return updated;
+      });
       onStake?.(selectedProtocol.id, stakeAmount, duration);
       setStakeAmount('');
       setSelectedProtocol(null);
@@ -144,19 +164,29 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
     } finally {
       setIsStaking(false);
     }
-  }, [selectedProtocol, stakeAmount, stakeDuration, onStake]);
+  }, [selectedProtocol, stakeAmount, stakeDuration, onStake, wallet.address]);
 
   const handleUnstake = useCallback(
     async (positionId: string) => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 800));
-        setStakingPositions((prev) => prev.filter((p) => p.id !== positionId));
+        setStakingPositions((prev) => {
+          const updated = prev.filter((p) => p.id !== positionId);
+          if (wallet.address) {
+            walletCache.set(
+              walletCacheKeys.defiPositions(wallet.address),
+              updated,
+              CACHE_TTL.DEFI_POSITIONS,
+            );
+          }
+          return updated;
+        });
         onUnstake?.(positionId);
       } catch (error) {
         console.error('[DeFiInterface] Unstaking failed:', error);
       }
     },
-    [onUnstake],
+    [onUnstake, wallet.address],
   );
 
   const investmentItems = React.useMemo<InvestmentItem[]>(() => {
@@ -275,8 +305,8 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                     protocol.riskLevel === 'low'
                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                       : protocol.riskLevel === 'medium'
-                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                   }`}
                 >
                   {protocol.riskLevel}

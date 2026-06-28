@@ -51,7 +51,11 @@ export function TicketList() {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <RiskBadge level={ticket.risk.level} score={ticket.risk.score} showScore />
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[ticket.status]}`}>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  STATUS_STYLES[ticket.status]
+                }`}
+              >
                 {ticket.status.replace('_', ' ')}
               </span>
             </div>

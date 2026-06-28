@@ -26,10 +26,10 @@ export default function NaturalLanguageQuery() {
     setLoading(true);
     setError(false);
     try {
-      const response = await apiClient.post<ApiResponse<SearchResult[]>>('/api/ai/search', {
+      const { results: res } = await apiClient.post<{ results: SearchResult[] }>('/api/ai/search', {
         query: q,
       });
-      setResults(response.data);
+      setResults(res);
     } catch {
       setError(true);
       setResults(null);
@@ -50,15 +50,14 @@ export default function NaturalLanguageQuery() {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <form
-          role="search"
-          aria-label="Search"
-          className="relative flex gap-2"
-          onSubmit={handleSubmit}
-        >
+        <div className="relative flex gap-2">
           <div className="relative flex-1">
+            <label htmlFor="search-query" className="sr-only">
+              Search query
+            </label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
+              id="search-query"
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -69,14 +68,17 @@ export default function NaturalLanguageQuery() {
             />
           </div>
           <button
-            type="submit"
+            onClick={search}
             disabled={loading || !query.trim()}
             aria-label="Submit search"
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors"
           >
             {loading ? 'Searching…' : 'Search'}
           </button>
-        </form>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
         {error && (
           <p className="text-sm text-center text-red-500" role="alert">
             Search failed. Please try again.

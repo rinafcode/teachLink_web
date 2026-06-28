@@ -85,7 +85,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       if (json.success) {
         setItems((prev) => prev.map((item) => (item.id === id ? json.data : item)));
       } else {
-        setError(json.message ?? 'Review failed');
+        setError(json.message ?? 'Review failed already');
       }
     } catch {
       setError('Network error');
@@ -186,7 +186,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                       >
                         <CheckCircle className="w-4 h-4" />
-                        Approve
+                        Approve It
                       </button>
                       <button
                         onClick={() => review(item.id, 'REJECTED')}

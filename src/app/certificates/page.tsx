@@ -30,7 +30,10 @@ export default function CertificateGenerationPage() {
     setSuccessMessage(null);
 
     try {
-      const result = await apiClient.post<{ certificateId: string }>('/api/certificates/generate', data);
+      const result = await apiClient.post<{ certificateId: string }>(
+        '/api/certificates/generate',
+        data,
+      );
       setSuccessMessage(`Certificate generated successfully. ID: ${result.certificateId}`);
       reset();
     } catch (error) {
@@ -58,8 +61,8 @@ export default function CertificateGenerationPage() {
               Generate your Course Certificate
             </h1>
             <p className="mt-3 text-sm text-gray-600 dark:text-gray-300 max-w-2xl">
-              Complete the form below to request a certificate for a completed course. Your input fields are
-              validated, accessible, and connected to the Certification Program workflow.
+              Complete the form below to request a certificate for a completed course. Your input
+              fields are validated, accessible, and connected to the Certification Program workflow.
             </p>
           </div>
 

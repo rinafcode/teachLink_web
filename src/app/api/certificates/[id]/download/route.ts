@@ -9,19 +9,16 @@ const logger = createLogger('certificates-download');
 
 /**
  * GET /api/certificates/:id/download
- * 
+ *
  * Download certificate as PDF.
- * 
+ *
  * SECURITY CHECKS:
  * ✓ T4: Auth middleware (requireAuth)
  * ✓ T1: Ownership verification (IDOR mitigation)
  * ✓ T6: Served via authenticated API (not direct file URL)
  * ✓ T8: Audit logging of downloads
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   // T4 MITIGATION: Require authentication
   const authError = requireAuth(request);
   if (authError) {
@@ -34,10 +31,7 @@ export async function GET(
 
   if (userId === 'anonymous') {
     logger.error('User ID not provided in request headers');
-    return NextResponse.json(
-      { error: 'User identification failed' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'User identification failed' }, { status: 500 });
   }
 
   try {
@@ -63,10 +57,7 @@ export async function GET(
         metadata: { reason: 'not_found', action: 'download' },
       });
 
-      return NextResponse.json(
-        { error: 'Not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // T1 MITIGATION: Ownership verification (IDOR prevention)
@@ -98,10 +89,7 @@ export async function GET(
       });
 
       // Return 404 to avoid leaking certificate existence
-      return NextResponse.json(
-        { error: 'Not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // Check if certificate is revoked
@@ -123,15 +111,12 @@ export async function GET(
         metadata: { reason: 'certificate_revoked' },
       });
 
-      return NextResponse.json(
-        { error: 'Certificate has been revoked' },
-        { status: 410 },
-      );
+      return NextResponse.json({ error: 'Certificate has been revoked' }, { status: 410 });
     }
 
     // Generate PDF from certificate data
     const html = generateCertificateHTML(certificate);
-    
+
     // TODO: Add timeout protection for PDF generation
     // Currently Puppeteer may hang on malicious HTML
     // Implement: Promise.race(generatePDF(html), timeout(30000))
@@ -172,8 +157,8 @@ export async function GET(
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${fileName}"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
     });
   } catch (error) {
@@ -196,19 +181,16 @@ export async function GET(
       metadata: { reason: 'internal_error' },
     });
 
-    return NextResponse.json(
-      { error: 'Failed to generate certificate PDF' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to generate certificate PDF' }, { status: 500 });
   }
 }
 
 /**
  * Generate HTML for certificate PDF.
- * 
+ *
  * SECURITY: All fields in the certificate record are already sanitized
  * at generation time, so they can be safely interpolated into HTML.
- * 
+ *
  * The name and courseName fields have been through input validation
  * which stripped dangerous HTML tags and patterns.
  */

@@ -1,9 +1,12 @@
 import { z } from 'zod';
-import { SETTINGS_SCHEMA_VERSION } from './constants';
+import { SETTINGS_SCHEMA_VERSION, SETTINGS_DOCUMENTATION_VERSION } from './constants';
 
 /** User-selectable colour scheme. `'system'` follows the OS preference. */
 export const themePreferenceSchema = z.enum(['light', 'dark', 'system']);
 export type ThemePreference = z.infer<typeof themePreferenceSchema>;
+
+export const virtualBackgroundTypeSchema = z.enum(['none', 'blur', 'image', 'color']);
+export type VirtualBackgroundType = z.infer<typeof virtualBackgroundTypeSchema>;
 
 /**
  * Validated schema for all user-configurable application settings.
@@ -19,6 +22,10 @@ export type ThemePreference = z.infer<typeof themePreferenceSchema>;
  * - `electronicSignatureEnabled`      — Master toggle for electronic signature on authenticated actions.
  * - `signatureName`                   — Full name used as the typed electronic signature (max 100 chars).
  * - `requireSignatureOnCertificates`  — Prompt the user to confirm their signature before a certificate is issued.
+ * - `pollCreationEnabled`             — Master toggle for creating interactive polls in classes or study groups.
+ * - `defaultPollDuration`             — Default poll duration in days (1 to 30 days).
+ * - `allowAnonymousVoting`            — Toggle to allow participants to vote anonymously by default.
+ * - `pollResultsVisibility`           — Default visibility of poll results ('always' | 'after_voting' | 'after_ended').
  */
 export const appSettingsSchema = z.object({
   version: z.literal(SETTINGS_SCHEMA_VERSION),
@@ -31,6 +38,10 @@ export const appSettingsSchema = z.object({
   electronicSignatureEnabled: z.boolean(),
   signatureName: z.string().max(100),
   requireSignatureOnCertificates: z.boolean(),
+  pollCreationEnabled: z.boolean(),
+  defaultPollDuration: z.number().int().min(1).max(30),
+  allowAnonymousVoting: z.boolean(),
+  pollResultsVisibility: z.enum(['always', 'after_voting', 'after_ended']),
 });
 
 /** Fully typed representation of all user settings. Inferred from `appSettingsSchema`. */
@@ -70,6 +81,7 @@ export type ExportedSettingsEnvelope = z.infer<typeof exportedSettingsEnvelopeSc
  * - `theme` defaults to `'system'` so the OS preference is respected out of the box.
  * - `language` is read from `navigator.language` when available, falling back to `'en'`.
  * - All notification and UX toggles default to their most permissive value.
+ * - Virtual background is disabled by default with 'none' type.
  */
 export function createDefaultSettings(): AppSettings {
   return {
@@ -83,5 +95,9 @@ export function createDefaultSettings(): AppSettings {
     electronicSignatureEnabled: false,
     signatureName: '',
     requireSignatureOnCertificates: false,
+    pollCreationEnabled: true,
+    defaultPollDuration: 7,
+    allowAnonymousVoting: false,
+    pollResultsVisibility: 'always',
   };
 }

@@ -3,7 +3,11 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SettingsService } from '../service';
-import { createDefaultSettings, type AppSettings, type SettingsStorePersistedShape } from '../types';
+import {
+  createDefaultSettings,
+  type AppSettings,
+  type SettingsStorePersistedShape,
+} from '../types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -15,7 +19,9 @@ function createMockSettings(overrides: Partial<AppSettings> = {}): AppSettings {
   };
 }
 
-function createMockStoreState(overrides: Partial<SettingsStorePersistedShape> = {}): SettingsStorePersistedShape {
+function createMockStoreState(
+  overrides: Partial<SettingsStorePersistedShape> = {},
+): SettingsStorePersistedShape {
   return {
     settings: createDefaultSettings(),
     updatedAt: Date.now(),
@@ -53,7 +59,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('theme'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('theme'))).toBe(true);
     });
 
     it('rejects language strings that are too long', () => {
@@ -61,7 +67,7 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('language'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('language'))).toBe(true);
     });
 
     it('rejects non-boolean notification settings', () => {
@@ -69,7 +75,31 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettings(invalidSettings);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('notificationsEnabled'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('notificationsEnabled'))).toBe(true);
+    });
+
+    it('rejects invalid poll duration (below minimum)', () => {
+      const invalidSettings = { ...createDefaultSettings(), defaultPollDuration: 0 };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('defaultPollDuration'))).toBe(true);
+    });
+
+    it('rejects invalid poll duration (above maximum)', () => {
+      const invalidSettings = { ...createDefaultSettings(), defaultPollDuration: 31 };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('defaultPollDuration'))).toBe(true);
+    });
+
+    it('rejects invalid poll results visibility values', () => {
+      const invalidSettings = { ...createDefaultSettings(), pollResultsVisibility: 'none' as any };
+      const result = SettingsService.validateSettings(invalidSettings);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.includes('pollResultsVisibility'))).toBe(true);
     });
   });
 
@@ -289,6 +319,41 @@ describe('SettingsService', () => {
       const result = SettingsService.validateSettingValue('requireSignatureOnCertificates', true);
       expect(result.valid).toBe(true);
     });
+
+    it('validates correct pollCreationEnabled value', () => {
+      const result = SettingsService.validateSettingValue('pollCreationEnabled', true);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid pollCreationEnabled value', () => {
+      const result = SettingsService.validateSettingValue('pollCreationEnabled', 'yes');
+      expect(result.valid).toBe(false);
+    });
+
+    it('validates correct defaultPollDuration value', () => {
+      const result = SettingsService.validateSettingValue('defaultPollDuration', 7);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid defaultPollDuration value', () => {
+      const result = SettingsService.validateSettingValue('defaultPollDuration', 100);
+      expect(result.valid).toBe(false);
+    });
+
+    it('validates correct allowAnonymousVoting value', () => {
+      const result = SettingsService.validateSettingValue('allowAnonymousVoting', false);
+      expect(result.valid).toBe(true);
+    });
+
+    it('validates correct pollResultsVisibility value', () => {
+      const result = SettingsService.validateSettingValue('pollResultsVisibility', 'after_voting');
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects invalid pollResultsVisibility value', () => {
+      const result = SettingsService.validateSettingValue('pollResultsVisibility', 'nobody');
+      expect(result.valid).toBe(false);
+    });
   });
 
   // ── exportSettings ───────────────────────────────────────────────────────
@@ -346,7 +411,7 @@ describe('SettingsService', () => {
       const result = SettingsService.importSettings(invalidData);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('version mismatch'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('version mismatch'))).toBe(true);
     });
 
     it('rejects data with missing settings', () => {
@@ -406,6 +471,7 @@ describe('SettingsService', () => {
       expect(capabilities).toHaveProperty('canEditPrefetching');
       expect(capabilities).toHaveProperty('canEditReducedMotion');
       expect(capabilities).toHaveProperty('canEditElectronicSignature');
+      expect(capabilities).toHaveProperty('canEditPollSettings');
       expect(capabilities).toHaveProperty('canExportSettings');
       expect(capabilities).toHaveProperty('canImportSettings');
       expect(capabilities).toHaveProperty('canSyncSettings');
@@ -417,6 +483,9 @@ describe('SettingsService', () => {
       Object.values(capabilities).forEach((capability) => {
         expect(capability).toBe(true);
       });
+
+      // Check that virtual background capability exists
+      expect(capabilities.canEditVirtualBackground).toBe(true);
     });
   });
 
@@ -472,6 +541,26 @@ describe('SettingsService', () => {
       const result = SettingsService.canEditSetting('requireSignatureOnCertificates');
       expect(result).toBe(true);
     });
+
+    it('allows editing pollCreationEnabled', () => {
+      const result = SettingsService.canEditSetting('pollCreationEnabled');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing defaultPollDuration', () => {
+      const result = SettingsService.canEditSetting('defaultPollDuration');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing allowAnonymousVoting', () => {
+      const result = SettingsService.canEditSetting('allowAnonymousVoting');
+      expect(result).toBe(true);
+    });
+
+    it('allows editing pollResultsVisibility', () => {
+      const result = SettingsService.canEditSetting('pollResultsVisibility');
+      expect(result).toBe(true);
+    });
   });
 
   // ── migrateSettings ──────────────────────────────────────────────────────
@@ -507,6 +596,24 @@ describe('SettingsService', () => {
 
       expect(migrated.theme).toBe('dark');
       expect(migrated.language).toBe('fr');
+    });
+
+    it('migrates version 2 to version 3 with virtual background fields', () => {
+      const v2Settings = {
+        ...createDefaultSettings(),
+        version: 2 as any,
+        theme: 'dark' as const,
+      };
+
+      const result = SettingsService.migrateSettings(v2Settings);
+
+      expect(result.version).toBe(3);
+      expect(result.virtualBackgroundEnabled).toBe(false);
+      expect(result.virtualBackgroundType).toBe('none');
+      expect(result.virtualBackgroundImage).toBe('');
+      expect(result.virtualBackgroundBlur).toBe(10);
+      expect(result.virtualBackgroundColor).toBe('#000000');
+      expect(result.theme).toBe('dark'); // Preserves existing field
     });
   });
 });

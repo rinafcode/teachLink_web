@@ -5,6 +5,7 @@ import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
 import { Footer } from '@/components/layout/Footer';
+import { EnvironmentBanner } from '@/components/ui/EnvironmentBanner';
 
 // Languages supported at startup — extend as new locale files are added.
 const VALID_LOCALES = new Set([
@@ -85,9 +86,8 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50 flex flex-col min-h-screen`}
       >
         <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
-          <main className="flex-grow">
-            {children}
-          </main>
+          <EnvironmentBanner />
+          <main className="flex-grow">{children}</main>
           <Footer />
         </RootProviders>
 

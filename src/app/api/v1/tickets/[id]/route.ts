@@ -18,7 +18,9 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   const ticket = ticketDb.get(id);
   if (!ticket) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 }),
+    );
   }
 
   return addHeaders(NextResponse.json({ success: true, data: ticket }));
@@ -33,14 +35,18 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   const ticket = ticketDb.get(id);
   if (!ticket) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 }),
+    );
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return addHeaders(NextResponse.json({ success: false, message: 'Invalid JSON' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Invalid JSON' }, { status: 400 }),
+    );
   }
 
   const parsed = UpdateTicketInputSchema.safeParse(body);
@@ -77,7 +83,9 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
 
   const { id } = await params;
   if (!ticketDb.has(id)) {
-    return addHeaders(NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 }),
+    );
   }
 
   ticketDb.delete(id);

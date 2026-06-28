@@ -3,6 +3,13 @@ import { z } from 'zod';
 import { withRateLimit } from '@/lib/ratelimit';
 import { edgeLog } from '@/../infra/edge-config';
 import { validateBody } from '@/lib/validation';
+import {
+  withSecurityHeaders,
+  validateQuerySafety,
+  validateContentType,
+  createSecurityErrorResponse,
+  sanitizeObject,
+} from '@/lib/security';
 
 export const runtime = 'edge';
 
@@ -23,13 +30,42 @@ export async function POST(
 ): Promise<NextResponse> {
   edgeLog('info', '/api/courses/[id]/enroll', 'POST request received');
 
-  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
-  if (rateLimitResponse) return rateLimitResponse;
+  // Security: Check Content-Type to protect against simple CSRF/abuse
+  if (!validateContentType(request)) {
+    return withSecurityHeaders(
+      NextResponse.json(
+        { success: false, message: 'Content-Type must be application/json' },
+        { status: 415 },
+      ),
+    );
+  }
 
-  const { id: courseId } = await params;
+  const rawParams = await params;
+
+  // Security: Validate parameter and query safety for injection attempts
+  const { searchParams } = new URL(request.url);
+  const paramCheck = new URLSearchParams();
+  if (rawParams.id) paramCheck.set('id', rawParams.id);
+  for (const [key, val] of searchParams.entries()) {
+    paramCheck.set(key, val);
+  }
+
+  const safetyCheck = validateQuerySafety(paramCheck);
+  if (!safetyCheck.safe) {
+    return withSecurityHeaders(
+      createSecurityErrorResponse(safetyCheck.reason || 'Invalid request'),
+    );
+  }
+
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
+  if (rateLimitResponse) return withSecurityHeaders(rateLimitResponse);
+
+  const { id: courseId } = rawParams;
   if (!courseId) {
-    return addHeaders(
-      NextResponse.json({ success: false, message: 'Course ID is required' }, { status: 400 }),
+    return withSecurityHeaders(
+      addHeaders(
+        NextResponse.json({ success: false, message: 'Course ID is required' }, { status: 400 }),
+      ),
     );
   }
 
@@ -37,13 +73,15 @@ export async function POST(
   try {
     body = await request.json();
   } catch {
-    return addHeaders(
-      NextResponse.json({ success: false, message: 'Invalid request body' }, { status: 400 }),
+    return withSecurityHeaders(
+      addHeaders(
+        NextResponse.json({ success: false, message: 'Invalid request body' }, { status: 400 }),
+      ),
     );
   }
 
   const result = validateBody(EnrollBodySchema, body);
-  if (!result.ok) return addHeaders(result.error);
+  if (!result.ok) return withSecurityHeaders(addHeaders(result.error));
 
   const { planId } = result.data;
 
@@ -57,5 +95,9 @@ export async function POST(
     status: 'active',
   };
 
-  return addHeaders(NextResponse.json({ success: true, data: enrollment }, { status: 201 }));
+  const sanitizedEnrollment = sanitizeObject(enrollment);
+
+  return withSecurityHeaders(
+    addHeaders(NextResponse.json({ success: true, data: sanitizedEnrollment }, { status: 201 })),
+  );
 }

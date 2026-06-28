@@ -20,6 +20,7 @@ import {
 
 export default function BreadcrumbsDemoPage() {
   const [clickedItem, setClickedItem] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const basicItems: BreadcrumbItem[] = [
     { label: 'Home', href: '/' },
@@ -242,6 +243,34 @@ export default function BreadcrumbsDemoPage() {
           </pre>
         </section>
 
+        {/* Loading State Breadcrumbs */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-semibold mb-2">Loading State Breadcrumbs</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Skeleton loading state for when breadcrumb data is being fetched
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-800">
+            <div className="mb-4">
+              <button
+                onClick={() => {
+                  setIsLoading(true);
+                  setTimeout(() => setIsLoading(false), 3000);
+                }}
+                disabled={isLoading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? 'Loading...' : 'Simulate Loading'}
+              </button>
+            </div>
+            <Breadcrumbs items={basicItems} isLoading={isLoading} />
+          </div>
+          <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 overflow-x-auto text-sm">
+            <code>{`<Breadcrumbs items={items} isLoading={true} />`}</code>
+          </pre>
+        </section>
+
         {/* Real-world Examples */}
         <section className="space-y-4">
           <div>
@@ -326,7 +355,7 @@ export default function BreadcrumbsDemoPage() {
                 <span className="text-green-600 dark:text-green-400 mt-0.5">✓</span>
                 <span>
                   <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">
-                    aria-current="page"
+                    aria-current=&quot;page&quot;
                   </code>{' '}
                   for current page indication
                 </span>
