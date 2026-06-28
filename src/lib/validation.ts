@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
-import { ZodTypeAny, ZodError, z } from 'zod';
+import { ZodTypeAny, z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Discriminated union result type — TypeScript narrows correctly on `.ok`
 // ---------------------------------------------------------------------------
+
+export type ValidationFieldError = {
+  field: string;
+  message: string;
+};
 
 type ValidationSuccess<T> = { ok: true; data: T };
 type ValidationFailure = { ok: false; error: NextResponse };
@@ -19,10 +24,14 @@ export function validateBody<S extends ZodTypeAny>(
 ): ValidationResult<z.infer<S>> {
   const result = schema.safeParse(input);
   if (!result.success) {
+    const errors: ValidationFieldError[] = result.error.issues.map((issue) => ({
+      field: issue.path.join('.'),
+      message: issue.message,
+    }));
     return {
       ok: false,
       error: NextResponse.json(
-        { success: false, message: formatZodError(result.error) },
+        { message: 'Validation failed', errors },
         { status: 400 },
       ),
     };
@@ -40,12 +49,4 @@ export function validateQuery<S extends ZodTypeAny>(
 ): ValidationResult<z.infer<S>> {
   const raw = Object.fromEntries(searchParams.entries());
   return validateBody(schema, raw);
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatZodError(error: ZodError): string {
-  return error.errors.map((e) => e.message).join('; ');
 }
