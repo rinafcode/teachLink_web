@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { flagStore, createAuditEntry, generateId } from '@/lib/feature-flags/store';
-import type { FeatureFlag, TargetingRule } from '@/lib/feature-flags/store';
+import {
+  getAllFlags,
+  createFlag,
+  createAuditEntry,
+} from '@/lib/feature-flags/store';
+import type { TargetingRule } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
 import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
@@ -15,11 +19,15 @@ export async function GET(req: NextRequest) {
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
-  const flags = Array.from(flagStore.values()).sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
-
-  return addHeaders(NextResponse.json({ flags }));
+  try {
+    const flags = await getAllFlags('updatedAt');
+    return addHeaders(NextResponse.json({ flags }));
+  } catch (error) {
+    edgeLog('error', '/api/admin/feature-flags', 'Failed to fetch flags', { error });
+    return addHeaders(
+      NextResponse.json({ message: 'Failed to fetch feature flags' }, { status: 500 }),
+    );
+  }
 }
 
 // ─── POST /api/admin/feature-flags ───────────────────────────────────────────
@@ -36,34 +44,36 @@ export async function POST(req: NextRequest) {
   }
 
   const actor = req.headers.get('x-admin-user') ?? 'anonymous';
-  const now = new Date().toISOString();
 
-  const flag: FeatureFlag = {
-    id: generateId('flag'),
-    name: body.name.trim(),
-    description: typeof body.description === 'string' ? body.description.trim() : '',
-    enabled: false,
-    strategy: ['all', 'percentage', 'targeting'].includes(body.strategy) ? body.strategy : 'all',
-    percentage:
-      typeof body.percentage === 'number' ? Math.max(0, Math.min(100, body.percentage)) : 0,
-    rules: Array.isArray(body.rules) ? (body.rules as TargetingRule[]) : [],
-    tags: Array.isArray(body.tags) ? body.tags.map(String) : [],
-    createdAt: now,
-    updatedAt: now,
-    createdBy: actor,
-  };
+  try {
+    const flag = await createFlag({
+      name: body.name.trim(),
+      description: typeof body.description === 'string' ? body.description.trim() : '',
+      enabled: false,
+      strategy: ['all', 'percentage', 'targeting'].includes(body.strategy) ? body.strategy : 'all',
+      percentage:
+        typeof body.percentage === 'number' ? Math.max(0, Math.min(100, body.percentage)) : 0,
+      rules: Array.isArray(body.rules) ? (body.rules as TargetingRule[]) : [],
+      tags: Array.isArray(body.tags) ? body.tags.map(String) : [],
+      createdBy: actor,
+    });
 
-  flagStore.set(flag.id, flag);
-  createAuditEntry('created', actor, null, flag);
+    await createAuditEntry('created', actor, null, flag);
 
-  const response = addHeaders(NextResponse.json({ flag }, { status: 201 }));
-  logAuditMutation(req, {
-    action: 'create',
-    targetType: 'feature-flag',
-    targetId: flag.id,
-    statusCode: response.status,
-    metadata: { name: flag.name },
-  });
+    const response = addHeaders(NextResponse.json({ flag }, { status: 201 }));
+    logAuditMutation(req, {
+      action: 'create',
+      targetType: 'feature-flag',
+      targetId: flag.id,
+      statusCode: response.status,
+      metadata: { name: flag.name },
+    });
 
-  return response;
+    return response;
+  } catch (error) {
+    edgeLog('error', '/api/admin/feature-flags', 'Failed to create flag', { error });
+    return addHeaders(
+      NextResponse.json({ message: 'Failed to create feature flag' }, { status: 500 }),
+    );
+  }
 }

@@ -34,7 +34,8 @@
     "check-i18n": "node scripts/check-i18n.cjs",
     "check-locales": "node scripts/check-locales.mjs",
     "prebuild": "pnpm run check-locales && pnpm run check-i18n",
-    "generate:sitemap": "npx tsx scripts/generate-sitemap.ts"
+    "generate:sitemap": "npx tsx scripts/generate-sitemap.ts",
+    "db:migrate": "npx tsx scripts/run-migrations.ts"
   },
   "dependencies": {
     "@apollo/client": "^3.8.0",
