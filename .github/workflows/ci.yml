@@ -94,7 +94,7 @@ jobs:
         # Generates: coverage/lcov.info  (→ Codecov)
         #            coverage/coverage-final.json (→ tooling)
         # Exits non-zero when any configured threshold is breached.
-        run: pnpm vitest run --coverage --reporter=json --reporter=lcov
+        run: pnpm vitest run --coverage --reporter=json
 
       - name: Upload coverage reports to Codecov
         # Requires a repository secret named CODECOV_TOKEN.
