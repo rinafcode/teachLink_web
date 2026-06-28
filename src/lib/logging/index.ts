@@ -59,6 +59,7 @@ const SENSITIVE_KEYS = [
 export interface LogContextStore {
   requestId?: string;
   correlationId?: string;
+  traceId?: string;
 }
 
 export const logContextStorage:
@@ -198,6 +199,7 @@ function normalizeError(error: unknown): LogRecord['error'] | undefined {
 export interface LogPayload {
   requestId?: string;
   correlationId?: string;
+  traceId?: string;
   context?: Record<string, unknown>;
   metrics?: PerformanceMetric[];
   error?: unknown;
@@ -254,6 +256,11 @@ class Logger implements AppLogger {
       contextStore?.correlationId ||
       (this.baseContext.correlationId as string) ||
       activeRequestId;
+    const activeTraceId =
+      payload.traceId ||
+      contextStore?.traceId ||
+      (this.baseContext.traceId as string) ||
+      '';
 
     const baseRecord: LogRecord = {
       level,
@@ -262,6 +269,7 @@ class Logger implements AppLogger {
       timestamp: new Date().toISOString(),
       requestId: activeRequestId,
       correlationId: activeCorrelationId,
+      traceId: activeTraceId,
       context: {
         ...this.baseContext,
         ...(payload.context ?? {}),
@@ -277,6 +285,7 @@ class Logger implements AppLogger {
         scope: record.scope,
         requestId: record.requestId,
         correlationId: record.correlationId,
+        traceId: record.traceId,
         context: record.context,
         metrics: record.metrics,
         error: record.error,

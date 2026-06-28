@@ -12,6 +12,7 @@ import {
   STORAGE_KEYS,
   API_CACHE_TTL_DEFAULT,
 } from '@/constants/app.constants';
+import { logContextStorage } from './logging';
 
 export type { ErrorInfo };
 
@@ -140,11 +141,13 @@ class ApiClientImpl {
 
     const timer = setTimeout(() => controller.abort(), timeout);
 
+    const contextStore = logContextStorage.getStore();
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(config.headers || {}),
       [API_VERSION_HEADER]: this.config.apiVersion,
+      ...(contextStore?.traceId ? { 'x-trace-id': contextStore.traceId } : {}),
     };
 
     try {
