@@ -4,7 +4,12 @@ export interface LogContextStore {
   traceId?: string;
 }
 
-class SimpleAsyncLocalStorage<T> {
+export interface AsyncContextStorage<T> {
+  getStore(): T | undefined;
+  run<R>(store: T, callback: () => R): R;
+}
+
+class SimpleAsyncLocalStorage<T> implements AsyncContextStorage<T> {
   private store: T | undefined;
   getStore(): T | undefined {
     return this.store;

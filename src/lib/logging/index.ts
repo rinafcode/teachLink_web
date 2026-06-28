@@ -1,6 +1,6 @@
 import pino from 'pino';
 import { logContextStorage as simpleStorage } from './context';
-import type { LogContextStore } from './context';
+import type { AsyncContextStorage, LogContextStore } from './context';
 
 // Try to enhance with Node's AsyncLocalStorage for proper async context tracking
 import type { AsyncLocalStorage as NodeAsyncLocalStorage } from 'node:async_hooks';
@@ -15,7 +15,7 @@ try {
   nodeAsyncLocalStorage = null;
 }
 
-export const logContextStorage: typeof simpleStorage = nodeAsyncLocalStorage ?? simpleStorage;
+export const logContextStorage: AsyncContextStorage<LogContextStore> = nodeAsyncLocalStorage ?? simpleStorage;
 
 export function runWithLogContext<T>(context: LogContextStore, callback: () => T): T {
   return logContextStorage.run(context, callback);
