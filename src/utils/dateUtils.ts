@@ -3,12 +3,14 @@
  * Pass an explicit locale to override; omit it to use the browser/system locale.
  */
 
+import { getDateTimeFormat } from './intlCache';
+
 export function formatDate(
   date: Date | string | number,
   locale?: string,
   options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' },
 ): string {
-  return new Intl.DateTimeFormat(locale, options).format(new Date(date));
+  return getDateTimeFormat(locale, options).format(new Date(date));
 }
 
 export function formatShortDate(date: Date | string | number, locale?: string): string {
@@ -16,7 +18,7 @@ export function formatShortDate(date: Date | string | number, locale?: string): 
 }
 
 export function formatTime(date: Date | string | number, locale?: string): string {
-  return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(
+  return getDateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(
     new Date(date),
   );
 }
