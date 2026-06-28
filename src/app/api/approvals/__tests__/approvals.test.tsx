@@ -11,6 +11,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/testing/utils/render';
 import { hasPermission } from '@/lib/auth/acl';
+import { ApprovalStatus, ReviewDecision } from '@/types/approvals';
 import { Permission, UserRole } from '@/types/api';
 import type { User } from '@/types/api';
 import { SubmitForApproval } from '@/components/approvals/SubmitForApproval';
@@ -79,7 +80,7 @@ describe('Approval API route', () => {
           title: 'Intro to Starknet',
           submittedBy: 'u-instructor',
           submittedAt: new Date().toISOString(),
-          status: 'PENDING',
+          status: ApprovalStatus.PENDING,
         },
       }),
     });
@@ -98,7 +99,7 @@ describe('Approval API route', () => {
     const json = await res.json();
 
     expect(json.success).toBe(true);
-    expect(json.data.status).toBe('PENDING');
+    expect(json.data.status).toBe(ApprovalStatus.PENDING);
     expect(json.data.contentId).toBe('course-42');
   });
 
@@ -108,7 +109,7 @@ describe('Approval API route', () => {
         success: true,
         data: {
           id: 'approval-1',
-          status: 'APPROVED',
+          status: ApprovalStatus.APPROVED,
           reviewedBy: 'u-admin',
           reviewedAt: new Date().toISOString(),
           reviewNote: 'Looks good',
@@ -122,7 +123,7 @@ describe('Approval API route', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: 'approval-1',
-        status: 'APPROVED',
+        status: ReviewDecision.APPROVED,
         reviewedBy: 'u-admin',
         reviewNote: 'Looks good',
       }),
@@ -130,7 +131,7 @@ describe('Approval API route', () => {
     const json = await res.json();
 
     expect(json.success).toBe(true);
-    expect(json.data.status).toBe('APPROVED');
+    expect(json.data.status).toBe(ApprovalStatus.APPROVED);
     expect(json.data.reviewedBy).toBe('u-admin');
   });
 
@@ -138,7 +139,7 @@ describe('Approval API route', () => {
     const mockFetch = vi.fn().mockResolvedValue({
       json: async () => ({
         success: true,
-        data: { id: 'approval-2', status: 'REJECTED', reviewedBy: 'u-admin' },
+        data: { id: 'approval-2', status: ApprovalStatus.REJECTED, reviewedBy: 'u-admin' },
       }),
     });
     vi.stubGlobal('fetch', mockFetch);
@@ -146,17 +147,17 @@ describe('Approval API route', () => {
     const res = await fetch('/api/approvals', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: 'approval-2', status: 'REJECTED', reviewedBy: 'u-admin' }),
+      body: JSON.stringify({ id: 'approval-2', status: ReviewDecision.REJECTED, reviewedBy: 'u-admin' }),
     });
     const json = await res.json();
 
-    expect(json.data.status).toBe('REJECTED');
+    expect(json.data.status).toBe(ApprovalStatus.REJECTED);
   });
 
   it('GET returns list of approvals', async () => {
     const items = [
-      { id: 'a1', status: 'PENDING', title: 'Course A' },
-      { id: 'a2', status: 'APPROVED', title: 'Course B' },
+      { id: 'a1', status: ApprovalStatus.PENDING, title: 'Course A' },
+      { id: 'a2', status: ApprovalStatus.APPROVED, title: 'Course B' },
     ];
     vi.stubGlobal(
       'fetch',
@@ -212,7 +213,7 @@ describe('SubmitForApproval component', () => {
       vi.fn().mockResolvedValue({
         json: async () => ({
           success: true,
-          data: { id: 'a-1', status: 'PENDING', title: 'My Course' },
+          data: { id: 'a-1', status: ApprovalStatus.PENDING, title: 'My Course' },
         }),
       }),
     );
@@ -237,7 +238,7 @@ describe('SubmitForApproval component', () => {
   });
 
   it('calls onSubmitted callback with returned item', async () => {
-    const returnedItem = { id: 'a-1', status: 'PENDING', title: 'My Course' };
+    const returnedItem = { id: 'a-1', status: ApprovalStatus.PENDING, title: 'My Course' };
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({ json: async () => ({ success: true, data: returnedItem }) }),
@@ -270,7 +271,7 @@ describe('ApprovalQueue component', () => {
       title: 'Blockchain Basics',
       submittedBy: 'instructor-1',
       submittedAt: new Date().toISOString(),
-      status: 'PENDING',
+      status: ApprovalStatus.PENDING,
     },
   ];
 
@@ -313,7 +314,7 @@ describe('ApprovalQueue component', () => {
       .mockResolvedValueOnce({
         json: async () => ({
           success: true,
-          data: { ...pendingItems[0], status: 'APPROVED' },
+          data: { ...pendingItems[0], status: ApprovalStatus.APPROVED },
         }),
       });
     vi.stubGlobal('fetch', mockFetch);
@@ -326,7 +327,7 @@ describe('ApprovalQueue component', () => {
       const patchCall = mockFetch.mock.calls.find((c) => c[1]?.method === 'PATCH');
       expect(patchCall).toBeDefined();
       const body = JSON.parse(patchCall![1].body);
-      expect(body.status).toBe('APPROVED');
+      expect(body.status).toBe(ReviewDecision.APPROVED);
     });
   });
 });

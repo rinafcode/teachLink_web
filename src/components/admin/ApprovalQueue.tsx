@@ -2,18 +2,20 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
+import { ApprovalStatus, ReviewDecision } from '@/types/approvals';
+import type { ApprovalStatus, ReviewDecision } from '@/types/approvals';
 import { PermissionGate } from '@/app/components/auth/PermissionGate';
 import { Permission, User } from '@/types/api';
-import type { ApprovalItem, ApprovalStatus } from '@/types/api';
+import type { ApprovalItem } from '@/types/api';
 
 interface ApprovalQueueProps {
   user: User | null | undefined;
 }
 
 const STATUS_FILTER_OPTIONS: Array<{ label: string; value: ApprovalStatus | 'ALL' }> = [
-  { label: 'Pending', value: 'PENDING' },
-  { label: 'Approved', value: 'APPROVED' },
-  { label: 'Rejected', value: 'REJECTED' },
+  { label: 'Pending', value: ApprovalStatus.PENDING },
+  { label: 'Approved', value: ApprovalStatus.APPROVED },
+  { label: 'Rejected', value: ApprovalStatus.REJECTED },
   { label: 'All', value: 'ALL' },
 ];
 
@@ -40,7 +42,7 @@ function StatusBadge({ status }: { status: ApprovalStatus }) {
 
 export function ApprovalQueue({ user }: ApprovalQueueProps) {
   const [items, setItems] = useState<ApprovalItem[]>([]);
-  const [filter, setFilter] = useState<ApprovalStatus | 'ALL'>('PENDING');
+  const [filter, setFilter] = useState<ApprovalStatus | 'ALL'>(ApprovalStatus.PENDING);
   const [loading, setLoading] = useState(false);
   const [reviewNote, setReviewNote] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
     fetchItems();
   }, [fetchItems]);
 
-  const review = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+  const review = async (id: string, status: ReviewDecision) => {
     if (!user) return;
     setSubmitting(id);
     setError(null);
@@ -167,7 +169,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
                   <StatusBadge status={item.status} />
                 </div>
 
-                {item.status === 'PENDING' && (
+                {item.status === ApprovalStatus.PENDING && (
                   <div className="space-y-2">
                     <textarea
                       value={reviewNote[item.id] ?? ''}
@@ -181,7 +183,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
                     />
                     <div className="flex gap-2">
                       <button
-                        onClick={() => review(item.id, 'APPROVED')}
+                        onClick={() => review(item.id, ReviewDecision.APPROVED)}
                         disabled={submitting === item.id}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                       >
@@ -189,7 +191,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
                         Approve It
                       </button>
                       <button
-                        onClick={() => review(item.id, 'REJECTED')}
+                        onClick={() => review(item.id, ReviewDecision.REJECTED)}
                         disabled={submitting === item.id}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                       >
