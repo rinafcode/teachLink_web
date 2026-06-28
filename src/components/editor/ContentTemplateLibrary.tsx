@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { BookOpen, Layout, ListChecks, FileVideo } from 'lucide-react';
 import { Editor } from '@tiptap/react';
 import { TEMPLATES, insertTemplate } from '@/utils/editorUtils';
@@ -8,6 +8,8 @@ interface ContentTemplateLibraryProps {
 }
 
 export const ContentTemplateLibrary: React.FC<ContentTemplateLibraryProps> = ({ editor }) => {
+  const headingId = useId();
+
   if (!editor) return null;
 
   const getIcon = (id: string) => {
@@ -27,10 +29,13 @@ export const ContentTemplateLibrary: React.FC<ContentTemplateLibraryProps> = ({ 
 
   return (
     <aside
-      aria-label="Content templates"
+      aria-labelledby={headingId}
       className="p-4 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 h-full w-64 hidden lg:block"
     >
-      <h3 className="font-semibold text-sm text-gray-500 uppercase mb-4 tracking-wider">
+      <h3
+        id={headingId}
+        className="font-semibold text-sm text-gray-500 uppercase mb-4 tracking-wider"
+      >
         Templates
       </h3>
       <div className="space-y-2">

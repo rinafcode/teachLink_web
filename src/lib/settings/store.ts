@@ -41,6 +41,7 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '../../locales/config';
 import { SETTINGS_SCHEMA_VERSION, SETTINGS_STORAGE_KEY } from './constants';
 import { type AppSettings, appSettingsSchema, createDefaultSettings } from './types';
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/locales/config';
@@ -89,6 +90,13 @@ const noopStorage = {
   removeItem: (): void => undefined,
 };
 
+function normalizeLanguage(language: string): AppSettings['language'] {
+  const trimmed = language.trim();
+  return Object.prototype.hasOwnProperty.call(SUPPORTED_LANGUAGES, trimmed)
+    ? trimmed
+    : DEFAULT_LANGUAGE;
+}
+
 function localStorageOrNoop() {
   if (typeof window === 'undefined') return noopStorage;
   try {
@@ -113,12 +121,7 @@ export const useSettingsStore = create<SettingsSlice>()(
           version: SETTINGS_SCHEMA_VERSION,
           ...(partial.language !== undefined
             ? {
-                // Validate against the supported locale allowlist.
-                // Unsupported values fall back to DEFAULT_LANGUAGE instead of being
-                // stored — the allowlist is the single source of truth.
-                language: partial.language in SUPPORTED_LANGUAGES
-                  ? partial.language
-                  : DEFAULT_LANGUAGE,
+                language: normalizeLanguage(partial.language),
               }
             : {}),
         };
