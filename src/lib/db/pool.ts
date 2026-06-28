@@ -1,4 +1,5 @@
 import { Pool, PoolConfig } from 'pg';
+import { logContextStorage } from '@/lib/logging/context';
 
 /**
  * Database Connection Pool Management
@@ -27,7 +28,8 @@ class DatabasePool {
       // Monitoring events
       DatabasePool.instance.on('connect', () => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('[DB Pool] New client connected to database');
+          const traceId = logContextStorage.getStore()?.traceId ?? '';
+          console.log('[DB Pool] New client connected to database', traceId ? { traceId } : '');
         }
       });
 
@@ -36,7 +38,8 @@ class DatabasePool {
       });
 
       DatabasePool.instance.on('error', (err) => {
-        console.error('[DB Pool] Unexpected error on idle client', err);
+        const traceId = logContextStorage.getStore()?.traceId ?? '';
+        console.error('[DB Pool] Unexpected error on idle client', err, traceId ? { traceId } : '');
       });
     }
     return DatabasePool.instance;
@@ -72,5 +75,10 @@ class DatabasePool {
 }
 
 export const dbPool = DatabasePool;
-export const query = (text: string, params?: any[]) =>
-  DatabasePool.getInstance().query(text, params);
+export const query = (text: string, params?: any[]) => {
+  const traceId = logContextStorage.getStore()?.traceId ?? '';
+  if (traceId && process.env.NODE_ENV === 'development') {
+    console.log('[DB Query]', { text: text.slice(0, 100), traceId });
+  }
+  return DatabasePool.getInstance().query(text, params);
+};
