@@ -1,5 +1,5 @@
 import { Pool, PoolConfig } from 'pg';
-import { logContextStorage } from '@/lib/logging';
+import { logContextStorage } from '@/lib/logging/context';
 
 /**
  * Database Connection Pool Management

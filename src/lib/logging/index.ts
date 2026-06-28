@@ -1,21 +1,9 @@
 import pino from 'pino';
-import type { AsyncLocalStorage as NodeAsyncLocalStorage } from 'node:async_hooks';
-// Simple synchronous context storage compatible with both browser and Node.js
-class SimpleAsyncLocalStorage<T> {
-  private store: T | undefined;
-  getStore(): T | undefined {
-    return this.store;
-  }
-  run<R>(store: T, callback: () => R): R {
-    this.store = store;
-    try {
-      return callback();
-    } finally {
-      this.store = undefined;
-    }
-  }
-}
+import { logContextStorage as simpleStorage } from './context';
+import type { LogContextStore } from './context';
 
+// Try to enhance with Node's AsyncLocalStorage for proper async context tracking
+import type { AsyncLocalStorage as NodeAsyncLocalStorage } from 'node:async_hooks';
 let nodeAsyncLocalStorage: NodeAsyncLocalStorage<LogContextStore> | null = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -25,6 +13,16 @@ try {
   }
 } catch {
   nodeAsyncLocalStorage = null;
+}
+
+export const logContextStorage: typeof simpleStorage = nodeAsyncLocalStorage ?? simpleStorage;
+
+export function runWithLogContext<T>(context: LogContextStore, callback: () => T): T {
+  return logContextStorage.run(context, callback);
+}
+
+export function getLogContext(): LogContextStore | undefined {
+  return logContextStorage.getStore();
 }
 
 import { createCounterMetric } from './performance';
@@ -56,24 +54,7 @@ const SENSITIVE_KEYS = [
   'pwd',
 ];
 
-export interface LogContextStore {
-  requestId?: string;
-  correlationId?: string;
-  traceId?: string;
-}
-
-export const logContextStorage:
-  | NodeAsyncLocalStorage<LogContextStore>
-  | SimpleAsyncLocalStorage<LogContextStore> =
-  nodeAsyncLocalStorage ?? new SimpleAsyncLocalStorage<LogContextStore>();
-
-export function runWithLogContext<T>(context: LogContextStore, callback: () => T): T {
-  return logContextStorage.run(context, callback);
-}
-
-export function getLogContext(): LogContextStore | undefined {
-  return logContextStorage.getStore();
-}
+export type { LogContextStore };
 
 export function generateCorrelationId(): string {
   return `corr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

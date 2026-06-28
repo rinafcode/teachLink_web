@@ -12,7 +12,7 @@ import {
   STORAGE_KEYS,
   API_CACHE_TTL_DEFAULT,
 } from '@/constants/app.constants';
-import { logContextStorage } from './logging';
+import { logContextStorage } from './logging/context';
 
 export type { ErrorInfo };
 
