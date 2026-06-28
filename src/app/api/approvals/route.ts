@@ -172,5 +172,4 @@ export async function PATCH(request: Request): Promise<NextResponse> {
       NextResponse.json({ success: false, message: 'Database error' }, { status: 500 }),
     );
   }
-
 }
