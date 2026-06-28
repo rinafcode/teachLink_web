@@ -1,12 +1,23 @@
 'use client';
 
-import React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import React, { useState } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useDragDrop } from '../../hooks/useDragDrop';
 import { DragDropItem, DragDropZone } from '../../utils/dragDropUtils';
-import { DragPreview } from './DragPreview';
 import { DropZones } from './DropZones';
+import { DragPreview } from './DragPreview';
 
 interface DragDropContainerProps {
   title?: string;
@@ -44,8 +55,113 @@ export const DragDropContainer = ({
     onAutoSave,
   });
 
+  const [activeItem, setActiveItem] = useState<DragDropItem | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    if (active.data.current?.type === 'COURSE_CONTENT_ITEM') {
+      setActiveItem(active.data.current.item as DragDropItem);
+    }
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    if (!activeData || !overData) return;
+
+    const activeItem = activeData.item as DragDropItem;
+    const activeZoneId = activeData.zoneId as string;
+
+    const overType = overData.type;
+    
+    if (overType === 'COURSE_CONTENT_ITEM') {
+      const overItem = overData.item as DragDropItem;
+      const overZoneId = overData.zoneId as string;
+      
+      if (activeZoneId !== overZoneId) {
+        // Move item to new zone (temporary while dragging, or handled at dragEnd depending on preference)
+        // For simpler implementation without intermediate state updates, we can just let handleDragEnd deal with it.
+        // But for smooth dragging between lists, we might need to handle moving items between zones here.
+        // In useDragDrop, state updates are batched, so calling moveToZone is fine.
+        
+        // Find index of over item
+        const overZoneItems = state[overZoneId] || [];
+        const overIndex = overZoneItems.findIndex((i) => i.id === overItem.id);
+        
+        moveToZone(activeItem.id, activeZoneId, overZoneId, overIndex);
+        
+        // Mutate active.data.current so it points to the new zoneId for subsequent events
+        active.data.current = {
+          ...active.data.current,
+          zoneId: overZoneId,
+        };
+      }
+    } else if (overType === 'ZONE') {
+      const overZone = overData.zone as DragDropZone;
+      
+      if (activeZoneId !== overZone.id) {
+        const overZoneItems = state[overZone.id] || [];
+        moveToZone(activeItem.id, activeZoneId, overZone.id, overZoneItems.length);
+        
+        active.data.current = {
+          ...active.data.current,
+          zoneId: overZone.id,
+        };
+      }
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveItem(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    if (!activeData || !overData) return;
+
+    const activeZoneId = activeData.zoneId as string;
+    
+    if (overData.type === 'COURSE_CONTENT_ITEM') {
+      const overItem = overData.item as DragDropItem;
+      const overZoneId = overData.zoneId as string;
+      
+      if (activeZoneId === overZoneId) {
+        const zoneItems = state[activeZoneId] || [];
+        const oldIndex = zoneItems.findIndex(i => i.id === active.id);
+        const newIndex = zoneItems.findIndex(i => i.id === over.id);
+        
+        if (oldIndex !== newIndex) {
+          reorderInZone(activeZoneId, oldIndex, newIndex);
+        }
+      }
+    }
+  };
+
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 md:p-6">
         <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
@@ -91,11 +207,11 @@ export const DragDropContainer = ({
         <DropZones
           zones={zones}
           state={state}
-          onReorder={reorderInZone}
-          onMoveToZone={moveToZone}
         />
       </div>
-      <DragPreview />
-    </DndProvider>
+      <DragOverlay>
+        {activeItem ? <DragPreview item={activeItem} /> : null}
+      </DragOverlay>
+    </DndContext>
   );
 };
