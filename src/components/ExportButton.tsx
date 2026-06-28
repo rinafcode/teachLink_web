@@ -13,7 +13,7 @@ interface ExportButtonResult {
 
 interface ExportButtonProps {
   templateId: string;
-  label?: string;
+  label?: string; 
   className?: string;
   filters?: ExportFilter[];
   sort?: ExportSort[];
