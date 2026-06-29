@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useId, useState, useEffect, useRef } from 'react'; main
 import { Image as ImageIcon, Youtube as YoutubeIcon } from 'lucide-react';
 import { sanitizeUrl } from '@/utils/sanitize';
 
@@ -12,10 +12,68 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
   const [url, setUrl] = useState('');
   const [type, setType] = useState<'image' | 'youtube'>('image');
   const [urlError, setUrlError] = useState('');
-  const id = useId();
-  const dialogTitleId = `${id}-title`;
-  const errorId = `${id}-error`;
-  const inputId = `${id}-url`;
+const id = useId();
+const dialogTitleId = `${id}-title`;
+const errorId = `${id}-error`;
+const inputId = `${id}-url`;
+
+const dialogRef = useRef<HTMLDivElement>(null);
+const triggerButtonRef = useRef<HTMLButtonElement>(null);
+
+// Focus trap implementation
+useEffect(() => {
+  if (!isOpen) return;
+
+  const dialog = dialogRef.current;
+  if (!dialog) return;
+
+  const focusableElements = dialog.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+
+  const firstElement = focusableElements[0] as HTMLElement;
+  const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+  firstElement?.focus();
+
+  const handleTab = (e: KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement?.focus();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement?.focus();
+      }
+    }
+  };
+
+  const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+      triggerButtonRef.current?.focus();
+    }
+  };
+
+  document.addEventListener('keydown', handleTab);
+  document.addEventListener('keydown', handleEscape);
+
+  return () => {
+    document.removeEventListener('keydown', handleTab);
+    document.removeEventListener('keydown', handleEscape);
+  };
+}, [isOpen]);
+
+// Return focus to trigger button when dialog closes
+useEffect(() => {
+  if (!isOpen) {
+    triggerButtonRef.current?.focus();
+  }
+}, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,11 +92,21 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
     setIsOpen(false);
   };
 
+  const handleCancel = () => {
+    setUrl('');
+    setUrlError('');
+    setIsOpen(false);
+  };
+
   if (!isOpen) {
     return (
       <div className="flex gap-2">
         <button
-          type="button"
+<button
+  ref={triggerButtonRef}
+  type="button"
+  // other props...
+>main
           onClick={() => {
             setType('image');
             setIsOpen(true);
@@ -72,7 +140,7 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
       aria-labelledby={dialogTitleId}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
     >
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+      <div ref={dialogRef} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
         <h3 id={dialogTitleId} className="text-lg font-bold mb-4">
           Add {type === 'image' ? 'Image' : 'YouTube Video'}
         </h3>
@@ -91,6 +159,7 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
             placeholder={`Enter ${type} URL...`}
             className="w-full p-2 border rounded mb-1 dark:bg-gray-700 dark:border-gray-600"
             aria-describedby={errorId}
+            aria-invalid={!!urlError}
             required
           />
           <p
@@ -104,7 +173,7 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
           <div className="flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={handleCancel}
               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
             >
               Cancel

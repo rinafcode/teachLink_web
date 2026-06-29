@@ -15,47 +15,56 @@ export const ContentTemplateLibrary: React.FC<ContentTemplateLibraryProps> = ({ 
   const getIcon = (id: string) => {
     switch (id) {
       case 'lesson-header':
-        return <BookOpen className="w-4 h-4" />;
+        return <BookOpen className="w-4 h-4" aria-hidden="true" />;
       case 'code-block':
-        return <Layout className="w-4 h-4" />;
+        return <Layout className="w-4 h-4" aria-hidden="true" />;
       case 'quiz-block':
-        return <ListChecks className="w-4 h-4" />;
+        return <ListChecks className="w-4 h-4" aria-hidden="true" />;
       case 'video-placeholder':
-        return <FileVideo className="w-4 h-4" />;
+        return <FileVideo className="w-4 h-4" aria-hidden="true" />;
       default:
-        return <Layout className="w-4 h-4" />;
+        return <Layout className="w-4 h-4" aria-hidden="true" />;
     }
   };
 
   return (
     <aside
-      aria-labelledby={headingId}
-      className="p-4 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 h-full w-64 hidden lg:block"
-    >
-      <h3
-        id={headingId}
-        className="font-semibold text-sm text-gray-500 uppercase mb-4 tracking-wider"
-      >
+<aside
+  aria-labelledby={headingId}
+  className="p-4 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 h-full w-64 hidden lg:block"
+>
+  <h3
+    id={headingId}
+    className="font-semibold text-sm text-gray-500 uppercase mb-4 tracking-wider"
+  >
+    Content Templates
+  </h3>
+
+  {/* Sidebar content */}
+</aside>
         Templates
-      </h3>
-      <div className="space-y-2">
-        {TEMPLATES.map((template) => (
-          <button
-            key={template.id}
-            onClick={() => insertTemplate(editor, template.id)}
-            aria-label={`Insert ${template.name} template: ${template.description}`}
-            className="w-full flex items-center gap-3 p-3 text-left rounded-lg bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors group"
-          >
-            <div className="text-gray-500 group-hover:text-blue-500" aria-hidden="true">
-              {getIcon(template.id)}
-            </div>
-            <div>
-              <div className="font-medium text-sm">{template.name}</div>
-              <div className="text-xs text-gray-400 truncate w-32">{template.description}</div>
-            </div>
-          </button>
-        ))}
-      </div>
+      </h2>
+      <nav aria-label="Template selection">
+        <ul className="space-y-2" role="list">
+          {TEMPLATES.map((template) => (
+            <li key={template.id}>
+              <button
+                onClick={() => insertTemplate(editor, template.id)}
+                aria-label={`Insert ${template.name} template: ${template.description}`}
+                className="w-full flex items-center gap-3 p-3 text-left rounded-lg bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors group focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <div className="text-gray-500 group-hover:text-blue-500">
+                  {getIcon(template.id)}
+                </div>
+                <div>
+                  <div className="font-medium text-sm">{template.name}</div>
+                  <div className="text-xs text-gray-400 truncate w-32">{template.description}</div>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </aside>
   );
 };
