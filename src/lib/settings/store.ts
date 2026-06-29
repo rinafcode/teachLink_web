@@ -41,10 +41,9 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '../../locales/config';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/locales/config';
 import { SETTINGS_SCHEMA_VERSION, SETTINGS_STORAGE_KEY } from './constants';
 import { type AppSettings, appSettingsSchema, createDefaultSettings } from './types';
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/locales/config';
 
 interface SettingsStoreActions {
   /**
