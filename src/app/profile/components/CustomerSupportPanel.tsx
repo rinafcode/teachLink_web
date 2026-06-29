@@ -32,9 +32,17 @@ function FaqItem({ id, question, answer }: FaqItemProps) {
         >
           <span>{question}</span>
           {isOpen ? (
-            <ChevronUp size={18} className="shrink-0 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+            <ChevronUp
+              size={18}
+              className="shrink-0 text-gray-500 dark:text-gray-400"
+              aria-hidden="true"
+            />
           ) : (
-            <ChevronDown size={18} className="shrink-0 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+            <ChevronDown
+              size={18}
+              className="shrink-0 text-gray-500 dark:text-gray-400"
+              aria-hidden="true"
+            />
           )}
         </button>
       </h3>
@@ -97,7 +105,10 @@ function ContactForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <div>
-        <label htmlFor="support-subject" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="support-subject"
+          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Subject
         </label>
         <input
@@ -112,7 +123,10 @@ function ContactForm() {
       </div>
 
       <div>
-        <label htmlFor="support-message" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="support-message"
+          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Message
         </label>
         <textarea
@@ -173,7 +187,9 @@ function CustomerSupportPanel() {
               >
                 <Icon size={24} className="text-blue-500" aria-hidden="true" />
                 <span className="font-medium text-gray-900 dark:text-gray-100">{option.label}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">{option.description}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {option.description}
+                </span>
               </a>
             );
           })}
@@ -182,7 +198,9 @@ function CustomerSupportPanel() {
 
       {/* FAQ */}
       <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow transition-colors duration-200">
-        <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">Frequently Asked Questions</h2>
+        <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Frequently Asked Questions
+        </h2>
         <div className="space-y-3">
           {supportFaqs.map((faq) => (
             <FaqItem key={faq.id} id={faq.id} question={faq.question} answer={faq.answer} />
@@ -192,7 +210,9 @@ function CustomerSupportPanel() {
 
       {/* Contact Form */}
       <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow transition-colors duration-200">
-        <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">Send Us a Message</h2>
+        <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Send Us a Message
+        </h2>
         <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
           Can&apos;t find what you&apos;re looking for? Fill out the form below and our support team
           will respond within 24 hours.

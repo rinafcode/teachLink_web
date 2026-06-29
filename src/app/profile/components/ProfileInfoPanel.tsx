@@ -11,7 +11,9 @@ function ProfileInfoPanel() {
       aria-labelledby="profile-tab"
       className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow transition-colors duration-200"
     >
-      <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">Personal Information</h2>
+      <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
+        Personal Information
+      </h2>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
@@ -31,7 +33,10 @@ function ProfileInfoPanel() {
         </div>
 
         <div>
-          <label htmlFor="profile-email" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="profile-email"
+            className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Email
           </label>
           <input
@@ -85,7 +90,10 @@ function ProfileInfoPanel() {
       </div>
 
       <div className="mt-6">
-        <label htmlFor="profile-bio" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="profile-bio"
+          className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Bio
         </label>
         <textarea

@@ -6,9 +6,7 @@ import type { PreferenceOption } from '../profile-data';
 import { settingsPreferences } from '../profile-data';
 
 const NON_THEME_DEFAULTS = Object.fromEntries(
-  settingsPreferences
-    .filter((p) => p.id !== 'dark-mode')
-    .map((p) => [p.id, p.enabled]),
+  settingsPreferences.filter((p) => p.id !== 'dark-mode').map((p) => [p.id, p.enabled]),
 ) as Record<string, boolean>;
 
 interface PreferenceSwitchProps {
