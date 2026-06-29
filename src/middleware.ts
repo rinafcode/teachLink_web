@@ -19,6 +19,9 @@ export function middleware(request: NextRequest) {
   const traceId = crypto.randomUUID();
   request.headers.set('x-trace-id', traceId);
 
+  const cspNonce = crypto.randomUUID();
+  request.headers.set('x-csp-nonce', cspNonce);
+
   // Handle redirects first (early in the chain)
   const redirectResponse = handleRedirects(request);
   if (redirectResponse) {
@@ -33,7 +36,7 @@ export function middleware(request: NextRequest) {
   const withHeaders = (response: NextResponse) => {
     response.headers.set('x-trace-id', traceId);
     const withSecurity = applySecurityHeaders(response, request);
-    return applyCspHeaders(withSecurity, request);
+    return applyCspHeaders(withSecurity, request, cspNonce);
   };
 
   const permissionResponse = checkRoutePermission(request, userRole);
