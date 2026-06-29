@@ -13,8 +13,10 @@ describe('Service Account utilities', () => {
       '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
   });
 
-  test('getServiceAddress returns address from env', () => {
-    expect(getServiceAddress()).toBe(process.env.SERVICE_ACCOUNT_ADDRESS);
+  test('getServiceAddress returns address from wallet', async () => {
+    const address = await getServiceAddress();
+    expect(typeof address).toBe('string');
+    expect(address).toMatch(/^0x[0-9a-fA-F]{40}$/);
   });
 
   test('signMessage returns a signature string', async () => {

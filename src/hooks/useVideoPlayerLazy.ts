@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type Player from 'video.js/dist/types/player';
 import type { VideoSource } from '@/components/video/types';
 import { clampSeekTime } from '@/utils/videoPlayerUtils';
 
@@ -10,13 +9,17 @@ type UseVideoPlayerOptions = {
   poster?: string;
 };
 
-export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
-  const safePlay = useCallback((player: Player) => {
+export const useVideoPlayerLazy = ({ sources, poster }: UseVideoPlayerOptions) => {
+  const [isReady, setIsReady] = useState(false);
+  const videojsRef = useRef<any>(null);
+  const PlayerTypeRef = useRef<any>(null);
+
+  const safePlay = useCallback((player: any) => {
     void player.play().catch(() => undefined);
   }, []);
 
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
-  const playerRef = useRef<Player | null>(null);
+  const playerRef = useRef<any>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -44,8 +47,47 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
     [sources],
   );
 
+  // Lazy load video.js
   useEffect(() => {
-    let activePlayer: Player | null = null;
+    let cancelled = false;
+
+    const loadVideoJS = async () => {
+      if (videojsRef.current) {
+        setIsReady(true);
+        return;
+      }
+
+      try {
+        // Dynamically import video.js
+        const videojsModule = await import('video.js');
+        const videojs = videojsModule.default;
+
+        // Import types
+        const typesModule = await import('video.js/dist/types/player');
+
+        if (!cancelled) {
+          videojsRef.current = videojs;
+          PlayerTypeRef.current = typesModule.default;
+          setIsReady(true);
+        }
+      } catch (error) {
+        console.error('Failed to load video.js:', error);
+      }
+    };
+
+    void loadVideoJS();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isReady || !videojsRef.current) {
+      return;
+    }
+
+    let activePlayer: any = null;
     let disposed = false;
 
     const init = async () => {
@@ -53,18 +95,13 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
       if (!videoElement || normalizedSources.length === 0) {
         return;
       }
-
-      // Dynamically import video.js to reduce initial bundle
-      const videojsModule = await import('video.js');
-      const videojs = videojsModule.default;
-
       if (hasYoutubeSource) {
         await import('videojs-youtube');
       }
       if (disposed) {
         return;
       }
-      const player = videojs(videoElement, {
+      const player = videojsRef.current(videoElement, {
         controls: false,
         autoplay: false,
         preload: 'auto',
@@ -98,7 +135,7 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
         playerRef.current = null;
       }
     };
-  }, [hasYoutubeSource, normalizedSources, poster]);
+  }, [isReady, hasYoutubeSource, normalizedSources, poster]);
 
   const playPause = useCallback(() => {
     const player = playerRef.current;
@@ -186,5 +223,6 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
     toggleMute,
     setPlaybackRate,
     setQuality,
+    isReady,
   };
 };

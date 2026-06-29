@@ -1,9 +1,10 @@
-import { ethers } from 'ethers';
+import { createWallet, formatEther, formatUnits, createContract } from './ethersService';
 
 /**
  * Service Account utilities
  * Uses a private key from the environment variable SERVICE_PRIVATE_KEY.
  * The address is derived from the private key and cached.
+ * Ethers.js is lazy-loaded to reduce initial bundle size.
  */
 
 const PRIVATE_KEY = process.env.SERVICE_PRIVATE_KEY;
@@ -12,24 +13,30 @@ if (!PRIVATE_KEY) {
   throw new Error('SERVICE_PRIVATE_KEY is not set in environment');
 }
 
-// Create an ethers Wallet instance (no provider, used for signing only)
-const wallet = new ethers.Wallet(PRIVATE_KEY);
+let walletInstance: Awaited<ReturnType<typeof createWallet>> | null = null;
+
+const getWallet = async () => {
+  if (!walletInstance) {
+    walletInstance = await createWallet(PRIVATE_KEY);
+  }
+  return walletInstance;
+};
 
 /** Get the address of the service account */
-export const getServiceAddress = (): string => {
+export const getServiceAddress = async (): Promise<string> => {
+  const wallet = await getWallet();
   return wallet.address;
 };
 
 /** Sign an arbitrary message */
 export const signMessage = async (message: string): Promise<string> => {
+  const wallet = await getWallet();
   return await wallet.signMessage(message);
 };
 
 /** Send a transaction using a provider (optional) */
-export const sendTransaction = async (
-  tx: ethers.providers.TransactionRequest,
-  provider?: ethers.providers.Provider,
-): Promise<string> => {
+export const sendTransaction = async (tx: any, provider?: any): Promise<string> => {
+  const wallet = await getWallet();
   if (provider) {
     const signer = wallet.connect(provider);
     const response = await signer.sendTransaction(tx);
@@ -41,19 +48,17 @@ export const sendTransaction = async (
 };
 
 /** Get balance of the service account for a given token (default ETH) */
-export const getBalance = async (
-  provider: ethers.providers.Provider,
-  tokenAddress?: string,
-): Promise<string> => {
+export const getBalance = async (provider: any, tokenAddress?: string): Promise<string> => {
+  const wallet = await getWallet();
   if (!tokenAddress) {
     const balance = await provider.getBalance(wallet.address);
-    return ethers.formatEther(balance);
+    return await formatEther(balance);
   }
-  const erc20 = new ethers.Contract(
+  const erc20 = await createContract(
     tokenAddress,
     ['function balanceOf(address) view returns (uint256)'],
     provider,
   );
-  const balance: ethers.BigNumber = await erc20.balanceOf(wallet.address);
-  return ethers.formatUnits(balance, 18);
+  const balance = await erc20.balanceOf(wallet.address);
+  return await formatUnits(balance, 18);
 };

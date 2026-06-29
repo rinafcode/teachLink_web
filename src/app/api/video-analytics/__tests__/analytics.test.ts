@@ -21,11 +21,13 @@ vi.mock('@/../infra/edge-config', () => ({
 // ---------------------------------------------------------------------------
 
 function makePost(body: Record<string, unknown>): Promise<Response> {
-  return POST(new Request('https://example.com/api/video-analytics', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  }));
+  return POST(
+    new Request('https://example.com/api/video-analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  );
 }
 
 // ---------------------------------------------------------------------------

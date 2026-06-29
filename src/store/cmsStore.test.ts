@@ -18,9 +18,9 @@ describe('cmsStore persist middleware', () => {
 
   it('persists history, historyIndex, and course state to sessionStorage', () => {
     const course = { id: '1', title: 'Test Course', description: 'Test', modules: [] };
-    
+
     useCMSStore.getState().setCourse(course);
-    
+
     // Check sessionStorage
     const stored = JSON.parse(sessionStorage.getItem('cms-storage') || '{}');
     expect(stored.state).toBeDefined();
@@ -32,7 +32,7 @@ describe('cmsStore persist middleware', () => {
   it('rehydrates correctly and allows undo after refresh', async () => {
     const course1 = { id: '1', title: 'Course v1', description: '', modules: [] };
     const course2 = { id: '1', title: 'Course v2', description: '', modules: [] };
-    
+
     useCMSStore.getState().setCourse(course1);
     useCMSStore.getState().updateCourse({ title: 'Course v2' });
 
@@ -60,7 +60,7 @@ describe('cmsStore persist middleware', () => {
 
     // Perform undo
     useCMSStore.getState().undo();
-    
+
     // Verify undo worked
     const stateAfterUndo = useCMSStore.getState();
     expect(stateAfterUndo.course.title).toBe('Course v1');
@@ -75,7 +75,7 @@ describe('cmsStore persist middleware', () => {
     const state = useCMSStore.getState();
     expect(state.history.length).toBe(20);
     expect(state.historyIndex).toBe(19);
-    
+
     // The first 5 should be dropped, so the oldest item is v5
     expect(state.history[0].title).toBe('Course v5');
     expect(state.history[19].title).toBe('Course v24');
