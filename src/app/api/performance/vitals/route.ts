@@ -75,7 +75,11 @@ export async function POST(request: NextRequest) {
     const parsed = vitalsSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { success: false, message: 'Invalid metric payload', errors: parsed.error.flatten().fieldErrors },
+        {
+          success: false,
+          message: 'Invalid metric payload',
+          errors: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 },
       );
     }
