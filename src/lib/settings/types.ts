@@ -1,5 +1,9 @@
+/**
+ * Validated schema for all user-configurable application settings.
+ */
 import { z } from 'zod';
 import { SETTINGS_SCHEMA_VERSION, SETTINGS_DOCUMENTATION_VERSION } from './constants';
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/locales/config';
 
 /** User-selectable colour scheme. `'system'` follows the OS preference. */
 export const themePreferenceSchema = z.enum(['light', 'dark', 'system']);
@@ -14,7 +18,7 @@ export type VirtualBackgroundType = z.infer<typeof virtualBackgroundTypeSchema>;
  * Fields:
  * - `version`                         — Schema version; bumped when new fields are added (see `SETTINGS_SCHEMA_VERSION`).
  * - `theme`                           — Colour scheme: `'light'`, `'dark'`, or `'system'` (follows OS preference).
- * - `language`                        — BCP-47 locale tag (e.g. `'en'`, `'fr-CA'`), max 24 chars; defaults to `navigator.language`.
+ * - `language`                        — A key from `SUPPORTED_LANGUAGES` (e.g. `'en'`, `'fr'`); defaults to `DEFAULT_LANGUAGE`.
  * - `notificationsEnabled`            — Master toggle for in-app push/toast notifications.
  * - `emailNotifications`              — Whether transactional and digest emails should be sent.
  * - `prefetchingEnabled`              — Pre-fetches linked pages on hover for faster navigation; disable on slow connections.
@@ -30,7 +34,9 @@ export type VirtualBackgroundType = z.infer<typeof virtualBackgroundTypeSchema>;
 export const appSettingsSchema = z.object({
   version: z.literal(SETTINGS_SCHEMA_VERSION),
   theme: themePreferenceSchema,
-  language: z.string().max(24),
+  language: z.enum(
+    Object.keys(SUPPORTED_LANGUAGES) as [string, ...string[]]
+  ),
   notificationsEnabled: z.boolean(),
   emailNotifications: z.boolean(),
   prefetchingEnabled: z.boolean(),
@@ -87,7 +93,9 @@ export function createDefaultSettings(): AppSettings {
   return {
     version: SETTINGS_SCHEMA_VERSION,
     theme: 'system',
-    language: typeof navigator !== 'undefined' ? (navigator.language || 'en').slice(0, 24) : 'en',
+    language: typeof navigator !== 'undefined' && navigator.language in SUPPORTED_LANGUAGES
+      ? navigator.language
+      : DEFAULT_LANGUAGE,
     notificationsEnabled: true,
     emailNotifications: true,
     prefetchingEnabled: true,

@@ -135,7 +135,8 @@
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vite": "^5.4.19",
-    "vitest": "^2.1.9"
+    "vitest": "^2.1.9",
+    "@vitest/coverage-v8": "^2.1.9"
   },
   "pnpm": {
     "overrides": {

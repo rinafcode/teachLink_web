@@ -41,7 +41,7 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '../../locales/config';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/locales/config';
 import { SETTINGS_SCHEMA_VERSION, SETTINGS_STORAGE_KEY } from './constants';
 import { type AppSettings, appSettingsSchema, createDefaultSettings } from './types';
 
@@ -49,7 +49,7 @@ interface SettingsStoreActions {
   /**
    * Merge a partial update into the current settings.
    * Validates the merged result against `appSettingsSchema`; silently ignores invalid patches.
-   * `language` is trimmed and clamped to 24 chars; empty strings fall back to `'en'`.
+   * `language` must be a key in `SUPPORTED_LANGUAGES`; unsupported values fall back to `DEFAULT_LANGUAGE`.
    * Automatically updates `updatedAt` to `Date.now()`.
    */
   patchSettings: (partial: Partial<AppSettings>) => void;
