@@ -2,14 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auditLog } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
 import { edgeLog } from '@/../infra/edge-config';
+import { requireAuth, hasRoleOrForbidden } from '@/lib/authMiddleware';
 
 export const runtime = 'edge';
 
 /**
  * GET /api/admin/feature-flags/audit?flagId=<id>&limit=50&offset=0
+ * Requires ADMIN role.
  */
 export async function GET(req: NextRequest) {
   edgeLog('info', '/api/admin/feature-flags/audit', 'GET request received');
+  
+  // Authentication check
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  // Authorization check: ADMIN only
+  const authzError = hasRoleOrForbidden(req, 'ADMIN');
+  if (authzError) return authzError;
+
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
