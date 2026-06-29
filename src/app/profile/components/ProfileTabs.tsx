@@ -19,6 +19,10 @@ const CustomerSupportPanel = dynamic(() => import('./CustomerSupportPanel'), {
   loading: () => <ProfilePanelSkeleton label="support" />,
 });
 
+const CertificatesPanel = dynamic(() => import('./CertificatesPanel'), {
+  loading: () => <ProfilePanelSkeleton label="certificates" />,
+});
+
 interface ProfileTabButtonProps {
   tab: { id: ProfileTabId; label: string };
   isActive: boolean;
@@ -76,6 +80,7 @@ export default function ProfileTabs() {
       {activeTab === 'settings' && <SettingsPanel />}
       {activeTab === 'achievements' && <AchievementsPanel />}
       {activeTab === 'support' && <CustomerSupportPanel />}
+      {activeTab === 'certificates' && <CertificatesPanel />}
     </>
   );
 }
