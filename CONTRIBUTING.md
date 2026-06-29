@@ -20,7 +20,7 @@ Your PR will be blocked from merging unless it meets the following:
 
 1. **CI must pass**
 
-   - Required checks: `type-check`, `lint`, `build`, `test` (GitHub Actions: **Frontend CI**)
+   - Required checks: `type-check`, `lint`, `build`, `test`, `security-audit` (GitHub Actions: **Branch Protection**)
 
 2. **Approvals required**
 
@@ -44,6 +44,7 @@ Your PR will be blocked from merging unless it meets the following:
 - `pnpm run lint`
 - `pnpm run test`
 - `pnpm run build`
+- `pnpm audit --audit-level=high`
 
 ## Git hooks
 
@@ -79,3 +80,47 @@ Use the PR template (auto-applied). Ensure it includes:
 ## Security
 
 Do not commit secrets. Use `.env.local` for local environment variables.
+
+### Dependency vulnerability audit
+
+CI runs a `security-audit` job on every pull request to `main` and `develop`. It executes:
+
+```bash
+pnpm audit --audit-level=high
+```
+
+**Policy:**
+
+- **High** and **critical** severity vulnerabilities **fail** the pipeline and block merge.
+- **Low** and **moderate** findings are reported but do not block merge.
+- The full JSON audit report is uploaded as a CI artifact (`dependency-audit-report`) on every run.
+
+Run the same check locally before pushing:
+
+```bash
+pnpm audit --audit-level=high
+```
+
+### Triaging and suppressing accepted risks
+
+If a high or critical CVE cannot be fixed immediately (no patch available, breaking upgrade, or false positive), you may suppress it after maintainer review:
+
+1. Confirm the risk is understood and document the rationale in the PR.
+2. Add the CVE or GHSA identifier to `pnpm.auditConfig` in `package.json`:
+
+```json
+"pnpm": {
+  "auditConfig": {
+    "ignoreCves": ["CVE-YYYY-NNNNN"],
+    "ignoreGhsas": ["GHSA-xxxx-xxxx-xxxx"]
+  }
+}
+```
+
+3. Open a follow-up issue to remove the suppression when a fix is available.
+
+Suppressions require explicit PR approval — do not add ignored CVEs without maintainer sign-off.
+
+### Automated dependency updates
+
+[Dependabot](https://docs.github.com/en/code-security/dependabot) (`.github/dependabot.yml`) opens weekly PRs for npm dependency updates. Review and merge these promptly to keep the dependency tree current.
