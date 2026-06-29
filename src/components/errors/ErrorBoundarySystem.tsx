@@ -17,6 +17,7 @@ export type ErrorBoundaryProps = {
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   isolationId?: string;
   isolationLevel?: string;
+  showDetails?: boolean; // Added optional prop for overrides
 };
 
 export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -39,7 +40,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Update state with error information
     this.setState((prevState) => ({
       hasError: true,
       error,
@@ -47,7 +47,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       errorCount: prevState.errorCount + 1,
     }));
 
-    // Report breadcrumb if service available
     if (typeof errorReportingService?.addBreadcrumb === 'function') {
       errorReportingService.addBreadcrumb('errorBoundary', {
         isolationId: this.props.isolationId,
@@ -73,6 +72,10 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
 
   render() {
     if (this.state.hasError) {
+      // Determine visibility: Use prop if provided, otherwise default to true only in development
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const showDetails = this.props.showDetails ?? isDevelopment;
+
       return (
         this.props.fallback || (
           <>
@@ -85,7 +88,7 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
               error={this.state.error}
               title="Application Error"
               onRetry={this.resetError}
-              showDetails={true}
+              showDetails={showDetails} // Updated from hardcoded true
               severity="error"
             />
           </>
