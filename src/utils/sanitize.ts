@@ -8,9 +8,7 @@ const SAFE_URL_SCHEMES = ['http:', 'https:'];
  * e.g. "www.youtube.com" matches "youtube.com".
  */
 const isAllowedDomain = (hostname: string): boolean =>
-  ALLOWED_LINK_DOMAINS.some(
-    (domain) => hostname === domain || hostname.endsWith(`.${domain}`)
-  );
+  ALLOWED_LINK_DOMAINS.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
 
 // Register the DOMPurify hook once at module load time.
 // It strips `href` attributes whose absolute URLs don't pass domain validation.
