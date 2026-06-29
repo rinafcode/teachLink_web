@@ -6,6 +6,7 @@ import type { LanguageCode, CulturalPreferences } from '@/locales/types';
 import { getLocaleConfig } from '@/locales/config';
 import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import { enUS, es, fr, de, ar, he, ja, zhCN, ptBR, ru, it, ko } from 'date-fns/locale';
+import { getNumberFormat } from './intlCache';
 
 // Date-fns locale mapping
 const dateFnsLocales: Record<LanguageCode, Locale> = {
@@ -33,13 +34,13 @@ export function getCulturalPreferences(
   const config = getLocaleConfig(language);
 
   // Create Intl formatters to detect cultural preferences
-  const numberFormatter = new Intl.NumberFormat(config.numberFormat);
+  const numberFormatter = getNumberFormat(config.numberFormat);
   const parts = numberFormatter.formatToParts(1234.56);
 
   const decimalSeparator = parts.find((p) => p.type === 'decimal')?.value || '.';
   const thousandsSeparator = parts.find((p) => p.type === 'group')?.value || ',';
 
-  const currencyFormatter = new Intl.NumberFormat(config.numberFormat, {
+  const currencyFormatter = getNumberFormat(config.numberFormat, {
     style: 'currency',
     currency: config.currency || 'USD',
   });
@@ -117,7 +118,7 @@ export function formatNumber(
   const config = getLocaleConfig(language);
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, options).format(value);
+    return getNumberFormat(config.numberFormat, options).format(value);
   } catch (error) {
     console.warn('Number formatting error:', error);
     return value.toString();
@@ -132,7 +133,7 @@ export function formatCurrency(amount: number, language: LanguageCode, currency?
   const currencyCode = currency || config.currency || 'USD';
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, {
+    return getNumberFormat(config.numberFormat, {
       style: 'currency',
       currency: currencyCode,
     }).format(amount);
@@ -149,7 +150,7 @@ export function formatPercentage(value: number, language: LanguageCode, decimals
   const config = getLocaleConfig(language);
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, {
+    return getNumberFormat(config.numberFormat, {
       style: 'percent',
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
@@ -195,7 +196,7 @@ export function isRTL(language: LanguageCode): boolean {
  */
 export function formatFileSize(bytes: number, language: LanguageCode): string {
   const config = getLocaleConfig(language);
-  const formatter = new Intl.NumberFormat(config.numberFormat, {
+  const formatter = getNumberFormat(config.numberFormat, {
     maximumFractionDigits: 2,
   });
 
