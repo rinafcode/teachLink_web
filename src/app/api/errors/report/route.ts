@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createLogger } from '@/lib/logging';
+import { withRateLimit } from '@/lib/ratelimit';
 
 const logger = createLogger('errors.report');
 
@@ -11,6 +12,11 @@ class ClientError extends Error {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Rate limit per IP — this endpoint is called by client-side JS and is
+  // otherwise open to log-flooding DoS. Use the lower REPORTING tier (10/min).
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'REPORTING');
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const report = await request.json();
 
@@ -30,9 +36,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       error: clientError,
     });
 
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return addHeaders(NextResponse.json({ ok: true }, { status: 200 }));
   } catch (err) {
     logger.warn('Failed to process error report', { error: err });
-    return NextResponse.json({ ok: false }, { status: 400 });
+    return addHeaders(NextResponse.json({ ok: false }, { status: 400 }));
   }
 }
