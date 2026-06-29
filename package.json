@@ -138,6 +138,10 @@
     "vitest": "^2.1.9"
   },
   "pnpm": {
+    "auditConfig": {
+      "ignoreCves": [],
+      "ignoreGhsas": []
+    },
     "overrides": {
       "react": "^18.3.1",
       "react-dom": "^18.3.1",
