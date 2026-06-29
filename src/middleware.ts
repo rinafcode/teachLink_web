@@ -54,7 +54,9 @@ export function middleware(request: NextRequest) {
       response.headers.set(API_DEPRECATION_HEADER, 'true');
       response.headers.set(
         API_DEPRECATION_INFO_HEADER,
-        `This endpoint is deprecated. Use ${VERSIONED_API_ROOT}${pathname.slice(API_ROOT.length)} instead.`,
+        `This endpoint is deprecated. Use ${VERSIONED_API_ROOT}${pathname.slice(
+          API_ROOT.length,
+        )} instead.`,
       );
       return withHeaders(response);
     }
