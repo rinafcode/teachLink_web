@@ -28,17 +28,6 @@ interface RateLimitEntry {
 
 const stores = new Map<string, RateLimitEntry>();
 
-function cleanup(): void {
-  const now = Date.now();
-  for (const [key, entry] of stores.entries()) {
-    if (entry.resetAt <= now) {
-      stores.delete(key);
-    }
-  }
-}
-
-setInterval(cleanup, 60_000);
-
 export function slidingWindowRateLimit(
   identifier: string,
   config: RateLimitConfig,
@@ -47,6 +36,9 @@ export function slidingWindowRateLimit(
   const entry = stores.get(identifier);
 
   if (!entry || entry.resetAt <= now) {
+    if (entry) {
+      stores.delete(identifier);
+    }
     const resetAt = now + config.windowMs;
     stores.set(identifier, { count: 1, resetAt });
     return {
