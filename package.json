@@ -137,22 +137,5 @@
     "typescript": "^5.8.3",
     "vite": "^6.4.3",
     "vitest": "^3.2.6"
-  },
-  "pnpm": {
-    "auditConfig": {
-      "ignoreCves": [],
-      "ignoreGhsas": []
-    },
-    "overrides": {
-      "react": "^18.3.1",
-      "react-dom": "^18.3.1",
-      "next": "15.5.19",
-      "vite": ">=6.4.3",
-      "vitest": ">=3.2.6",
-      "ws": ">=8.21.0",
-      "typescript": "^5.8.3",
-      "eslint": "^9",
-      "prettier": "^2.8.8"
-    }
   }
 }
