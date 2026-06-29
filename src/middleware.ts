@@ -15,9 +15,12 @@ import {
   INTERNAL_API_REQUEST_HEADER,
 } from './lib/apiVersioning';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const traceId = crypto.randomUUID();
   request.headers.set('x-trace-id', traceId);
+
+  const cspNonce = crypto.randomUUID();
+  request.headers.set('x-csp-nonce', cspNonce);
 
   // Handle redirects first (early in the chain)
   const redirectResponse = handleRedirects(request);
@@ -26,13 +29,19 @@ export function middleware(request: NextRequest) {
     return redirectResponse;
   }
 
-  const roleCookie = request.cookies.get('user-role')?.value as UserRole | undefined;
-  const userRole = roleCookie || null;
+  // In a real application, you would verify the JWT or session here.
+  // Verify JWT from Authorization header or cookie — never trust client-supplied role cookies
+  const token =
+    request.headers.get('Authorization')?.replace('Bearer ', '') ??
+    request.cookies.get('Authorization')?.value;
+  const { verifyToken } = await import('./lib/auth/jwt');
+  const payload = await verifyToken(token);
+  const userRole = payload?.role ?? null;
 
   const withHeaders = (response: NextResponse) => {
     response.headers.set('x-trace-id', traceId);
     const withSecurity = applySecurityHeaders(response, request);
-    return applyCspHeaders(withSecurity, request);
+    return applyCspHeaders(withSecurity, request, cspNonce);
   };
 
   const permissionResponse = checkRoutePermission(request, userRole);
