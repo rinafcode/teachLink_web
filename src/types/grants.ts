@@ -1,4 +1,4 @@
-export type GrantScope = "all" | "budget_management" | "dispute_resolution" | "escrow_payout";
+export type GrantScope = 'all' | 'budget_management' | 'dispute_resolution' | 'escrow_payout';
 
 export interface IGrantContext {
   id: string;

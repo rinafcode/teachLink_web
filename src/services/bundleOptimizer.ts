@@ -1,6 +1,12 @@
 /**
  * Service for bundle analysis and dynamic loading optimization.
+ *
+ * Includes a Security Context integration that enforces integrity,
+ * origin allow-listing, size limits and trust levels per chunk
+ * (see #409: Bundle Optimization: Security Context).
  */
+
+import { bundleSecurityContext, type ChunkSecurityMetadata } from './bundleSecurityContext';
 
 export interface BundleChunk {
   id: string;
@@ -9,14 +15,30 @@ export interface BundleChunk {
   priority: 'high' | 'medium' | 'low';
 }
 
+/** Optional security metadata that can be supplied when registering a chunk. */
+export interface BundleChunkRegistration extends BundleChunk {
+  security?: ChunkSecurityMetadata;
+}
+
 class BundleOptimizer {
   private chunks: Map<string, BundleChunk> = new Map();
 
   /**
-   * Registers a chunk for monitoring.
+   * Registers a chunk for monitoring. Optional security metadata is forwarded
+   * to the shared BundleSecurityContext so the chunk participates in audits.
    */
-  registerChunk(chunk: BundleChunk) {
+  registerChunk(chunk: BundleChunk | BundleChunkRegistration) {
     this.chunks.set(chunk.id, chunk);
+    const registration = chunk as BundleChunkRegistration;
+    if (registration.security) {
+      bundleSecurityContext.attachMetadata(chunk.id, registration.security);
+    }
+  }
+
+  /** Detaches and forgets a chunk. Also clears its security metadata. */
+  unregisterChunk(chunkId: string) {
+    this.chunks.delete(chunkId);
+    bundleSecurityContext.detachMetadata(chunkId);
   }
 
   /**

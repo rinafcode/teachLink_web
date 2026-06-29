@@ -37,65 +37,62 @@ export function useSearch<T extends SearchResult>(
     fetchFnRef.current = fetchFn;
   }, [fetchFn]);
 
-  const search = useCallback(
-    async (searchQuery: string, cursor?: string) => {
-      if (!searchQuery.trim()) {
-        setResults([]);
-        setNextCursor(undefined);
-        setHasMore(false);
-        return;
-      }
+  const search = useCallback(async (searchQuery: string, cursor?: string) => {
+    if (!searchQuery.trim()) {
+      setResults([]);
+      setNextCursor(undefined);
+      setHasMore(false);
+      return;
+    }
 
-      const cacheKey = searchQuery.trim().toLowerCase();
+    const cacheKey = searchQuery.trim().toLowerCase();
 
-      // Check cache for initial fetch
-      if (!cursor && cache.current[cacheKey]) {
-        const cached = cache.current[cacheKey];
-        setResults(cached.items);
-        setNextCursor(cached.nextCursor);
-        setHasMore(!!cached.nextCursor);
-        setIsLoading(false);
-        setError(null);
-        return;
-      }
-
-      // Cancel previous request
-      if (abortController.current) {
-        abortController.current.abort();
-      }
-      abortController.current = new AbortController();
-
-      setIsLoading(true);
+    // Check cache for initial fetch
+    if (!cursor && cache.current[cacheKey]) {
+      const cached = cache.current[cacheKey];
+      setResults(cached.items);
+      setNextCursor(cached.nextCursor);
+      setHasMore(!!cached.nextCursor);
+      setIsLoading(false);
       setError(null);
+      return;
+    }
 
-      try {
-        const { items, nextCursor: next } = await fetchFnRef.current(
-          searchQuery,
-          cursor,
-          abortController.current.signal,
-        );
+    // Cancel previous request
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    abortController.current = new AbortController();
 
-        setResults((prev) => (cursor ? [...prev, ...items] : items));
-        setNextCursor(next);
-        setHasMore(!!next);
+    setIsLoading(true);
+    setError(null);
 
-        // Cache initial result
-        if (!cursor) {
-          cache.current[cacheKey] = { items, nextCursor: next };
-        }
-      } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') {
-          return; // Ignore aborted requests
-        }
-        setError(err instanceof Error ? err.message : 'Search failed');
-      } finally {
-        if (abortController.current && !abortController.current.signal.aborted) {
-          setIsLoading(false);
-        }
+    try {
+      const { items, nextCursor: next } = await fetchFnRef.current(
+        searchQuery,
+        cursor,
+        abortController.current.signal,
+      );
+
+      setResults((prev) => (cursor ? [...prev, ...items] : items));
+      setNextCursor(next);
+      setHasMore(!!next);
+
+      // Cache initial result
+      if (!cursor) {
+        cache.current[cacheKey] = { items, nextCursor: next };
       }
-    },
-    [],
-  );
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Ignore aborted requests
+      }
+      setError(err instanceof Error ? err.message : 'Search failed');
+    } finally {
+      if (abortController.current && !abortController.current.signal.aborted) {
+        setIsLoading(false);
+      }
+    }
+  }, []);
 
   const updateQuery = useCallback(
     (value: string) => {

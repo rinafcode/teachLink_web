@@ -1,4 +1,8 @@
 import { subscriptions } from '../../../lib/subscriptions';
+import {
+  SubscribeNotificationSchema,
+  UnsubscribeNotificationSchema,
+} from '../../../src/schemas/notification.schema.ts';
 
 export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,7 +15,14 @@ export default function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const subscription = req.body;
+      const parsed = SubscribeNotificationSchema.safeParse(req.body || {});
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          details: parsed.error.flatten().fieldErrors,
+        });
+      }
+      const subscription = parsed.data;
       const userId = subscription.userId || 'anonymous';
 
       subscriptions.set(userId, subscription);
@@ -30,7 +41,14 @@ export default function handler(req, res) {
     }
   } else if (req.method === 'DELETE') {
     try {
-      const { userId } = req.body;
+      const parsed = UnsubscribeNotificationSchema.safeParse(req.body || {});
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          details: parsed.error.flatten().fieldErrors,
+        });
+      }
+      const { userId } = parsed.data;
       subscriptions.delete(userId);
       console.log('[Push] Unsubscribed user:', userId);
       res.status(200).json({ success: true });

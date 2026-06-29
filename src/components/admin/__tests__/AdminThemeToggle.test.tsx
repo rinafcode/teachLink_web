@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { errorReportingService } from '@/services/errorReporting';
 import AdminThemeToggle from '../AdminThemeToggle';
+import { ThemeContext } from '@/contexts/ThemeContext';
 
 describe('AdminThemeToggle', () => {
   beforeEach(() => {
@@ -83,10 +84,7 @@ describe('AdminThemeToggle', () => {
           throw new Error('Theme change failed');
         },
       };
-      const ThemeContext = (require('@/contexts/ThemeContext') as any).ThemeContext;
-      if (!ThemeContext) {
-        throw new Error('ThemeContext not exportable');
-      }
+
       return <ThemeContext.Provider value={mockValue}>{children}</ThemeContext.Provider>;
     };
 

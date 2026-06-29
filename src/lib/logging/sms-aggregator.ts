@@ -146,9 +146,7 @@ export class SMSLogAggregator {
    */
   static getMetrics(timeRangeMs: number = 24 * 60 * 60 * 1000): SMSLogMetrics {
     const cutoffTime = Date.now() - timeRangeMs;
-    const recentLogs = smsLogStore.filter(
-      (log) => new Date(log.timestamp).getTime() >= cutoffTime
-    );
+    const recentLogs = smsLogStore.filter((log) => new Date(log.timestamp).getTime() >= cutoffTime);
 
     const metrics: SMSLogMetrics = {
       totalMessages: 0,
@@ -218,7 +216,7 @@ export class SMSLogAggregator {
       const providerDeliveryTimes = providerLogs
         .filter((log) => log.metrics)
         .flatMap((log) =>
-          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value)
+          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value),
         );
 
       metrics.byProvider[provider] = {
@@ -243,7 +241,7 @@ export class SMSLogAggregator {
       const eventDeliveryTimes = eventLogs
         .filter((log) => log.metrics)
         .flatMap((log) =>
-          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value)
+          log.metrics!.filter((m) => m.name === 'sms.send_duration_ms').map((m) => m.value),
         );
 
       metrics.byEventType[eventType] = {
@@ -274,9 +272,7 @@ export class SMSLogAggregator {
    * Get failed message logs for investigation and recovery
    */
   static getFailedMessages(limit: number = 100) {
-    const failed = smsLogStore
-      .filter((log) => log.context.status === 'failed')
-      .slice(-limit);
+    const failed = smsLogStore.filter((log) => log.context.status === 'failed').slice(-limit);
 
     logger.info('Failed messages retrieved', {
       context: {
@@ -304,10 +300,7 @@ export class SMSLogAggregator {
         return log.context.attempt && log.context.attempt >= 2;
       }),
       configurationErrors: smsLogStore.filter((log) => {
-        return (
-          log.context.missingCredentials ||
-          log.error?.message.includes('not configured')
-        );
+        return log.context.missingCredentials || log.error?.message.includes('not configured');
       }),
     };
 
@@ -416,11 +409,25 @@ export class SMSLogAggregator {
     };
   }
 
+  private static stats = {
+    totalMessages: 0,
+    successfulMessages: 0,
+    failedMessages: 0,
+  };
+
   /**
    * Add log to store, maintaining size limit
    */
   private static addToStore(log: AggregatedSMSLog): void {
     smsLogStore.push(log);
+
+    // Update stats incrementally
+    this.stats.totalMessages++;
+    if (log.context.status === 'sent') {
+      this.stats.successfulMessages++;
+    } else if (log.context.status === 'failed') {
+      this.stats.failedMessages++;
+    }
 
     if (smsLogStore.length > MAX_SMS_LOGS) {
       smsLogStore.splice(0, smsLogStore.length - MAX_SMS_LOGS);
@@ -444,6 +451,9 @@ export class SMSLogAggregator {
       utilizationPercent: (smsLogStore.length / MAX_SMS_LOGS) * 100,
       oldestLog: smsLogStore.length > 0 ? smsLogStore[0].timestamp : null,
       newestLog: smsLogStore.length > 0 ? smsLogStore[smsLogStore.length - 1].timestamp : null,
+      totalMessages: this.stats.totalMessages,
+      failedCount: this.stats.failedMessages,
+      successRate: this.stats.totalMessages > 0 ? (this.stats.successfulMessages / this.stats.totalMessages) * 100 : 0
     };
   }
 }

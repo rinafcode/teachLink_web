@@ -61,20 +61,17 @@ function ContactForm() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      setSubmitState('submitting');
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitState('submitting');
 
-      // Simulated async submission — replace with real API call
-      await new Promise<void>((resolve) => setTimeout(resolve, 1200));
+    // Simulated async submission — replace with real API call
+    await new Promise<void>((resolve) => setTimeout(resolve, 1200));
 
-      setSubmitState('success');
-      setSubject('');
-      setMessage('');
-    },
-    [],
-  );
+    setSubmitState('success');
+    setSubject('');
+    setMessage('');
+  }, []);
 
   if (submitState === 'success') {
     return (
@@ -158,12 +155,7 @@ const contactIcons = {
 
 function CustomerSupportPanel() {
   return (
-    <section
-      id="support-panel"
-      role="tabpanel"
-      aria-labelledby="support-tab"
-      className="space-y-8"
-    >
+    <section id="support-panel" role="tabpanel" aria-labelledby="support-tab" className="space-y-8">
       {/* Contact Options */}
       <div className="rounded-lg bg-white p-6 shadow">
         <h2 className="mb-6 text-xl font-semibold text-gray-900">Contact Us</h2>
@@ -202,8 +194,8 @@ function CustomerSupportPanel() {
       <div className="rounded-lg bg-white p-6 shadow">
         <h2 className="mb-2 text-xl font-semibold text-gray-900">Send Us a Message</h2>
         <p className="mb-6 text-sm text-gray-500">
-          Can&apos;t find what you&apos;re looking for? Fill out the form below and our support
-          team will respond within 24 hours.
+          Can&apos;t find what you&apos;re looking for? Fill out the form below and our support team
+          will respond within 24 hours.
         </p>
         <ContactForm />
       </div>

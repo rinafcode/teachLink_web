@@ -11,10 +11,7 @@ import {
   UserNotificationPreferences,
   NotificationDeliveryResult,
 } from './types';
-import {
-  generateNotificationId,
-  shouldSendNotification,
-} from '@/utils/notificationUtils';
+import { generateNotificationId, shouldSendNotification } from '@/utils/notificationUtils';
 
 export class NotificationService {
   /**

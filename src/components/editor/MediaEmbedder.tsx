@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Image as ImageIcon, Youtube as YoutubeIcon } from 'lucide-react';
 import { sanitizeUrl } from '@/utils/sanitize';
 
@@ -12,8 +12,10 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
   const [url, setUrl] = useState('');
   const [type, setType] = useState<'image' | 'youtube'>('image');
   const [urlError, setUrlError] = useState('');
-  const dialogTitleId = 'media-embedder-title';
-  const errorId = 'media-embedder-error';
+  const id = useId();
+  const dialogTitleId = `${id}-title`;
+  const errorId = `${id}-error`;
+  const inputId = `${id}-url`;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +38,7 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
     return (
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={() => {
             setType('image');
             setIsOpen(true);
@@ -47,6 +50,7 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
           <ImageIcon className="w-5 h-5" aria-hidden="true" />
         </button>
         <button
+          type="button"
           onClick={() => {
             setType('youtube');
             setIsOpen(true);
@@ -73,11 +77,11 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
           Add {type === 'image' ? 'Image' : 'YouTube Video'}
         </h3>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="media-url" className="sr-only">
+          <label htmlFor={inputId} className="sr-only">
             {type === 'image' ? 'Image URL' : 'YouTube video URL'}
           </label>
           <input
-            id="media-url"
+            id={inputId}
             type="url"
             value={url}
             onChange={(e) => {
