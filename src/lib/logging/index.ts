@@ -181,6 +181,7 @@ export interface LogPayload {
   context?: Record<string, unknown>;
   metrics?: PerformanceMetric[];
   error?: unknown;
+  [key: string]: unknown;
 }
 
 export interface AppLogger {

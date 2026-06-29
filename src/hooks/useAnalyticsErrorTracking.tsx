@@ -167,7 +167,7 @@ export const useAnalyticsErrorTracking = (
       if (process.env.NODE_ENV === 'development') {
         logger.error(`[Analytics Error] ${type}: ${message}`, {
           error,
-          context: newError.context,
+          context: newError.context as unknown as Record<string, unknown>,
         });
       }
     },
