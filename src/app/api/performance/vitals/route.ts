@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { edgeLog } from '@/../infra/edge-config';
 import { query } from '@/lib/db/pool';
 import { createLogger } from '@/lib/logging';
 
 const logger = createLogger('api-performance-vitals');
+import { requireAuth } from '@/lib/authMiddleware';
 
 export const runtime = 'nodejs';
 
@@ -17,33 +19,21 @@ const RANGE_INTERVALS: Record<string, string> = {
 const POOR_ALERT_THRESHOLD_PCT = 5;
 const POOR_CHECK_SESSION_LIMIT = 500;
 
-interface VitalsBody {
-  name: string;
-  value: number;
-  rating: string;
-  url?: string;
-  timestamp?: number;
-  id?: string;
-  delta?: number;
-  navigationType?: string;
-  userAgent?: string;
-}
+const vitalsSchema = z.object({
+  name: z.string().min(1),
+  value: z.number().finite(),
+  rating: z.enum(['good', 'needs-improvement', 'poor']),
+  url: z.string().optional(),
+  timestamp: z.number().optional(),
+  id: z.string().optional(),
+  delta: z.number().optional(),
+  navigationType: z.string().optional(),
+  userAgent: z.string().optional(),
+});
 
 function parseRange(range: string | null): string {
   if (!range || !RANGE_INTERVALS[range]) return RANGE_INTERVALS['7d'];
   return RANGE_INTERVALS[range];
-}
-
-function validateMetric(body: unknown): body is VitalsBody {
-  if (!body || typeof body !== 'object') return false;
-  const m = body as Record<string, unknown>;
-  return (
-    typeof m.name === 'string' &&
-    typeof m.value === 'number' &&
-    Number.isFinite(m.value) &&
-    typeof m.rating === 'string' &&
-    ['good', 'needs-improvement', 'poor'].includes(m.rating)
-  );
 }
 
 async function checkPoorRate(name: string): Promise<void> {
@@ -74,18 +64,26 @@ async function checkPoorRate(name: string): Promise<void> {
 }
 
 export async function POST(request: NextRequest) {
+  const unauth = requireAuth(request);
+  if (unauth) return unauth;
+
   edgeLog('info', '/api/performance/vitals', 'POST request received');
   try {
     const body: unknown = await request.json();
 
-    if (!validateMetric(body)) {
+    const parsed = vitalsSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, message: 'Invalid metric payload' },
+        {
+          success: false,
+          message: 'Invalid metric payload',
+          errors: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 },
       );
     }
 
-    const { name, value, rating, url, timestamp } = body;
+    const { name, value, rating, url, timestamp } = parsed.data;
 
     const result = await query(
       `INSERT INTO web_vitals (name, value, rating, page_url, created_at)

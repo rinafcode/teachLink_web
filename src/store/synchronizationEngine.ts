@@ -5,8 +5,11 @@ const logger = createLogger('synchronization-engine');
 
 const CHANNEL_NAME = 'teachlink_state_sync';
 
+const SYNC_KEYS = ['user', 'preferences', 'offlineMode', 'lastSynced'] as const;
+
 /**
  * Synchronization engine for keeping state in sync across multiple browser tabs.
+ * Only broadcasts persisted keys to avoid unnecessary UI state sync.
  */
 export class SynchronizationEngine {
   private channel: BroadcastChannel | null = null;
@@ -19,55 +22,50 @@ export class SynchronizationEngine {
     }
   }
 
-  /**
-   * Sets up the broadcast channel listeners.
-   */
   private setupListeners() {
     if (!this.channel) return;
 
     this.channel.onmessage = (event) => {
       if (this.isProcessingSync) return;
-
       const { type, payload } = event.data;
-
       if (type === 'STATE_UPDATE') {
         this.isProcessingSync = true;
-
-        // Update the local store with the external state
         useStore.getState().rehydrate(payload);
-
         this.isProcessingSync = false;
       }
     };
 
-    // Subscribing to store changes to broadcast them
-    useStore.subscribe((state, prevState) => {
+    // Subscribe only to relevant keys
+    useStore.subscribe((state: any, prevState: any) => {
       if (this.isProcessingSync) return;
 
-      // Simple check to avoid unnecessary broadcasts
-      // In a real scenario, you might want a deeper comparison or specific action tracking
-      if (JSON.stringify(state) !== JSON.stringify(prevState)) {
+      const hasChanged = SYNC_KEYS.some(key => 
+        JSON.stringify((state as any)[key]) !== JSON.stringify((prevState as any)[key])
+      );
+
+      if (hasChanged) {
         this.broadcastState(state);
       }
     });
   }
 
-  /**
-   * Broadcasts the current state to other tabs.
-   */
   private broadcastState(state: any) {
     if (!this.channel) return;
 
     logger.debug('[SyncEngine] Broadcasting state update to other tabs');
+    // Only send the synced slice
+    const syncedState = SYNC_KEYS.reduce((acc, key) => {
+      acc[key] = state[key as keyof typeof state];
+      return acc;
+    }, {} as any);
+
+    console.log('[SyncEngine] Broadcasting synced state slice');
     this.channel.postMessage({
       type: 'STATE_UPDATE',
-      payload: state,
+      payload: syncedState,
     });
   }
 
-  /**
-   * Disconnects the sync engine.
-   */
   public disconnect() {
     if (this.channel) {
       this.channel.close();
