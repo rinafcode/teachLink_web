@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Validates the Authorization header and returns a 401 response if missing or invalid.
+ * Checks for authentication via Bearer token or internal API secret.
+ * Returns a 401 response if neither is valid, or null if authorized.
  * Usage: const unauth = requireAuth(request); if (unauth) return unauth;
  */
 export function requireAuth(request: NextRequest): NextResponse | null {
+  const internalToken = request.headers.get('x-internal-token');
+  const internalSecret = process.env.INTERNAL_API_SECRET;
+
+  if (internalToken && internalSecret && internalToken === internalSecret) {
+    return null;
+  }
+
   const authHeader = request.headers.get('authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
