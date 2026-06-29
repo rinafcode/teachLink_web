@@ -2,8 +2,8 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { GET as verifyGET, POST as verifyPOST } from '../email-verification/verify/route';
 import { POST as resendPOST } from '../email-verification/resend/route';
 import { POST as restorePOST } from '../email-verification/restore/route';
-import { POST as signupPOST } from '../../signup/route';
-import { POST as loginPOST } from '../../login/route';
+import { POST as signupPOST } from '../signup/route';
+import { POST as loginPOST } from '../login/route';
 
 vi.mock('@/lib/ratelimit', () => ({
   withRateLimit: vi.fn(() => ({

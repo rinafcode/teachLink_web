@@ -32,9 +32,7 @@ export async function POST(
     const credentialsMatch = await bcrypt.compare(password, passwordHash);
 
     if (!user || !credentialsMatch) {
-      return addHeaders(
-        NextResponse.json({ message: 'Invalid credentials' }, { status: 401 }),
-      );
+      return addHeaders(NextResponse.json({ message: 'Invalid credentials' }, { status: 401 }));
     }
 
     const verification = await getVerificationStatus(email);
