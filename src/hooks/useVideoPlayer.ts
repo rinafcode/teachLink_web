@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type Player from 'video.js/dist/types/player';
 import type { VideoSource } from '@/components/video/types';
 import { clampSeekTime } from '@/utils/videoPlayerUtils';
 
@@ -11,12 +10,12 @@ type UseVideoPlayerOptions = {
 };
 
 export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
-  const safePlay = useCallback((player: Player) => {
+  const safePlay = useCallback((player: any) => {
     void player.play().catch(() => undefined);
   }, []);
 
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
-  const playerRef = useRef<Player | null>(null);
+  const playerRef = useRef<any>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -45,7 +44,7 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
   );
 
   useEffect(() => {
-    let activePlayer: Player | null = null;
+    let activePlayer: any = null;
     let disposed = false;
 
     const init = async () => {

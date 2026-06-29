@@ -35,7 +35,12 @@ export const signMessage = async (message: string): Promise<string> => {
 };
 
 /** Send a transaction using a provider (optional) */
-export const sendTransaction = async (tx: any, provider?: any): Promise<string> => {
+export const sendTransaction = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tx: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  provider?: any,
+): Promise<string> => {
   const wallet = await getWallet();
   if (provider) {
     const signer = wallet.connect(provider);
@@ -48,7 +53,11 @@ export const sendTransaction = async (tx: any, provider?: any): Promise<string> 
 };
 
 /** Get balance of the service account for a given token (default ETH) */
-export const getBalance = async (provider: any, tokenAddress?: string): Promise<string> => {
+export const getBalance = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  provider: any,
+  tokenAddress?: string,
+): Promise<string> => {
   const wallet = await getWallet();
   if (!tokenAddress) {
     const balance = await provider.getBalance(wallet.address);

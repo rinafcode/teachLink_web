@@ -3,12 +3,12 @@
  * This module dynamically imports ethers only when needed, reducing initial bundle size
  */
 
-let ethersPromise: Promise<any> | null = null;
+type EthersModule = typeof import('ethers');
 
-const loadEthers = (): Promise<any> => {
+let ethersPromise: Promise<EthersModule> | null = null;
+
+const loadEthers = (): Promise<EthersModule> => {
   if (!ethersPromise) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Dynamic import types resolved at runtime
     ethersPromise = import('ethers');
   }
   return ethersPromise;
@@ -17,7 +17,7 @@ const loadEthers = (): Promise<any> => {
 /**
  * Get ethers library (lazy-loaded)
  */
-export const getEthers = async (): Promise<any> => {
+export const getEthers = async (): Promise<EthersModule['ethers']> => {
   const ethersModule = await loadEthers();
   return ethersModule.ethers;
 };
@@ -33,7 +33,7 @@ export const createWallet = async (privateKey: string) => {
 /**
  * Format ether value (lazy-loaded)
  */
-export const formatEther = async (value: any) => {
+export const formatEther = async (value: string | bigint) => {
   const ethers = await getEthers();
   return ethers.formatEther(value);
 };
@@ -41,7 +41,7 @@ export const formatEther = async (value: any) => {
 /**
  * Format units (lazy-loaded)
  */
-export const formatUnits = async (value: any, units: number) => {
+export const formatUnits = async (value: string | bigint, units: number) => {
   const ethers = await getEthers();
   return ethers.formatUnits(value, units);
 };
@@ -49,7 +49,12 @@ export const formatUnits = async (value: any, units: number) => {
 /**
  * Create contract instance (lazy-loaded)
  */
-export const createContract = async (address: string, abi: any[], signerOrProvider: any) => {
+export const createContract = async (
+  address: string,
+  abi: string | readonly string[],
+  signerOrProvider: unknown,
+) => {
   const ethers = await getEthers();
-  return new ethers.Contract(address, abi, signerOrProvider);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new ethers.Contract(address, abi as any, signerOrProvider as any);
 };

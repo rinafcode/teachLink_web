@@ -12,7 +12,6 @@ type UseVideoPlayerOptions = {
 export const useVideoPlayerLazy = ({ sources, poster }: UseVideoPlayerOptions) => {
   const [isReady, setIsReady] = useState(false);
   const videojsRef = useRef<any>(null);
-  const PlayerTypeRef = useRef<any>(null);
 
   const safePlay = useCallback((player: any) => {
     void player.play().catch(() => undefined);
@@ -62,12 +61,8 @@ export const useVideoPlayerLazy = ({ sources, poster }: UseVideoPlayerOptions) =
         const videojsModule = await import('video.js');
         const videojs = videojsModule.default;
 
-        // Import types
-        const typesModule = await import('video.js/dist/types/player');
-
         if (!cancelled) {
           videojsRef.current = videojs;
-          PlayerTypeRef.current = typesModule.default;
           setIsReady(true);
         }
       } catch (error) {
