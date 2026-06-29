@@ -29,15 +29,12 @@ export function getUserFromRequest(request: NextRequest): User | null {
   const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
-    // In production, this would decode and verify the JWT
-    // For now, we'll use the token as userId and check role from cookie
     const roleCookie = request.cookies.get('user-role')?.value as UserRole | undefined;
     if (roleCookie) {
       return {
         id: token,
         email: '',
         role: roleCookie,
-        createdAt: new Date().toISOString(),
       };
     }
   }
@@ -49,7 +46,6 @@ export function getUserFromRequest(request: NextRequest): User | null {
       id: 'cookie-user',
       email: '',
       role: roleCookie,
-      createdAt: new Date().toISOString(),
     };
   }
 
