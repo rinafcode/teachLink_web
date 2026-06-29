@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcrypt';
 import { withRateLimit } from '@/lib/ratelimit';
 import { validateBody } from '@/lib/validation';
 import { LoginRequestSchema } from '@/types/api/auth.dto';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
 import { getVerificationStatus } from '@/lib/auth/email-verification';
+import { findUserByEmail, TIMING_SAFE_DUMMY_HASH } from '@/lib/db/pool';
 
 export const runtime = 'nodejs';
 
@@ -25,21 +27,17 @@ export async function POST(
     if (!result.ok) return addHeaders(result.error) as NextResponse;
 
     const { email, password } = result.data;
-    const verification = await getVerificationStatus(email);
+    const user = await findUserByEmail(email);
+    const passwordHash = user?.password_hash ?? TIMING_SAFE_DUMMY_HASH;
+    const credentialsMatch = await bcrypt.compare(password, passwordHash);
 
-    // Mock: demo credentials
-    if (email === 'demo@teachlink.com' && password === 'password123') {
+    if (!user || !credentialsMatch) {
       return addHeaders(
-        NextResponse.json(
-          {
-            message: 'Login successful',
-            user: { id: '1', name: 'Demo User', email },
-            token: `mock-jwt-token-${Date.now()}`,
-          },
-          { status: 200 },
-        ),
+        NextResponse.json({ message: 'Invalid credentials' }, { status: 401 }),
       );
     }
+
+    const verification = await getVerificationStatus(email);
 
     if (verification && verification.required && verification.status !== 'verified') {
       return addHeaders(
@@ -53,25 +51,21 @@ export async function POST(
       );
     }
 
-    // Mock: accept any valid email + password >= 6 chars
-    if (password.length >= 6) {
-      return addHeaders(
-        NextResponse.json(
-          {
-            message: 'Login successful',
-            user: {
-              id: Math.random().toString(36).substring(2, 9),
-              name: email.split('@')[0],
-              email,
-            },
-            token: `mock-jwt-token-${Date.now()}`,
+    return addHeaders(
+      NextResponse.json(
+        {
+          message: 'Login successful',
+          user: {
+            id: user.id,
+            name: email.split('@')[0],
+            email,
+            role: user.role,
           },
-          { status: 200 },
-        ),
-      );
-    }
-
-    return addHeaders(NextResponse.json({ message: 'Invalid email or password' }, { status: 401 }));
+          token: `mock-jwt-token-${Date.now()}`,
+        },
+        { status: 200 },
+      ),
+    );
   } catch (error) {
     console.error('Login error:', error);
 

@@ -43,6 +43,20 @@ vi.mock('@/lib/auth/email-verification', () => ({
   getVerificationTokenTtlMinutes: vi.fn(() => 15),
 }));
 
+vi.mock('bcrypt', () => ({
+  default: {
+    compare: vi.fn().mockResolvedValue(true),
+  },
+}));
+
+vi.mock('@/lib/db/pool', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/db/pool')>();
+  return {
+    ...actual,
+    findUserByEmail: vi.fn(),
+  };
+});
+
 describe('email verification routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -94,6 +108,12 @@ describe('email verification routes', () => {
 
   it('blocks login until verification is complete', async () => {
     const { getVerificationStatus } = await import('@/lib/auth/email-verification');
+    const { findUserByEmail } = await import('@/lib/db/pool');
+    vi.mocked(findUserByEmail).mockResolvedValue({
+      id: 'user-1',
+      password_hash: 'hashed-password',
+      role: 'STUDENT',
+    });
     vi.mocked(getVerificationStatus).mockResolvedValue({
       required: true,
       status: 'pending',
