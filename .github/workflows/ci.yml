@@ -93,7 +93,7 @@ jobs:
       - name: Run Tests
         shell: bash
         run: |
-          if timeout 30s pnpm run test; then
+          if timeout 30s pnpm vitest run --coverage; then
             echo "Tests completed within the 30-second limit."
           else
             status=$?
