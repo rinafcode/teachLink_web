@@ -6,6 +6,9 @@ import type { LanguageCode, CulturalPreferences } from '@/locales/types';
 import { getLocaleConfig } from '@/locales/config';
 import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import { enUS, es, fr, de, ar, he, ja, zhCN, ptBR, ru, it, ko } from 'date-fns/locale';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('i18n-utils');
 
 // Date-fns locale mapping
 const dateFnsLocales: Record<LanguageCode, Locale> = {
@@ -85,7 +88,7 @@ export function formatDate(
   try {
     return format(dateObj, formatPattern, { locale });
   } catch (error) {
-    console.warn('Date formatting error:', error);
+    logger.warn('Date formatting error', { error });
     return format(dateObj, 'PP', { locale: enUS });
   }
 }
@@ -101,7 +104,7 @@ export function formatRelativeTime(date: Date | string | number, language: Langu
   try {
     return formatDistanceToNow(dateObj, { addSuffix: true, locale });
   } catch (error) {
-    console.warn('Relative time formatting error:', error);
+    logger.warn('Relative time formatting error', { error });
     return formatDistanceToNow(dateObj, { addSuffix: true, locale: enUS });
   }
 }
@@ -119,7 +122,7 @@ export function formatNumber(
   try {
     return new Intl.NumberFormat(config.numberFormat, options).format(value);
   } catch (error) {
-    console.warn('Number formatting error:', error);
+    logger.warn('Number formatting error', { error });
     return value.toString();
   }
 }
@@ -137,7 +140,7 @@ export function formatCurrency(amount: number, language: LanguageCode, currency?
       currency: currencyCode,
     }).format(amount);
   } catch (error) {
-    console.warn('Currency formatting error:', error);
+    logger.warn('Currency formatting error', { error });
     return `${currencyCode} ${amount.toFixed(2)}`;
   }
 }
@@ -155,7 +158,7 @@ export function formatPercentage(value: number, language: LanguageCode, decimals
       maximumFractionDigits: decimals,
     }).format(value / 100);
   } catch (error) {
-    console.warn('Percentage formatting error:', error);
+    logger.warn('Percentage formatting error', { error });
     return `${value.toFixed(decimals)}%`;
   }
 }

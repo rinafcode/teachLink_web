@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { saveTipNotarization } from '@/services/notarizationStore';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-tipping');
 
 interface TipRequestBody {
   recipientId: string;
@@ -51,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error('[Tipping API] Failed to send tip:', error);
+    logger.error('Failed to send tip', { error });
     return NextResponse.json({ message: 'Failed to process tipping request' }, { status: 500 });
   }
 }

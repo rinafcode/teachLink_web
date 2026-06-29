@@ -1,4 +1,7 @@
 import { getRecordedMetrics } from '@/lib/logging/performance';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('monitoring-provider');
 
 export type Metric = {
   name: string;
@@ -35,7 +38,7 @@ export class LocalMonitoringProvider implements MonitoringProvider {
         return [...baseMetrics, ...result.data];
       }
     } catch (error) {
-      console.warn('[Monitoring] Failed to fetch DB metrics:', error);
+      logger.warn('[Monitoring] Failed to fetch DB metrics', { error });
     }
 
     return baseMetrics;

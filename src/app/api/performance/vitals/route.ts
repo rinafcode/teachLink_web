@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { edgeLog } from '@/../infra/edge-config';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-performance-vitals');
 
 export const runtime = 'edge';
 
@@ -9,23 +12,27 @@ export async function POST(request: Request) {
     const metric = await request.json();
 
     // Log the received metric
-    console.log('[Performance Analytics] Received metric:', {
-      name: metric.name,
-      value: metric.value,
-      rating: metric.rating,
-      url: metric.url,
-      timestamp: new Date(metric.timestamp).toISOString(),
+    logger.info('[Performance Analytics] Received metric', {
+      context: {
+        name: metric.name,
+        value: metric.value,
+        rating: metric.rating,
+        url: metric.url,
+        timestamp: new Date(metric.timestamp).toISOString(),
+      },
     });
 
     // Implement alerting logic
     if (metric.rating === 'poor') {
-      console.warn(
+      logger.warn(
         `[PERFORMANCE ALERT] Critical degradation detected for ${metric.name} on ${metric.url}. Value: ${metric.value}`,
+        { context: { metric } },
       );
       // In a real app, this could trigger a Slack notification, PagerDuty, etc.
     } else if (metric.rating === 'needs-improvement') {
-      console.info(
+      logger.info(
         `[PERFORMANCE WARNING] ${metric.name} needs improvement on ${metric.url}. Value: ${metric.value}`,
+        { context: { metric } },
       );
     }
 
@@ -38,7 +45,7 @@ export async function POST(request: Request) {
       alertTriggered: metric.rating === 'poor',
     });
   } catch (error) {
-    console.error('[Performance Analytics] Error processing metric:', error);
+    logger.error('[Performance Analytics] Error processing metric', { error });
     return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
   }
 }

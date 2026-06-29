@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-dashboard-widgets');
 
 interface Widget {
   id: string;
@@ -22,7 +25,7 @@ export const useDashboardWidgets = () => {
         return JSON.parse(saved);
       }
     } catch (error) {
-      console.error('Failed to load widget layout:', error);
+      logger.error('Failed to load widget layout', { error });
     }
     return [];
   }, []);
@@ -32,7 +35,7 @@ export const useDashboardWidgets = () => {
     try {
       localStorage.setItem('dashboard-widgets', JSON.stringify(widgets));
     } catch (error) {
-      console.error('Failed to save widget layout:', error);
+      logger.error('Failed to save widget layout', { error });
     }
   }, []);
 
@@ -303,7 +306,7 @@ export const useDashboardWidgets = () => {
         }
         return false;
       } catch (error) {
-        console.error('Failed to import widget config:', error);
+        logger.error('Failed to import widget config', { error });
         return false;
       }
     },

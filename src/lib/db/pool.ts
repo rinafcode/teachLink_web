@@ -1,4 +1,7 @@
 import { Pool, PoolConfig } from 'pg';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('db-pool');
 
 /**
  * Database Connection Pool Management
@@ -27,7 +30,7 @@ class DatabasePool {
       // Monitoring events
       DatabasePool.instance.on('connect', () => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('[DB Pool] New client connected to database');
+          logger.info('[DB Pool] New client connected to database');
         }
       });
 
@@ -36,7 +39,7 @@ class DatabasePool {
       });
 
       DatabasePool.instance.on('error', (err) => {
-        console.error('[DB Pool] Unexpected error on idle client', err);
+        logger.error('[DB Pool] Unexpected error on idle client', { error: err });
       });
     }
     return DatabasePool.instance;

@@ -19,6 +19,9 @@ import {
   NotificationCategory,
 } from '@/utils/notificationUtils';
 
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('MultiChannelDelivery');
+
 interface MultiChannelDeliveryProps {
   userId?: string;
   onDeliveryComplete?: (results: Record<NotificationChannel, boolean>) => void;
@@ -133,7 +136,7 @@ export default function MultiChannelDelivery({
         }, 2000);
       }
     } catch (error) {
-      console.error('Failed to send notification:', error);
+      logger.error('Failed to send notification', { error });
       setDeliveryStatuses(
         channels.map((channel) => ({
           channel,

@@ -1,4 +1,7 @@
 import { useStore } from './stateManager';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('synchronization-engine');
 
 const CHANNEL_NAME = 'teachlink_state_sync';
 
@@ -55,7 +58,7 @@ export class SynchronizationEngine {
   private broadcastState(state: any) {
     if (!this.channel) return;
 
-    console.log('[SyncEngine] Broadcasting state update to other tabs');
+    logger.debug('[SyncEngine] Broadcasting state update to other tabs');
     this.channel.postMessage({
       type: 'STATE_UPDATE',
       payload: state,

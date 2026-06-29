@@ -10,6 +10,8 @@ import {
   type ShortcutCommand,
   useKeyboardShortcuts,
 } from '@/hooks/useKeyboardShortcuts';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('CommandPalette');
 
 function navigateTo(path: string): void {
   if (typeof window === 'undefined') return;
@@ -321,7 +323,7 @@ export function CommandPalette() {
         onCreate={(draft: PollDraft) => {
           // TODO: integrate with poll creation backend/GraphQL.
           // For now, keep placeholder to satisfy typing and modal behavior.
-          console.log('Create poll draft', draft);
+          logger.info('Create poll draft', { context: { draft } });
         }}
       />
     </>

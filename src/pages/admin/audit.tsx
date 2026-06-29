@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AuditAction, AuditLogEntry } from '@/lib/audit';
 import AdminThemeToggle from '@/components/admin/AdminThemeToggle';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('admin-audit');
 
 type AuditApiResponse = {
   entries: AuditLogEntry[];
@@ -35,7 +38,7 @@ export default function AdminAuditPage() {
       setEntries(data.entries);
       setTotal(data.total);
     } catch (error) {
-      console.error(error);
+      logger.error('Failed to load audit logs', { error });
       setEntries([]);
       setTotal(0);
     } finally {

@@ -4,6 +4,9 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Image from 'next/image';
 import { dataWarehouse } from '@/lib/dataWarehouse';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('image-uploader');
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -140,7 +143,7 @@ function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: Image
                       fileSize: optimizedFile.size,
                       fileType: optimizedFile.type,
                     })
-                    .catch(console.error);
+                    .catch((error) => logger.error('Failed to track image upload event', { error }));
 
                   onImageSelect(optimizedFile);
                 }
@@ -151,7 +154,7 @@ function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: Image
           }
           URL.revokeObjectURL(videoObjectUrl);
         } catch (error) {
-          console.error('Video optimization failed:', error);
+          logger.error('Video optimization failed', { error });
         }
       } else if (file.type.startsWith('image/')) {
         const objectUrl = URL.createObjectURL(file);
@@ -164,7 +167,7 @@ function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: Image
             fileSize: file.size,
             fileType: file.type,
           })
-          .catch(console.error);
+          .catch((error) => logger.error('Failed to track image upload event', { error }));
 
         onImageSelect(file);
       }
