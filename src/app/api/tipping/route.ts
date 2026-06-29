@@ -14,9 +14,9 @@ interface TipApiResponse {
   txHash: string;
   recipientId: string;
   amount: number;
-  notarizationId: string;
-  notarizationProof: string;
-  notarizedAt: string;
+  id: string;
+  proof: string;
+  recordedAt: string;
 }
 
 function createTransactionHash(): string {
@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
       txHash,
       recipientId: body.recipientId,
       amount: body.amount,
-      notarizationId: record.id,
-      notarizationProof: record.proof,
-      notarizedAt: record.recordedAt,
+      id: record.id,
+      proof: record.proof,
+      recordedAt: record.recordedAt,
     };
 
     return NextResponse.json(response, { status: 201 });
