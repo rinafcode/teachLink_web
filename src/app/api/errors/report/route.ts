@@ -11,6 +11,20 @@ class ClientError extends Error {
   }
 }
 
+function redactEmailFields(obj: any): any {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(redactEmailFields);
+  const redacted = { ...obj };
+  for (const [key, value] of Object.entries(redacted)) {
+    if (key.toLowerCase().includes('email')) {
+      redacted[key] = '[REDACTED]';
+    } else if (typeof value === 'object' && value !== null) {
+      redacted[key] = redactEmailFields(value);
+    }
+  }
+  return redacted;
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Rate limit per IP — this endpoint is called by client-side JS and is
   // otherwise open to log-flooding DoS. Use the lower REPORTING tier (10/min).
@@ -18,7 +32,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
-    const report = await request.json();
+    const report = redactEmailFields(await request.json());
 
     // Build a real Error so normalizeError captures name + message + stack properly
     const clientError = report.errorData?.message
