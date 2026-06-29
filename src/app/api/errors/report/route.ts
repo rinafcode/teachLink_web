@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createLogger } from '@/lib/logging';
+import { withRateLimit } from '@/lib/ratelimit';
 
 const logger = createLogger('errors.report');
 
@@ -10,9 +11,28 @@ class ClientError extends Error {
   }
 }
 
+function redactEmailFields(obj: any): any {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(redactEmailFields);
+  const redacted = { ...obj };
+  for (const [key, value] of Object.entries(redacted)) {
+    if (key.toLowerCase().includes('email')) {
+      redacted[key] = '[REDACTED]';
+    } else if (typeof value === 'object' && value !== null) {
+      redacted[key] = redactEmailFields(value);
+    }
+  }
+  return redacted;
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Rate limit per IP — this endpoint is called by client-side JS and is
+  // otherwise open to log-flooding DoS. Use the lower REPORTING tier (10/min).
+  const { addHeaders, rateLimitResponse } = withRateLimit(request, 'REPORTING');
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
-    const report = await request.json();
+    const report = redactEmailFields(await request.json());
 
     // Build a real Error so normalizeError captures name + message + stack properly
     const clientError = report.errorData?.message
@@ -30,9 +50,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       error: clientError,
     });
 
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return addHeaders(NextResponse.json({ ok: true }, { status: 200 }));
   } catch (err) {
     logger.warn('Failed to process error report', { error: err });
-    return NextResponse.json({ ok: false }, { status: 400 });
+    return addHeaders(NextResponse.json({ ok: false }, { status: 400 }));
   }
 }
