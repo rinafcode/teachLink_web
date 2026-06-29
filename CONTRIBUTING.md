@@ -40,10 +40,26 @@ Your PR will be blocked from merging unless it meets the following:
 
 ## Local checks (run before pushing)
 
-- `npm run type-check`
-- `npm run lint`
-- `npm run test`
-- `npm run build`
+- `pnpm run type-check`
+- `pnpm run lint`
+- `pnpm run test`
+- `pnpm run build`
+
+## Git hooks
+
+### Pre-push (`.husky/pre-push`)
+
+Before a push is sent to the remote, the pre-push hook runs automatically:
+
+1. **Git LFS** — validates LFS-tracked files (`git lfs pre-push`)
+2. **Type-check** — `pnpm run type-check` (`tsc --noEmit`)
+3. **Tests** — `pnpm run test` (`vitest run`)
+
+If type-check or tests fail, the push is **blocked** and the hook prints which check failed. Fix the reported errors and push again.
+
+The hook ensures `pnpm` is on `PATH` (common install locations and `$PNPM_HOME`). If `pnpm` still cannot be found, the push is blocked with a clear message.
+
+`lint` and `build` are not run by this hook; run them locally or rely on CI before opening a PR.
 
 ## PR description format
 
