@@ -91,15 +91,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Tests
-        shell: bash
-        run: |
-          if timeout 30s pnpm vitest run --coverage; then
-            echo "Tests completed within the 30-second limit."
-          else
-            status=$?
-            if [ "$status" -eq 124 ]; then
-              echo "Tests exceeded the 30-second limit; skipping the test check."
-              exit 0
-            fi
-            exit "$status"
-          fi
+        timeout-minutes: 5
+        run: pnpm run test -- --reporter=default --reporter=json --outputFile=vitest-report.json
+
+      - name: Upload test report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-report
+          path: vitest-report.json
+          retention-days: 7
