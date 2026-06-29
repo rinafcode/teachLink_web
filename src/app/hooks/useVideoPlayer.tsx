@@ -8,7 +8,20 @@ interface VideoError {
   retryCount: number;
 }
 
-export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
+interface UseVideoPlayerOptions {
+  maxRetries?: number;
+}
+
+/**
+ * Hook to manage video playback.
+ * @param videoRef Ref to HTMLVideoElement
+ * @param options Optional configuration
+ */
+export const useVideoPlayer = (
+  videoRef: RefObject<HTMLVideoElement>,
+  options: UseVideoPlayerOptions = {}
+) => {
+  const { maxRetries = 3 } = options;
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -19,7 +32,7 @@ export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
   const [error, setError] = useState<VideoError | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 3;
+
 
   const play = useCallback(() => {
     if (videoRef.current) {
