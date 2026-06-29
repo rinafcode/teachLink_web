@@ -17,6 +17,7 @@ export type ErrorBoundaryProps = {
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   isolationId?: string;
   isolationLevel?: string;
+  showDetails?: boolean;
 };
 
 export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -39,7 +40,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Update state with error information
     this.setState((prevState) => ({
       hasError: true,
       error,
@@ -47,7 +47,6 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
       errorCount: prevState.errorCount + 1,
     }));
 
-    // Report breadcrumb if service available
     if (typeof errorReportingService?.addBreadcrumb === 'function') {
       errorReportingService.addBreadcrumb('errorBoundary', {
         isolationId: this.props.isolationId,
@@ -73,19 +72,23 @@ export class ErrorBoundarySystem extends Component<ErrorBoundaryProps, ErrorBoun
 
   render() {
     if (this.state.hasError) {
+      // Security: Default to false in production, true only in development
+      const isDev = process.env.NODE_ENV === 'development';
+      const shouldShowDetails = this.props.showDetails ?? isDev;
+
       return (
         this.props.fallback || (
           <>
             <div style={{ padding: '20px' }}>
               <h2>Something went wrong.</h2>
-              <p>{this.state.error?.message}</p>
+              {shouldShowDetails && <p>{this.state.error?.message}</p>}
               <button onClick={this.resetError}>Try Again</button>
             </div>
             <UserFriendlyErrorDisplay
               error={this.state.error}
               title="Application Error"
               onRetry={this.resetError}
-              showDetails={true}
+              showDetails={shouldShowDetails}
               severity="error"
             />
           </>
