@@ -9,6 +9,18 @@ import { EditorWorkspace } from './EditorWorkspace';
 export const metadata: Metadata = {
   title: 'Post Editor | TeachLink',
   description: 'Create and edit privileged post content with a secure editor workspace.',
+  openGraph: {
+    title: 'Post Editor | TeachLink',
+    description: 'Create and edit privileged post content with a secure editor workspace.',
+    type: 'website',
+    siteName: 'TeachLink',
+  },
+  twitter: {
+    card: 'summary',
+    site: '@teachlink',
+    title: 'Post Editor | TeachLink',
+    description: 'Create and edit privileged post content with a secure editor workspace.',
+  },
 };
 
 function fallback() {
