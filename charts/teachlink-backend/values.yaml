@@ -1,0 +1,159 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TeachLink Backend – Helm chart default values
+# Override any of these in values-staging.yaml / values-production.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+
+# -- Deployment metadata
+replicaCount: 2
+
+image:
+  repository: ghcr.io/rinafcode/teachlink-backend
+  pullPolicy: IfNotPresent
+  tag: ""          # Defaults to Chart.appVersion when empty
+
+service:
+  type: ClusterIP
+  port: 3001
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Prometheus alerting rules
+# ─────────────────────────────────────────────────────────────────────────────
+prometheusRule:
+  # Set to true to deploy the PrometheusRule CR.
+  # Requires kube-prometheus-stack (or prometheus-operator) to be installed.
+  enabled: true
+
+  # Must match the ruleSelector labels configured on your Prometheus CR.
+  # With kube-prometheus-stack defaults this label is sufficient.
+  additionalLabels:
+    release: kube-prometheus-stack
+
+  # The Prometheus `job` label value that the backend pods are scraped under.
+  # Matches the ServiceMonitor / PodMonitor `jobLabel` field.
+  jobLabel: teachlink-backend
+
+  # Base URL prepended to runbook fragment links embedded in alert annotations.
+  # Point this at your Git-hosting URL so on-call engineers can click straight
+  # through from Alertmanager / PagerDuty / Slack to the runbook section.
+  runbookBaseUrl: "https://github.com/rinafcode/teachLink_backend/blob/main/docs"
+
+  # SLA thresholds – override per environment if needed.
+  thresholds:
+    errorRatePct: 0.01        # 1 %   – fraction (not percentage)
+    p99LatencySeconds: 1.0    # 1 s
+    queueDepth: 1000          # waiting jobs
+    dlqDepth: 50              # failed jobs in DLQ
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Alertmanager – Slack / webhook routing
+#
+# This section configures the Alertmanager config secret that kube-prometheus-
+# stack creates.  Set alertmanager.enabled=true and fill in your Slack
+# webhook URL (or supply it via a pre-existing Secret; see secretRef below).
+# ─────────────────────────────────────────────────────────────────────────────
+alertmanager:
+  enabled: true
+
+  # ── Slack integration ──────────────────────────────────────────────────────
+  slack:
+    # Whether to enable Slack notifications.
+    enabled: true
+
+    # Webhook URL for your Slack app.
+    # NEVER commit a real token here.  Supply it at deploy-time:
+    #   helm upgrade ... --set alertmanager.slack.webhookUrl="https://hooks.slack.com/..."
+    # or store it in a Kubernetes Secret and reference it via secretRef below.
+    webhookUrl: ""
+
+    # Alternatively, reference a pre-existing Secret that contains the key
+    # `slack-webhook-url`.  When set, webhookUrl above is ignored.
+    secretRef:
+      name: ""       # e.g. teachlink-alertmanager-secrets
+      key: slack-webhook-url
+
+    # Slack channels per severity level.
+    channels:
+      critical: "#teachlink-alerts-critical"
+      warning: "#teachlink-alerts-warning"
+      default: "#teachlink-alerts"
+
+  # ── Generic webhook (PagerDuty, OpsGenie, custom endpoint, …) ─────────────
+  webhook:
+    enabled: false
+    url: ""
+
+  # ── Alertmanager routing config (rendered into the kube-prometheus-stack
+  #    alertmanager.config value).
+  #    Adjust `group_wait`, `group_interval`, and `repeat_interval` to taste.
+  config:
+    global:
+      resolve_timeout: 5m
+      # slack_api_url is set dynamically from alertmanager.slack.webhookUrl
+      # by the chart helper; do not set it here.
+
+    route:
+      group_by: ['alertname', 'service', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: slack-default
+
+      routes:
+        # Critical alerts → dedicated critical channel, short repeat.
+        - matchers:
+            - severity = "critical"
+          receiver: slack-critical
+          repeat_interval: 1h
+
+        # Warning alerts → warning channel.
+        - matchers:
+            - severity = "warning"
+          receiver: slack-warning
+          repeat_interval: 4h
+
+    receivers:
+      - name: slack-default
+        slack_configs:
+          - channel: "{{ .Values.alertmanager.slack.channels.default }}"
+            send_resolved: true
+            title: '[{{ "{{" }} .Status | toUpper {{ "}}" }}{{ "{{" }} if eq .Status "firing" {{ "}}" }}:{{ "{{" }} .Alerts.Firing | len {{ "}}" }}{{ "{{" }} end {{ "}}" }}] TeachLink Alert'
+            text: >-
+              {{ "{{" }} range .Alerts {{ "}}" }}
+              *Alert:* {{ "{{" }} .Annotations.summary {{ "}}" }}
+              *Severity:* {{ "{{" }} .Labels.severity {{ "}}" }}
+              *Description:* {{ "{{" }} .Annotations.description {{ "}}" }}
+              *Runbook:* {{ "{{" }} .Annotations.runbook_url {{ "}}" }}
+              {{ "{{" }} end {{ "}}" }}
+
+      - name: slack-critical
+        slack_configs:
+          - channel: "{{ .Values.alertmanager.slack.channels.critical }}"
+            send_resolved: true
+            title: '🚨 [CRITICAL] TeachLink Alert'
+            text: >-
+              {{ "{{" }} range .Alerts {{ "}}" }}
+              *Alert:* {{ "{{" }} .Annotations.summary {{ "}}" }}
+              *Description:* {{ "{{" }} .Annotations.description {{ "}}" }}
+              *Runbook:* {{ "{{" }} .Annotations.runbook_url {{ "}}" }}
+              {{ "{{" }} end {{ "}}" }}
+
+      - name: slack-warning
+        slack_configs:
+          - channel: "{{ .Values.alertmanager.slack.channels.warning }}"
+            send_resolved: true
+            title: '⚠️ [WARNING] TeachLink Alert'
+            text: >-
+              {{ "{{" }} range .Alerts {{ "}}" }}
+              *Alert:* {{ "{{" }} .Annotations.summary {{ "}}" }}
+              *Description:* {{ "{{" }} .Annotations.description {{ "}}" }}
+              *Runbook:* {{ "{{" }} .Annotations.runbook_url {{ "}}" }}
+              {{ "{{" }} end {{ "}}" }}
+
+    inhibit_rules:
+      # Suppress warnings when a critical alert for the same service is already
+      # firing, to reduce noise.
+      - source_matchers:
+          - severity = "critical"
+        target_matchers:
+          - severity = "warning"
+        equal: ['service', 'namespace']
