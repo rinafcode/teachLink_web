@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { withRateLimit } from '@/lib/ratelimit';
 import { validateBody } from '@/lib/validation';
 import { LoginRequestSchema } from '@/types/api/auth.dto';
@@ -9,6 +9,7 @@ import { getVerificationStatus } from '@/lib/auth/email-verification';
 import { findUserByEmail, TIMING_SAFE_DUMMY_HASH } from '@/lib/db/pool';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // ---------------------------------------------------------------------------
 // POST /api/auth/login

@@ -43,7 +43,7 @@ vi.mock('@/lib/auth/email-verification', () => ({
   getVerificationTokenTtlMinutes: vi.fn(() => 15),
 }));
 
-vi.mock('bcrypt', () => ({
+vi.mock('bcryptjs', () => ({
   default: {
     compare: vi.fn().mockResolvedValue(true),
   },
