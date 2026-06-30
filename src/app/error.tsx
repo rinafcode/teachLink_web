@@ -16,6 +16,10 @@ export default function ErrorBoundary({
       errorMessage: error.message,
       digest: error.digest,
     });
+    errorReportingService.reportError(error, {
+      errorInfo: { componentStack: '' },
+      ...(error.digest ? { digest: error.digest } : {}),
+    });
     console.error(error);
   }, [error]);
 
