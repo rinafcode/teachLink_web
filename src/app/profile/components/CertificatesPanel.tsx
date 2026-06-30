@@ -50,7 +50,7 @@ function CertificatesPanel() {
       id="certificates-panel"
       role="tabpanel"
       aria-labelledby="certificates-tab"
-      className="rounded-lg bg-white p-6 shadow dark:bg-gray-900"
+      className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow transition-colors duration-200"
     >
       <div className="mb-6">
         <p className="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">

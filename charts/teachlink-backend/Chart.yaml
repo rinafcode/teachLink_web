@@ -1,0 +1,17 @@
+apiVersion: v2
+name: teachlink-backend
+description: Helm chart for the TeachLink backend API service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+keywords:
+  - teachlink
+  - backend
+  - nestjs
+
+maintainers:
+  - name: rinafcode
+    url: https://github.com/rinafcode
+
+dependencies: []
