@@ -6,6 +6,7 @@ import { validateBody, validateQuery } from '@/lib/validation';
 import { ApprovalStatus } from '@/types/approvals';
 import { query } from '@/lib/db/pool';
 import type { ApprovalItem, ReviewDecision } from '@/types/api';
+import { getCsrfTokenFromCookies, getCsrfTokenFromHeaders } from '@/lib/csrfMiddleware';
 
 export const runtime = 'nodejs';
 
@@ -81,6 +82,19 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse;
 
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    );
+  }
+
   const validation = validateBody(SubmitSchema, await request.json());
   if (!validation.ok) return addHeaders(validation.error);
 
@@ -122,6 +136,19 @@ export async function POST(request: Request): Promise<NextResponse> {
 export async function PATCH(request: Request): Promise<NextResponse> {
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse;
+
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    );
+  }
 
   const validation = validateBody(ReviewSchema, await request.json());
   if (!validation.ok) return addHeaders(validation.error);

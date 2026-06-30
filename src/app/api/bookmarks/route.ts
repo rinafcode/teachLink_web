@@ -3,6 +3,7 @@ import type { VideoBookmark } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
 import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
+import { getCsrfTokenFromCookies, getCsrfTokenFromHeaders } from '@/lib/csrfMiddleware';
 
 import { validateBody, validateQuery } from '@/lib/validation';
 import {
@@ -58,6 +59,19 @@ export async function POST(request: Request): Promise<NextResponse<BookmarkRespo
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse as NextResponse;
 
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    ) as NextResponse;
+  }
+
   const result = validateBody(BookmarksCreateBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
@@ -105,6 +119,19 @@ export async function PATCH(request: Request): Promise<NextResponse<BookmarksSuc
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse as NextResponse;
 
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    ) as NextResponse;
+  }
+
   const result = validateBody(BookmarksPatchBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
@@ -148,6 +175,19 @@ export async function DELETE(request: Request): Promise<NextResponse<BookmarksSu
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse as NextResponse;
+
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    ) as NextResponse;
+  }
 
   const result = validateBody(BookmarksDeleteBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;

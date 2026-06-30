@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { evaluateTipCanary } from '@/lib/featureFlags/tipCanary';
+import { getCsrfTokenFromCookies, getCsrfTokenFromHeaders } from '@/lib/csrfMiddleware';
 
 interface TipPayload {
   recipientId: string;
@@ -34,6 +35,17 @@ function validateTipPayload(body: unknown): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return NextResponse.json(
+      { success: false, message: 'CSRF token validation failed' },
+      { status: 403 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

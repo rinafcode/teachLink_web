@@ -1,3 +1,4 @@
+import { getCsrfTokenFromCookies, getCsrfTokenFromHeaders } from '@/lib/csrfMiddleware';
 import { NextResponse } from 'next/server';
 import type { VideoNote } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
@@ -58,6 +59,19 @@ export async function POST(request: Request): Promise<NextResponse<NoteResponseD
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse as NextResponse;
 
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    ) as NextResponse;
+  }
+
   const result = validateBody(NotesCreateBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
@@ -104,6 +118,19 @@ export async function PATCH(request: Request): Promise<NextResponse<NotesSuccess
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse as NextResponse;
 
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    ) as NextResponse;
+  }
+
   const result = validateBody(NotesPatchBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
@@ -146,6 +173,19 @@ export async function DELETE(request: Request): Promise<NextResponse<NotesSucces
 
   const { addHeaders, rateLimitResponse } = withRateLimit(request, 'WRITE');
   if (rateLimitResponse) return rateLimitResponse as NextResponse;
+
+  // CSRF validation
+  const cookieToken = getCsrfTokenFromCookies(request as any);
+  const headerToken = getCsrfTokenFromHeaders(request as any);
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'CSRF token validation failed' },
+        { status: 403 }
+      )
+    ) as NextResponse;
+  }
 
   const result = validateBody(NotesDeleteBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
