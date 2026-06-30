@@ -58,7 +58,11 @@ async function checkPoorRate(name: string): Promise<void> {
   const poorPct = (row.poor_count / row.total) * 100;
   if (poorPct > POOR_ALERT_THRESHOLD_PCT) {
     logger.warn(
-      `[PERFORMANCE ALERT] "${name}" poor-rate ${poorPct.toFixed(1)}% exceeds ${POOR_ALERT_THRESHOLD_PCT}% threshold (${row.poor_count}/${row.total} recent sessions)`,
+      `[PERFORMANCE ALERT] "${name}" poor-rate ${poorPct.toFixed(
+        1,
+      )}% exceeds ${POOR_ALERT_THRESHOLD_PCT}% threshold (${row.poor_count}/${
+        row.total
+      } recent sessions)`,
     );
   }
 }
@@ -96,7 +100,9 @@ export async function POST(request: NextRequest) {
 
     if (rating === 'poor') {
       logger.warn(
-        `[PERFORMANCE ALERT] Critical degradation detected for ${name} on ${url ?? '/'}. Value: ${value}`,
+        `[PERFORMANCE ALERT] Critical degradation detected for ${name} on ${
+          url ?? '/'
+        }. Value: ${value}`,
       );
       await checkPoorRate(name);
     } else if (rating === 'needs-improvement') {

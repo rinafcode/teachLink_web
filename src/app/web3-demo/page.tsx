@@ -137,7 +137,9 @@ export default function Web3DemoPage() {
                   </h2>
                   <DeFiInterface
                     onStake={(protocol, amount, duration) => {
-                      logger.info(`Staked ${amount} in ${protocol} for ${duration} days`, { context: { protocol, amount, duration } });
+                      logger.info(`Staked ${amount} in ${protocol} for ${duration} days`, {
+                        context: { protocol, amount, duration },
+                      });
                     }}
                   />
                 </div>
