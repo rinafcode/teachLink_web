@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createCounterMetric, recordMetric } from '@/lib/logging/performance';
-import { createLogger } from '@/lib/logging';
+import { createLogger, runWithLogContext } from '@/lib/logging';
 
 function createRequestId(): string {
   return `req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -10,7 +10,6 @@ function getResponseStatus(result: unknown): number | undefined {
   if (typeof Response !== 'undefined' && result instanceof Response) {
     return result.status;
   }
-
   return undefined;
 }
 
@@ -20,10 +19,13 @@ export function createRequestLogger(
   context: Record<string, unknown> = {},
 ) {
   const requestId = request.headers.get('x-request-id') ?? createRequestId();
-
+  const correlationId = request.headers.get('x-correlation-id') ?? requestId;
+  const traceId = request.headers.get('x-trace-id') ?? '';
   return createLogger(scope, {
     ...context,
     requestId,
+    correlationId,
+    traceId,
     method: request.method,
     path: request.nextUrl.pathname,
   });
@@ -35,17 +37,21 @@ export async function withRequestLogging<T>(
   handler: (requestId: string) => Promise<T>,
 ): Promise<T> {
   const requestId = request.headers.get('x-request-id') ?? createRequestId();
+  const correlationId = request.headers.get('x-correlation-id') ?? requestId;
+  const traceId = request.headers.get('x-trace-id') ?? '';
   const log = createLogger(scope, {
     requestId,
+    correlationId,
+    traceId,
     method: request.method,
     path: request.nextUrl.pathname,
   });
   const start = globalThis.performance?.now?.() ?? Date.now();
-
-  log.info('Request started', { requestId });
-
+  log.info('Request started', { requestId, correlationId, traceId });
   try {
-    const result = await handler(requestId);
+    const result = await runWithLogContext({ requestId, correlationId, traceId }, () =>
+      handler(requestId),
+    );
     const duration = Number(((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2));
     const status = getResponseStatus(result);
     const metric = recordMetric({
@@ -59,13 +65,13 @@ export async function withRequestLogging<T>(
         status: status ?? 'unknown',
       },
     });
-
     log.info('Request completed', {
       requestId,
+      correlationId,
+      traceId,
       context: { status },
       metrics: [metric, createCounterMetric('http.requests', 1, { status: status ?? 'unknown' })],
     });
-
     return result;
   } catch (error) {
     const duration = Number(((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2));
@@ -79,9 +85,10 @@ export async function withRequestLogging<T>(
         path: request.nextUrl.pathname,
       },
     });
-
     log.error('Request failed', {
       requestId,
+      correlationId,
+      traceId,
       error,
       metrics: [metric, createCounterMetric('http.request.errors')],
     });

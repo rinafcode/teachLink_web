@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UserFriendlyErrorDisplay } from '@/components/errors/UserFriendlyErrorDisplay';
+import { errorReportingService } from '@/services/errorReporting';
 
 export default function GlobalError({
   error,
@@ -10,6 +11,14 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    errorReportingService.addBreadcrumb('global-error', {
+      errorMessage: error.message,
+      digest: error.digest,
+    });
+    errorReportingService.reportError(error);
+  }, [error]);
+
   return (
     <html>
       <body>

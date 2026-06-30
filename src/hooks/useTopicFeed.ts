@@ -15,6 +15,9 @@ interface UseTopicFeedReturn {
   sort: SortOption;
   setSort: (s: SortOption) => void;
   loadMore: () => void;
+  retry: () => void;
+  toggleFollow: () => Promise<void>;
+  followLoading: boolean;
   error: string | null;
 }
 
@@ -27,6 +30,7 @@ export function useTopicFeed(slug: string): UseTopicFeedReturn {
   const [loadingMore, setLoadingMore] = useState(false);
   const [sort, setSort] = useState<SortOption>('latest');
   const [error, setError] = useState<string | null>(null);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const fetchPosts = useCallback(
     async (nextCursor?: string, currentSort: SortOption = sort) => {
@@ -69,7 +73,6 @@ export function useTopicFeed(slug: string): UseTopicFeedReturn {
     [slug, sort],
   );
 
-  // Reset and reload when slug or sort changes
   useEffect(() => {
     setPosts([]);
     setCursor(undefined);
@@ -82,9 +85,46 @@ export function useTopicFeed(slug: string): UseTopicFeedReturn {
     if (!loadingMore && hasMore && cursor) fetchPosts(cursor);
   }, [loadingMore, hasMore, cursor, fetchPosts]);
 
-  const handleSetSort = useCallback((s: SortOption) => {
-    setSort(s);
-  }, []);
+  const retry = useCallback(() => {
+    setPosts([]);
+    setCursor(undefined);
+    setHasMore(true);
+    fetchPosts(undefined, sort);
+  }, [fetchPosts, sort]);
+
+  const toggleFollow = useCallback(async () => {
+    if (!topic || followLoading) return;
+    setFollowLoading(true);
+    const wasFollowing = topic.isFollowing;
+    // Optimistic update
+    setTopic((t) =>
+      t
+        ? {
+            ...t,
+            isFollowing: !wasFollowing,
+            followerCount: t.followerCount + (wasFollowing ? -1 : 1),
+          }
+        : t,
+    );
+    try {
+      await apiClient.post(`/api/topics/${slug}/follow`, { follow: !wasFollowing });
+    } catch {
+      // Revert on failure
+      setTopic((t) =>
+        t
+          ? {
+              ...t,
+              isFollowing: wasFollowing,
+              followerCount: t.followerCount + (wasFollowing ? 1 : -1),
+            }
+          : t,
+      );
+    } finally {
+      setFollowLoading(false);
+    }
+  }, [topic, followLoading, slug]);
+
+  const handleSetSort = useCallback((s: SortOption) => setSort(s), []);
 
   return {
     topic,
@@ -95,6 +135,9 @@ export function useTopicFeed(slug: string): UseTopicFeedReturn {
     sort,
     setSort: handleSetSort,
     loadMore,
+    retry,
+    toggleFollow,
+    followLoading,
     error,
   };
 }

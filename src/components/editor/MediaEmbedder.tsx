@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Image as ImageIcon, Youtube as YoutubeIcon } from 'lucide-react';
 import { sanitizeUrl } from '@/utils/sanitize';
 
@@ -12,6 +12,10 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
   const [url, setUrl] = useState('');
   const [type, setType] = useState<'image' | 'youtube'>('image');
   const [urlError, setUrlError] = useState('');
+  const id = useId();
+  const dialogTitleId = `${id}-title`;
+  const errorId = `${id}-error`;
+  const inputId = `${id}-url`;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,37 +38,50 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
     return (
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={() => {
             setType('image');
             setIsOpen(true);
           }}
           className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          aria-label="Add image"
           title="Add Image"
         >
-          <ImageIcon className="w-5 h-5" />
+          <ImageIcon className="w-5 h-5" aria-hidden="true" />
         </button>
         <button
+          type="button"
           onClick={() => {
             setType('youtube');
             setIsOpen(true);
           }}
           className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          aria-label="Add YouTube video"
           title="Add YouTube Video"
         >
-          <YoutubeIcon className="w-5 h-5" />
+          <YoutubeIcon className="w-5 h-5" aria-hidden="true" />
         </button>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={dialogTitleId}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
-        <h3 className="text-lg font-bold mb-4">
+        <h3 id={dialogTitleId} className="text-lg font-bold mb-4">
           Add {type === 'image' ? 'Image' : 'YouTube Video'}
         </h3>
         <form onSubmit={handleSubmit}>
+          <label htmlFor={inputId} className="sr-only">
+            {type === 'image' ? 'Image URL' : 'YouTube video URL'}
+          </label>
           <input
+            id={inputId}
             type="url"
             value={url}
             onChange={(e) => {
@@ -73,9 +90,17 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
             }}
             placeholder={`Enter ${type} URL...`}
             className="w-full p-2 border rounded mb-1 dark:bg-gray-700 dark:border-gray-600"
+            aria-describedby={errorId}
             required
           />
-          <p className="text-red-500 text-sm mb-3 min-h-[1.25rem]">{urlError}</p>
+          <p
+            id={errorId}
+            role="alert"
+            aria-live="assertive"
+            className="text-red-500 text-sm mb-3 min-h-[1.25rem]"
+          >
+            {urlError}
+          </p>
           <div className="flex justify-end gap-2">
             <button
               type="button"

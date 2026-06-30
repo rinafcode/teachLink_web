@@ -1,8 +1,8 @@
-'use client';
-
 import React from 'react';
 import type { PerformanceMetric } from '@/utils/performanceUtils';
 import { formatMetricValue } from '@/utils/performanceUtils';
+import { useInternationalization } from '@/hooks/useInternationalization';
+import { translateWithFallback } from '@/components/dashboard/dashboardI18n';
 
 export interface CoreWebVitalsProps {
   metrics: Record<string, PerformanceMetric>;
@@ -15,16 +15,37 @@ const RATING_STYLES: Record<NonNullable<PerformanceMetric['rating']>, string> = 
   poor: 'border-red-500/40 bg-red-500/10 text-red-900 dark:text-red-100',
 };
 
+const RATING_KEYS: Record<NonNullable<PerformanceMetric['rating']>, string> = {
+  good: 'performance.dashboard.vitals.ratings.good',
+  'needs-improvement': 'performance.dashboard.vitals.ratings.needsImprovement',
+  poor: 'performance.dashboard.vitals.ratings.poor',
+};
+
+const RATING_FALLBACKS: Record<NonNullable<PerformanceMetric['rating']>, string> = {
+  good: 'Good',
+  'needs-improvement': 'Needs Improvement',
+  poor: 'Poor',
+};
+
 const ORDER = ['LCP', 'INP', 'CLS', 'FCP', 'TTFB'] as const;
 
 /**
  * Read-only grid of latest Core Web Vitals with rating-colored cards.
  */
 export const CoreWebVitals: React.FC<CoreWebVitalsProps> = ({ metrics, className = '' }) => {
+  const { t } = useInternationalization();
+
   return (
-    <section className={className} aria-label="Core Web Vitals">
+    <section
+      className={className}
+      aria-label={translateWithFallback(
+        t,
+        'performance.dashboard.vitals.ariaLabel',
+        'Core Web Vitals',
+      )}
+    >
       <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-        Core Web Vitals
+        {translateWithFallback(t, 'performance.dashboard.vitals.heading', 'Core Web Vitals')}
       </h2>
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {ORDER.map((name) => {
@@ -40,10 +61,12 @@ export const CoreWebVitals: React.FC<CoreWebVitalsProps> = ({ metrics, className
               </div>
               {m?.rating ? (
                 <div className="text-xs mt-1 capitalize opacity-90">
-                  {m.rating.replace(/-/g, ' ')}
+                  {translateWithFallback(t, RATING_KEYS[m.rating], RATING_FALLBACKS[m.rating])}
                 </div>
               ) : (
-                <div className="text-xs mt-1 opacity-70">Waiting…</div>
+                <div className="text-xs mt-1 opacity-70">
+                  {translateWithFallback(t, 'performance.dashboard.vitals.waiting', 'Waiting…')}
+                </div>
               )}
             </li>
           );

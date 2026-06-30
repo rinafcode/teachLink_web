@@ -8,6 +8,7 @@ import { createClient as createWSClient } from 'graphql-ws';
 import { ApolloClient, InMemoryCache, ApolloLink, split, HttpLink } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { DocumentNode } from 'graphql';
+import { flagStore, evaluateFlag } from '@/lib/feature-flags';
 
 /**
  * WebSocket subscription configuration options
@@ -30,6 +31,17 @@ export interface SubscriptionConfig {
   headers?: Record<string, string>;
   /** Connection timeout in milliseconds */
   connectionTimeoutMs?: number;
+  /**
+   * Feature flag gate for this client.
+   * When provided, the WebSocket link is only created if the flag is enabled
+   * for the given user context. Queries/mutations always fall through to HTTP.
+   *
+   * @example { flagId: 'flag_realtime_subscriptions', context: { userId, plan } }
+   */
+  featureGate?: {
+    flagId: string;
+    context?: Record<string, string>;
+  };
 }
 
 /**
@@ -181,68 +193,85 @@ function _calculateBackoffDelay(retryCount: number, config: SubscriptionConfig):
 }
 
 /**
+ * Evaluate a feature gate against the in-process flag store.
+ * Returns true when no gate is configured (opt-in, non-breaking).
+ */
+export function isFeatureEnabled(flagId: string, context: Record<string, string> = {}): boolean {
+  const flag = flagStore.get(flagId);
+  if (!flag) return false;
+  return evaluateFlag(flag, context);
+}
+
+/**
  * Creates a GraphQL subscriptions-enabled Apollo Client
  */
 export function createSubscriptionClient(config: SubscriptionConfig): ApolloClient<any> {
   const manager = SubscriptionConnectionManager.getInstance();
 
-  // Create WebSocket client for subscriptions
-  const wsClient = createWSClient({
-    url: config.subscriptionUrl,
-    connectionParams: () => ({
-      authorization: config.headers?.authorization ?? '',
-    }),
-    shouldRetry: (code) => {
-      // Retry on transient errors
-      return code !== 1000 && code !== 1001 && code !== 4000; // 4000 is auth error
-    },
-    retryAttempts: config.reconnect?.maxRetries ?? 5,
-    on: {
-      connected: () => {
-        manager.setState(ConnectionState.CONNECTED);
-        manager.resetRetryCount();
-      },
-      error: (error) => {
-        const normalizedError =
-          error instanceof Error
-            ? error
-            : new Error(typeof error === 'string' ? error : 'Unknown error');
-        manager.setState(ConnectionState.ERROR, normalizedError);
-      },
-      closed: () => {
-        manager.setState(ConnectionState.DISCONNECTED);
-      },
-      connecting: () => {
-        manager.setState(ConnectionState.CONNECTING);
-      },
-    },
-    // Add connection timeout
-    connectionAckWaitTimeout: config.connectionTimeoutMs ?? 5000,
-  });
+  // Evaluate feature gate — if a gate is configured and disabled, skip WebSocket entirely
+  const subscriptionsEnabled =
+    !config.featureGate ||
+    isFeatureEnabled(config.featureGate.flagId, config.featureGate.context ?? {});
 
-  // Create WebSocket link
-  const wsLink = new GraphQLWsLink(wsClient);
-
-  // Create HTTP link for queries and mutations
+  // Create HTTP link for queries and mutations (always present)
   const httpLink = new HttpLink({
     uri: config.httpUrl,
     credentials: 'include',
     headers: config.headers,
   });
 
-  // Split traffic: subscriptions via WebSocket, queries/mutations via HTTP
-  const splitLink = split(
-    ({ query }) => {
-      const definition = getMainDefinition(query);
-      return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
-    },
-    wsLink,
-    httpLink,
-  );
+  // Only build the WebSocket link when the feature is enabled
+  const link: ApolloLink = subscriptionsEnabled
+    ? (() => {
+        const wsClient = createWSClient({
+          url: config.subscriptionUrl,
+          connectionParams: () => ({
+            authorization: config.headers?.authorization ?? '',
+          }),
+          shouldRetry: (code) => {
+            return code !== 1000 && code !== 1001 && code !== 4000;
+          },
+          retryAttempts: config.reconnect?.maxRetries ?? 5,
+          on: {
+            connected: () => {
+              manager.setState(ConnectionState.CONNECTED);
+              manager.resetRetryCount();
+            },
+            error: (error) => {
+              const normalizedError =
+                error instanceof Error
+                  ? error
+                  : new Error(typeof error === 'string' ? error : 'Unknown error');
+              manager.setState(ConnectionState.ERROR, normalizedError);
+            },
+            closed: () => {
+              manager.setState(ConnectionState.DISCONNECTED);
+            },
+            connecting: () => {
+              manager.setState(ConnectionState.CONNECTING);
+            },
+          },
+          connectionAckWaitTimeout: config.connectionTimeoutMs ?? 5000,
+        });
+
+        const wsLink = new GraphQLWsLink(wsClient);
+
+        return split(
+          ({ query }) => {
+            const definition = getMainDefinition(query);
+            return (
+              definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+            );
+          },
+          wsLink,
+          httpLink,
+        );
+      })()
+    : httpLink;
 
   // Create Apollo Client
   const client = new ApolloClient({
-    link: ApolloLink.from([splitLink]),
+    link: ApolloLink.from([link]),
     cache: new InMemoryCache({
       typePolicies: {
         Query: {

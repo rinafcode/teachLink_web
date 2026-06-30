@@ -10,11 +10,14 @@ import { useMemo } from 'react';
  * - Headings: `# H1`, `## H2`, `### H3`
  * - Bold: `**text**` or `__text__`
  * - Italic: `*text*` or `_text_`
+ * - Strikethrough: `~~text~~` (GFM)
  * - Inline code: `` `code` ``
  * - Fenced code blocks: ` ```lang\n...\n``` `
  * - Blockquotes: `> text`
  * - Unordered lists: `- item` or `* item`
+ * - Task lists: `- [ ] todo` / `- [x] done` (GFM)
  * - Ordered lists: `1. item`
+ * - Tables: GFM pipe tables
  * - Links: `[label](url)`
  * - Images: `![alt](url)`
  * - Horizontal rules: `---`
@@ -31,6 +34,46 @@ export function markdownToHtml(markdown: string): string {
   html = html.replace(/```([^\n]*)\n([\s\S]*?)```/g, (_match, lang, code) => {
     const langAttr = lang.trim() ? ` class="language-${lang.trim()}"` : '';
     return `<pre><code${langAttr}>${escapeHtml(code.trimEnd())}</code></pre>`;
+  });
+
+  // GFM tables — must run before other block rules
+  html = html.replace(/((?:^[^\n]*\|[^\n]*(?:\n|$))+)/gm, (block) => {
+    const lines = block.trim().split('\n');
+    if (lines.length < 2) return block;
+    const isSeparator = (l: string) => /^[\s|:-]+$/.test(l);
+    const sepIdx = lines.findIndex(isSeparator);
+    if (sepIdx < 1) return block;
+
+    const parseRow = (line: string) =>
+      line
+        .replace(/^\||\|$/g, '')
+        .split('|')
+        .map((cell) => cell.trim());
+
+    const headers = parseRow(lines[0]);
+    const thead = `<thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead>`;
+    const bodyRows = lines
+      .slice(sepIdx + 1)
+      .filter((l) => l.trim() && !isSeparator(l))
+      .map(
+        (l) =>
+          `<tr>${parseRow(l)
+            .map((c) => `<td>${c}</td>`)
+            .join('')}</tr>`,
+      )
+      .join('');
+    return `<table>${thead}<tbody>${bodyRows}</tbody></table>`;
+  });
+
+  // Task lists — must run before unordered list rule
+  html = html.replace(/^[*-] \[( |x)\] (.+)$/gm, (_m, checked, label) => {
+    const attrs = checked === 'x' ? ' checked disabled' : ' disabled';
+    return `<li class="task-item"><input type="checkbox"${attrs} /> ${label}</li>`;
+  });
+
+  // Wrap consecutive task-list <li> items in <ul class="task-list">
+  html = html.replace(/((?:<li class="task-item">.*<\/li>\n?)+)/g, (block) => {
+    return `<ul class="task-list">${block}</ul>`;
   });
 
   // Headings
@@ -71,6 +114,9 @@ export function markdownToHtml(markdown: string): string {
   // Italic (* or _) — exclude already-processed ** / __
   html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
   html = html.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
+
+  // Strikethrough (GFM)
+  html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
 
   // Inline code
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
@@ -143,6 +189,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
         'br',
         'strong',
         'em',
+        'del',
         'code',
         'pre',
         'ul',
@@ -152,8 +199,15 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
         'hr',
         'a',
         'img',
+        'table',
+        'thead',
+        'tbody',
+        'tr',
+        'th',
+        'td',
+        'input',
       ],
-      ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel', 'type', 'checked', 'disabled'],
     });
   }, [content]);
 

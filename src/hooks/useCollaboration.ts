@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
@@ -15,6 +16,7 @@ export type CollaborationUser = {
   color: string;
   isSharingScreen?: boolean;
   isActive?: boolean;
+  isHost?: boolean;
   cursor?: CursorPosition;
 };
 

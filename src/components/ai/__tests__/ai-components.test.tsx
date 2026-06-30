@@ -69,7 +69,10 @@ describe('LearningAssistant', () => {
     expect(screen.getByLabelText('Assistant is typing')).toBeInTheDocument();
 
     await waitFor(() => expect(screen.getByText('Hello from AI!')).toBeInTheDocument());
-    expect(mockPost).toHaveBeenCalledWith('/api/ai/chat', { message: 'Hi there', context: 'learning' });
+    expect(mockPost).toHaveBeenCalledWith('/api/ai/chat', {
+      message: 'Hi there',
+      context: 'learning',
+    });
   });
 
   it('shows error message on API failure', async () => {
@@ -117,7 +120,12 @@ describe('PersonalizedRecommendations', () => {
       success: true,
       data: [
         { id: '1', title: 'React Basics', reason: 'Matches your goals', url: '/courses/1' },
-        { id: '2', title: 'TypeScript Deep Dive', reason: 'Popular in your area', url: '/courses/2' },
+        {
+          id: '2',
+          title: 'TypeScript Deep Dive',
+          reason: 'Popular in your area',
+          url: '/courses/2',
+        },
       ],
     });
 
@@ -139,9 +147,7 @@ describe('PersonalizedRecommendations', () => {
   it('shows empty state when no recommendations', async () => {
     mockGet.mockResolvedValueOnce({ success: true, data: [] });
     render(<PersonalizedRecommendations />);
-    await waitFor(() =>
-      expect(screen.getByText(/no recommendations yet/i)).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(/no recommendations yet/i)).toBeInTheDocument());
   });
 });
 
@@ -243,7 +249,9 @@ describe('SmartNotifications', () => {
     await waitFor(() => expect(screen.getByText('Study React')).toBeInTheDocument());
     fireEvent.click(screen.getByLabelText('Dismiss reminder: Study React'));
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to dismiss reminder.'));
+    await waitFor(() =>
+      expect(mockToast.error).toHaveBeenCalledWith('Failed to dismiss reminder.'),
+    );
   });
 
   it('shows error state when fetch fails', async () => {
@@ -257,9 +265,7 @@ describe('SmartNotifications', () => {
   it('shows empty state when no reminders', async () => {
     mockGet.mockResolvedValueOnce({ success: true, data: [] });
     render(<SmartNotifications />);
-    await waitFor(() =>
-      expect(screen.getByText(/no upcoming reminders/i)).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(/no upcoming reminders/i)).toBeInTheDocument());
   });
 });
 
@@ -310,9 +316,7 @@ describe('NaturalLanguageQuery', () => {
     fireEvent.change(screen.getByLabelText('Search query'), { target: { value: 'test' } });
     fireEvent.submit(screen.getByRole('search'));
 
-    await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/search failed/i),
-    );
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/search failed/i));
   });
 
   it('submit button is disabled when query is empty', () => {

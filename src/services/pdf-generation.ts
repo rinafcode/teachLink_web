@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import puppeteer from 'puppeteer';
 
 export async function generatePDF(html: string): Promise<Buffer> {

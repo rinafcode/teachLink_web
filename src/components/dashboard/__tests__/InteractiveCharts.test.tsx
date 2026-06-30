@@ -154,7 +154,7 @@ describe('InteractiveCharts', () => {
 
   it('calls onClearDrillDown when breadcrumb "All Data" link is clicked', () => {
     render(<InteractiveCharts {...baseProps} drillDownIndex={0} />);
-    fireEvent.click(screen.getByRole('button', { name: /back to all data/i }));
+    fireEvent.click(screen.getByRole('link', { name: /all data/i }));
     expect(baseProps.onClearDrillDown).toHaveBeenCalledTimes(1);
   });
 });

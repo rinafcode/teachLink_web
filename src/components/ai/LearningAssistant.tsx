@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import type { ApiResponse } from '@/types/api';
 
 // POST /api/ai/chat — { message: string; context?: string } → { reply: string }
 
@@ -16,7 +17,7 @@ interface LearningAssistantProps {
   context?: string;
 }
 
-export default function LearningAssistant({ context }: LearningAssistantProps) {
+export default function LearningAssistant({ context = 'learning' }: LearningAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,8 +34,10 @@ export default function LearningAssistant({ context }: LearningAssistantProps) {
 
     const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text };
     setMessages((prev) => [...prev, userMsg]);
+    setError(null);
     setInput('');
     setLoading(true);
+    setError(false);
 
     try {
       const { reply } = await apiClient.post<{ reply: string }>('/api/ai/chat', {

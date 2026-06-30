@@ -15,7 +15,6 @@ import {
   PieChart,
   ScatterChart,
   Radar,
-  ChevronRight,
   ArrowLeft,
 } from 'lucide-react';
 import { InteractiveChartLibrary } from '@/components/visualization/InteractiveChartLibrary';
@@ -23,6 +22,7 @@ import { getDrillDownData } from '@/utils/chartUtils';
 import type { ChartData, ChartType } from '@/utils/visualizationUtils';
 import { useInternationalization } from '@/hooks/useInternationalization';
 import { getDashboardChartTypeLabel, translateWithFallback } from './dashboardI18n';
+import { Breadcrumbs, type BreadcrumbItem } from '@/components/ui/Breadcrumbs';
 
 export interface InteractiveChartsProps {
   panelId: string;
@@ -34,6 +34,11 @@ export interface InteractiveChartsProps {
   onDrillDown: (index: number) => void;
   onClearDrillDown: () => void;
   className?: string;
+}
+
+interface ChartClickPoint {
+  activeTooltipIndex?: number;
+  index?: number;
 }
 
 const CHART_TYPE_BUTTONS: { type: ChartType; Icon: React.ElementType }[] = [
@@ -64,6 +69,24 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
       ? data.labels[drillDownIndex] ??
         translateWithFallback(t, 'dashboard.analytics.drillDown.selected', 'Selected')
       : null;
+
+    // Build breadcrumb items for drill-down navigation
+    const breadcrumbItems: BreadcrumbItem[] = isDrillDown
+      ? [
+          {
+            label: translateWithFallback(t, 'dashboard.analytics.drillDown.allData', 'All Data'),
+            href: '#',
+            onClick: (e: React.MouseEvent) => {
+              e.preventDefault();
+              onClearDrillDown();
+            },
+          },
+          {
+            label: drillDownLabel ?? '',
+            current: true,
+          },
+        ]
+      : [];
 
     return (
       <div className={`flex flex-col gap-4 ${className}`}>
@@ -110,7 +133,7 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
                 showLegend
                 showGrid
                 animated
-                onDataPointClick={(clickedPoint: any) =>
+                onDataPointClick={(clickedPoint: ChartClickPoint) =>
                   onDrillDown(clickedPoint?.activeTooltipIndex ?? clickedPoint?.index ?? 0)
                 }
               />
@@ -124,23 +147,15 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-3"
             >
-              <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-                <button
-                  onClick={onClearDrillDown}
-                  className="text-blue-600 dark:text-blue-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-                  aria-label={translateWithFallback(
-                    t,
-                    'dashboard.analytics.drillDown.backToAllDataAria',
-                    'Back to all data',
-                  )}
-                >
-                  {translateWithFallback(t, 'dashboard.analytics.drillDown.allData', 'All Data')}
-                </button>
-                <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-                <span className="font-medium text-gray-700 dark:text-gray-200">
-                  {drillDownLabel}
-                </span>
-              </div>
+              <Breadcrumbs
+                items={breadcrumbItems}
+                ariaLabel={translateWithFallback(
+                  t,
+                  'dashboard.analytics.drillDown.breadcrumbNav',
+                  'Drill-down navigation',
+                )}
+                className="mb-1"
+              />
 
               {drillDownData && (
                 <InteractiveChartLibrary
