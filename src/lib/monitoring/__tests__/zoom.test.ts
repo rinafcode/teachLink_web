@@ -9,6 +9,7 @@ describe('Zoom Performance Monitoring Alerts', () => {
       { name: 'zoom_api_error_rate', value: 1.5, timestamp: Date.now() },
       { name: 'zoom_packet_loss', value: 0.8, timestamp: Date.now() },
       { name: 'zoom_sdk_load_time', value: 1200, timestamp: Date.now() },
+      { name: 'zoom_connection_jitter', value: 10, timestamp: Date.now() },
     ];
 
     const alerts = checkAlerts(metrics);
@@ -16,9 +17,7 @@ describe('Zoom Performance Monitoring Alerts', () => {
   });
 
   it('should trigger alert when zoom_api_latency exceeds threshold', () => {
-    const metrics: Metric[] = [
-      { name: 'zoom_api_latency', value: 650, timestamp: Date.now() },
-    ];
+    const metrics: Metric[] = [{ name: 'zoom_api_latency', value: 650, timestamp: Date.now() }];
 
     const alerts = checkAlerts(metrics);
     expect(alerts).toHaveLength(1);
@@ -27,9 +26,7 @@ describe('Zoom Performance Monitoring Alerts', () => {
   });
 
   it('should trigger alert when zoom_api_error_rate exceeds threshold', () => {
-    const metrics: Metric[] = [
-      { name: 'zoom_api_error_rate', value: 4.5, timestamp: Date.now() },
-    ];
+    const metrics: Metric[] = [{ name: 'zoom_api_error_rate', value: 4.5, timestamp: Date.now() }];
 
     const alerts = checkAlerts(metrics);
     expect(alerts).toHaveLength(1);
@@ -38,9 +35,7 @@ describe('Zoom Performance Monitoring Alerts', () => {
   });
 
   it('should trigger alert when zoom_packet_loss exceeds threshold', () => {
-    const metrics: Metric[] = [
-      { name: 'zoom_packet_loss', value: 3.2, timestamp: Date.now() },
-    ];
+    const metrics: Metric[] = [{ name: 'zoom_packet_loss', value: 3.2, timestamp: Date.now() }];
 
     const alerts = checkAlerts(metrics);
     expect(alerts).toHaveLength(1);
@@ -49,13 +44,22 @@ describe('Zoom Performance Monitoring Alerts', () => {
   });
 
   it('should trigger alert when zoom_sdk_load_time exceeds threshold', () => {
-    const metrics: Metric[] = [
-      { name: 'zoom_sdk_load_time', value: 2600, timestamp: Date.now() },
-    ];
+    const metrics: Metric[] = [{ name: 'zoom_sdk_load_time', value: 2600, timestamp: Date.now() }];
 
     const alerts = checkAlerts(metrics);
     expect(alerts).toHaveLength(1);
     expect(alerts[0].message).toContain('Zoom Web SDK load time is slow');
+    expect(alerts[0].severity).toBe('low');
+  });
+
+  it('should trigger alert when zoom_connection_jitter exceeds threshold', () => {
+    const metrics: Metric[] = [
+      { name: 'zoom_connection_jitter', value: 35, timestamp: Date.now() },
+    ];
+
+    const alerts = checkAlerts(metrics);
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0].message).toContain('High connection jitter in Zoom session detected');
     expect(alerts[0].severity).toBe('low');
   });
 });
@@ -95,7 +99,7 @@ describe('LocalMonitoringProvider with Zoom Integration', () => {
 
     expect(mockFetch).toHaveBeenCalledWith('/api/performance/db-metrics');
     expect(mockFetch).toHaveBeenCalledWith('/api/performance/zoom-metrics');
-    
+
     const dbMetric = metrics.find((m) => m.name === 'db_pool_total_connections');
     const zoomMetric = metrics.find((m) => m.name === 'zoom_api_latency');
 

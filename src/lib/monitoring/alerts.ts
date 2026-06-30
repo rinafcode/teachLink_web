@@ -50,6 +50,13 @@ export function checkAlerts(metrics: Metric[]): Alert[] {
         severity: 'low',
       });
     }
+
+    if (m.name === 'zoom_connection_jitter' && m.value > 30) {
+      alerts.push({
+        message: 'High connection jitter in Zoom session detected',
+        severity: 'low',
+      });
+    }
   });
 
   return alerts;

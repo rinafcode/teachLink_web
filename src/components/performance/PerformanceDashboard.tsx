@@ -56,7 +56,9 @@ export const PerformanceDashboard: React.FC = () => {
   const { metrics, alerts, suggestions, trend, clearAlerts, refreshTrendFromStorage } =
     usePerformanceMonitoring();
 
-  const [zoomMetrics, setZoomMetrics] = React.useState<{ name: string; value: number; unit?: string }[]>([]);
+  const [zoomMetrics, setZoomMetrics] = React.useState<
+    { name: string; value: number; unit?: string }[]
+  >([]);
   const [zoomLoading, setZoomLoading] = React.useState(true);
   const [zoomError, setZoomError] = React.useState<string | null>(null);
 
@@ -226,13 +228,15 @@ export const PerformanceDashboard: React.FC = () => {
                   (m.name === 'zoom_api_latency' && m.value > 600) ||
                   (m.name === 'zoom_api_error_rate' && m.value > 4) ||
                   (m.name === 'zoom_packet_loss' && m.value > 3) ||
-                  (m.name === 'zoom_sdk_load_time' && m.value > 2500);
+                  (m.name === 'zoom_sdk_load_time' && m.value > 2500) ||
+                  (m.name === 'zoom_connection_jitter' && m.value > 30);
 
                 const isWarning =
                   (m.name === 'zoom_api_latency' && m.value > 400 && m.value <= 600) ||
                   (m.name === 'zoom_api_error_rate' && m.value > 2 && m.value <= 4) ||
                   (m.name === 'zoom_packet_loss' && m.value > 1.5 && m.value <= 3) ||
-                  (m.name === 'zoom_sdk_load_time' && m.value > 1800 && m.value <= 2500);
+                  (m.name === 'zoom_sdk_load_time' && m.value > 1800 && m.value <= 2500) ||
+                  (m.name === 'zoom_connection_jitter' && m.value > 15 && m.value <= 30);
 
                 const ratingLabel = isPoor ? 'poor' : isWarning ? 'needs-improvement' : 'good';
 

@@ -40,6 +40,9 @@ export interface RequestConfig extends RequestInit {
   retries?: number;
   timeout?: number;
   schema?: z.ZodSchema;
+  useCache?: boolean;
+  _bypassCacheRead?: boolean;
+  ttl?: number;
 }
 
 export interface ApiClientConfig {
@@ -110,6 +113,18 @@ class ApiClientImpl {
   invalidateCache(url?: string) {
     if (url) this.cache.delete(url);
     else this.cache.clear();
+  }
+
+  addRequestInterceptor(interceptor: RequestInterceptor) {
+    this.requestInterceptors.push(interceptor);
+  }
+
+  addResponseInterceptor(interceptor: ResponseInterceptor) {
+    this.responseInterceptors.push(interceptor);
+  }
+
+  addErrorInterceptor(interceptor: ErrorInterceptor) {
+    this.errorInterceptors.push(interceptor);
   }
 
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
@@ -209,15 +224,6 @@ class ApiClientImpl {
     body?: unknown,
     options?: Omit<RequestConfig, 'url' | 'method'>,
   ): Promise<T> {
-  // ---------------------------------------------------------------------------
-  // METHODS
-  // ---------------------------------------------------------------------------
-
-  get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>) {
-    return this.requestWithRetry<T>({ ...options, url, method: 'GET' });
-  }
-
-  post<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -226,7 +232,14 @@ class ApiClientImpl {
     });
   }
 
-  patch<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
+  /**
+   * PATCH request
+   */
+  async patch<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -235,7 +248,14 @@ class ApiClientImpl {
     });
   }
 
-  put<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
+  /**
+   * PUT request
+   */
+  async put<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
