@@ -4,14 +4,25 @@ import type { FeatureFlag, TargetingRule } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
 import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
+import { requireAuth, hasRoleOrForbidden, getUserFromRequest } from '@/lib/authMiddleware';
 
 export const runtime = 'edge';
 
 // ─── GET /api/admin/feature-flags ─────────────────────────────────────────────
 // Returns the full flag list sorted by updatedAt desc.
+// Requires ADMIN role.
 
 export async function GET(req: NextRequest) {
   edgeLog('info', '/api/admin/feature-flags', 'GET request received');
+  
+  // Authentication check
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  // Authorization check: ADMIN only
+  const authzError = hasRoleOrForbidden(req, 'ADMIN');
+  if (authzError) return authzError;
+
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
@@ -24,9 +35,19 @@ export async function GET(req: NextRequest) {
 
 // ─── POST /api/admin/feature-flags ───────────────────────────────────────────
 // Creates a new flag.
+// Requires ADMIN role.
 
 export async function POST(req: NextRequest) {
   edgeLog('info', '/api/admin/feature-flags', 'POST request received');
+  
+  // Authentication check
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  // Authorization check: ADMIN only
+  const authzError = hasRoleOrForbidden(req, 'ADMIN');
+  if (authzError) return authzError;
+
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'AUTH');
   if (rateLimitResponse) return rateLimitResponse;
 
@@ -35,7 +56,8 @@ export async function POST(req: NextRequest) {
     return addHeaders(NextResponse.json({ message: 'name is required' }, { status: 400 }));
   }
 
-  const actor = req.headers.get('x-admin-user') ?? 'anonymous';
+  const user = getUserFromRequest(req);
+  const actor = user?.id ?? user?.email ?? 'anonymous';
   const now = new Date().toISOString();
 
   const flag: FeatureFlag = {
@@ -62,7 +84,7 @@ export async function POST(req: NextRequest) {
     targetType: 'feature-flag',
     targetId: flag.id,
     statusCode: response.status,
-    metadata: { name: flag.name },
+    metadata: { name: flag.name, actor },
   });
 
   return response;
