@@ -60,11 +60,11 @@ const sampleTranscript = [
 ];
 
 function App() {
-  const handleProgress = (progress: number) => {};
+  const handleProgress = (_progress: number) => {};
 
-  const handleBookmark = (bookmark: { time: number; title: string; note?: string }) => {};
+  const handleBookmark = (_bookmark: { time: number; title: string; note?: string }) => {};
 
-  const handleNote = (note: { time: number; text: string }) => {};
+  const handleNote = (_note: { time: number; text: string }) => {};
 
   return (
     <div className="min-h-screen p-8 bg-gray-100">

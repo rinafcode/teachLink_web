@@ -172,7 +172,7 @@ export const useAnalytics = (role: UserRole) => {
     );
   }, []);
 
-  const exportData = useCallback(async (options: ExportOptions) => {
+  const exportData = useCallback(async (_options: ExportOptions) => {
     // This would be implemented with actual export logic
     return { success: true, message: 'Export started' };
   }, []);

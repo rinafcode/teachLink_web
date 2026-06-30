@@ -240,7 +240,7 @@ class OfflineSyncService {
     return { ...remoteData, ...localData };
   }
 
-  private async simulateApiCall(type: string, item: SyncItem): Promise<void> {
+  private async simulateApiCall(type: string, _item: SyncItem): Promise<void> {
     // Simulate different API endpoints based on type
     const endpoints = {
       progress: '/api/progress',

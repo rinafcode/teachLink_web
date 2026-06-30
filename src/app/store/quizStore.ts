@@ -55,7 +55,7 @@ const initialState = {
   endTime: null,
 };
 
-export const useQuizStore = create<QuizState>((set, get) => ({
+export const useQuizStore = create<QuizState>((set) => ({
   ...initialState,
 
   setCurrentQuiz: (quiz) => set({ currentQuiz: quiz }),

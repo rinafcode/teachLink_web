@@ -4,14 +4,7 @@
  */
 
 import { taskQueue } from '@/lib/queue';
-import {
-  ExportSchedule,
-  ExportJob,
-  ExportHistory,
-  ExportOptions,
-  ExportResult,
-  ExportStatus,
-} from './types';
+import { ExportSchedule, ExportHistory, ExportOptions, ExportResult } from './types';
 import {
   getSchedule,
   getDueSchedules,

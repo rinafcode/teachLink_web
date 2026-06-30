@@ -144,7 +144,7 @@ export function isFormDirty(formState: FormState): boolean {
  */
 export function getDirtyFields(formState: FormState): string[] {
   return Object.entries(formState.dirty)
-    .filter(([_, isDirty]) => isDirty)
+    .filter(([, isDirty]) => isDirty)
     .map(([fieldId]) => fieldId);
 }
 
@@ -153,7 +153,7 @@ export function getDirtyFields(formState: FormState): string[] {
  */
 export function getTouchedFields(formState: FormState): string[] {
   return Object.entries(formState.touched)
-    .filter(([_, isTouched]) => isTouched)
+    .filter(([, isTouched]) => isTouched)
     .map(([fieldId]) => fieldId);
 }
 

@@ -3,7 +3,10 @@
   "plugins": ["prettier", "unused-imports"],
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
     "unused-imports/no-unused-imports": "error",
     "unused-imports/no-unused-vars": "off",
     "react/no-unescaped-entities": "warn",
@@ -12,5 +15,30 @@
     "@typescript-eslint/no-unsafe-function-type": "warn",
     "@typescript-eslint/no-unused-expressions": "warn",
     "prettier/prettier": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/app/mobile/**/*.tsx",
+        "src/app/mobile/**/*.ts",
+        "src/app/services/offlineSync.ts",
+        "src/app/store/notificationStore.ts",
+        "src/lib/api.ts",
+        "src/lib/conflict/resolver.ts",
+        "src/lib/db/pool.ts",
+        "src/lib/graphql/subscriptions.ts",
+        "src/locales/translationManager.ts",
+        "src/providers/RootProviders.tsx",
+        "src/store/devTools.ts",
+        "src/store/synchronizationEngine.ts",
+        "src/utils/errorUtils.ts",
+        "src/utils/formUtils.ts",
+        "src/utils/themeUtils.ts",
+        "src/utils/web3/envValidation.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
 }

@@ -193,7 +193,7 @@ export default function VisualizationDemoPage() {
               </div>
 
               <CustomVisualizationBuilder
-                onSave={(config) => {
+                onSave={(_config) => {
                   alert('Chart configuration saved! Check console for details.');
                 }}
               />

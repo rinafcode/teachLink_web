@@ -146,7 +146,7 @@ class SubscriptionConnectionManager {
   /**
    * Increment retry count
    */
-  incrementRetryCount(config: SubscriptionConfig): number {
+  incrementRetryCount(): number {
     this.retryCount++;
     return this.retryCount;
   }
@@ -164,20 +164,6 @@ class SubscriptionConnectionManager {
   clearListeners(): void {
     this.listeners.clear();
   }
-}
-
-/**
- * Calculate exponential backoff delay for reconnection
- */
-function calculateBackoffDelay(retryCount: number, config: SubscriptionConfig): number {
-  const { reconnect } = { ...DEFAULT_SUBSCRIPTION_CONFIG, ...config };
-  if (!reconnect) return 0;
-
-  const { initialDelayMs = 1000, maxDelayMs = 30000 } = reconnect;
-  const exponentialDelay = initialDelayMs * Math.pow(2, retryCount - 1);
-  const jitteredDelay = exponentialDelay * (0.5 + Math.random() * 0.5);
-
-  return Math.min(jitteredDelay, maxDelayMs);
 }
 
 /**

@@ -59,6 +59,7 @@ Use the PR template (auto-applied). Ensure it includes:
 - No console errors.
 - Use `lucide-react` icons for UI.
 - Keep components accessible and responsive.
+- **ESLint Suppressions Policy**: When suppressing ESLint warnings or errors (such as `@typescript-eslint/no-explicit-any` or `@typescript-eslint/no-unused-vars`), do not use file-level or block-level blanket `/* eslint-disable */` comments. Instead, use specific line-level suppressions (e.g. `// eslint-disable-next-line @typescript-eslint/no-explicit-any`) and include a brief, descriptive comment explaining why the suppression is necessary.
 
 ## Security
 
