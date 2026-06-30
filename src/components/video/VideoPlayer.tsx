@@ -102,6 +102,7 @@ export function VideoPlayer({
       window.removeEventListener('keydown', onEscape);
       document.body.style.overflow = previous;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
   useEffect(() => {
@@ -126,6 +127,7 @@ export function VideoPlayer({
       observer.disconnect();
       window.clearTimeout(timer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded, playerRef]);
 
   const createThumbnail = async (time: number): Promise<string | null> => {

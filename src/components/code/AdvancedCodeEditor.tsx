@@ -23,18 +23,22 @@ import { CollaborativeEditing } from './CollaborativeEditing';
 import type { CompletionSuggestion } from '@/utils/codeUtils';
 
 // Lazy-load Monaco using Next.js dynamic to avoid SSR issues and improve initial render
-const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((mod) => {
-  // Configure Monaco Web Worker to use CDN to prevent main-thread blocking
-  mod.loader.config({
-    paths: {
-      vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
-    },
-  });
-  return mod.default;
-}), {
-  ssr: false,
-  loading: () => <EditorSkeleton />,
-});
+const MonacoEditor = dynamic(
+  () =>
+    import('@monaco-editor/react').then((mod) => {
+      // Configure Monaco Web Worker to use CDN to prevent main-thread blocking
+      mod.loader.config({
+        paths: {
+          vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
+        },
+      });
+      return mod.default;
+    }),
+  {
+    ssr: false,
+    loading: () => <EditorSkeleton />,
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Props
