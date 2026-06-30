@@ -25,10 +25,10 @@ export async function requireAuth(request: NextRequest): Promise<NextResponse | 
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    await verifyToken(token);
-    return null;
-  } catch {
+  const payload = await verifyToken(token);
+  if (!payload) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
+
+  return null;
 }

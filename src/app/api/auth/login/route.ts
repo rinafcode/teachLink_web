@@ -6,6 +6,7 @@ import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
 import { getVerificationStatus } from '@/lib/auth/email-verification';
 import { signToken } from '@/lib/auth/jwt';
+import { UserRole } from '@/types/api';
 
 export const runtime = 'nodejs';
 
@@ -31,7 +32,7 @@ export async function POST(
     // Mock: demo credentials
     if (email === 'demo@teachlink.com' && password === 'password123') {
       const user = { id: '1', name: 'Demo User', email };
-      const token = await signToken({ userId: user.id, role: 'user' });
+      const token = await signToken({ sub: user.id, role: UserRole.STUDENT });
       return addHeaders(
         NextResponse.json({ message: 'Login successful', user, token }, { status: 200 }),
       );
@@ -50,7 +51,7 @@ export async function POST(
         name: email.split('@')[0],
         email,
       };
-      const token = await signToken({ userId: user.id, role: 'user' });
+      const token = await signToken({ sub: user.id, role: UserRole.STUDENT });
       return addHeaders(
         NextResponse.json({ message: 'Login successful', user, token }, { status: 200 }),
       );
