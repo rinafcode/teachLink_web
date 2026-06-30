@@ -93,9 +93,10 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   const validateForm = useCallback((): string | null => {
     if (!toAddress.trim()) return 'Recipient address is required';
     if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
-    const isValid = wallet.provider === 'starknet'
-      ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
-      : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+    const isValid =
+      wallet.provider === 'starknet'
+        ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
+        : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
     if (!isValid) {
       return wallet.provider === 'starknet'
         ? 'Invalid Starknet address format'
@@ -115,9 +116,10 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       const validationError = (() => {
         if (!toAddress.trim()) return 'Recipient address is required';
         if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
-        const isValid = wallet.provider === 'starknet'
-          ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
-          : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+        const isValid =
+          wallet.provider === 'starknet'
+            ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
+            : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
         if (!isValid) {
           return wallet.provider === 'starknet'
             ? 'Invalid Starknet address format'

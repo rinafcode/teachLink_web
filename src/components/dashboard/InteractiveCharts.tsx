@@ -60,11 +60,10 @@ export const InteractiveCharts = React.memo<InteractiveChartsProps>(
     const { t } = useInternationalization();
     const isDrillDown = drillDownIndex !== null;
     const drillDownData = isDrillDown ? getDrillDownData(data, drillDownIndex) : null;
-    const drillDownLabel =
-      isDrillDown
-        ? data.labels[drillDownIndex] ??
-          translateWithFallback(t, 'dashboard.analytics.drillDown.selected', 'Selected')
-        : null;
+    const drillDownLabel = isDrillDown
+      ? data.labels[drillDownIndex] ??
+        translateWithFallback(t, 'dashboard.analytics.drillDown.selected', 'Selected')
+      : null;
 
     return (
       <div className={`flex flex-col gap-4 ${className}`}>

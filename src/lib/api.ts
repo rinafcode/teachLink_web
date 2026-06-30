@@ -209,15 +209,6 @@ class ApiClientImpl {
     body?: unknown,
     options?: Omit<RequestConfig, 'url' | 'method'>,
   ): Promise<T> {
-  // ---------------------------------------------------------------------------
-  // METHODS
-  // ---------------------------------------------------------------------------
-
-  get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>) {
-    return this.requestWithRetry<T>({ ...options, url, method: 'GET' });
-  }
-
-  post<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -226,7 +217,14 @@ class ApiClientImpl {
     });
   }
 
-  patch<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
+  /**
+   * PATCH request
+   */
+  async patch<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,
@@ -235,7 +233,14 @@ class ApiClientImpl {
     });
   }
 
-  put<T>(url: string, body?: unknown, options?: Omit<RequestConfig, 'url' | 'method'>) {
+  /**
+   * PUT request
+   */
+  async put<T>(
+    url: string,
+    body?: unknown,
+    options?: Omit<RequestConfig, 'url' | 'method'>,
+  ): Promise<T> {
     return this.requestWithRetry<T>({
       ...options,
       url,

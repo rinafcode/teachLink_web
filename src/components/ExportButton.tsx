@@ -54,12 +54,11 @@ export function ExportButton({
         },
       );
 
-      const finalProgress =
-        response.result.progress?.[response.result.progress.length - 1] ?? {
-          stage: 'completed' as const,
-          percent: 100,
-          message: 'Export completed',
-        };
+      const finalProgress = response.result.progress?.[response.result.progress.length - 1] ?? {
+        stage: 'completed' as const,
+        percent: 100,
+        message: 'Export completed',
+      };
 
       setProgress(finalProgress);
       setMessage(
@@ -82,12 +81,7 @@ export function ExportButton({
 
   return (
     <div className="space-y-2">
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={isRunning}
-        className={className}
-      >
+      <button type="button" onClick={handleClick} disabled={isRunning} className={className}>
         {isRunning ? 'Exporting...' : label}
       </button>
 
@@ -97,7 +91,11 @@ export function ExportButton({
             <span>{progress.message}</span>
             <span>{progress.percent}%</span>
           </div>
-          <div className="h-2 rounded-full bg-gray-200" role="progressbar" aria-valuenow={progress.percent}>
+          <div
+            className="h-2 rounded-full bg-gray-200"
+            role="progressbar"
+            aria-valuenow={progress.percent}
+          >
             <div
               className="h-2 rounded-full bg-blue-600 transition-all"
               style={{ width: `${progress.percent}%` }}

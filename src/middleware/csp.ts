@@ -43,7 +43,7 @@ export function buildCspHeader(options: CspOptions): string {
     .join('; ');
 }
 
-export function applyCspHeaders(response: NextResponse, request: NextRequest): NextResponse {
+export function applyCspHeaders(response: NextResponse, _request: NextRequest): NextResponse {
   const nonce = generateNonce();
   const csp = buildCspHeader({ nonce, strict: true });
 

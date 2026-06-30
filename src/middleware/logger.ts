@@ -46,9 +46,7 @@ export async function withRequestLogging<T>(
 
   try {
     const result = await handler(requestId);
-    const duration = Number(
-      ((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2),
-    );
+    const duration = Number(((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2));
     const status = getResponseStatus(result);
     const metric = recordMetric({
       name: 'http.request.duration',
@@ -70,9 +68,7 @@ export async function withRequestLogging<T>(
 
     return result;
   } catch (error) {
-    const duration = Number(
-      ((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2),
-    );
+    const duration = Number(((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2));
     const metric = recordMetric({
       name: 'http.request.failure_duration',
       value: duration,

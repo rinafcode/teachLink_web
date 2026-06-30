@@ -38,7 +38,7 @@ export function useThemeCustomization() {
         // apply default
         applyThemeToRoot(DEFAULT_THEME);
       }
-    } catch (e) {
+    } catch (_e) {
       // ignore parse errors and fallback
       applyThemeToRoot(DEFAULT_THEME);
     }
@@ -52,7 +52,7 @@ export function useThemeCustomization() {
             setThemeState(data);
             applyThemeToRoot(data);
           }
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       };
@@ -67,14 +67,14 @@ export function useThemeCustomization() {
     setThemeState(next);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch (e) {
+    } catch (_e) {
       // ignore
     }
     applyThemeToRoot(next);
     if (bcRef.current) {
       try {
         bcRef.current.postMessage(next);
-      } catch (e) {}
+      } catch (_e) {}
     }
   }, []);
 

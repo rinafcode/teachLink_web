@@ -91,7 +91,9 @@ export function LeaderboardConference({
               className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
             >
               <span className="w-6 flex justify-center" aria-label={`Rank ${entry.rank}`}>
-                {entry.rank <= 3 ? RANK_ICONS[entry.rank - 1] : (
+                {entry.rank <= 3 ? (
+                  RANK_ICONS[entry.rank - 1]
+                ) : (
                   <span className="text-sm font-semibold text-slate-500">{entry.rank}</span>
                 )}
               </span>
@@ -104,7 +106,10 @@ export function LeaderboardConference({
                 {entry.name}
               </span>
 
-              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400" aria-label={`${entry.score} points`}>
+              <span
+                className="text-sm font-semibold text-blue-600 dark:text-blue-400"
+                aria-label={`${entry.score} points`}
+              >
                 {entry.score.toLocaleString()} pts
               </span>
             </li>
@@ -120,7 +125,9 @@ export function LeaderboardConference({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Users size={20} className="text-blue-500" aria-hidden="true" />
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Conferences</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Conferences
+            </h2>
           </div>
           <button
             type="button"
@@ -172,7 +179,9 @@ export function LeaderboardConference({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setActiveConference(activeConference?.id === conf.id ? null : conf)}
+                  onClick={() =>
+                    setActiveConference(activeConference?.id === conf.id ? null : conf)
+                  }
                   className={`rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${
                     activeConference?.id === conf.id
                       ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400'

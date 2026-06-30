@@ -50,7 +50,7 @@ const KNOWN_MALICIOUS_ADDRESSES = new Set<string>([
 /**
  * Known phishing domains
  */
-const KNOWN_PHISHING_DOMAINS = new Set<string>([
+const _KNOWN_PHISHING_DOMAINS = new Set<string>([
   // Add known phishing domains here
 ]);
 
@@ -95,7 +95,7 @@ export function performSecurityChecks(
   toAddress: string,
   value: string,
   userAddress: string,
-  chainId: string,
+  _chainId: string,
 ): SecurityCheckResult {
   const warnings: string[] = [];
   const errors: string[] = [];

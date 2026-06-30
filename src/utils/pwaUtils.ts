@@ -30,7 +30,7 @@ export function checkOfflineCapabilities(): boolean {
  */
 export async function promptPWAInstall(installEvent: any): Promise<boolean> {
   if (!installEvent) return false;
-  
+
   try {
     installEvent.prompt();
     const { outcome } = await installEvent.userChoice;
@@ -44,7 +44,7 @@ export async function promptPWAInstall(installEvent: any): Promise<boolean> {
 /**
  * Clears outdated caches for storage optimization on mobile
  */
-export async function clearOutdatedCaches(cachePrefix = 'teachlink-cache-'): Promise<void> {
+export async function clearOutdatedCaches(_cachePrefix = 'teachlink-cache-'): Promise<void> {
   if (!('caches' in window)) return;
   // Typically executed inside the SW, but can be manually triggered if needed from client side
 }

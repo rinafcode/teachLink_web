@@ -32,7 +32,7 @@ function readSettings(): AccessibilitySettingsState {
           : DEFAULT_SETTINGS.fontScale,
       voiceControl: Boolean(parsed.voiceControl),
     };
-  } catch (error) {
+  } catch (_error) {
     return DEFAULT_SETTINGS;
   }
 }
@@ -84,7 +84,7 @@ export function AccessibilitySettings() {
     applySettings(settings);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch (error) {
+    } catch (_error) {
       // ignore
     }
     window.dispatchEvent(

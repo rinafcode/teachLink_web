@@ -56,13 +56,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       return React.Children.map(props.children, (child) => {
         if (React.isValidElement(child)) {
-      return React.cloneElement(
-        child as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
-        {
-          className: cn(buttonVariants({ variant, size }), className),
-          onKeyDown: handleKeyDown,
-        },
-      );
+          return React.cloneElement(
+            child as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
+            {
+              className: cn(buttonVariants({ variant, size }), className),
+              onKeyDown: handleKeyDown,
+            },
+          );
         }
         return child;
       });

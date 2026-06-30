@@ -133,10 +133,25 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
     if (typeof window === 'undefined') return raw;
     return DOMPurify.sanitize(raw, {
       ALLOWED_TAGS: [
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'p', 'br', 'strong', 'em', 'code', 'pre',
-        'ul', 'ol', 'li', 'blockquote', 'hr',
-        'a', 'img',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'p',
+        'br',
+        'strong',
+        'em',
+        'code',
+        'pre',
+        'ul',
+        'ol',
+        'li',
+        'blockquote',
+        'hr',
+        'a',
+        'img',
       ],
       ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
     });
@@ -145,7 +160,6 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
   return (
     <div
       className={`prose prose-sm max-w-none dark:prose-invert ${className}`.trim()}
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   );

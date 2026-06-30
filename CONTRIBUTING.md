@@ -63,3 +63,12 @@ Use the PR template (auto-applied). Ensure it includes:
 ## Security
 
 Do not commit secrets. Use `.env.local` for local environment variables.
+
+## ESLint Suppressions Policy
+
+To maintain type safety and code quality:
+1. **No blanket `/* eslint-disable */` comments**: Do not disable rules project-wide or file-wide to bypass type errors or unused variables.
+2. **Intentional suppressions**:
+   - For unused variables that are intentionally kept (e.g. function signatures, placeholders), prefix the variable name with an underscore (e.g., `_unusedVar`).
+   - For intentional type escapes, use `// eslint-disable-next-line @typescript-eslint/no-explicit-any` accompanied by a comment explaining why `any` is necessary.
+   - For legacy files with high debt, add them to the `overrides` section of `eslint.config.js` and `.eslintrc.json` rather than inline comments.

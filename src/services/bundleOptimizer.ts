@@ -58,8 +58,8 @@ class BundleOptimizer {
    * Performs basic bundle size reporting.
    */
   reportBundleHealth() {
-    const totalChunks = this.chunks.size;
-    const totalSize = Array.from(this.chunks.values()).reduce((acc, c) => acc + (c.size || 0), 0);
+    const _totalChunks = this.chunks.size;
+    const _totalSize = Array.from(this.chunks.values()).reduce((acc, c) => acc + (c.size || 0), 0);
 
     this.analyzeChunkSizes();
   }

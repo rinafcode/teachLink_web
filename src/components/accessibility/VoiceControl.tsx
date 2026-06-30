@@ -38,7 +38,7 @@ function readSettings(): AccessibilitySettingsState {
       fontScale: typeof parsed.fontScale === 'number' ? parsed.fontScale : 1,
       voiceControl: Boolean(parsed.voiceControl),
     };
-  } catch (error) {
+  } catch (_error) {
     return { highContrast: false, fontScale: 1, voiceControl: false };
   }
 }

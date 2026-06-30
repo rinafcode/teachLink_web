@@ -268,9 +268,9 @@ export const isSlowConnection = (): boolean => {
  * Wraps a function to track its execution duration.
  */
 export const trackDuration = <T>(name: string, fn: () => T): T => {
-  const start = performance.now();
+  const _start = performance.now();
   const result = fn();
-  const end = performance.now();
+  const _end = performance.now();
   return result;
 };
 
@@ -278,9 +278,9 @@ export const trackDuration = <T>(name: string, fn: () => T): T => {
  * Async version of trackDuration.
  */
 export const trackDurationAsync = async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
-  const start = performance.now();
+  const _start = performance.now();
   const result = await fn();
-  const end = performance.now();
+  const _end = performance.now();
   return result;
 };
 

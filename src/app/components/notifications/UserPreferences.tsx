@@ -151,7 +151,7 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
       setSaveStatus('success');
       onSave?.(localPreferences);
       setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (error) {
+    } catch (_error) {
       setSaveStatus('error');
       setErrors(['Failed to save preferences']);
     }

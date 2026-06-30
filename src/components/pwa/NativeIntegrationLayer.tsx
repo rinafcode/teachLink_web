@@ -3,7 +3,7 @@
 import React from 'react';
 
 export const NativeIntegrationLayer: React.FC = () => {
-  const requestNotificationPermission = async () => {
+  const _requestNotificationPermission = async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
@@ -15,13 +15,13 @@ export const NativeIntegrationLayer: React.FC = () => {
     }
   };
 
-  const testCamera = async () => {
+  const _testCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       // In a real app, this would open a camera modal or start a scan
       // Stop stream immediately for demo
       stream.getTracks().forEach((track) => track.stop());
-    } catch (err) {}
+    } catch (_err) {}
   };
 
   return (
