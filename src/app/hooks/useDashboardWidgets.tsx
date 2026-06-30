@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-
 interface Widget {
   id: string;
   type: string;
@@ -61,8 +60,6 @@ export const useDashboardWidgets = () => {
       console.error('Failed to schedule dashboard layout save:', error);
     }
   }, []);
-
-
 
   // Initialize widgets on mount
   useEffect(() => {
