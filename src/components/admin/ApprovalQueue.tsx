@@ -53,8 +53,16 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       const params = filter !== 'ALL' ? `?status=${filter}` : '';
       const res = await fetch(`/api/approvals${params}`);
       const json = await res.json();
-      if (json.success) setItems(json.data);
-      else setError(json.message ?? 'Failed to load approvals');
+      if (json.success) {
+        setItems(json.data);
+      } else {
+        const apiErrors: { field: string; message: string }[] | undefined = json.errors;
+        setError(
+          apiErrors && apiErrors.length > 0
+            ? apiErrors.map((e) => `${e.field}: ${e.message}`).join('; ')
+            : json.message ?? 'Failed to load approvals',
+        );
+      }
     } catch {
       setError('Network error');
     } finally {
@@ -85,7 +93,12 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       if (json.success) {
         setItems((prev) => prev.map((item) => (item.id === id ? json.data : item)));
       } else {
-        setError(json.message ?? 'Review failed already');
+        const apiErrors: { field: string; message: string }[] | undefined = json.errors;
+        setError(
+          apiErrors && apiErrors.length > 0
+            ? apiErrors.map((e) => `${e.field}: ${e.message}`).join('; ')
+            : json.message ?? 'Review failed already',
+        );
       }
     } catch {
       setError('Network error');
