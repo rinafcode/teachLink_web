@@ -40,7 +40,10 @@ export async function POST(
 
     if (verification && verification.required && verification.status !== 'verified') {
       return addHeaders(
-        NextResponse.json({ message: 'Email verification required', verification }, { status: 403 }),
+        NextResponse.json(
+          { message: 'Email verification required', verification },
+          { status: 403 },
+        ),
       );
     }
 
