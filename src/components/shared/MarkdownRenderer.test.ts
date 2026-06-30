@@ -144,4 +144,54 @@ describe('markdownToHtml', () => {
     // Verify we at least produce an img tag (format check)
     expect(html).toContain('<img');
   });
+
+  // ── GFM: Strikethrough ────────────────────────────────────────────────────
+
+  it('renders strikethrough with ~~', () => {
+    expect(markdownToHtml('This is ~~deleted~~ text')).toContain('<del>deleted</del>');
+  });
+
+  // ── GFM: Task lists ───────────────────────────────────────────────────────
+
+  it('renders unchecked task list item', () => {
+    const html = markdownToHtml('- [ ] Buy milk');
+    expect(html).toContain('<ul class="task-list">');
+    expect(html).toContain('type="checkbox"');
+    expect(html).toContain('Buy milk');
+    expect(html).not.toContain('checked');
+  });
+
+  it('renders checked task list item', () => {
+    const html = markdownToHtml('- [x] Done task');
+    expect(html).toContain('checked');
+    expect(html).toContain('Done task');
+  });
+
+  it('renders mixed task list', () => {
+    const md = '- [x] First\n- [ ] Second';
+    const html = markdownToHtml(md);
+    expect(html).toContain('<ul class="task-list">');
+    expect(html).toContain('First');
+    expect(html).toContain('Second');
+  });
+
+  // ── GFM: Tables ───────────────────────────────────────────────────────────
+
+  it('renders a simple GFM table', () => {
+    const md = '| Name | Age |\n| --- | --- |\n| Alice | 30 |\n| Bob | 25 |';
+    const html = markdownToHtml(md);
+    expect(html).toContain('<table>');
+    expect(html).toContain('<thead>');
+    expect(html).toContain('<th>Name</th>');
+    expect(html).toContain('<th>Age</th>');
+    expect(html).toContain('<td>Alice</td>');
+    expect(html).toContain('<td>Bob</td>');
+  });
+
+  it('renders table with leading/trailing pipes', () => {
+    const md = '| A | B |\n|---|---|\n| 1 | 2 |';
+    const html = markdownToHtml(md);
+    expect(html).toContain('<th>A</th>');
+    expect(html).toContain('<td>1</td>');
+  });
 });

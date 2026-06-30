@@ -44,8 +44,10 @@ export function ResponsiveGrid({
     getColClass('lg', columns.desktop),
     getColClass('xl', columns.large),
     gapClasses[gap],
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={gridClasses} {...props}>

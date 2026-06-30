@@ -11,11 +11,13 @@ This document describes the Circuit Breaker implementation for Toast Notificatio
 The Circuit Breaker operates in three states:
 
 1. **CLOSED** (Normal Operation)
+
    - All toast notifications pass through normally
    - Failures are tracked but don't block operations
    - Circuit opens when failure threshold is reached
 
 2. **OPEN** (Circuit Tripped)
+
    - Toast notifications are blocked
    - Fallback behavior is triggered
    - System waits for timeout before attempting recovery
@@ -44,6 +46,7 @@ The Circuit Breaker uses the following configuration:
 ### Core Components
 
 1. **CircuitBreaker Class** (`src/utils/circuitBreaker.ts`)
+
    - Manages circuit state transitions
    - Tracks metrics and failure history
    - Executes operations with circuit protection
@@ -233,6 +236,7 @@ Potential improvements for the Circuit Breaker:
 ## Changelog
 
 ### Version 1.0.0
+
 - Initial implementation of Circuit Breaker for Toast Notifications
 - Integration with ToastContext
 - Comprehensive unit and integration tests

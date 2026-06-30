@@ -61,6 +61,7 @@ export enum Permission {
   // Content Permissions
   CONTENT_ACCESS = 'CONTENT_ACCESS',
   CONTENT_UPLOAD = 'CONTENT_UPLOAD',
+  CONTENT_APPROVE = 'CONTENT_APPROVE',
 
   // System Permissions
   SYSTEM_SETTINGS = 'SYSTEM_SETTINGS',
@@ -99,3 +100,35 @@ export type UserProgress = ZodUserProgress;
 // ---------------------------------------------------------------------------
 
 export type AnalyticsEventPayload = ZodAnalyticsEventPayload;
+
+// ---------------------------------------------------------------------------
+// Approvals
+// ---------------------------------------------------------------------------
+
+import type { ApprovalStatus, ReviewDecision } from './approvals';
+
+export type { ApprovalStatus, ReviewDecision } from './approvals';
+
+export interface ApprovalItem {
+  id: string;
+  contentId: string;
+  contentType: 'COURSE' | 'POST';
+  title: string;
+  submittedBy: string;
+  submittedAt: string;
+  status: ApprovalStatus;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNote?: string;
+}
+
+export interface SubmitApprovalRequest {
+  contentId: string;
+  contentType: ApprovalItem['contentType'];
+  title: string;
+}
+
+export interface ReviewApprovalRequest {
+  status: ReviewDecision;
+  reviewNote?: string;
+}

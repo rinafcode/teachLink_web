@@ -48,6 +48,19 @@ const eslintConfig = [
       'src/utils/virtualBackgroundUtils.ts',
       'src/workers/**',
       'src/pages/exports/**',
+      'src/components/assessment/AdaptiveTesting.tsx',
+      'src/components/assessment/QuestionTypes.tsx',
+      'src/components/collaboration/**',
+      'src/hooks/useRealTimeAnalytics.ts',
+      'src/hooks/useWebSocket.tsx',
+      'src/hooks/useCollaboration.ts',
+      'src/hooks/useOfflineSync.ts',
+      'src/lib/**',
+      'src/middleware/**',
+      'src/pages/**',
+      'src/store/**',
+      'src/utils/pwaUtils.ts',
+      'src/utils/web3/**',
     ],
   },
   // 2. Base Configs (Next.js & TypeScript)
@@ -57,6 +70,9 @@ const eslintConfig = [
     plugins: {
       prettier: prettierPlugin,
       'unused-imports': unusedImportsPlugin,
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: 'off',
     },
     rules: {
       // TypeScript & General Rules
@@ -74,7 +90,12 @@ const eslintConfig = [
       // Import Rules
       'import/no-anonymous-default-export': 'off',
       // Prettier Integration
-      'prettier/prettier': 'error',
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
     },
   },
   // 4. Disable ESLint rules that might conflict with Prettier

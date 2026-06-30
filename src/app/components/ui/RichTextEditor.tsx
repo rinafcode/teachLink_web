@@ -4,19 +4,27 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Bold, Italic, List, ListOrdered, Code, Strikethrough } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
+import type { ReactNode } from 'react';
 
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  ariaLabel?: string;
+  describedBy?: string;
 }
 
 export default function RichTextEditor({
   content,
   onChange,
   placeholder = 'Type your message...',
+  ariaLabel = 'Post editor',
+  describedBy,
 }: RichTextEditorProps) {
+  const editorId = useId();
+  const toolbarId = `${editorId}-toolbar`;
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -32,6 +40,12 @@ export default function RichTextEditor({
     },
     editorProps: {
       attributes: {
+        role: 'textbox',
+        'aria-label': ariaLabel,
+        'aria-describedby': [describedBy, toolbarId].filter(Boolean).join(' '),
+        'aria-multiline': 'true',
+        'aria-placeholder': placeholder,
+        spellcheck: 'true',
         class:
           'prose prose-sm dark:prose-invert focus:outline-none max-w-none min-h-[44px] text-sm',
       },
@@ -58,7 +72,7 @@ export default function RichTextEditor({
     isActive: boolean;
     onClick: () => void;
     label: string;
-    children: React.ReactNode;
+    children: ReactNode;
   }) => (
     <button
       onClick={onClick}
@@ -68,6 +82,8 @@ export default function RichTextEditor({
           : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
       }`}
       aria-label={label}
+      aria-pressed={isActive}
+      title={label}
       type="button"
     >
       {children}
@@ -77,7 +93,12 @@ export default function RichTextEditor({
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 overflow-hidden transition-all duration-200 focus-within:ring-2 focus-within:ring-violet-500/30 focus-within:border-violet-300 dark:focus-within:border-violet-700">
       {/* Toolbar */}
-      <div className="border-b border-gray-100 dark:border-gray-700 px-2 py-1.5 flex items-center gap-0.5 bg-gray-50/50 dark:bg-gray-800/50">
+      <div
+        id={toolbarId}
+        className="border-b border-gray-100 dark:border-gray-700 px-2 py-1.5 flex items-center gap-0.5 bg-gray-50/50 dark:bg-gray-800/50"
+        role="toolbar"
+        aria-label={`${ariaLabel} formatting controls`}
+      >
         <ToolbarButton
           isActive={editor.isActive('bold')}
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -100,7 +121,11 @@ export default function RichTextEditor({
           <Strikethrough size={14} />
         </ToolbarButton>
 
-        <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+        <div
+          className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1"
+          role="separator"
+          aria-orientation="vertical"
+        />
 
         <ToolbarButton
           isActive={editor.isActive('bulletList')}
@@ -117,7 +142,11 @@ export default function RichTextEditor({
           <ListOrdered size={14} />
         </ToolbarButton>
 
-        <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+        <div
+          className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1"
+          role="separator"
+          aria-orientation="vertical"
+        />
 
         <ToolbarButton
           isActive={editor.isActive('code')}

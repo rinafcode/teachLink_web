@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext } from 'react';
+import type { UseAudioEnhancementReturn } from '../../hooks/useAudioEnhancement';
 
 export interface VideoQualityControlOption {
   label: string;
@@ -26,6 +27,7 @@ export interface VideoPlayerContextValue {
   setAutoQualityLearning: (auto: boolean) => void;
   onBookmark: (bookmark: { time: number; title: string; note?: string }) => void;
   onNote: (note: { time: number; text: string }) => void;
+  audioEnhancement: UseAudioEnhancementReturn;
 }
 
 export const VideoPlayerContext = createContext<VideoPlayerContextValue | null>(null);

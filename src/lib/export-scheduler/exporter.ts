@@ -135,7 +135,9 @@ async function exportToXLSX(data: ExportData): Promise<Blob> {
     for (const header of headers) {
       const value = row[header];
       const type = typeof value === 'number' ? 'Number' : 'String';
-      xml += `        <Cell><Data ss:Type="${type}">${escapeXml(String(value ?? ''))}</Data></Cell>\n`;
+      xml += `        <Cell><Data ss:Type="${type}">${escapeXml(
+        String(value ?? ''),
+      )}</Data></Cell>\n`;
     }
     xml += '      </Row>\n';
   }

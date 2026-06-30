@@ -64,6 +64,16 @@ export function parseExportedSettings(raw: unknown): AppSettings | { error: stri
           : undefined,
       reducedMotion:
         typeof onlySettings.reducedMotion === 'boolean' ? onlySettings.reducedMotion : undefined,
+      electronicSignatureEnabled:
+        typeof onlySettings.electronicSignatureEnabled === 'boolean'
+          ? onlySettings.electronicSignatureEnabled
+          : undefined,
+      signatureName:
+        typeof onlySettings.signatureName === 'string' ? onlySettings.signatureName : undefined,
+      requireSignatureOnCertificates:
+        typeof onlySettings.requireSignatureOnCertificates === 'boolean'
+          ? onlySettings.requireSignatureOnCertificates
+          : undefined,
     };
   }
 

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Eye, User, Clock, Star, ArrowUpRight, ChevronDown } from 'lucide-react';
 import { SearchResult } from '../../utils/searchUtils';
+import { getDateTimeFormat } from '../../utils/intlCache';
 
 interface SearchResultsVisualizerProps {
   results: SearchResult[];
@@ -16,7 +17,7 @@ export function formatSearchResultDate(value: string | Date): string {
   if (Number.isNaN(date.getTime())) {
     return '';
   }
-  return new Intl.DateTimeFormat('en-US', {
+  return getDateTimeFormat('en-US', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

@@ -1,11 +1,7 @@
 import { type NextResponse, type NextRequest } from 'next/server';
 
-const NONCE_BYTES = 16;
-
 export function generateNonce(): string {
-  const bytes = new Uint8Array(NONCE_BYTES);
-  crypto.getRandomValues(bytes);
-  return Buffer.from(bytes).toString('base64');
+  return crypto.randomUUID();
 }
 
 export interface CspOptions {
@@ -17,7 +13,6 @@ export interface CspOptions {
 
 export function buildCspHeader(options: CspOptions): string {
   const { nonce, strict = true } = options;
-
   const directives: Record<string, string> = {
     'default-src': "'self'",
     'script-src': `'self' 'nonce-${nonce}'${strict ? '' : " 'unsafe-eval'"}`,
@@ -37,18 +32,19 @@ export function buildCspHeader(options: CspOptions): string {
     'report-uri': '/api/security/reporting',
     'report-to': 'security',
   };
-
   return Object.entries(directives)
     .map(([directive, value]) => (value ? `${directive} ${value}` : directive))
     .join('; ');
 }
 
-export function applyCspHeaders(response: NextResponse, _request: NextRequest): NextResponse {
-  const nonce = generateNonce();
-  const csp = buildCspHeader({ nonce, strict: true });
-
+export function applyCspHeaders(
+  response: NextResponse,
+  _request: NextRequest,
+  nonce?: string,
+): NextResponse {
+  const cspNonce = nonce ?? generateNonce();
+  const csp = buildCspHeader({ nonce: cspNonce, strict: true });
   response.headers.set('Content-Security-Policy', csp);
-  response.headers.set('X-Nonce', nonce);
-
+  response.headers.set('X-Nonce', cspNonce);
   return response;
 }

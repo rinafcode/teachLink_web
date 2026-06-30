@@ -46,4 +46,21 @@ describe('ProfileTabs', () => {
     expect(screen.getByText('Web3 Master')).toBeInTheDocument();
     expect(screen.queryByLabelText('Full Name')).not.toBeInTheDocument();
   });
+
+  it('loads certificates only when the certificates tab is selected', async () => {
+    const user = userEvent.setup();
+
+    render(<ProfileTabs />);
+    await user.click(screen.getByRole('tab', { name: 'Certification Program' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('tabpanel', { name: 'Certification Program' })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('tab', { name: 'Certification Program' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByText('Generate your Course Certificate')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Full Name')).not.toBeInTheDocument();
+  });
 });

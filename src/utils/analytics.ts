@@ -19,6 +19,11 @@ export type EventName =
   | 'login'
   | 'logout'
   | 'signup'
+  // Onboarding
+  | 'onboarding_started'
+  | 'onboarding_step_completed'
+  | 'onboarding_completed'
+  | 'onboarding_abandoned'
   // Courses
   | 'course_view'
   | 'course_started'
@@ -44,6 +49,15 @@ export type EventName =
   | 'modal_closed'
   | 'filter_applied'
   | 'sort_changed'
+  // Import
+  | 'import_started'
+  | 'import_file_parsed'
+  | 'import_validation_started'
+  | 'import_validation_completed'
+  | 'import_completed'
+  | 'import_failed'
+  | 'import_cancelled'
+  | 'import_rollback_completed'
   // Errors
   | 'error_boundary_triggered'
   | 'api_error'
@@ -159,6 +173,11 @@ class Analytics {
   reset(): void {
     this.userId = undefined;
     this.globalProperties = {};
+  }
+
+  /** Reset adapters to the default console adapter. Useful for tests. */
+  clearAdapters(): void {
+    this.adapters = [consoleAdapter];
   }
 
   /** Properties merged into every subsequent event */

@@ -125,9 +125,9 @@ const bgSyncPlugin = new BackgroundSyncPlugin('teachLinkSyncQueue', {
 });
 
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/sync/'),
+  ({ url }) => url.pathname.match(/^\/api\/lessons\/[\w-]+\/progress$/),
   new NetworkFirst({ plugins: [bgSyncPlugin] }),
-  'POST',
+  'PATCH',
 );
 
 // Handle sync events
