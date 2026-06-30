@@ -28,17 +28,6 @@ interface RateLimitEntry {
 
 const stores = new Map<string, RateLimitEntry>();
 
-function cleanup(): void {
-  const now = Date.now();
-  for (const [key, entry] of stores.entries()) {
-    if (entry.resetAt <= now) {
-      stores.delete(key);
-    }
-  }
-}
-
-setInterval(cleanup, 60_000);
-
 export function slidingWindowRateLimit(
   identifier: string,
   config: RateLimitConfig,
@@ -47,6 +36,9 @@ export function slidingWindowRateLimit(
   const entry = stores.get(identifier);
 
   if (!entry || entry.resetAt <= now) {
+    if (entry) {
+      stores.delete(identifier);
+    }
     const resetAt = now + config.windowMs;
     stores.set(identifier, { count: 1, resetAt });
     return {
@@ -98,6 +90,9 @@ export const RATE_LIMIT_TIERS = {
   AUTH: { limit: 5, windowMs: 60_000 },
   WRITE: { limit: 30, windowMs: 60_000 },
   READ: { limit: 60, windowMs: 60_000 },
+  // Lower tier for unauthenticated, client-driven endpoints (e.g. error
+  // reporting) that are prone to log-flooding abuse.
+  REPORTING: { limit: 10, windowMs: 60_000 },
 } as const;
 
 export type RateLimitTier = keyof typeof RATE_LIMIT_TIERS;

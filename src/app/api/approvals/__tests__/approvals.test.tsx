@@ -147,7 +147,11 @@ describe('Approval API route', () => {
     const res = await fetch('/api/approvals', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: 'approval-2', status: ReviewDecision.REJECTED, reviewedBy: 'u-admin' }),
+      body: JSON.stringify({
+        id: 'approval-2',
+        status: ReviewDecision.REJECTED,
+        reviewedBy: 'u-admin',
+      }),
     });
     const json = await res.json();
 

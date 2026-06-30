@@ -1,4 +1,4 @@
-export type ProfileTabId = 'profile' | 'settings' | 'achievements' | 'support';
+export type ProfileTabId = 'profile' | 'settings' | 'achievements' | 'support' | 'certificates';
 
 export interface ProfileUser {
   initials: string;
@@ -43,6 +43,7 @@ export const profileTabs: Array<{ id: ProfileTabId; label: string }> = [
   { id: 'settings', label: 'Settings' },
   { id: 'achievements', label: 'Achievements' },
   { id: 'support', label: 'Customer Support' },
+  { id: 'certificates', label: 'Certification Program' },
 ];
 
 // ── Customer Support ──────────────────────────────────────────────────────────
