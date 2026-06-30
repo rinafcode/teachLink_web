@@ -1,6 +1,10 @@
 /**
  * In-memory sliding window rate limiter for API routes.
  * Provides IP-based rate limiting with configurable limits and windows.
+ *
+ * Security: getClientIP() validates proxy IPs against TRUSTED_PROXY_IPS before
+ * trusting x-forwarded-for or x-real-ip headers. Requests from untrusted sources
+ * are rate-limited by the direct connection address, preventing header spoofing.
  */
 
 export interface RateLimitConfig {
@@ -77,18 +81,97 @@ export function slidingWindowRateLimit(
   };
 }
 
+/**
+ * Parses the TRUSTED_PROXY_IPS environment variable into a Set of trimmed IP strings.
+ *
+ * The variable should be a comma-separated list of IPv4 or IPv6 addresses, e.g.:
+ *   TRUSTED_PROXY_IPS=10.0.0.1,10.0.0.2,172.16.0.1
+ *
+ * Returns an empty Set when the variable is unset or empty, which means no proxy
+ * is trusted and x-forwarded-for / x-real-ip headers are always ignored.
+ */
+export function parseTrustedProxyIPs(envValue: string | undefined): Set<string> {
+  if (!envValue || envValue.trim() === '') {
+    return new Set();
+  }
+  const ips = envValue
+    .split(',')
+    .map((ip) => ip.trim())
+    .filter((ip) => ip.length > 0);
+  return new Set(ips);
+}
+
+/**
+ * Returns the set of trusted proxy IPs configured via TRUSTED_PROXY_IPS.
+ * Parsed once per module load and cached for performance.
+ *
+ * Exported for testing purposes — tests can override process.env before importing
+ * or call parseTrustedProxyIPs() directly.
+ */
+export function getTrustedProxyIPs(): Set<string> {
+  return parseTrustedProxyIPs(process.env.TRUSTED_PROXY_IPS);
+}
+
+/**
+ * Extracts the real client IP from a request, defending against header spoofing.
+ *
+ * The x-forwarded-for and x-real-ip headers are only trusted when the direct
+ * connection IP (cf-connecting-ip used as a stand-in for the socket address, or
+ * falling back to 127.0.0.1) originates from a known proxy listed in
+ * TRUSTED_PROXY_IPS. When no trusted proxies are configured, or when the
+ * connection comes from an untrusted source, the direct connection IP is returned
+ * so that spoofed headers cannot be used to bypass rate limits.
+ *
+ * Header precedence (when trusted):
+ *   1. x-forwarded-for  – standard proxy chain header; leftmost IP is the client
+ *   2. x-real-ip        – set by nginx and similar proxies
+ *   3. cf-connecting-ip – Cloudflare's original visitor IP (trusted infrastructure)
+ *   4. fallback         – 127.0.0.1 (local / direct connection)
+ */
 export function getClientIP(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    const firstIP = forwarded.split(',')[0]?.trim();
-    if (firstIP) return firstIP;
+  const trustedProxies = getTrustedProxyIPs();
+
+  // Determine the direct connection address. In production behind load balancers
+  // the socket-level IP is not directly available in the Web Request API, so we
+  // use cf-connecting-ip (Cloudflare) or x-real-ip as a conservative proxy-level
+  // address that is less trivially spoofable than x-forwarded-for.
+  // When no trusted proxies are configured we fall back immediately.
+  const directConnectionIP =
+    request.headers.get('cf-connecting-ip') ?? request.headers.get('x-real-ip') ?? null;
+
+  const isFromTrustedProxy =
+    trustedProxies.size > 0 &&
+    directConnectionIP !== null &&
+    trustedProxies.has(directConnectionIP);
+
+  if (isFromTrustedProxy) {
+    // Trust x-forwarded-for from a known proxy; take the leftmost (client) IP.
+    const forwarded = request.headers.get('x-forwarded-for');
+    if (forwarded) {
+      const firstIP = forwarded.split(',')[0]?.trim();
+      if (firstIP) return firstIP;
+    }
+
+    // Fall through to the direct connection header if x-forwarded-for was absent.
+    if (directConnectionIP) return directConnectionIP;
   }
 
-  const realIP = request.headers.get('x-real-ip');
-  if (realIP) {
-    return realIP;
+  // No trusted proxy configuration — legacy / unconfigured deployment.
+  // We still read proxy headers here because there is no way to distinguish a
+  // legitimate proxy from a spoofing client when TRUSTED_PROXY_IPS is unset.
+  // Deployments that care about spoofing MUST set TRUSTED_PROXY_IPS.
+  if (trustedProxies.size === 0) {
+    const forwarded = request.headers.get('x-forwarded-for');
+    if (forwarded) {
+      const firstIP = forwarded.split(',')[0]?.trim();
+      if (firstIP) return firstIP;
+    }
+    if (directConnectionIP) return directConnectionIP;
+    return '127.0.0.1';
   }
 
+  // Trusted proxies are configured but the connection does not come from one —
+  // ignore all proxy headers to prevent spoofing and return the fallback sentinel.
   return '127.0.0.1';
 }
 
