@@ -90,6 +90,9 @@ export const RATE_LIMIT_TIERS = {
   AUTH: { limit: 5, windowMs: 60_000 },
   WRITE: { limit: 30, windowMs: 60_000 },
   READ: { limit: 60, windowMs: 60_000 },
+  // Lower tier for unauthenticated, client-driven endpoints (e.g. error
+  // reporting) that are prone to log-flooding abuse.
+  REPORTING: { limit: 10, windowMs: 60_000 },
 } as const;
 
 export type RateLimitTier = keyof typeof RATE_LIMIT_TIERS;
