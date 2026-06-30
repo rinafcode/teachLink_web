@@ -1,6 +1,10 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Enable experimental instrumentation
+  experimental: {
+    instrumentationHook: true,
+  },
   // PWA Service Worker configuration
   headers: async () => [
     {
