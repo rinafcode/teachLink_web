@@ -10,6 +10,12 @@ import {
   buildVerificationMailContext,
   createOrRestoreVerification,
 } from '@/lib/auth/email-verification';
+import {
+  validateReferralCode,
+  referralCodeExists,
+  getReferralCodeOwner,
+  generateReferralCode,
+} from '@/lib/referral';
 
 export const runtime = 'nodejs';
 
@@ -116,6 +122,7 @@ export async function POST(
     }
 
     const userId = randomUUID();
+    const userReferralCode = generateReferralCode();
     edgeLog('info', route, 'Account created', {
       userId,
       verificationId: verificationResult.record.verificationId,
