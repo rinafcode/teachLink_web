@@ -21,6 +21,12 @@ export const metadata: Metadata = {
     'max-image-preview': 'large',
     'max-video-preview': -1,
   },
+  twitter: {
+    card: 'summary',
+    site: '@teachlink',
+    title: 'Privacy Policy | TeachLink',
+    description: 'Learn how TeachLink collects, uses, and protects your personal information.',
+  },
 };
 
 /**
