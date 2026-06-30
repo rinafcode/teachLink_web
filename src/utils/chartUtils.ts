@@ -11,6 +11,7 @@ import {
   generateDateLabels,
   generateSampleData,
 } from '@/utils/visualizationUtils';
+import { getNumberFormat } from './intlCache';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ export const formatDashboardMetric = (
 ): string => {
   switch (type) {
     case 'currency':
-      return new Intl.NumberFormat('en-US', {
+      return getNumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
         maximumFractionDigits: 0,

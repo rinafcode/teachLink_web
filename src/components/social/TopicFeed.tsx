@@ -1,8 +1,20 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
-import { UserCircle, Heart, MessageCircle, TrendingUp, Clock, ArrowUp } from 'lucide-react';
+import {
+  UserCircle,
+  Heart,
+  MessageCircle,
+  TrendingUp,
+  Clock,
+  ArrowUp,
+  Zap,
+  RefreshCw,
+  Hash,
+  BookOpen,
+} from 'lucide-react';
 import { useTopicFeed, type SortOption } from '@/hooks/useTopicFeed';
 import { getRelativeTime, formatFollowerCount } from '@/utils/socialUtils';
 
@@ -35,11 +47,16 @@ const SORT_OPTIONS: { value: SortOption; label: string; icon: React.ReactNode }[
 interface SortBarProps {
   current: SortOption;
   onChange: (s: SortOption) => void;
+  postCount?: number;
 }
 
-function SortBar({ current, onChange }: SortBarProps) {
+function SortBar({ current, onChange, postCount }: SortBarProps) {
   return (
-    <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg" role="group" aria-label="Sort posts">
+    <div
+      className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg"
+      role="group"
+      aria-label="Sort posts"
+    >
       {SORT_OPTIONS.map(({ value, label, icon }) => (
         <button
           key={value}
@@ -66,8 +83,20 @@ interface TopicFeedProps {
 }
 
 export default function TopicFeed({ slug }: TopicFeedProps) {
-  const { topic, posts, loading, loadingMore, hasMore, sort, setSort, loadMore, error } =
-    useTopicFeed(slug);
+  const {
+    topic,
+    posts,
+    loading,
+    loadingMore,
+    hasMore,
+    sort,
+    setSort,
+    loadMore,
+    retry,
+    toggleFollow,
+    followLoading,
+    error,
+  } = useTopicFeed(slug);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Infinite scroll via IntersectionObserver
@@ -92,13 +121,45 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
           <div className="animate-pulse space-y-2">
             <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24 mt-3" />
           </div>
         ) : topic ? (
           <>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">#{topic.name}</h1>
-            {topic.description && (
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{topic.description}</p>
-            )}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shrink-0"
+                  aria-hidden="true"
+                >
+                  <Hash className="w-5 h-5" />
+                </span>
+                <div className="min-w-0">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                    #{topic.name}
+                  </h1>
+                  {topic.description && (
+                    <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                      {topic.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Follow button */}
+              <button
+                onClick={toggleFollow}
+                disabled={followLoading}
+                aria-label={topic.isFollowing ? `Unfollow #${topic.name}` : `Follow #${topic.name}`}
+                className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-60 ${
+                  topic.isFollowing
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {followLoading ? '…' : topic.isFollowing ? 'Following' : 'Follow'}
+              </button>
+            </div>
+
             <div className="mt-3 flex gap-4 text-sm text-gray-500 dark:text-gray-400">
               <span>
                 <strong className="text-gray-900 dark:text-white">
@@ -118,9 +179,7 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
       </div>
 
       {/* Sort bar */}
-      <div className="flex items-center justify-between">
-        <SortBar current={sort} onChange={setSort} />
-      </div>
+      <SortBar current={sort} onChange={setSort} postCount={topic?.postCount} />
 
       {/* Posts list */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
@@ -131,23 +190,48 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
 
         {/* Error state */}
         {error && !loading && (
-          <div className="p-8 text-center" role="alert">
+          <div className="p-10 text-center space-y-3" role="alert">
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <button
+              onClick={retry}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            >
+              <RefreshCw className="w-4 h-4" aria-hidden="true" />
+              Retry
+            </button>
           </div>
         )}
 
         {/* Empty state */}
         {!loading && !error && posts.length === 0 && (
-          <div className="p-10 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              No posts in this topic yet. Be the first to share!
+          <div className="p-12 text-center space-y-3">
+            <span
+              className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400"
+              aria-hidden="true"
+            >
+              <BookOpen className="w-6 h-6" />
+            </span>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              No posts yet in #{topic?.name ?? slug}
             </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Be the first to share your knowledge!
+            </p>
+            <Link
+              href="/create"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+              Create a post
+            </Link>
           </div>
         )}
 
         {/* Post items */}
         {posts.map((post) => (
-          <article key={post.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+          <article
+            key={post.id}
+            className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          >
             <div className="flex gap-3">
               {post.authorAvatar ? (
                 <Image
@@ -163,10 +247,15 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <Link
+                    href={`/profile/${post.authorId}`}
+                    className="font-medium text-gray-900 dark:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                  >
                     {post.authorName}
+                  </Link>
+                  <span className="text-gray-400 dark:text-gray-500" aria-hidden="true">
+                    ·
                   </span>
-                  <span className="text-gray-400 dark:text-gray-500">·</span>
                   <time
                     dateTime={post.createdAt.toISOString()}
                     className="text-gray-500 dark:text-gray-400"
@@ -175,14 +264,33 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
                   </time>
                 </div>
 
-                <h2 className="mt-1 text-base font-semibold text-gray-900 dark:text-white leading-snug">
-                  {post.title}
-                </h2>
+                <Link
+                  href={`/post/${post.id}`}
+                  className="group block mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                >
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {post.title}
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {post.body}
+                  </p>
+                </Link>
 
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-                  {post.body}
-                </p>
+                {/* Tags */}
+                {post.tags && post.tags.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1" aria-label="Post tags">
+                    {post.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
+                {/* Actions row */}
                 <div className="mt-3 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                   <span className="flex items-center gap-1">
                     <Heart className="w-4 h-4" aria-hidden="true" />
@@ -194,6 +302,16 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
                     <span>{formatFollowerCount(post.commentCount)}</span>
                     <span className="sr-only">comments</span>
                   </span>
+
+                  {/* Tip button */}
+                  <Link
+                    href={`/post/${post.id}?tip=1`}
+                    className="ml-auto flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-medium hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                    aria-label={`Tip ${post.authorName} for this post`}
+                  >
+                    <Zap className="w-3.5 h-3.5" aria-hidden="true" />
+                    Tip
+                  </Link>
                 </div>
               </div>
             </div>

@@ -9,7 +9,7 @@ export const runtime = 'edge';
  */
 export async function GET() {
   edgeLog('info', '/api/health', 'Health check ping received');
-  
+
   return NextResponse.json(
     {
       status: 'healthy',

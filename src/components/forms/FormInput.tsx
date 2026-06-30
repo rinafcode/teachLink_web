@@ -13,6 +13,7 @@ interface FormInputProps
   children?: React.ReactNode; // For select options
   rows?: number; // Explicitly add rows for textarea
   helperText?: React.ReactNode;
+  certificationProgram?: string;
 }
 
 /**
@@ -29,6 +30,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   id,
   required,
   helperText,
+  certificationProgram,
   'aria-describedby': ariaDescribedBy,
   ...props
 }) => {
@@ -42,12 +44,17 @@ export const FormInput: React.FC<FormInputProps> = ({
   const isError = !!error;
   const inputId = id ?? `${name}-${generatedId}`;
   const helperTextId = helperText ? `${inputId}-helper` : undefined;
+  const certificationProgramId = certificationProgram
+    ? `${inputId}-certification-program`
+    : undefined;
   const errorId = isError ? `${inputId}-error` : undefined;
   const describedBy =
-    [ariaDescribedBy, helperTextId, errorId].filter(Boolean).join(' ') || undefined;
+    [ariaDescribedBy, helperTextId, certificationProgramId, errorId].filter(Boolean).join(' ') ||
+    undefined;
 
+  const paddingLeftClass = Icon ? 'pl-10' : 'pl-4';
   const baseStyles = `
-    w-full pl-${Icon ? '10' : '4'} pr-4 py-2.5 
+    w-full ${paddingLeftClass} pr-4 py-2.5 
     bg-gray-50 border rounded-xl 
     focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
     outline-none transition-all duration-200 
@@ -63,6 +70,14 @@ export const FormInput: React.FC<FormInputProps> = ({
       >
         {label}
       </label>
+      {certificationProgram && (
+        <p
+          id={certificationProgramId}
+          className="mt-1 text-xs font-semibold text-blue-700 dark:text-blue-200"
+        >
+          Certification program: {certificationProgram}
+        </p>
+      )}
       <div className="relative group">
         {Icon && (
           <div

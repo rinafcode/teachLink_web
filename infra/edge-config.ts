@@ -6,8 +6,7 @@
 export const EDGE_REGION = process.env.EDGE_REGION ?? 'auto';
 export const EDGE_CACHE_TTL = parseInt(process.env.EDGE_CACHE_TTL ?? '60', 10);
 export const EDGE_LOG_LEVEL = process.env.EDGE_LOG_LEVEL ?? 'info';
-export const EDGE_ENABLE_LOGGING =
-  process.env.EDGE_ENABLE_LOGGING !== 'false';
+export const EDGE_ENABLE_LOGGING = process.env.EDGE_ENABLE_LOGGING !== 'false';
 
 // ── CDN caching strategy ──────────────────────────────────────────────────────
 // s-maxage controls edge/CDN cache lifetime; stale-while-revalidate allows
