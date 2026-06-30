@@ -1,0 +1,117 @@
+{{- if .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "teachlink-backend.fullname" . }}-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "teachlink-backend.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "teachlink-backend.chart" . }}
+    {{- if .Values.prometheusRule.additionalLabels }}
+    {{- toYaml .Values.prometheusRule.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    # ──────────────────────────────────────────────────────────────────────────
+    # Group: SLA — fires when the service breaches contractual error/latency SLAs
+    # ──────────────────────────────────────────────────────────────────────────
+    - name: teachlink.sla
+      interval: 30s
+      rules:
+
+        # HighErrorRate
+        # Fires when the proportion of 5xx responses exceeds 1 % over a 5-minute
+        # window. Requires the "http_requests_total" counter with a "status_code"
+        # label emitted by the NestJS Prometheus interceptor.
+        - alert: HighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{
+                job="{{ .Values.prometheusRule.jobLabel }}",
+                status_code=~"5.."
+              }[5m]))
+              /
+              sum(rate(http_requests_total{
+                job="{{ .Values.prometheusRule.jobLabel }}"
+              }[5m]))
+            ) > {{ .Values.prometheusRule.thresholds.errorRatePct | default 0.01 }}
+          for: 5m
+          labels:
+            severity: critical
+            team: backend
+            service: teachlink-backend
+          annotations:
+            summary: "High 5xx error rate on TeachLink backend"
+            description: "The 5xx error rate has exceeded the 1% SLA threshold. See runbook for triage steps."
+            runbook_url: "{{ .Values.prometheusRule.runbookBaseUrl }}/RUNBOOKS.md#higherrorrate"
+
+        # HighP99Latency
+        # Fires when the 99th-percentile request latency exceeds 1 second for
+        # 10 consecutive minutes. Requires the "http_request_duration_seconds"
+        # histogram emitted by the NestJS metrics module.
+        - alert: HighP99Latency
+          expr: |
+            histogram_quantile(
+              0.99,
+              sum by (le) (
+                rate(http_request_duration_seconds_bucket{
+                  job="{{ .Values.prometheusRule.jobLabel }}"
+                }[5m])
+              )
+            ) > {{ .Values.prometheusRule.thresholds.p99LatencySeconds | default 1.0 }}
+          for: 10m
+          labels:
+            severity: warning
+            team: backend
+            service: teachlink-backend
+          annotations:
+            summary: "P99 request latency exceeds 1 s on TeachLink backend"
+            description: "P99 latency is above the 1 s SLA threshold for 10 minutes. See runbook for triage steps."
+            runbook_url: "{{ .Values.prometheusRule.runbookBaseUrl }}/RUNBOOKS.md#highp99latency"
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Group: queues — fires on job-queue saturation or dead-letter accumulation
+    # ──────────────────────────────────────────────────────────────────────────
+    - name: teachlink.queues
+      interval: 60s
+      rules:
+
+        # QueueDepthHigh
+        # Fires when any Bull/BullMQ queue has more than 1 000 waiting jobs for
+        # 10 consecutive minutes. Requires the "bull_queue_waiting" gauge emitted
+        # by the @willsoto/nestjs-prometheus Bull metrics plugin.
+        - alert: QueueDepthHigh
+          expr: |
+            bull_queue_waiting{
+              job="{{ .Values.prometheusRule.jobLabel }}"
+            } > {{ .Values.prometheusRule.thresholds.queueDepth | default 1000 }}
+          for: 10m
+          labels:
+            severity: warning
+            team: backend
+            service: teachlink-backend
+          annotations:
+            summary: "Job queue depth exceeds 1 000 on TeachLink backend"
+            description: "A Bull/BullMQ queue has more than 1000 waiting jobs for 10 minutes. See runbook for triage steps."
+            runbook_url: "{{ .Values.prometheusRule.runbookBaseUrl }}/RUNBOOKS.md#queuedepthhigh"
+
+        # DLQDepthHigh
+        # Fires when the dead-letter queue depth exceeds threshold, indicating
+        # jobs are repeatedly failing. Requires the "bull_queue_failed" gauge.
+        - alert: DLQDepthHigh
+          expr: |
+            bull_queue_failed{
+              job="{{ .Values.prometheusRule.jobLabel }}"
+            } > {{ .Values.prometheusRule.thresholds.dlqDepth | default 50 }}
+          for: 5m
+          labels:
+            severity: critical
+            team: backend
+            service: teachlink-backend
+          annotations:
+            summary: "Dead-letter queue depth is growing on TeachLink backend"
+            description: "More than 50 jobs have moved to the failed DLQ and are not being retried. See runbook for triage steps."
+            runbook_url: "{{ .Values.prometheusRule.runbookBaseUrl }}/RUNBOOKS.md#dlqdepthhigh"
+{{- end }}

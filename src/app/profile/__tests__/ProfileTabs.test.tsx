@@ -1,11 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import { ThemeProvider } from '@/lib/theme-provider';
 import ProfileTabs from '../components/ProfileTabs';
+
+function renderWithTheme(ui: React.ReactElement) {
+  return render(<ThemeProvider defaultTheme="light">{ui}</ThemeProvider>);
+}
 
 describe('ProfileTabs', () => {
   it('renders the profile panel first to keep initial work minimal', () => {
-    render(<ProfileTabs />);
+    renderWithTheme(<ProfileTabs />);
 
     expect(screen.getByRole('tab', { name: 'Profile' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tabpanel', { name: 'Profile' })).toBeInTheDocument();
@@ -17,7 +22,7 @@ describe('ProfileTabs', () => {
   it('loads settings only when the settings tab is selected', async () => {
     const user = userEvent.setup();
 
-    render(<ProfileTabs />);
+    renderWithTheme(<ProfileTabs />);
     await user.click(screen.getByRole('tab', { name: 'Settings' }));
 
     await waitFor(() =>
@@ -33,7 +38,7 @@ describe('ProfileTabs', () => {
   it('loads achievements only when the achievements tab is selected', async () => {
     const user = userEvent.setup();
 
-    render(<ProfileTabs />);
+    renderWithTheme(<ProfileTabs />);
     await user.click(screen.getByRole('tab', { name: 'Achievements' }));
 
     await waitFor(() =>
@@ -50,7 +55,7 @@ describe('ProfileTabs', () => {
   it('loads certificates only when the certificates tab is selected', async () => {
     const user = userEvent.setup();
 
-    render(<ProfileTabs />);
+    renderWithTheme(<ProfileTabs />);
     await user.click(screen.getByRole('tab', { name: 'Certification Program' }));
 
     await waitFor(() =>
