@@ -5,6 +5,8 @@
  * See ./db.ts for CRUD operations.
  */
 
+import type { FeatureFlag, AuditEntry, TargetingRule, RolloutStrategy } from './types';
+
 // Re-export types and database functions
 export type { FeatureFlag, AuditEntry, TargetingRule, RolloutStrategy } from './types';
 export {
@@ -17,44 +19,6 @@ export {
   getAuditLog,
   generateId,
 } from './db';
-
-// ─── Evaluation Logic ─────────────────────────────────────────────────────────
-
-import type { FeatureFlag } from './types';
-export interface TargetingRule {
-  /** e.g. "userId", "email", "country", "plan" */
-  attribute: string;
-  operator: 'equals' | 'contains' | 'startsWith' | 'in';
-  /** string or comma-separated list for 'in' */
-  value: string;
-}
-
-export interface FeatureFlag {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  strategy: RolloutStrategy;
-  /** 0–100, used when strategy === 'percentage' */
-  percentage: number;
-  /** used when strategy === 'targeting' */
-  rules: TargetingRule[];
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-}
-
-export interface AuditEntry {
-  id: string;
-  flagId: string;
-  flagName: string;
-  action: 'created' | 'updated' | 'deleted' | 'toggled';
-  actor: string;
-  before: Partial<FeatureFlag> | null;
-  after: Partial<FeatureFlag> | null;
-  timestamp: string;
-}
 
 // ─── In-process stores ────────────────────────────────────────────────────────
 
@@ -111,34 +75,7 @@ for (const f of SEED_FLAGS) {
   flagStore.set(f.id, f);
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-export function generateId(prefix = ''): string {
-  const uuid = crypto.randomUUID();
-  return prefix ? `${prefix}_${uuid}` : uuid;
-}
-
-export function createAuditEntry(
-  action: AuditEntry['action'],
-  actor: string,
-  before: FeatureFlag | null,
-  after: FeatureFlag | null,
-): AuditEntry {
-  const entry: AuditEntry = {
-    id: generateId('audit'),
-    flagId: (after ?? before)!.id,
-    flagName: (after ?? before)!.name,
-    action,
-    actor,
-    before: before ? { ...before } : null,
-    after: after ? { ...after } : null,
-    timestamp: new Date().toISOString(),
-  };
-  // Keep last 500 audit entries
-  auditLog.unshift(entry);
-  if (auditLog.length > 500) auditLog.length = 500;
-  return entry;
-}
+// ─── Evaluation Logic ─────────────────────────────────────────────────────────
 
 /**
  * Evaluate whether a flag is active for a given user context.
