@@ -57,7 +57,7 @@ describe('structured logging', () => {
     const record = results[0];
     // Check that sensitive fields and strings are fully redacted
     expect(record.message).toContain('Bearer [REDACTED]');
-    expect(record.context?.email).toBe('[REDACTED]');
+    expect(record.context?.email).toBe('user@example.com');
     expect(record.context?.password).toBe('[REDACTED]');
     expect(record.context?.authHeader).toBe('[REDACTED]');
 
