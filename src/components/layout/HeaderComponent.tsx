@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useWallet } from '@/hooks/useWallet';
 import { IGrantContext } from '@/types/grants';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('HeaderComponent');
 
 export default function HeaderComponent() {
   const { connected, publicKey, connect } = useWallet();
@@ -51,7 +54,7 @@ export default function HeaderComponent() {
           });
         }
       } catch (err) {
-        console.error('Failed to synchronize active authorization grants:', err);
+        logger.error('Failed to synchronize active authorization grants', { error: err });
         if (isMounted) {
           setGrantsState((prev) => ({ ...prev, loading: false }));
         }

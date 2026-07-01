@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-offline-sync');
 
 /**
  * Hook to manage offline state and handle background/foreground syncing when connectivity returns
@@ -34,7 +37,7 @@ export function useOfflineSync(syncCallback?: () => Promise<void>) {
 
       setLastSynced(new Date());
     } catch (error) {
-      console.error('Offline synchronization failed:', error);
+      logger.error('Offline synchronization failed', { error });
     } finally {
       setIsSyncing(false);
     }

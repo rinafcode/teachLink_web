@@ -6,6 +6,9 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-analytics-error-tracking');
 
 // Error types for analytics-specific errors
 export type AnalyticsErrorType =
@@ -129,7 +132,7 @@ export const useAnalyticsErrorTracking = (
       });
     } catch (reportingErr) {
       // Fail silently - don't create an infinite loop of error reporting
-      console.warn('Failed to report error to server:', reportingErr);
+      logger.warn('Failed to report error to server', { error: reportingErr });
     }
   }, []);
 
@@ -162,9 +165,9 @@ export const useAnalyticsErrorTracking = (
 
       // Log to console in development for debugging
       if (process.env.NODE_ENV === 'development') {
-        console.error(`[Analytics Error] ${type}: ${message}`, {
+        logger.error(`[Analytics Error] ${type}: ${message}`, {
           error,
-          context: newError.context,
+          context: newError.context as unknown as Record<string, unknown>,
         });
       }
     },

@@ -8,6 +8,9 @@ import {
   isConnectionError,
   formatSubscriptionError,
 } from '@/lib/graphql/subscriptions';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-subscription');
 
 export { ConnectionState, getConnectionManager, isConnectionError, formatSubscriptionError };
 
@@ -334,7 +337,7 @@ export function usePollableSubscription<TData = any, TVariables extends Operatio
           const data = await pollFn();
           updateData(data);
         } catch (err) {
-          console.error('Poll failed:', err);
+          logger.error('Poll failed', { error: err });
         }
 
         pollTimeoutRef.current = setTimeout(poll, pollIntervalMs);

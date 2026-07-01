@@ -29,7 +29,6 @@ function getActorId(request: Request): string {
   return (
     getRequestHeader(request, 'x-admin-user') ||
     getRequestHeader(request, 'x-user-id') ||
-    getRequestHeader(request, 'x-user-email') ||
     'anonymous'
   );
 }

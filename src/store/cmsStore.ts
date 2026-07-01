@@ -49,11 +49,11 @@ export const useCMSStore = create<CMSState>()(
         set((state) => {
           let newHistory = state.history.slice(0, state.historyIndex + 1);
           newHistory.push(course);
-          
+
           if (newHistory.length > 20) {
             newHistory = newHistory.slice(newHistory.length - 20);
           }
-          
+
           return {
             course,
             history: newHistory,
@@ -68,7 +68,7 @@ export const useCMSStore = create<CMSState>()(
           let newHistory = state.history.slice(0, state.historyIndex + 1);
 
           newHistory.push(updatedCourse);
-          
+
           if (newHistory.length > 20) {
             newHistory = newHistory.slice(newHistory.length - 20);
           }
@@ -115,7 +115,9 @@ export const useCMSStore = create<CMSState>()(
 
       updateUploadProgress: (id, progress) => {
         set((state) => ({
-          mediaQueue: state.mediaQueue.map((task) => (task.id === id ? { ...task, progress } : task)),
+          mediaQueue: state.mediaQueue.map((task) =>
+            task.id === id ? { ...task, progress } : task,
+          ),
         }));
       },
 
@@ -139,6 +141,6 @@ export const useCMSStore = create<CMSState>()(
         history: state.history,
         historyIndex: state.historyIndex,
       }),
-    }
-  )
+    },
+  ),
 );
