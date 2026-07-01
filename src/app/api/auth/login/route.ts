@@ -6,6 +6,8 @@ import { LoginRequestSchema } from '@/types/api/auth.dto';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
 import { getVerificationStatus } from '@/lib/auth/email-verification';
+import { signToken } from '@/lib/auth/jwt';
+import { UserRole } from '@/types/api';
 import { findUserByEmail, TIMING_SAFE_DUMMY_HASH } from '@/lib/db/pool';
 
 export const runtime = 'nodejs';
@@ -41,14 +43,16 @@ export async function POST(
     if (verification && verification.required && verification.status !== 'verified') {
       return addHeaders(
         NextResponse.json(
-          {
-            message: 'Email verification required',
-            verification,
-          },
+          { message: 'Email verification required', verification },
           { status: 403 },
         ),
       );
     }
+
+    const role = Object.values(UserRole).includes(user.role as UserRole)
+      ? (user.role as UserRole)
+      : UserRole.STUDENT;
+    const token = await signToken({ sub: user.id, role, email });
 
     return addHeaders(
       NextResponse.json(
@@ -60,14 +64,13 @@ export async function POST(
             email,
             role: user.role,
           },
-          token: `mock-jwt-token-${Date.now()}`,
+          token,
         },
         { status: 200 },
       ),
     );
   } catch (error) {
     console.error('Login error:', error);
-
     return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
 }
