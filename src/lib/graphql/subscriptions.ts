@@ -9,6 +9,9 @@ import { ApolloClient, InMemoryCache, ApolloLink, split, HttpLink } from '@apoll
 import { getMainDefinition } from '@apollo/client/utilities';
 import { DocumentNode } from 'graphql';
 import { flagStore, evaluateFlag } from '@/lib/feature-flags';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('graphql-subscriptions');
 
 /**
  * WebSocket subscription configuration options
@@ -139,7 +142,7 @@ class SubscriptionConnectionManager {
       try {
         listener(event);
       } catch (err) {
-        console.error('Error notifying subscription listener:', err);
+        logger.error('Error notifying subscription listener', { error: err });
       }
     });
   }

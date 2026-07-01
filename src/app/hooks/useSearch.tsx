@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('useSearch');
 
 export interface SearchResult {
   id: string;
@@ -162,7 +164,7 @@ export const useSearch = () => {
       try {
         setSearchHistory(JSON.parse(saved));
       } catch (e) {
-        console.error('Error loading search history:', e);
+        logger.error('Error loading search history', { error: e });
       }
     }
   }, []);
