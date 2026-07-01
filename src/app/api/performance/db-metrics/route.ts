@@ -60,7 +60,6 @@ export async function GET(request: NextRequest) {
       ],
     });
   } catch (error) {
-    logger.error('Failed to fetch DB metrics:', error);
     logger.error('Failed to fetch DB metrics', { error });
     return NextResponse.json(
       { success: false, message: 'Failed to fetch database metrics' },
