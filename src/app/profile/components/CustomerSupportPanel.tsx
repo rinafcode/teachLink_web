@@ -20,7 +20,7 @@ function FaqItem({ id, question, answer }: FaqItemProps) {
   const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       <h3>
         <button
           type="button"
@@ -28,13 +28,21 @@ function FaqItem({ id, question, answer }: FaqItemProps) {
           aria-expanded={isOpen}
           aria-controls={panelId}
           onClick={toggle}
-          className="flex w-full items-center justify-between px-4 py-4 text-left font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors"
+          className="flex w-full items-center justify-between px-4 py-4 text-left font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors"
         >
           <span>{question}</span>
           {isOpen ? (
-            <ChevronUp size={18} className="shrink-0 text-gray-500" aria-hidden="true" />
+            <ChevronUp
+              size={18}
+              className="shrink-0 text-gray-500 dark:text-gray-400"
+              aria-hidden="true"
+            />
           ) : (
-            <ChevronDown size={18} className="shrink-0 text-gray-500" aria-hidden="true" />
+            <ChevronDown
+              size={18}
+              className="shrink-0 text-gray-500 dark:text-gray-400"
+              aria-hidden="true"
+            />
           )}
         </button>
       </h3>
@@ -44,7 +52,7 @@ function FaqItem({ id, question, answer }: FaqItemProps) {
         role="region"
         aria-labelledby={headingId}
         hidden={!isOpen}
-        className="px-4 pb-4 text-sm text-gray-600 leading-relaxed"
+        className="px-4 pb-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed"
       >
         {answer}
       </div>
@@ -78,15 +86,15 @@ function ContactForm() {
       <div
         role="status"
         aria-live="polite"
-        className="rounded-lg bg-green-50 border border-green-200 p-6 text-center"
+        className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-6 text-center"
       >
-        <p className="text-green-800 font-medium">
+        <p className="text-green-800 dark:text-green-300 font-medium">
           ✅ Your message has been sent. We&apos;ll get back to you within 24 hours.
         </p>
         <button
           type="button"
           onClick={() => setSubmitState('idle')}
-          className="mt-4 text-sm text-green-700 underline hover:text-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
+          className="mt-4 text-sm text-green-700 dark:text-green-400 underline hover:text-green-900 dark:hover:text-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
         >
           Send another message
         </button>
@@ -97,7 +105,10 @@ function ContactForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <div>
-        <label htmlFor="support-subject" className="mb-1 block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="support-subject"
+          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Subject
         </label>
         <input
@@ -107,12 +118,15 @@ function ContactForm() {
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder="Briefly describe your issue"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:placeholder-gray-400"
         />
       </div>
 
       <div>
-        <label htmlFor="support-message" className="mb-1 block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="support-message"
+          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Message
         </label>
         <textarea
@@ -122,12 +136,12 @@ function ContactForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Describe your issue in detail…"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 resize-none dark:placeholder-gray-400"
         />
       </div>
 
       {submitState === 'error' && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           Something went wrong. Please try again.
         </p>
       )}
@@ -135,7 +149,7 @@ function ContactForm() {
       <button
         type="submit"
         disabled={submitState === 'submitting' || !subject.trim() || !message.trim()}
-        className="rounded-lg bg-blue-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-lg bg-blue-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitState === 'submitting' ? 'Sending…' : 'Send Message'}
       </button>
@@ -157,8 +171,8 @@ function CustomerSupportPanel() {
   return (
     <section id="support-panel" role="tabpanel" aria-labelledby="support-tab" className="space-y-8">
       {/* Contact Options */}
-      <div className="rounded-lg bg-white p-6 shadow">
-        <h2 className="mb-6 text-xl font-semibold text-gray-900">Contact Us</h2>
+      <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow transition-colors duration-200">
+        <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">Contact Us</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {supportContactOptions.map((option) => {
             const Icon = contactIcons[option.icon as keyof typeof contactIcons] ?? Mail;
@@ -168,12 +182,14 @@ function CustomerSupportPanel() {
                 href={option.href}
                 target={option.href.startsWith('http') ? '_blank' : undefined}
                 rel={option.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 p-4 text-center transition-colors hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-center transition-colors hover:border-blue-300 hover:bg-blue-50 dark:hover:border-blue-600 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-label={option.ariaLabel}
               >
                 <Icon size={24} className="text-blue-500" aria-hidden="true" />
-                <span className="font-medium text-gray-900">{option.label}</span>
-                <span className="text-xs text-gray-500">{option.description}</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">{option.label}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {option.description}
+                </span>
               </a>
             );
           })}
@@ -181,8 +197,10 @@ function CustomerSupportPanel() {
       </div>
 
       {/* FAQ */}
-      <div className="rounded-lg bg-white p-6 shadow">
-        <h2 className="mb-6 text-xl font-semibold text-gray-900">Frequently Asked Questions</h2>
+      <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow transition-colors duration-200">
+        <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Frequently Asked Questions
+        </h2>
         <div className="space-y-3">
           {supportFaqs.map((faq) => (
             <FaqItem key={faq.id} id={faq.id} question={faq.question} answer={faq.answer} />
@@ -191,9 +209,11 @@ function CustomerSupportPanel() {
       </div>
 
       {/* Contact Form */}
-      <div className="rounded-lg bg-white p-6 shadow">
-        <h2 className="mb-2 text-xl font-semibold text-gray-900">Send Us a Message</h2>
-        <p className="mb-6 text-sm text-gray-500">
+      <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow transition-colors duration-200">
+        <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Send Us a Message
+        </h2>
+        <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
           Can&apos;t find what you&apos;re looking for? Fill out the form below and our support team
           will respond within 24 hours.
         </p>
