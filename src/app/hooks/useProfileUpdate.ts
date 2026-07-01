@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('useProfileUpdate');
 
 interface ProfileData {
   firstName: string;
@@ -36,7 +38,7 @@ export function useProfileUpdate() {
 
       return response.data;
     } catch (error) {
-      console.error('Error updating profile:', error);
+      logger.error('Error updating profile', { error });
       throw error;
     } finally {
       setIsLoading(false);

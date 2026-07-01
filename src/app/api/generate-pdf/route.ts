@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generatePDF } from '../../../services/pdf-generation';
 import { withTimeout } from '@/lib/timeout';
 import { generateReportHTML, ReportData } from '../../../lib/pdf/templates';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-generate-pdf');
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
         { status: 504 }
       );
     }
-    console.error('Error generating PDF:', error);
+    logger.error('Error generating PDF', { error });
     return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }
 }

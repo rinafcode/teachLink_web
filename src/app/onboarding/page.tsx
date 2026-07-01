@@ -25,6 +25,8 @@ import { useNotification } from '@/hooks/use-notification';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import type { EventProperties } from '@/utils/analytics';
 import type { WizardStep, FieldDescriptor, FormState } from '@/form-management/types/core';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('OnboardingPage');
 
 // Define field configuration for onboarding
 const onboardingFields: FieldDescriptor[] = [
@@ -154,7 +156,7 @@ export default function OnboardingPage() {
       try {
         track(name as any, properties);
       } catch (err) {
-        console.warn('[Onboarding Analytics] Failed to track event', err);
+        logger.warn('[Onboarding Analytics] Failed to track event', { error: err });
       }
     },
     [track],
