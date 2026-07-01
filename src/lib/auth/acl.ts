@@ -15,7 +15,6 @@ export const ROLES_PERMISSIONS = {
     Permission.COURSE_DOWNLOAD,
     Permission.CONTENT_ACCESS,
     Permission.CONTENT_UPLOAD,
-    Permission.ANALYTICS_VIEW,
   ],
   STUDENT: [Permission.COURSE_VIEW, Permission.COURSE_DOWNLOAD, Permission.CONTENT_ACCESS],
   GUEST: [Permission.COURSE_VIEW],
