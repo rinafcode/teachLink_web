@@ -1,6 +1,9 @@
 import { Pool, PoolConfig, QueryResult } from 'pg';
+import { createLogger } from '@/lib/logging';
 import { logContextStorage } from '@/lib/logging/context';
 import { retryWithBackoff } from '@/utils/errorUtils';
+
+const logger = createLogger('db-pool');
 
 /**
  * Database Connection Pool Management
@@ -49,7 +52,9 @@ class DatabasePool {
       DatabasePool.instance.on('connect', () => {
         if (process.env.NODE_ENV === 'development') {
           const traceId = logContextStorage.getStore()?.traceId ?? '';
-          console.log('[DB Pool] New client connected to database', traceId ? { traceId } : '');
+          logger.info('[DB Pool] New client connected to database', {
+            context: { traceId },
+          });
         }
 
         DatabasePool.consecutiveFailures = 0;
@@ -60,7 +65,10 @@ class DatabasePool {
 
       DatabasePool.instance.on('error', (err) => {
         const traceId = logContextStorage.getStore()?.traceId ?? '';
-        console.error('[DB Pool] Unexpected error on idle client', err, traceId ? { traceId } : '');
+        logger.error('[DB Pool] Unexpected error on idle client', {
+          error: err,
+          context: { traceId },
+        });
 
         DatabasePool.consecutiveFailures++;
         DatabasePool.lastFailureTime = Date.now();
@@ -166,9 +174,6 @@ class DatabasePool {
     }
   }
 
-  /**
-   * Get current pool metrics for monitoring
-   */
   public static getMetrics() {
     if (!DatabasePool.instance) {
       return {
@@ -191,9 +196,6 @@ class DatabasePool {
     };
   }
 
-  /**
-   * Gracefully shutdown the pool
-   */
   public static async end(): Promise<void> {
     if (DatabasePool.instance) {
       await DatabasePool.instance.end();
@@ -205,7 +207,7 @@ export const dbPool = DatabasePool;
 export const query = (text: string, params?: unknown[]) => {
   const traceId = logContextStorage.getStore()?.traceId ?? '';
   if (traceId && process.env.NODE_ENV === 'development') {
-    console.log('[DB Query]', { text: text.slice(0, 100), traceId });
+    logger.debug('[DB Query]', { context: { text: text.slice(0, 100), traceId } });
   }
   return DatabasePool.queryWithRetry(text, params);
 };

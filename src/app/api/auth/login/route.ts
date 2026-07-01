@@ -5,6 +5,9 @@ import { LoginRequestSchema } from '@/types/api/auth.dto';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
 import { getVerificationStatus } from '@/lib/auth/email-verification';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-auth-login');
 import { signToken } from '@/lib/auth/jwt';
 import { UserRole } from '@/types/api';
 
@@ -62,6 +65,8 @@ export async function POST(
 
     return addHeaders(NextResponse.json({ message: 'Invalid email or password' }, { status: 401 }));
   } catch (error) {
+    logger.error('Login error', { error });
+
     console.error('Login error:', error);
     return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
