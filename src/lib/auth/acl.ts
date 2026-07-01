@@ -1,11 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { User, UserRole, Permission } from '@/types/api';
 
 /**
  * Mapping of roles to their granted permissions.
  */
-export const ROLES_PERMISSIONS = {
+export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
   ADMIN: Object.values(Permission),
   INSTRUCTOR: [
     Permission.COURSE_VIEW,
@@ -18,7 +16,7 @@ export const ROLES_PERMISSIONS = {
   ],
   STUDENT: [Permission.COURSE_VIEW, Permission.COURSE_DOWNLOAD, Permission.CONTENT_ACCESS],
   GUEST: [Permission.COURSE_VIEW],
-} satisfies Record<UserRole, Permission[]>;
+};
 
 /**
  * Check if a user has a specific permission based on their role.
@@ -26,7 +24,7 @@ export const ROLES_PERMISSIONS = {
 export function hasPermission(user: User | null | undefined, permission: Permission): boolean {
   if (!user) return false;
 
-  const permissions = ROLES_PERMISSIONS[user.role] || [];
+  const permissions = ROLES_PERMISSIONS[user.role] ?? [];
   return permissions.includes(permission);
 }
 
