@@ -17,7 +17,7 @@ export const CourseProgressSchema = z.object({
   progress: z.number().min(0).max(100),
   completedLessons: z.array(z.string()),
   lastAccessedAt: z.string(),
-  completedAt: z.string().nullable(),
+  completedAt: z.string().optional(),
 });
 
 export type CourseProgress = z.infer<typeof CourseProgressSchema>;
