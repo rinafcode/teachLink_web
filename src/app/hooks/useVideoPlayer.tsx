@@ -19,7 +19,7 @@ interface UseVideoPlayerOptions {
  */
 export const useVideoPlayer = (
   videoRef: RefObject<HTMLVideoElement>,
-  options: UseVideoPlayerOptions = {}
+  options: UseVideoPlayerOptions = {},
 ) => {
   const { maxRetries = 3 } = options;
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,7 +32,6 @@ export const useVideoPlayer = (
   const [error, setError] = useState<VideoError | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-
 
   const play = useCallback(() => {
     if (videoRef.current) {
