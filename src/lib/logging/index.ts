@@ -3,12 +3,17 @@ import { logContextStorage as simpleStorage } from './context';
 import type { AsyncContextStorage, LogContextStore } from './context';
 
 // Try to enhance with Node's AsyncLocalStorage for proper async context tracking
-import { AsyncLocalStorage as NodeAsyncLocalStorage } from 'node:async_hooks';
-let nodeAsyncLocalStorage: NodeAsyncLocalStorage<LogContextStore> | null = null;
-try {
-  nodeAsyncLocalStorage = new NodeAsyncLocalStorage<LogContextStore>();
-} catch {
-  nodeAsyncLocalStorage = null;
+// (server-only: dynamically required so webpack excludes it from client bundles)
+let nodeAsyncLocalStorage: import('node:async_hooks').AsyncLocalStorage<LogContextStore> | null =
+  null;
+if (typeof window === 'undefined') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { AsyncLocalStorage } = require('node:async_hooks') as typeof import('node:async_hooks');
+    nodeAsyncLocalStorage = new AsyncLocalStorage<LogContextStore>();
+  } catch {
+    nodeAsyncLocalStorage = null;
+  }
 }
 
 export const logContextStorage: AsyncContextStorage<LogContextStore> =
