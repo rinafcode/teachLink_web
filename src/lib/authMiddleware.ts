@@ -25,7 +25,7 @@ export function requireAuth(request: NextRequest): NextResponse | null {
  * Returns null if user cannot be determined.
  */
 export function getUserFromRequest(request: NextRequest): User | null {
-  // Try to get user from Bearer token (JWT would be validated in production)
+  // Try to get user from Bearer token
   const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
@@ -33,8 +33,10 @@ export function getUserFromRequest(request: NextRequest): User | null {
     if (roleCookie) {
       return {
         id: token,
+        name: '',
         email: '',
         role: roleCookie,
+        referralCount: 0,
       };
     }
   }
@@ -44,8 +46,10 @@ export function getUserFromRequest(request: NextRequest): User | null {
   if (roleCookie) {
     return {
       id: 'cookie-user',
+      name: '',
       email: '',
       role: roleCookie,
+      referralCount: 0,
     };
   }
 
