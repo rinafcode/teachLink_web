@@ -28,13 +28,42 @@ if (typeof window !== 'undefined' && !_hookRegistered) {
       // new URL() throws for relative URLs — allow them (they stay on the same origin)
     }
   });
+
+  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    if (node.tagName === 'IFRAME') {
+      const src = node.getAttribute('src');
+      if (src === null) return;
+      let allowed = false;
+      try {
+        const parsed = new URL(src);
+        // Only allow YouTube nocookie domain
+        if (
+          SAFE_URL_SCHEMES.includes(parsed.protocol) &&
+          parsed.hostname.endsWith('youtube-nocookie.com')
+        ) {
+          allowed = true;
+        }
+      } catch {
+        // Invalid URL – not allowed
+      }
+      if (!allowed) {
+        node.removeAttribute('src');
+        node.removeAttribute('allowfullscreen');
+        return;
+      }
+      // Preserve allowfullscreen if present on allowed iframe
+      if (node.hasAttribute('allowfullscreen')) {
+        node.setAttribute('allowfullscreen', '');
+      }
+    }
+  });
 }
 
 export const sanitizeHtml = (html: string): string => {
   if (typeof window === 'undefined') return html;
   return DOMPurify.sanitize(html, {
     ADD_TAGS: ['iframe'],
-    ADD_ATTR: ['allowfullscreen', 'frameborder', 'data-youtube-video'],
+    ADD_ATTR: ['frameborder', 'src', 'allowfullscreen'],
   });
 };
 
