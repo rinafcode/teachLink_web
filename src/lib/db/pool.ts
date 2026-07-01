@@ -203,6 +203,29 @@ class DatabasePool {
   }
 }
 
+export interface UserAuthRecord {
+  id: string;
+  password_hash: string;
+  role: string;
+}
+
+/**
+ * Precomputed bcrypt hash used when no user record exists so password
+ * verification takes comparable time and cannot reveal valid emails.
+ */
+export const TIMING_SAFE_DUMMY_HASH =
+  '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+
+export async function findUserByEmail(email: string): Promise<UserAuthRecord | null> {
+  const result = await query('SELECT id, password_hash, role FROM users WHERE email = $1', [email]);
+
+  if (!result.rows.length) {
+    return null;
+  }
+
+  return result.rows[0] as UserAuthRecord;
+}
+
 export const dbPool = DatabasePool;
 export const query = (text: string, params?: unknown[]) => {
   const traceId = logContextStorage.getStore()?.traceId ?? '';

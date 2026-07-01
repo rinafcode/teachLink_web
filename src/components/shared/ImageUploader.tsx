@@ -143,7 +143,9 @@ function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: Image
                       fileSize: optimizedFile.size,
                       fileType: optimizedFile.type,
                     })
-                    .catch((error) => logger.error('Failed to track image upload event', { error }));
+                    .catch((error) =>
+                      logger.error('Failed to track image upload event', { error }),
+                    );
 
                   onImageSelect(optimizedFile);
                 }

@@ -5,15 +5,6 @@ const logger = createLogger('synchronization-engine');
 
 const CHANNEL_NAME = 'teachlink_state_sync';
 
-/** Shallow equality: primitives compared by value, objects by reference-per-key. */
-function shallowEqual(a: any, b: any): boolean {
-  if (a === b) return true;
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
-  const keysA = Object.keys(a);
-  if (keysA.length !== Object.keys(b).length) return false;
-  return keysA.every(k => a[k] === b[k]);
-}
-
 const SYNC_KEYS = ['user', 'preferences', 'offlineMode', 'lastSynced'] as const;
 
 /**
@@ -48,7 +39,9 @@ export class SynchronizationEngine {
     useStore.subscribe((state: any, prevState: any) => {
       if (this.isProcessingSync) return;
 
-      const hasChanged = SYNC_KEYS.some(key => !shallowEqual(state[key], prevState[key]));
+      const hasChanged = SYNC_KEYS.some(
+        (key) => JSON.stringify((state as any)[key]) !== JSON.stringify((prevState as any)[key]),
+      );
 
       if (hasChanged) {
         this.broadcastState(state);
@@ -58,18 +51,15 @@ export class SynchronizationEngine {
 
   private broadcastState(state: any) {
     if (!this.channel) return;
-
-<<<<<<< HEAD
     logger.debug('[SyncEngine] Broadcasting state update to other tabs');
-=======
+
     // Only send the synced slice
     const syncedState = SYNC_KEYS.reduce((acc, key) => {
       acc[key] = state[key as keyof typeof state];
       return acc;
     }, {} as any);
 
-    console.log('[SyncEngine] Broadcasting synced state slice');
->>>>>>> 02548c6ab26096252d529c7be8ea762478efef06
+    logger.debug('[SyncEngine] Broadcasting synced state slice');
     this.channel.postMessage({
       type: 'STATE_UPDATE',
       payload: syncedState,

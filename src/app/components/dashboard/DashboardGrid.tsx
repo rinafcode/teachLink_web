@@ -146,14 +146,6 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
     onWidgetChange?.(widgets);
   }, [widgets, onWidgetChange]);
 
-    try {
-      saveWidgetLayout(widgets);
-      onWidgetChange?.(widgets);
-    } catch (error) {
-      logger.error('Error saving widget layout', { error });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [widgets]); // Only depend on widgets, not the functions
   // Persist layout to localStorage at most once per 500ms via debounce
   useEffect(() => {
     if (widgets.length === 0) return;
