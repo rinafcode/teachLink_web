@@ -322,10 +322,6 @@ export function CommandPalette() {
       <PollCreationModal
         isOpen={pollModalOpen}
         onClose={() => setPollModalOpen(false)}
-        onCreate={(draft: PollDraft) => {
-          // TODO: integrate with poll creation backend/GraphQL.
-          // For now, keep placeholder to satisfy typing and modal behavior.
-          logger.info('Create poll draft', { context: { draft } });
         onCreate={async (draft: PollDraft) => {
           if (isSubmittingPoll) return;
           setIsSubmittingPoll(true);
