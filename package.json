@@ -40,6 +40,7 @@
     "db:migrate": "npx tsx scripts/run-migrations.ts"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "@apollo/client": "^3.8.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^8.0.0",
@@ -64,6 +65,7 @@
     "graphql-ws": "^5.14.0",
     "i18next": "^24.0.0",
     "idb": "^8.0.0",
+    "jose": "^6.2.3",
     "jsqr": "^1.4.0",
     "lucide-react": "^0.462.0",
     "next": "15.5.19",
@@ -109,6 +111,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/bcryptjs": "^2.4.6",
     "@types/chai": "^5.2.3",
     "@types/d3-array": "^3.2.2",
     "@types/d3-color": "^3.1.3",

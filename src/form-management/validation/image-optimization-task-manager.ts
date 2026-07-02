@@ -1,4 +1,7 @@
 import { optimizeImage, ImageOptimizationOptions } from './image-optimizer';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('image-optimization-task-manager');
 
 export interface ImageOptimizationTask {
   id: string;
@@ -301,7 +304,7 @@ export class ImageOptimizationTaskManager {
       try {
         cb(task, state);
       } catch (err) {
-        console.error('Error in task manager change callback:', err);
+        logger.error('Error in task manager change callback', { error: err });
       }
     });
   }
