@@ -147,7 +147,9 @@ export const useSearchStore = create<SearchStore>()(
           params.set('cursor', state.cursor);
         }
 
-        const url = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+        const url = `${window.location.pathname}${
+          params.toString() ? `?${params.toString()}` : ''
+        }`;
 
         if (options.push) {
           window.history.pushState({ searchState: { ...state } }, '', url);
