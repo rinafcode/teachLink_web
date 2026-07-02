@@ -60,7 +60,7 @@ export async function validateCourseCompletion(
       progress: number;
       completed_lessons: string[];
       last_accessed_at: string;
-      completed_at: string | null;
+      completed_at: string | undefined;
     };
 
     const progress: CourseProgress = {
