@@ -36,7 +36,8 @@
     "prebuild": "pnpm run check-locales && pnpm run check-i18n",
     "postbuild": "pnpm run generate:sitemap",
     "generate:sitemap": "npx tsx scripts/generate-sitemap.ts",
-    "migrate": "npx tsx src/lib/db/migrate.ts"
+    "migrate": "npx tsx src/lib/db/migrate.ts",
+    "db:migrate": "npx tsx scripts/run-migrations.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -4,12 +4,23 @@
  * This module provides comprehensive log aggregation for SMS integration,
  * collecting delivery metrics, errors, and performance data for monitoring
  * and analytics purposes.
+ *
+ * Architecture:
+ * - Small in-memory buffer (100 entries) for fast recent queries
+ * - Persistent database storage for historical data
+ * - Automatic flushing on interval or buffer capacity
  */
 
 import { LogRecord, LogQuery } from './types';
 import { createLogger } from './index';
+import { query } from '@/lib/db';
 
 const logger = createLogger('logging:sms-aggregator');
+
+// Configuration
+const IN_MEMORY_BUFFER_SIZE = parseInt(process.env.SMS_LOG_BUFFER_SIZE || '100', 10);
+const FLUSH_INTERVAL_MS = parseInt(process.env.SMS_LOG_FLUSH_INTERVAL_MS || '30000', 10); // 30 seconds
+const FLUSH_THRESHOLD = Math.floor(IN_MEMORY_BUFFER_SIZE * 0.8); // Flush at 80% capacity
 
 export interface SMSLogMetrics {
   totalMessages: number;
@@ -75,11 +86,49 @@ export interface AggregatedSMSLog {
   }>;
 }
 
-// In-memory store for SMS-specific logs
-const smsLogStore: AggregatedSMSLog[] = [];
-const MAX_SMS_LOGS = 5000;
+// In-memory buffer for recent SMS logs (fast access)
+const smsLogBuffer: AggregatedSMSLog[] = [];
+let flushTimer: NodeJS.Timeout | null = null;
 
 export class SMSLogAggregator {
+  /**
+   * Initialize the aggregator and start the flush timer
+   */
+  static initialize(): void {
+    if (!flushTimer) {
+      flushTimer = setInterval(() => {
+        this.flushToDatabase().catch((err) => {
+          logger.error('Failed to flush SMS logs to database', { error: err });
+        });
+      }, FLUSH_INTERVAL_MS);
+
+      // Ensure flush on process exit
+      process.on('beforeExit', () => {
+        this.shutdown().catch(console.error);
+      });
+
+      logger.info('SMS log aggregator initialized', {
+        context: {
+          bufferSize: IN_MEMORY_BUFFER_SIZE,
+          flushIntervalMs: FLUSH_INTERVAL_MS,
+          flushThreshold: FLUSH_THRESHOLD,
+        },
+      });
+    }
+  }
+
+  /**
+   * Shutdown the aggregator and flush remaining logs
+   */
+  static async shutdown(): Promise<void> {
+    if (flushTimer) {
+      clearInterval(flushTimer);
+      flushTimer = null;
+    }
+    await this.flushToDatabase();
+    logger.info('SMS log aggregator shutdown complete');
+  }
+
   /**
    * Collect SMS-related logs from the general log stream
    */
@@ -88,13 +137,13 @@ export class SMSLogAggregator {
       .filter((record) => record.scope.includes('sms') || record.context?.provider)
       .map((record) => this.transformToAggregatedLog(record));
 
-    // Store in local aggregator
-    smsLogs.forEach((log) => this.addToStore(log));
+    // Store in buffer
+    smsLogs.forEach((log) => this.addToBuffer(log));
 
     logger.info('SMS logs collected', {
       context: {
         collectedCount: smsLogs.length,
-        storeSize: smsLogStore.length,
+        bufferSize: smsLogBuffer.length,
       },
     });
 
@@ -102,9 +151,95 @@ export class SMSLogAggregator {
   }
 
   /**
-   * Query aggregated SMS logs with filtering and aggregation
+   * Flush in-memory buffer to database
    */
-  static queryLogs(query: {
+  private static async flushToDatabase(): Promise<number> {
+    if (smsLogBuffer.length === 0) {
+      return 0;
+    }
+
+    const logsToFlush = [...smsLogBuffer];
+    smsLogBuffer.length = 0; // Clear buffer
+
+    try {
+      await this.bulkInsertLogs(logsToFlush);
+      
+      logger.info('SMS logs flushed to database', {
+        context: {
+          flushedCount: logsToFlush.length,
+        },
+      });
+
+      return logsToFlush.length;
+    } catch (err) {
+      // On failure, restore logs to buffer (up to capacity)
+      const restoredCount = Math.min(logsToFlush.length, IN_MEMORY_BUFFER_SIZE);
+      smsLogBuffer.unshift(...logsToFlush.slice(0, restoredCount));
+      
+      logger.error('Failed to flush SMS logs, restored to buffer', {
+        error: err,
+        context: {
+          attemptedCount: logsToFlush.length,
+          restoredCount,
+        },
+      });
+
+      throw err;
+    }
+  }
+
+  /**
+   * Bulk insert logs into database
+   */
+  private static async bulkInsertLogs(logs: AggregatedSMSLog[]): Promise<void> {
+    if (logs.length === 0) return;
+
+    const values: unknown[] = [];
+    const valuePlaceholders: string[] = [];
+
+    logs.forEach((log, index) => {
+      const offset = index * 16;
+      valuePlaceholders.push(
+        `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16})`
+      );
+
+      values.push(
+        log.id,
+        log.timestamp,
+        log.level,
+        log.message,
+        log.scope,
+        log.requestId || null,
+        log.context.jobId || null,
+        log.context.provider || null,
+        log.context.phoneNumber || null,
+        log.context.messageId || null,
+        log.context.attempt || 1,
+        log.context.status || null,
+        log.context.eventType || null,
+        log.context.recipientCount || null,
+        log.context.queueLength || null,
+        JSON.stringify(log.context)
+      );
+    });
+
+    const sql = `
+      INSERT INTO sms_logs (
+        id, timestamp, level, message, scope, request_id,
+        job_id, provider, phone_number, message_id, attempt, status,
+        event_type, recipient_count, queue_length, context
+      ) VALUES ${valuePlaceholders.join(', ')}
+      ON CONFLICT (id) DO NOTHING
+    `;
+
+    await query(sql, values);
+  }
+
+  /**
+   * Query aggregated SMS logs with filtering and aggregation
+   * Falls back to database for historical data beyond in-memory buffer
+   */
+  static async queryLogs(query: {
     level?: string[];
     provider?: string;
     eventType?: string;
@@ -112,41 +247,178 @@ export class SMSLogAggregator {
     since?: number;
     limit?: number;
     offset?: number;
-  }): AggregatedSMSLog[] {
-    let filtered = [...smsLogStore];
-
-    if (query.level && query.level.length > 0) {
-      filtered = filtered.filter((log) => query.level!.includes(log.level));
-    }
-
-    if (query.provider) {
-      filtered = filtered.filter((log) => log.context.provider === query.provider);
-    }
-
-    if (query.eventType) {
-      filtered = filtered.filter((log) => log.context.eventType === query.eventType);
-    }
-
-    if (query.status) {
-      filtered = filtered.filter((log) => log.context.status === query.status);
-    }
-
-    if (query.since) {
-      filtered = filtered.filter((log) => new Date(log.timestamp).getTime() >= query.since!);
-    }
-
-    const offset = query.offset ?? 0;
+  }): Promise<AggregatedSMSLog[]> {
     const limit = query.limit ?? 100;
+    const offset = query.offset ?? 0;
 
-    return filtered.slice(offset, offset + limit);
+    // First, try to satisfy from in-memory buffer
+    let bufferResults = this.queryBuffer(query);
+
+    // If we need more results or offset exceeds buffer, query database
+    if (bufferResults.length < limit || offset >= smsLogBuffer.length) {
+      const dbResults = await this.queryDatabase(query);
+      
+      // Merge and deduplicate results (buffer is more recent)
+      const bufferIds = new Set(bufferResults.map((log) => log.id));
+      const uniqueDbResults = dbResults.filter((log) => !bufferIds.has(log.id));
+      
+      bufferResults = [...bufferResults, ...uniqueDbResults];
+    }
+
+    return bufferResults.slice(offset, offset + limit);
+  }
+
+  /**
+   * Query in-memory buffer
+   */
+  private static queryBuffer(queryParams: {
+    level?: string[];
+    provider?: string;
+    eventType?: string;
+    status?: string;
+    since?: number;
+  }): AggregatedSMSLog[] {
+    let filtered = [...smsLogBuffer];
+
+    if (queryParams.level && queryParams.level.length > 0) {
+      filtered = filtered.filter((log) => queryParams.level!.includes(log.level));
+    }
+
+    if (queryParams.provider) {
+      filtered = filtered.filter((log) => log.context.provider === queryParams.provider);
+    }
+
+    if (queryParams.eventType) {
+      filtered = filtered.filter((log) => log.context.eventType === queryParams.eventType);
+    }
+
+    if (queryParams.status) {
+      filtered = filtered.filter((log) => log.context.status === queryParams.status);
+    }
+
+    if (queryParams.since) {
+      filtered = filtered.filter((log) => new Date(log.timestamp).getTime() >= queryParams.since!);
+    }
+
+    return filtered;
+  }
+
+  /**
+   * Query database for historical logs
+   */
+  private static async queryDatabase(queryParams: {
+    level?: string[];
+    provider?: string;
+    eventType?: string;
+    status?: string;
+    since?: number;
+    limit?: number;
+    offset?: number;
+  }): Promise<AggregatedSMSLog[]> {
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
+
+    if (queryParams.level && queryParams.level.length > 0) {
+      conditions.push(`level = ANY($${paramIndex})`);
+      values.push(queryParams.level);
+      paramIndex++;
+    }
+
+    if (queryParams.provider) {
+      conditions.push(`provider = $${paramIndex}`);
+      values.push(queryParams.provider);
+      paramIndex++;
+    }
+
+    if (queryParams.eventType) {
+      conditions.push(`event_type = $${paramIndex}`);
+      values.push(queryParams.eventType);
+      paramIndex++;
+    }
+
+    if (queryParams.status) {
+      conditions.push(`status = $${paramIndex}`);
+      values.push(queryParams.status);
+      paramIndex++;
+    }
+
+    if (queryParams.since) {
+      conditions.push(`timestamp >= $${paramIndex}`);
+      values.push(new Date(queryParams.since).toISOString());
+      paramIndex++;
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const limit = queryParams.limit ?? 100;
+    const offset = queryParams.offset ?? 0;
+
+    const sql = `
+      SELECT 
+        id, timestamp, level, message, scope, request_id as "requestId",
+        job_id, provider, phone_number, message_id, attempt, status,
+        event_type, recipient_count, queue_length, context, error, metrics
+      FROM sms_logs
+      ${whereClause}
+      ORDER BY timestamp DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    values.push(limit, offset);
+
+    try {
+      const result = await query(sql, values);
+      
+      return result.rows.map((row) => ({
+        id: row.id,
+        timestamp: row.timestamp,
+        level: row.level,
+        message: row.message,
+        scope: row.scope,
+        requestId: row.requestId,
+        context: {
+          jobId: row.job_id,
+          provider: row.provider,
+          phoneNumber: row.phone_number,
+          messageId: row.message_id,
+          attempt: row.attempt,
+          status: row.status,
+          eventType: row.event_type,
+          recipientCount: row.recipient_count,
+          queueLength: row.queue_length,
+          ...row.context,
+        },
+        error: row.error,
+        metrics: row.metrics,
+      }));
+    } catch (err) {
+      logger.error('Failed to query SMS logs from database', { error: err });
+      return [];
+    }
   }
 
   /**
    * Generate comprehensive SMS delivery metrics
+   * Combines in-memory buffer and database queries
    */
-  static getMetrics(timeRangeMs: number = 24 * 60 * 60 * 1000): SMSLogMetrics {
+  static async getMetrics(timeRangeMs: number = 24 * 60 * 60 * 1000): Promise<SMSLogMetrics> {
     const cutoffTime = Date.now() - timeRangeMs;
-    const recentLogs = smsLogStore.filter((log) => new Date(log.timestamp).getTime() >= cutoffTime);
+    
+    // Get logs from buffer
+    const bufferLogs = smsLogBuffer.filter(
+      (log) => new Date(log.timestamp).getTime() >= cutoffTime
+    );
+
+    // Get additional logs from database
+    const dbLogs = await this.queryDatabase({
+      since: cutoffTime,
+      limit: 10000, // reasonable limit for metrics calculation
+    });
+
+    // Merge and deduplicate
+    const bufferIds = new Set(bufferLogs.map((log) => log.id));
+    const uniqueDbLogs = dbLogs.filter((log) => !bufferIds.has(log.id));
+    const recentLogs = [...bufferLogs, ...uniqueDbLogs];
 
     const metrics: SMSLogMetrics = {
       totalMessages: 0,
@@ -270,9 +542,10 @@ export class SMSLogAggregator {
 
   /**
    * Get failed message logs for investigation and recovery
+   * Queries both buffer and database
    */
-  static getFailedMessages(limit: number = 100) {
-    const failed = smsLogStore.filter((log) => log.context.status === 'failed').slice(-limit);
+  static async getFailedMessages(limit: number = 100): Promise<AggregatedSMSLog[]> {
+    const failed = await this.queryLogs({ status: 'failed', limit });
 
     logger.info('Failed messages retrieved', {
       context: {
@@ -285,21 +558,28 @@ export class SMSLogAggregator {
 
   /**
    * Get performance anomalies (slow deliveries, high retry rates)
+   * Searches both buffer and recent database records
    */
-  static getAnomalies(): {
+  static async getAnomalies(): Promise<{
     slowDeliveries: AggregatedSMSLog[];
     highRetryAttempts: AggregatedSMSLog[];
     configurationErrors: AggregatedSMSLog[];
-  } {
+  }> {
+    // Get recent logs (last hour) from both buffer and database
+    const recentLogs = await this.queryLogs({
+      since: Date.now() - 60 * 60 * 1000,
+      limit: 1000,
+    });
+
     const anomalies = {
-      slowDeliveries: smsLogStore.filter((log) => {
+      slowDeliveries: recentLogs.filter((log) => {
         const delivery = log.metrics?.find((m) => m.name === 'sms.send_duration_ms');
         return delivery && delivery.value > 5000; // > 5 seconds
       }),
-      highRetryAttempts: smsLogStore.filter((log) => {
+      highRetryAttempts: recentLogs.filter((log) => {
         return log.context.attempt && log.context.attempt >= 2;
       }),
-      configurationErrors: smsLogStore.filter((log) => {
+      configurationErrors: recentLogs.filter((log) => {
         return log.context.missingCredentials || log.error?.message.includes('not configured');
       }),
     };
@@ -325,10 +605,19 @@ export class SMSLogAggregator {
 
   /**
    * Export logs for external aggregation service
+   * Exports from both buffer and database
    */
-  static exportLogs(format: 'json' | 'csv' = 'json'): string {
+  static async exportLogs(
+    format: 'json' | 'csv' = 'json',
+    options?: { since?: number; limit?: number }
+  ): Promise<string> {
+    const logs = await this.queryLogs({
+      since: options?.since,
+      limit: options?.limit ?? 10000,
+    });
+
     if (format === 'json') {
-      return JSON.stringify(smsLogStore, null, 2);
+      return JSON.stringify(logs, null, 2);
     }
 
     // CSV format
@@ -344,7 +633,7 @@ export class SMSLogAggregator {
       'error',
     ];
 
-    const rows = smsLogStore.map((log) => [
+    const rows = logs.map((log) => [
       log.timestamp,
       log.level,
       log.message,
@@ -365,31 +654,29 @@ export class SMSLogAggregator {
   }
 
   /**
-   * Clear old logs to manage storage
+   * Clear old logs from database to manage storage
    */
-  static clearOldLogs(olderThanMs: number = 30 * 24 * 60 * 60 * 1000): number {
-    const cutoffTime = Date.now() - olderThanMs;
-    const initialSize = smsLogStore.length;
+  static async clearOldLogs(olderThanMs: number = 30 * 24 * 60 * 60 * 1000): Promise<number> {
+    const cutoffTime = new Date(Date.now() - olderThanMs).toISOString();
 
-    const index = smsLogStore.findIndex((log) => new Date(log.timestamp).getTime() >= cutoffTime);
+    try {
+      const result = await query('DELETE FROM sms_logs WHERE timestamp < $1', [cutoffTime]);
+      const deletedCount = result.rowCount || 0;
 
-    if (index > 0) {
-      smsLogStore.splice(0, index);
+      if (deletedCount > 0) {
+        logger.info('Old SMS logs cleared from database', {
+          context: {
+            deletedCount,
+            olderThanMs,
+          },
+        });
+      }
+
+      return deletedCount;
+    } catch (err) {
+      logger.error('Failed to clear old SMS logs', { error: err });
+      return 0;
     }
-
-    const deletedCount = initialSize - smsLogStore.length;
-
-    if (deletedCount > 0) {
-      logger.info('Old SMS logs cleared', {
-        context: {
-          deletedCount,
-          olderThanMs,
-          remainingLogs: smsLogStore.length,
-        },
-      });
-    }
-
-    return deletedCount;
   }
 
   /**
@@ -397,7 +684,7 @@ export class SMSLogAggregator {
    */
   private static transformToAggregatedLog(record: LogRecord): AggregatedSMSLog {
     return {
-      id: `${record.scope}_${record.timestamp}`,
+      id: `${record.scope}_${record.timestamp}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: record.timestamp,
       level: record.level,
       message: record.message,
@@ -416,10 +703,10 @@ export class SMSLogAggregator {
   };
 
   /**
-   * Add log to store, maintaining size limit
+   * Add log to buffer, maintaining size limit and triggering flush if needed
    */
-  private static addToStore(log: AggregatedSMSLog): void {
-    smsLogStore.push(log);
+  private static addToBuffer(log: AggregatedSMSLog): void {
+    smsLogBuffer.push(log);
 
     // Update stats incrementally
     this.stats.totalMessages++;
@@ -429,31 +716,45 @@ export class SMSLogAggregator {
       this.stats.failedMessages++;
     }
 
-    if (smsLogStore.length > MAX_SMS_LOGS) {
-      smsLogStore.splice(0, smsLogStore.length - MAX_SMS_LOGS);
+    // Maintain buffer size limit
+    if (smsLogBuffer.length > IN_MEMORY_BUFFER_SIZE) {
+      smsLogBuffer.splice(0, smsLogBuffer.length - IN_MEMORY_BUFFER_SIZE);
+    }
+
+    // Trigger flush if threshold reached
+    if (smsLogBuffer.length >= FLUSH_THRESHOLD) {
+      this.flushToDatabase().catch((err) => {
+        logger.error('Auto-flush failed', { error: err });
+      });
     }
   }
 
   /**
-   * Get store size for monitoring
+   * Get buffer size for monitoring
    */
-  static getStoreSize(): number {
-    return smsLogStore.length;
+  static getBufferSize(): number {
+    return smsLogBuffer.length;
   }
 
   /**
-   * Get store stats
+   * Get aggregator stats
    */
   static getStoreStats() {
     return {
-      totalLogs: smsLogStore.length,
-      maxCapacity: MAX_SMS_LOGS,
-      utilizationPercent: (smsLogStore.length / MAX_SMS_LOGS) * 100,
-      oldestLog: smsLogStore.length > 0 ? smsLogStore[0].timestamp : null,
-      newestLog: smsLogStore.length > 0 ? smsLogStore[smsLogStore.length - 1].timestamp : null,
+      bufferSize: smsLogBuffer.length,
+      bufferCapacity: IN_MEMORY_BUFFER_SIZE,
+      utilizationPercent: (smsLogBuffer.length / IN_MEMORY_BUFFER_SIZE) * 100,
+      oldestBufferLog: smsLogBuffer.length > 0 ? smsLogBuffer[0].timestamp : null,
+      newestBufferLog:
+        smsLogBuffer.length > 0 ? smsLogBuffer[smsLogBuffer.length - 1].timestamp : null,
       totalMessages: this.stats.totalMessages,
       failedCount: this.stats.failedMessages,
-      successRate: this.stats.totalMessages > 0 ? (this.stats.successfulMessages / this.stats.totalMessages) * 100 : 0
+      successRate:
+        this.stats.totalMessages > 0
+          ? (this.stats.successfulMessages / this.stats.totalMessages) * 100
+          : 0,
+      flushIntervalMs: FLUSH_INTERVAL_MS,
+      flushThreshold: FLUSH_THRESHOLD,
     };
   }
 }
