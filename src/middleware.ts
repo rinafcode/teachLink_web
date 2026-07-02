@@ -4,7 +4,6 @@ import { checkRoutePermission } from './middleware/rbac';
 import { applySecurityHeaders } from './middleware/security';
 import { applyCspHeaders } from './middleware/csp';
 import { handleRedirects } from './middleware/redirectManagement';
-import { UserRole } from './types/api';
 import {
   API_DEPRECATION_HEADER,
   API_DEPRECATION_INFO_HEADER,
