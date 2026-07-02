@@ -9,7 +9,7 @@ import { withRateLimit } from '@/lib/ratelimit';
 import { logAuditMutation } from '@/middleware/audit';
 import { edgeLog } from '@/../infra/edge-config';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // ─── GET /api/admin/feature-flags ─────────────────────────────────────────────
 // Returns the full flag list sorted by updatedAt desc.
