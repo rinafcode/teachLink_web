@@ -14,6 +14,9 @@ import {
   retryWithBackoff,
 } from '@/utils/errorUtils';
 import { useToast } from '@/context/ToastContext';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-error-handling');
 
 export interface UseErrorHandlingState {
   error: any | null;
@@ -98,7 +101,9 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
       }));
 
       if (reportErrors) {
-        errorReportingService.reportError(error).catch(console.error);
+        errorReportingService.reportError(error).catch((err) => {
+          logger.error('Failed to report error', { error: err });
+        });
       }
 
       // Show toast notification for errors

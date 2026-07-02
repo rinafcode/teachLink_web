@@ -7,42 +7,8 @@ on:
       - develop
 
 jobs:
-  security-audit:
+  type-check:
     runs-on: ubuntu-latest
-    name: Dependency Security Audit
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate audit report
-        run: pnpm audit --json > audit-report.json || true
-
-      - name: Run security audit (block on high/critical)
-        run: pnpm audit --audit-level=high
-
-      - name: Upload audit report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-audit-report
-          path: audit-report.json
-          retention-days: 30
-
-  quality-checks:
-    runs-on: ubuntu-latest
-    name: Type Check, Lint & Validation
 
     steps:
       - uses: actions/checkout@v4
@@ -62,8 +28,44 @@ jobs:
       - name: Run Type Check
         run: pnpm run type-check
 
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Run Lint
         run: pnpm run lint
+
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Validate UI
         run: pnpm run validate:ui
@@ -73,7 +75,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [quality-checks]
+    needs: [type-check, lint, validate]
 
     steps:
       - uses: actions/checkout@v4

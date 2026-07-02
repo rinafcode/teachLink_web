@@ -12,6 +12,7 @@
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-unsafe-function-type": "warn",
     "@typescript-eslint/no-unused-expressions": "warn",
-    "prettier/prettier": ["error", { "endOfLine": "auto" }]
+    "prettier/prettier": ["error", { "endOfLine": "auto" }],
+    "no-console": "error"
   }
 }

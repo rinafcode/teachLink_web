@@ -9,6 +9,8 @@ import { useInternationalization } from '@/hooks/useInternationalization';
 import { preloadTranslations } from '@/locales/translationManager';
 import { getAvailableLanguages } from '@/locales/config';
 import type { LanguageCode } from '@/locales/types';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('InternationalizationEngine');
 
 interface InternationalizationEngineProps {
   /**
@@ -61,7 +63,7 @@ export function InternationalizationEngine({
           setPreloadStatus(status);
         }
       } catch (err) {
-        console.warn('Failed to preload some translations:', err);
+        logger.warn('Failed to preload some translations', { error: err });
       }
     }
 
