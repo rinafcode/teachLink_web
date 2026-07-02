@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Question, useQuizStore } from '@/app/store/quizStore';
 import Editor from '@monaco-editor/react';
 import { FaCheck, FaTimes, FaPlay } from 'react-icons/fa';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('CodeChallengeQuestion');
 
 interface CodeChallengeQuestionProps {
   question: Question;
@@ -36,7 +38,7 @@ export default function CodeChallengeQuestion({ question }: CodeChallengeQuestio
           const output = userFunction(testCase.input);
           return output === testCase.expectedOutput;
         } catch (error) {
-          console.error('Error running test:', error);
+          logger.error('Error running test', { error });
           return false;
         }
       },
