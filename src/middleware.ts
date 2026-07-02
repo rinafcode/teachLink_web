@@ -45,9 +45,7 @@ export async function middleware(request: NextRequest) {
   };
 
   const permissionResponse = checkRoutePermission(request, userRole);
-  if (permissionResponse) {
-    return withHeaders(permissionResponse);
-  }
+  if (permissionResponse) return withHeaders(permissionResponse);
 
   const { pathname } = request.nextUrl;
   if (pathname.startsWith(API_ROOT)) {
@@ -72,8 +70,13 @@ export async function middleware(request: NextRequest) {
       return withHeaders(response);
     }
 
+    // Fix for #726 — validate version string before use
+    const extractedVersion = pathname.split('/')[2];
+    if (!extractedVersion || !/^v\d+$/.test(extractedVersion)) {
+      return withHeaders(new NextResponse('Invalid API version', { status: 400 }));
+    }
     const response = NextResponse.next();
-    response.headers.set(API_VERSION_HEADER, pathname.split('/')[2] || DEFAULT_API_VERSION);
+    response.headers.set(API_VERSION_HEADER, extractedVersion);
     return withHeaders(response);
   }
 

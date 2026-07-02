@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface Widget {
   id: string;
@@ -27,12 +27,37 @@ export const useDashboardWidgets = () => {
     return [];
   }, []);
 
-  // Save widget layout to localStorage
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingWidgetsRef = useRef<Widget[] | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
+
   const saveWidgetLayout = useCallback((widgets: Widget[]) => {
+    // Trailing debounce to avoid blocking the main thread during drag-and-drop.
+    // localStorage writes will happen at most once per 500ms, and the latest
+    // layout will be persisted within ~500ms after the last change.
     try {
-      localStorage.setItem('dashboard-widgets', JSON.stringify(widgets));
+      pendingWidgetsRef.current = widgets;
+
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+
+      saveTimerRef.current = setTimeout(() => {
+        try {
+          const pending = pendingWidgetsRef.current;
+          if (!pending) return;
+          localStorage.setItem('dashboard-widgets', JSON.stringify(pending));
+        } catch (error) {
+          console.error('Failed to save widget layout:', error);
+        } finally {
+          saveTimerRef.current = null;
+        }
+      }, 500);
     } catch (error) {
-      console.error('Failed to save widget layout:', error);
+      console.error('Failed to schedule dashboard layout save:', error);
     }
   }, []);
 
