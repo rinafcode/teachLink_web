@@ -9,7 +9,10 @@ type UseVideoPlayerOptions = {
   poster?: string;
 };
 
-export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
+export const useVideoPlayerLazy = ({ sources, poster }: UseVideoPlayerOptions) => {
+  const [isReady, setIsReady] = useState(false);
+  const videojsRef = useRef<any>(null);
+
   const safePlay = useCallback((player: any) => {
     void player.play().catch(() => undefined);
   }, []);
@@ -43,7 +46,42 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
     [sources],
   );
 
+  // Lazy load video.js
   useEffect(() => {
+    let cancelled = false;
+
+    const loadVideoJS = async () => {
+      if (videojsRef.current) {
+        setIsReady(true);
+        return;
+      }
+
+      try {
+        // Dynamically import video.js
+        const videojsModule = await import('video.js');
+        const videojs = videojsModule.default;
+
+        if (!cancelled) {
+          videojsRef.current = videojs;
+          setIsReady(true);
+        }
+      } catch (error) {
+        console.error('Failed to load video.js:', error);
+      }
+    };
+
+    void loadVideoJS();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isReady || !videojsRef.current) {
+      return;
+    }
+
     let activePlayer: any = null;
     let disposed = false;
 
@@ -52,18 +90,13 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
       if (!videoElement || normalizedSources.length === 0) {
         return;
       }
-
-      // Dynamically import video.js to reduce initial bundle
-      const videojsModule = await import('video.js');
-      const videojs = videojsModule.default;
-
       if (hasYoutubeSource) {
         await import('videojs-youtube');
       }
       if (disposed) {
         return;
       }
-      const player = videojs(videoElement, {
+      const player = videojsRef.current(videoElement, {
         controls: false,
         autoplay: false,
         preload: 'auto',
@@ -97,7 +130,7 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
         playerRef.current = null;
       }
     };
-  }, [hasYoutubeSource, normalizedSources, poster]);
+  }, [isReady, hasYoutubeSource, normalizedSources, poster]);
 
   const playPause = useCallback(() => {
     const player = playerRef.current;
@@ -185,5 +218,6 @@ export const useVideoPlayer = ({ sources, poster }: UseVideoPlayerOptions) => {
     toggleMute,
     setPlaybackRate,
     setQuality,
+    isReady,
   };
 };

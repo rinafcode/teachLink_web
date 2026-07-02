@@ -7,7 +7,7 @@ import { CollaborativeAnnotations } from '@/components/video/CollaborativeAnnota
 import { InteractiveTranscript } from '@/components/video/InteractiveTranscript';
 import { VIDEO_KEYBOARD_SHORTCUTS, VIDEO_PLAYBACK_RATES } from '@/components/video/constants';
 import type { TranscriptCue, VideoSource } from '@/components/video/types';
-import { useVideoPlayer } from '@/hooks/useVideoPlayer';
+import { useVideoPlayerLazy } from '@/hooks/useVideoPlayerLazy';
 import {
   formatVideoTime,
   getProgressPercent,
@@ -24,7 +24,7 @@ type VideoPlayerProps = {
   transcript: TranscriptCue[];
 };
 
-export function VideoPlayer({
+export function VideoPlayerLazy({
   videoId,
   userId,
   userName,
@@ -67,24 +67,15 @@ export function VideoPlayer({
     toggleMute,
     setPlaybackRate,
     setQuality,
-  } = useVideoPlayer({ sources, poster });
+    isReady,
+  } = useVideoPlayerLazy({ sources, poster });
+
   const [activePanel, setActivePanel] = useState<'transcript' | 'bookmarks' | 'annotations'>(
     'transcript',
   );
   const [isExpanded, setIsExpanded] = useState(false);
   const videoAreaRef = useRef<HTMLDivElement | null>(null);
   const progress = getProgressPercent(currentTime, duration);
-
-  if (!cssLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] bg-gray-50 rounded-lg">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading video player...</p>
-        </div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (!isExpanded) {
@@ -189,6 +180,17 @@ export function VideoPlayer({
       toggleMute();
     }
   };
+
+  if (!isReady || !cssLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] bg-gray-50 rounded-lg">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading video player...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
