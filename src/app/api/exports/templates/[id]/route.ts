@@ -7,6 +7,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getTemplate, updateTemplate, deleteTemplate } from '@/lib/export-scheduler';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-exports-templates-id');
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -19,7 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json({ template });
   } catch (error) {
-    console.error('Error fetching template:', error);
+    logger.error('Error fetching template', { error });
     return NextResponse.json({ error: 'Failed to fetch template' }, { status: 500 });
   }
 }
@@ -37,7 +40,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json({ template });
   } catch (error) {
-    console.error('Error updating template:', error);
+    logger.error('Error updating template', { error });
     return NextResponse.json({ error: 'Failed to update template' }, { status: 500 });
   }
 }
@@ -52,7 +55,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting template:', error);
+    logger.error('Error deleting template', { error });
     return NextResponse.json({ error: 'Failed to delete template' }, { status: 500 });
   }
 }

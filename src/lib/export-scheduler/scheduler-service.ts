@@ -15,6 +15,9 @@ import {
 import { getNextRunTime, frequencyToCron } from './cron-parser';
 import { exportData, fetchDataForTemplate } from './exporter';
 import { notificationService } from './notification-service';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('export-scheduler-service');
 
 interface ExportJobPayload {
   scheduleId?: string;
@@ -40,7 +43,7 @@ export class ExportSchedulerService {
     if (this.isRunning) return;
 
     this.isRunning = true;
-    console.log('Export scheduler started');
+    logger.info('Export scheduler started');
 
     // Check for due schedules periodically
     this.checkInterval = setInterval(() => {
@@ -62,7 +65,7 @@ export class ExportSchedulerService {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
     }
-    console.log('Export scheduler stopped');
+    logger.info('Export scheduler stopped');
   }
 
   /**
@@ -76,7 +79,7 @@ export class ExportSchedulerService {
         await this.queueExportJob(schedule);
       }
     } catch (error) {
-      console.error('Error checking due schedules:', error);
+      logger.error('Error checking due schedules', { error });
     }
   }
 
@@ -185,7 +188,7 @@ export class ExportSchedulerService {
         }
       }
 
-      console.log(`Export completed: ${fileName}`);
+      logger.info('Export completed', { fileName });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 

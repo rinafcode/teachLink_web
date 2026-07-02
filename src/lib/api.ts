@@ -43,6 +43,9 @@ export interface RequestConfig extends RequestInit {
   retries?: number;
   timeout?: number;
   schema?: z.ZodSchema;
+  useCache?: boolean;
+  _bypassCacheRead?: boolean;
+  ttl?: number;
 }
 
 export interface ApiClientConfig {
@@ -113,6 +116,18 @@ class ApiClientImpl {
   invalidateCache(url?: string) {
     if (url) this.cache.delete(url);
     else this.cache.clear();
+  }
+
+  addRequestInterceptor(interceptor: RequestInterceptor) {
+    this.requestInterceptors.push(interceptor);
+  }
+
+  addResponseInterceptor(interceptor: ResponseInterceptor) {
+    this.responseInterceptors.push(interceptor);
+  }
+
+  addErrorInterceptor(interceptor: ErrorInterceptor) {
+    this.errorInterceptors.push(interceptor);
   }
 
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
