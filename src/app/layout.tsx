@@ -42,6 +42,20 @@ export const metadata: Metadata = {
   title: 'TeachLink - Offline Learning Platform',
   description: 'Learn anywhere, anytime with offline capabilities',
   manifest: '/manifest.json',
+  openGraph: {
+    title: 'TeachLink - Offline Learning Platform',
+    description: 'Learn anywhere, anytime with offline capabilities',
+    type: 'website',
+    siteName: 'TeachLink',
+    url: 'https://teachlink.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@teachlink',
+    creator: '@teachlink',
+    title: 'TeachLink - Offline Learning Platform',
+    description: 'Learn anywhere, anytime with offline capabilities',
+  },
 };
 
 export default async function RootLayout({

@@ -10,6 +10,9 @@ import {
   getSearchSuggestions,
   parseAdvancedQuery,
 } from '../utils/searchUtils';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-advanced-search');
 
 const DEFAULT_FILTERS: SearchFilters = {
   types: ['all'],
@@ -49,7 +52,7 @@ export const useAdvancedSearch = () => {
         ) as string[];
         setHistory(storedHistory);
       } catch (e) {
-        console.error('Failed to parse search history', e);
+        logger.error('Failed to parse search history', { error: e });
       } finally {
         hasLoadedHistory.current = true;
       }
@@ -62,7 +65,7 @@ export const useAdvancedSearch = () => {
       try {
         localStorage.setItem('search_history_terms', JSON.stringify(history));
       } catch (e) {
-        console.error('Failed to save search history', e);
+        logger.error('Failed to save search history', { error: e });
       }
     }
   }, [history]);
@@ -158,7 +161,7 @@ export const useAdvancedSearch = () => {
       setResults(mockResults);
       addToHistory(query.text);
     } catch (error) {
-      console.error('Search error:', error);
+      logger.error('Search error', { error });
     } finally {
       if (currentRequestId === activeRequestRef.current) {
         setIsSearching(false);

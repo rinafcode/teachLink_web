@@ -21,6 +21,9 @@ import {
   type PerformanceTrendPoint,
   subscribeCoreWebVitals,
 } from '@/utils/performanceUtils';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-performance-monitoring');
 
 export interface UsePerformanceMonitoringOptions {
   enableTrendRecording?: boolean;
@@ -92,7 +95,7 @@ function usePerformanceMonitoringState(
       if (!d.has(toastKey)) {
         d.add(toastKey);
         setAlerts((prev) => [...prev.slice(-49), alert]);
-        console.warn(`[Performance] ${alert.message}`);
+        logger.warn(`[Performance] ${alert.message}`);
         if (enableToasts) {
           const toastOpts = { id: toastKey, duration: 6000 };
           if (metric.rating === 'poor') {
