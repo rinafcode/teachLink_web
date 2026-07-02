@@ -54,7 +54,7 @@ async function getCourseCompletion(
 
     return {
       isCompleted: row.progress >= 100,
-      completedAt: row.completed_at,
+      completedAt: row.completed_at ?? undefined,
     };
   } catch (error) {
     logger.error('Failed to check course completion', {
