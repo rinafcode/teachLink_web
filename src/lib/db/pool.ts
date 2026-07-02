@@ -16,13 +16,30 @@ const logger = createLogger('db-pool');
  * - Query queueing during reconnect windows
  */
 
-const DB_CONFIG: PoolConfig = {
+const getSSLConfig = () => {
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.DB_SSL_CA) {
+      throw new Error(
+        'DB_SSL_CA environment variable is required in production. ' +
+          'This should contain the path to your CA certificate file.',
+      );
+    }
+    return {
+      rejectUnauthorized: true,
+      ca: process.env.DB_SSL_CA,
+    };
+  }
+  // Allow unverified certificates in development
+  return false;
+};
+
+const getDbConfig = (): PoolConfig => ({
   connectionString: process.env.DATABASE_URL,
   max: parseInt(process.env.DB_POOL_MAX || '20', 10),
   connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '5000', 10),
   idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-};
+  ssl: getSSLConfig(),
+});
 
 type CircuitState = 'CLOSED' | 'OPEN';
 
@@ -47,7 +64,7 @@ class DatabasePool {
 
   public static getInstance(): Pool {
     if (!DatabasePool.instance) {
-      DatabasePool.instance = new Pool(DB_CONFIG);
+      DatabasePool.instance = new Pool(getDbConfig());
 
       DatabasePool.instance.on('connect', () => {
         if (process.env.NODE_ENV === 'development') {
