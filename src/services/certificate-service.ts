@@ -54,7 +54,23 @@ export async function validateCourseCompletion(
       );
     }
 
-    const progress = result.rows[0] as CourseProgress;
+    const row = result.rows[0] as {
+      user_id: string;
+      course_id: string;
+      progress: number;
+      completed_lessons: string[];
+      last_accessed_at: string;
+      completed_at: string | null;
+    };
+
+    const progress: CourseProgress = {
+      userId: row.user_id,
+      courseId: row.course_id,
+      progress: row.progress,
+      completedLessons: row.completed_lessons,
+      lastAccessedAt: row.last_accessed_at,
+      completedAt: row.completed_at ?? undefined,
+    };
 
     // Assert that progress >= 100 before generating the certificate
     if (progress.progress < 100) {
