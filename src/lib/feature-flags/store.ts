@@ -1,12 +1,26 @@
 /**
- * Feature Flag types and in-process store.
- *
- * Persistence: flags are kept in a module-level Map so they survive
- * across API requests within the same Node.js process (dev / single
- * instance prod). Replace `flagStore` / `auditStore` with a database
- * client for multi-instance deployments.
+ * Feature Flag evaluation and utilities.
+ * 
+ * Database persistence: All feature flags are now stored in PostgreSQL.
+ * See ./db.ts for CRUD operations.
  */
 
+// Re-export types and database functions
+export type { FeatureFlag, AuditEntry, TargetingRule, RolloutStrategy } from './types';
+export {
+  getFlagById,
+  getAllFlags,
+  createFlag,
+  updateFlag,
+  deleteFlag,
+  createAuditEntry,
+  getAuditLog,
+  generateId,
+} from './db';
+
+// ─── Evaluation Logic ─────────────────────────────────────────────────────────
+
+import type { FeatureFlag } from './types';
 // ─── Core types ───────────────────────────────────────────────────────────────
 
 export type RolloutStrategy = 'all' | 'percentage' | 'targeting';
