@@ -23,6 +23,9 @@ import { Settings, Plus, Grid3X3, Calendar } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
 import { EmptyState } from '@/components';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('DashboardGrid');
 
 const ProgressSummaryWidget = dynamic(
   () => import('./widgets/ProgressSummaryWidget').then((mod) => mod.ProgressSummaryWidget),
@@ -131,7 +134,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
         setWidgets(initialWidgets);
       }
     } catch (error) {
-      console.error('Error loading widget layout', error);
+      logger.error('Error loading widget layout', { error });
       if (initialWidgets.length > 0) setWidgets(initialWidgets);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

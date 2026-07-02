@@ -3,6 +3,9 @@
  */
 
 import type { LanguageCode, Translations } from './types';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('translation-manager');
 
 // Cache for loaded translations
 const translationCache = new Map<LanguageCode, Translations>();
@@ -35,7 +38,7 @@ export async function loadTranslations(language: LanguageCode): Promise<Translat
 
     return loadedTranslations;
   } catch (error) {
-    console.warn(`Failed to load translations for ${language}:`, error);
+    logger.warn(`Failed to load translations for ${language}`, { error });
 
     // Try to load English as fallback
     if (language !== 'en') {
@@ -94,7 +97,7 @@ export function getTranslation(
       }, params as unknown);
 
       if (resolved === undefined || resolved === null) {
-        console.warn(
+        logger.warn(
           `[translationManager] Missing interpolation key "${paramPath}" in translation template.`,
         );
         return match; // leave placeholder visible
