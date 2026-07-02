@@ -53,6 +53,8 @@ async function getCourseCompletion(
     };
 
     return {
+      userId: row.user_id,
+      courseId: row.course_id,
       isCompleted: row.progress >= 100,
       completedAt: row.completed_at ?? undefined,
     };
