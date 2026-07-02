@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRatingStore } from '@/app/store/ratingStore';
 
 interface Review {
   id: string;
@@ -10,6 +10,7 @@ interface Review {
   date: string;
   comment: string;
   helpful: number;
+  portfolio?: ReviewPortfolioItem[];
 }
 
 interface CourseReviewsProps {
@@ -31,6 +32,15 @@ export default function CourseReviews({
       comment:
         'Excellent course! The instructor explains complex concepts in a very clear and understandable way. Highly recommend!',
       helpful: 24,
+      portfolio: [
+        {
+          id: 'portfolio-1',
+          title: 'Capstone accessibility audit',
+          url: 'https://example.com/portfolio/accessibility-audit',
+          type: 'case-study',
+          description: 'Before-and-after notes from the final project review.',
+        },
+      ],
     },
     {
       id: '2',
@@ -54,16 +64,7 @@ export default function CourseReviews({
     },
   ],
 }: CourseReviewsProps) {
-  const [helpful, setHelpful] = useState<Record<string, number>>(
-    reviews.reduce((acc, review) => ({ ...acc, [review.id]: review.helpful }), {}),
-  );
-
-  const markHelpful = (reviewId: string) => {
-    setHelpful((prev) => ({
-      ...prev,
-      [reviewId]: (prev[reviewId] || 0) + 1,
-    }));
-  };
+  const { markHelpful, getHelpfulCount, hasVotedHelpful } = useRatingStore();
 
   const renderStars = (rating: number) => {
     return (
@@ -132,38 +133,91 @@ export default function CourseReviews({
       </div>
 
       <div className="space-y-6">
-        {reviews.map((review) => (
-          <div
-            key={review.id}
-            className="border-b border-[#E2E8F0] pb-6 last:border-b-0 last:pb-0 dark:border-[#334155]"
-          >
-            <div className="flex items-start gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={review.userAvatar}
-                alt={review.userName}
-                className="h-12 w-12 rounded-full object-cover"
-              />
-              <div className="flex-1">
-                <div className="mb-2 flex items-start justify-between">
-                  <div>
-                    <h4 className="font-semibold text-[#0F172A] dark:text-white">
-                      {review.userName}
-                    </h4>
-                    <div className="mt-1 flex items-center gap-3">
-                      {renderStars(review.rating)}
-                      <span className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                        {review.date}
-                      </span>
+        {reviews.map((review) => {
+          const portfolio = normalizePortfolioItems(review.portfolio);
+
+          return (
+            <div
+              key={review.id}
+              aria-label={`${review.userName} review. ${getPortfolioSummary(portfolio)}.`}
+              className="border-b border-[#E2E8F0] pb-6 last:border-b-0 last:pb-0 dark:border-[#334155]"
+            >
+              <div className="flex items-start gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={review.userAvatar}
+                  alt={review.userName}
+                  className="h-12 w-12 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="mb-2 flex items-start justify-between">
+                    <div>
+                      <h4 className="font-semibold text-[#0F172A] dark:text-white">
+                        {review.userName}
+                      </h4>
+                      <div className="mt-1 flex items-center gap-3">
+                        {renderStars(review.rating)}
+                        <span className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                          {review.date}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <p className="mb-3 leading-relaxed text-[#475569] dark:text-[#CBD5E1]">
+                    {review.comment}
+                  </p>
+                  {portfolio.length > 0 ? (
+                    <div className="mb-3 rounded-lg border border-[#DBEAFE] bg-[#EFF6FF] p-3 dark:border-[#1E3A8A] dark:bg-[#172554]/40">
+                      <h5 className="text-sm font-semibold text-[#1E3A8A] dark:text-[#BFDBFE]">
+                        Portfolio evidence
+                      </h5>
+                      <ul className="mt-2 space-y-2">
+                        {portfolio.map((item) => (
+                          <li key={item.id}>
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm font-medium text-[#0066FF] underline-offset-2 hover:underline dark:text-[#93C5FD]"
+                            >
+                              {item.title}
+                            </a>
+                            <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-xs capitalize text-[#1E3A8A] dark:bg-[#1E293B] dark:text-[#BFDBFE]">
+                              {item.type.replace('-', ' ')}
+                            </span>
+                            {item.description ? (
+                              <p className="mt-1 text-sm text-[#475569] dark:text-[#CBD5E1]">
+                                {item.description}
+                              </p>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <button
+                    onClick={() => markHelpful(review.id)}
+                    className="inline-flex items-center gap-2 text-sm text-[#64748B] transition-colors hover:text-[#0066FF] dark:text-[#94A3B8] dark:hover:text-[#00C2FF]"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                      />
+                    </svg>
+                    Helpful ({helpful[review.id]})
+                  </button>
                 </div>
                 <p className="mb-3 leading-relaxed text-[#475569] dark:text-[#CBD5E1]">
                   {review.comment}
                 </p>
                 <button
-                  onClick={() => markHelpful(review.id)}
-                  className="inline-flex items-center gap-2 text-sm text-[#64748B] transition-colors hover:text-[#0066FF] dark:text-[#94A3B8] dark:hover:text-[#00C2FF]"
+                  onClick={() => markHelpful(review.id, review.helpful)}
+                  disabled={hasVotedHelpful(review.id)}
+                  aria-pressed={hasVotedHelpful(review.id)}
+                  className="inline-flex items-center gap-2 text-sm text-[#64748B] transition-colors hover:text-[#0066FF] dark:text-[#94A3B8] dark:hover:text-[#00C2FF] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -173,12 +227,12 @@ export default function CourseReviews({
                       d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
                     />
                   </svg>
-                  Helpful ({helpful[review.id]})
+                  Helpful ({getHelpfulCount(review.id, review.helpful)})
                 </button>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
+import { Footer } from '@/components/layout/Footer';
+import { EnvironmentBanner } from '@/components/ui/EnvironmentBanner';
 
 // Languages supported at startup — extend as new locale files are added.
 const VALID_LOCALES = new Set([
@@ -40,6 +42,20 @@ export const metadata: Metadata = {
   title: 'TeachLink - Offline Learning Platform',
   description: 'Learn anywhere, anytime with offline capabilities',
   manifest: '/manifest.json',
+  openGraph: {
+    title: 'TeachLink - Offline Learning Platform',
+    description: 'Learn anywhere, anytime with offline capabilities',
+    type: 'website',
+    siteName: 'TeachLink',
+    url: 'https://teachlink.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@teachlink',
+    creator: '@teachlink',
+    title: 'TeachLink - Offline Learning Platform',
+    description: 'Learn anywhere, anytime with offline capabilities',
+  },
 };
 
 export default async function RootLayout({
@@ -47,9 +63,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
+  const [cookieStore, headersList] = await Promise.all([cookies(), headers()]);
   const themeCookie = cookieStore.get('theme');
   const defaultTheme = themeCookie ? themeCookie.value : 'system';
+  const cspNonce = headersList.get('x-csp-nonce') ?? '';
 
   // Read persisted locale to server-render the correct lang/dir on <html> —
   // avoids a hydration flash for RTL users.
@@ -78,13 +95,15 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script nonce={cspNonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50 flex flex-col min-h-screen`}
       >
         <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
-          {children}
+          <EnvironmentBanner />
+          <main className="flex-grow">{children}</main>
+          <Footer />
         </RootProviders>
 
         {/* Non-essential analytics — loaded after page is interactive */}
@@ -92,10 +111,11 @@ export default async function RootLayout({
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_ANALYTICS_ID}`}
             strategy="lazyOnload"
+            nonce={cspNonce}
           />
         )}
         {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
-          <Script id="analytics-init" strategy="lazyOnload">
+          <Script id="analytics-init" strategy="lazyOnload" nonce={cspNonce}>
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}

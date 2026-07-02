@@ -5,9 +5,12 @@ import { CardSkeleton, ListSkeleton } from '@/components/ui/LoadingSkeleton';
 import { OfflineStatusIndicator } from '@/components/offline/OfflineStatusIndicator';
 import { DownloadManager } from '@/components/offline/DownloadManager';
 import { useInternationalization } from '@/hooks/useInternationalization';
+import { SidebarNavigation } from '@/components/navigation/SidebarNavigation';
+import { AnalyticsErrorDisplay } from '@/components/dashboard/AnalyticsErrorDisplay';
+import { useAnalyticsErrorTracking } from '@/hooks/useAnalyticsErrorTracking';
 
 export default function Dashboard() {
-  const { isLoading } = useDashboardData();
+  const { isLoading, errors, hasErrors, dismissError, clearAllErrors } = useDashboardData();
   const { t } = useInternationalization();
 
   return (
@@ -25,6 +28,13 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {hasErrors && (
+          <AnalyticsErrorDisplay
+            errors={errors}
+            onDismiss={dismissError}
+            onClearAll={clearAllErrors}
+          />
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -91,84 +101,7 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <div className="space-y-8">
-            {isLoading ? (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border dark:border-gray-800 p-8">
-                <ListSkeleton count={4} />
-              </div>
-            ) : (
-              <>
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border dark:border-gray-800 p-8">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                    {t('dashboard.quickActions')}
-                  </h3>
-                  <div className="space-y-4">
-                    <button className="w-full text-left p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-2xl transition-all group">
-                      <div className="font-bold text-blue-900 dark:text-blue-300 group-hover:translate-x-1 transition-transform">
-                        {t('dashboard.continueLearning')}
-                      </div>
-                      <div className="text-sm text-blue-700 dark:text-blue-400/80 mt-1">
-                        Web3 UX Design Principles
-                      </div>
-                    </button>
-
-                    <button className="w-full text-left p-4 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-2xl transition-all group">
-                      <div className="font-bold text-green-900 dark:text-green-300 group-hover:translate-x-1 transition-transform">
-                        {t('dashboard.downloadCourse')}
-                      </div>
-                      <div className="text-sm text-green-700 dark:text-green-400/80 mt-1">
-                        {t('dashboard.offlineAccess')}
-                      </div>
-                    </button>
-
-                    <button className="w-full text-left p-4 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-2xl transition-all group">
-                      <div className="font-bold text-purple-900 dark:text-purple-300 group-hover:translate-x-1 transition-transform">
-                        {t('dashboard.viewProgress')}
-                      </div>
-                      <div className="text-sm text-purple-700 dark:text-purple-400/80 mt-1">
-                        {t('dashboard.trackLearning')}
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border dark:border-gray-800 p-8">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                    {t('dashboard.recentActivity')}
-                  </h3>
-                  <div className="space-y-6">
-                    <div className="flex items-start gap-4 group">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5 ring-4 ring-blue-50 dark:ring-blue-900/20" />
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-white">
-                          {t('dashboard.completedLesson')}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {t('dashboard.activityEntry', {
-                            course: 'Web3 UX Design',
-                            time: t('dashboard.timeHoursAgo', { count: 2 }),
-                          })}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4 group">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5 ring-4 ring-green-50 dark:ring-green-900/20" />
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-white">
-                          {t('dashboard.downloadedCourse')}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {t('dashboard.activityEntry', {
-                            course: 'Smart Contracts',
-                            time: t('dashboard.timeDayAgo', { count: 1 }),
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+            <SidebarNavigation />
           </div>
         </div>
       </div>

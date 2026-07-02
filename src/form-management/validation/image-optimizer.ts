@@ -9,6 +9,7 @@ export interface ImageOptimizationOptions {
   quality?: number; // 0.0 to 1.0
   format?: 'image/jpeg' | 'image/png' | 'image/webp';
   preserveAspectRatio?: boolean;
+  onProgress?: (progress: number) => void;
 }
 
 export interface ImageDimensionConstraints {
@@ -32,6 +33,7 @@ export async function optimizeImage(
     quality = 0.8,
     format = 'image/webp',
     preserveAspectRatio = true,
+    onProgress,
   } = options;
 
   // SSR / Node.js Testing Fallback
@@ -40,21 +42,27 @@ export async function optimizeImage(
     typeof document === 'undefined' ||
     typeof FileReader === 'undefined'
   ) {
+    if (onProgress) onProgress(100);
     return file;
   }
 
   // Ignore non-image files
   if (!file.type.startsWith('image/')) {
+    if (onProgress) onProgress(100);
     return file;
   }
+
+  if (onProgress) onProgress(10);
 
   return new Promise((resolve) => {
     const reader = new FileReader();
 
     reader.onload = (event) => {
+      if (onProgress) onProgress(30);
       const img = new Image();
 
       img.onload = () => {
+        if (onProgress) onProgress(60);
         let width = img.width;
         let height = img.height;
 
@@ -78,6 +86,7 @@ export async function optimizeImage(
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
+          if (onProgress) onProgress(100);
           resolve(file);
           return;
         }
@@ -89,6 +98,7 @@ export async function optimizeImage(
         canvas.toBlob(
           (blob) => {
             if (!blob) {
+              if (onProgress) onProgress(100);
               resolve(file);
               return;
             }
@@ -110,6 +120,7 @@ export async function optimizeImage(
               lastModified: Date.now(),
             });
 
+            if (onProgress) onProgress(100);
             resolve(optimizedFile);
           },
           format,
@@ -118,6 +129,7 @@ export async function optimizeImage(
       };
 
       img.onerror = () => {
+        if (onProgress) onProgress(100);
         resolve(file);
       };
 
@@ -125,6 +137,7 @@ export async function optimizeImage(
     };
 
     reader.onerror = () => {
+      if (onProgress) onProgress(100);
       resolve(file);
     };
 

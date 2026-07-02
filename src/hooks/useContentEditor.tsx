@@ -10,14 +10,31 @@ import { sanitizeHtml, sanitizeUrl } from '@/utils/sanitize';
 interface UseContentEditorProps {
   initialContent?: string;
   placeholder?: string;
+  ariaLabel?: string;
+  ariaLabelledBy?: string;
+  ariaDescribedBy?: string;
   onUpdate?: (content: string) => void;
 }
 
 export const useContentEditor = ({
   initialContent = '',
   placeholder = 'Start writing your content...',
+  ariaLabel = 'Post content editor',
+  ariaLabelledBy,
+  ariaDescribedBy,
   onUpdate,
 }: UseContentEditorProps) => {
+  const editorAttributes: Record<string, string> = {
+    role: 'textbox',
+    'aria-multiline': 'true',
+    'aria-placeholder': placeholder,
+    spellcheck: 'true',
+    class:
+      'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto min-h-[300px] p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
+    ...(ariaLabelledBy ? { 'aria-labelledby': ariaLabelledBy } : { 'aria-label': ariaLabel }),
+    ...(ariaDescribedBy ? { 'aria-describedby': ariaDescribedBy } : {}),
+  };
+
   const editor = useEditor(
     {
       extensions: [
@@ -32,6 +49,8 @@ export const useContentEditor = ({
         }),
         Placeholder.configure({
           placeholder,
+          emptyEditorClass:
+            'before:content-[attr(data-placeholder)] before:text-gray-400 before:dark:text-gray-500 before:float-left before:h-0 before:pointer-events-none',
         }),
       ],
       immediatelyRender: false,
@@ -44,13 +63,10 @@ export const useContentEditor = ({
       },
       // Ensure responsiveness and consistency
       editorProps: {
-        attributes: {
-          class:
-            'prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[300px] p-4',
-        },
+        attributes: editorAttributes,
       },
     },
-    [initialContent, placeholder, onUpdate],
+    [initialContent, placeholder, ariaLabel, ariaLabelledBy, ariaDescribedBy, onUpdate],
   ); // Added dependency array
 
   const addImage = useCallback(

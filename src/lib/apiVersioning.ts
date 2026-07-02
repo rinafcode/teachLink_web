@@ -4,6 +4,7 @@ export const VERSIONED_API_ROOT = `${API_ROOT}/${DEFAULT_API_VERSION}`;
 export const API_VERSION_HEADER = 'X-Api-Version';
 export const API_DEPRECATION_HEADER = 'X-Api-Deprecated';
 export const API_DEPRECATION_INFO_HEADER = 'X-Api-Deprecation-Info';
+export const INTERNAL_API_REQUEST_HEADER = 'X-Internal-Api-Request';
 
 function isVersionedApiPath(path: string): boolean {
   return path.startsWith(`${API_ROOT}/v`);

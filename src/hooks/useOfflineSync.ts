@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-offline-sync');
 
 /**
  * Hook to manage offline state and handle background/foreground syncing when connectivity returns
@@ -19,7 +22,7 @@ export function useOfflineSync(syncCallback?: () => Promise<void>) {
 
   const triggerSync = useCallback(async () => {
     if (isOffline) return;
-    
+
     setIsSyncing(true);
     try {
       // Fire local UI-bound sync callback if provided
@@ -31,21 +34,27 @@ export function useOfflineSync(syncCallback?: () => Promise<void>) {
         // @ts-ignore - SyncManager is not fully typed in all TS DOM libs yet
         await registration.sync.register('teachlink-offline-sync');
       }
-      
+
       setLastSynced(new Date());
     } catch (error) {
-      console.error('Offline synchronization failed:', error);
+      logger.error('Offline synchronization failed', { error });
     } finally {
       setIsSyncing(false);
     }
   }, [isOffline, syncCallback]);
 
   useEffect(() => {
-    const handleOnline = () => { setIsOffline(false); triggerSync(); };
+    const handleOnline = () => {
+      setIsOffline(false);
+      triggerSync();
+    };
     const handleOffline = () => setIsOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline); };
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [triggerSync]);
 
   return { isOffline, isSyncing, lastSynced, triggerSync };

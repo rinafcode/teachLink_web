@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { searchReviews, highlightTerms, type ReviewSortKey } from '@/utils/reviewSearch';
+import { useRatingStore } from '@/app/store/ratingStore';
 
 interface Review {
   id: string;
@@ -57,16 +59,33 @@ export default function CourseReviews({
     },
   ],
 }: CourseReviewsProps) {
-  const [helpful, setHelpful] = useState<Record<string, number>>(
-    reviews.reduce((acc, review) => ({ ...acc, [review.id]: review.helpful }), {}),
+  const { markHelpful, getHelpfulCount, hasVotedHelpful } = useRatingStore();
+  const [query, setQuery] = useState('');
+  const [minRating, setMinRating] = useState(0);
+  const [sortBy, setSortBy] = useState<ReviewSortKey>('relevance');
+
+  // Run the search engine over the reviews whenever a control changes. Helpful
+  // counts are kept live so "most helpful" sorting reflects the latest votes.
+  const filteredReviews = useMemo(
+    () =>
+      searchReviews(
+        reviews.map((review) => ({
+          ...review,
+          helpful: getHelpfulCount(review.id, review.helpful),
+        })),
+        { query, minRating, sortBy },
+      ).map((scored) => scored.review),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reviews, query, minRating, sortBy],
   );
 
-  const markHelpful = (reviewId: string) => {
-    setHelpful((prev) => ({
-      ...prev,
-      [reviewId]: (prev[reviewId] || 0) + 1,
-    }));
-  };
+  const sortOptions: { value: ReviewSortKey; label: string }[] = [
+    { value: 'relevance', label: 'Most relevant' },
+    { value: 'newest', label: 'Newest' },
+    { value: 'highestRated', label: 'Highest rated' },
+    { value: 'lowestRated', label: 'Lowest rated' },
+    { value: 'mostHelpful', label: 'Most helpful' },
+  ];
 
   const renderStars = (rating: number) => {
     return (
@@ -134,8 +153,81 @@ export default function CourseReviews({
         </div>
       </div>
 
+      {/* Review search engine controls */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <label htmlFor="review-search" className="sr-only">
+            Search reviews
+          </label>
+          <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+            />
+          </svg>
+          <input
+            id="review-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search reviews…"
+            className="w-full rounded-lg border border-[#E2E8F0] bg-white py-2 pl-9 pr-3 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#0066FF] focus:outline-none focus:ring-1 focus:ring-[#0066FF] dark:border-[#334155] dark:bg-[#0F172A] dark:text-white"
+          />
+        </div>
+
+        <label htmlFor="review-min-rating" className="sr-only">
+          Filter by minimum rating
+        </label>
+        <select
+          id="review-min-rating"
+          value={minRating}
+          onChange={(e) => setMinRating(Number(e.target.value))}
+          className="rounded-lg border border-[#E2E8F0] bg-white py-2 px-3 text-sm text-[#0F172A] focus:border-[#0066FF] focus:outline-none focus:ring-1 focus:ring-[#0066FF] dark:border-[#334155] dark:bg-[#0F172A] dark:text-white"
+        >
+          <option value={0}>All ratings</option>
+          <option value={5}>5 stars</option>
+          <option value={4}>4 stars & up</option>
+          <option value={3}>3 stars & up</option>
+          <option value={2}>2 stars & up</option>
+          <option value={1}>1 star & up</option>
+        </select>
+
+        <label htmlFor="review-sort" className="sr-only">
+          Sort reviews
+        </label>
+        <select
+          id="review-sort"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as ReviewSortKey)}
+          className="rounded-lg border border-[#E2E8F0] bg-white py-2 px-3 text-sm text-[#0F172A] focus:border-[#0066FF] focus:outline-none focus:ring-1 focus:ring-[#0066FF] dark:border-[#334155] dark:bg-[#0F172A] dark:text-white"
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <p className="mb-4 text-sm text-[#64748B] dark:text-[#94A3B8]" aria-live="polite">
+        Showing {filteredReviews.length} of {reviews.length} reviews
+      </p>
+
       <div className="space-y-6">
-        {reviews.map((review) => (
+        {filteredReviews.length === 0 && (
+          <p className="py-8 text-center text-[#64748B] dark:text-[#94A3B8]">
+            No reviews match your search.
+          </p>
+        )}
+        {filteredReviews.map((review) => (
           <div
             key={review.id}
             className="border-b border-[#E2E8F0] dark:border-[#334155] last:border-b-0 pb-6 last:pb-0"
@@ -162,11 +254,24 @@ export default function CourseReviews({
                   </div>
                 </div>
                 <p className="text-[#475569] dark:text-[#CBD5E1] mb-3 leading-relaxed">
-                  {review.comment}
+                  {highlightTerms(review.comment, query).map((segment, index) =>
+                    segment.match ? (
+                      <mark
+                        key={index}
+                        className="rounded bg-yellow-200 text-[#0F172A] dark:bg-yellow-500/40 dark:text-white"
+                      >
+                        {segment.text}
+                      </mark>
+                    ) : (
+                      <span key={index}>{segment.text}</span>
+                    ),
+                  )}
                 </p>
                 <button
-                  onClick={() => markHelpful(review.id)}
-                  className="inline-flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8] hover:text-[#0066FF] dark:hover:text-[#00C2FF] transition-colors"
+                  onClick={() => markHelpful(review.id, review.helpful)}
+                  disabled={hasVotedHelpful(review.id)}
+                  aria-pressed={hasVotedHelpful(review.id)}
+                  className="inline-flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8] hover:text-[#0066FF] dark:hover:text-[#00C2FF] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -176,7 +281,7 @@ export default function CourseReviews({
                       d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
                     />
                   </svg>
-                  Helpful ({helpful[review.id]})
+                  Helpful ({getHelpfulCount(review.id, review.helpful)})
                 </button>
               </div>
             </div>

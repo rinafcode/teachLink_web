@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import type { ApiResponse } from '@/types/api';
 
-// GET /api/ai/recommendations → { items: Recommendation[] }
+// GET /api/ai/recommendations → ApiResponse<Recommendation[]>
 
 interface Recommendation {
   id: string;

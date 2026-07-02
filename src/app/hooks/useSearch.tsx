@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('useSearch');
 
 export interface SearchResult {
   id: string;
   title: string;
-  category: 'course' | 'instructor' | 'topic';
+  category: 'course' | 'instructor' | 'topic' | 'investment';
   instructor?: string;
   rating?: number;
   price?: number;
@@ -18,6 +20,7 @@ export interface CategorizedResults {
   courses: SearchResult[];
   instructors: SearchResult[];
   topics: SearchResult[];
+  investments: SearchResult[];
 }
 
 // Mock data for search suggestions
@@ -116,6 +119,26 @@ const MOCK_DATA = {
       description: 'Analyze and visualize data effectively',
     },
   ],
+  investments: [
+    {
+      id: 'INV-101',
+      title: 'Investment Fundamentals for Creators',
+      category: 'investment' as const,
+      description: 'Understand capital allocation, growth opportunities, and risk management.',
+    },
+    {
+      id: 'INV-102',
+      title: 'Investment Planning for Startups',
+      category: 'investment' as const,
+      description: 'Learn how to build investor-ready business plans and pitch decks.',
+    },
+    {
+      id: 'INV-103',
+      title: 'Strategic Capital Deployment',
+      category: 'investment' as const,
+      description: 'Align project goals with effective investment and sourcing strategies.',
+    },
+  ],
 };
 
 const DEBOUNCE_MS = 300;
@@ -126,6 +149,7 @@ export const useSearch = () => {
     courses: [],
     instructors: [],
     topics: [],
+    investments: [],
   });
   const [isLoading, setIsLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -140,7 +164,7 @@ export const useSearch = () => {
       try {
         setSearchHistory(JSON.parse(saved));
       } catch (e) {
-        console.error('Error loading search history:', e);
+        logger.error('Error loading search history', { error: e });
       }
     }
   }, []);
@@ -148,7 +172,7 @@ export const useSearch = () => {
   // Execute the actual filtering (called after debounce)
   const executeSearch = useCallback((searchQuery: string) => {
     if (!searchQuery.trim()) {
-      setResults({ courses: [], instructors: [], topics: [] });
+      setResults({ courses: [], instructors: [], topics: [], investments: [] });
       setIsLoading(false);
       return;
     }
@@ -173,6 +197,13 @@ export const useSearch = () => {
             t.description?.toLowerCase().includes(lowerQuery),
         )
         .slice(0, 3),
+      investments: MOCK_DATA.investments
+        .filter(
+          (i) =>
+            i.title.toLowerCase().includes(lowerQuery) ||
+            i.description?.toLowerCase().includes(lowerQuery),
+        )
+        .slice(0, 3),
     });
 
     setIsLoading(false);
@@ -187,7 +218,7 @@ export const useSearch = () => {
 
       if (!searchQuery.trim()) {
         setIsLoading(false);
-        setResults({ courses: [], instructors: [], topics: [] });
+        setResults({ courses: [], instructors: [], topics: [], investments: [] });
         return;
       }
 

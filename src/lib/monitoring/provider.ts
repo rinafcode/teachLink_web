@@ -1,4 +1,7 @@
 import { getRecordedMetrics } from '@/lib/logging/performance';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('monitoring-provider');
 
 export type Metric = {
   name: string;
@@ -22,22 +25,38 @@ export class LocalMonitoringProvider implements MonitoringProvider {
       tags: metric.tags,
     }));
 
+    const metricsList = [...baseMetrics];
+
     try {
       const response = await fetch('/api/performance/db-metrics');
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && Array.isArray(result.data)) {
-        return [...baseMetrics, ...result.data];
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          metricsList.push(...result.data);
+        }
+      } else {
+        console.warn(`[Monitoring] DB metrics response error: HTTP ${response.status}`);
       }
     } catch (error) {
-      console.warn('[Monitoring] Failed to fetch DB metrics:', error);
+      logger.warn('[Monitoring] Failed to fetch DB metrics', { error });
     }
 
-    return baseMetrics;
+    try {
+      const response = await fetch('/api/performance/zoom-metrics');
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          metricsList.push(...result.data);
+        }
+      } else {
+        console.warn(`[Monitoring] Zoom metrics response error: HTTP ${response.status}`);
+      }
+    } catch (error) {
+      console.warn('[Monitoring] Failed to fetch Zoom metrics:', error);
+    }
+
+    return metricsList;
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   SearchContentType,
   SearchFilters,
@@ -10,6 +10,9 @@ import {
   getSearchSuggestions,
   parseAdvancedQuery,
 } from '../utils/searchUtils';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-advanced-search');
 
 const DEFAULT_FILTERS: SearchFilters = {
   types: ['all'],
@@ -37,21 +40,33 @@ export const useAdvancedSearch = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [history, setHistory] = useState<string[]>([]);
+  const hasLoadedHistory = useRef(false);
+  const activeRequestRef = useRef(0);
 
   // Load search history from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedHistory = JSON.parse(
-        localStorage.getItem('search_history_terms') || '[]',
-      ) as string[];
-      setHistory(storedHistory);
+      try {
+        const storedHistory = JSON.parse(
+          localStorage.getItem('search_history_terms') || '[]',
+        ) as string[];
+        setHistory(storedHistory);
+      } catch (e) {
+        logger.error('Failed to parse search history', { error: e });
+      } finally {
+        hasLoadedHistory.current = true;
+      }
     }
   }, []); // Run only once on mount
 
   // Persist history to localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined' && history.length > 0) {
-      localStorage.setItem('search_history_terms', JSON.stringify(history));
+    if (typeof window !== 'undefined' && hasLoadedHistory.current) {
+      try {
+        localStorage.setItem('search_history_terms', JSON.stringify(history));
+      } catch (e) {
+        logger.error('Failed to save search history', { error: e });
+      }
     }
   }, [history]);
 
@@ -88,11 +103,16 @@ export const useAdvancedSearch = () => {
       return;
     }
 
+    const currentRequestId = ++activeRequestRef.current;
     setIsSearching(true);
 
     // Simulate API call
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
+
+      if (currentRequestId !== activeRequestRef.current) {
+        return;
+      }
 
       // Dummy results (Moved up to fix declaration order)
       const mockResults: SearchResult[] = [
@@ -141,9 +161,11 @@ export const useAdvancedSearch = () => {
       setResults(mockResults);
       addToHistory(query.text);
     } catch (error) {
-      console.error('Search error:', error);
+      logger.error('Search error', { error });
     } finally {
-      setIsSearching(false);
+      if (currentRequestId === activeRequestRef.current) {
+        setIsSearching(false);
+      }
     }
   }, [query, addToHistory]);
 

@@ -12,6 +12,8 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { useWeb3Wallet, type TransactionDetails } from '@/hooks/useWeb3Wallet';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('TransactionManager');
 
 interface TransactionManagerProps {
   className?: string;
@@ -52,15 +54,23 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
 
   // Load history on mount
   useEffect(() => {
-    if (typeof localStorage === 'undefined' || !wallet.address) return;
+    if (typeof localStorage === 'undefined') return;
+
+    if (!wallet.address) {
+      setTxHistory([]);
+      return;
+    }
 
     const saved = localStorage.getItem(`tx_history_${wallet.address}`);
     if (saved) {
       try {
         setTxHistory(JSON.parse(saved));
       } catch (error) {
-        console.error('[TransactionManager] Failed to load history:', error);
+        logger.error('[TransactionManager] Failed to load history', { error });
+        setTxHistory([]);
       }
+    } else {
+      setTxHistory([]);
     }
   }, [wallet.address]);
 
@@ -93,9 +103,10 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   const validateForm = useCallback((): string | null => {
     if (!toAddress.trim()) return 'Recipient address is required';
     if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
-    const isValid = wallet.provider === 'starknet'
-      ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
-      : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+    const isValid =
+      wallet.provider === 'starknet'
+        ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
+        : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
     if (!isValid) {
       return wallet.provider === 'starknet'
         ? 'Invalid Starknet address format'
@@ -115,9 +126,10 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       const validationError = (() => {
         if (!toAddress.trim()) return 'Recipient address is required';
         if (!amount || parseFloat(amount) <= 0) return 'Amount must be greater than 0';
-        const isValid = wallet.provider === 'starknet'
-          ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
-          : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+        const isValid =
+          wallet.provider === 'starknet'
+            ? /^0x[a-fA-F0-9]{60,66}$/.test(toAddress)
+            : /^0x[a-fA-F0-9]{40}$/.test(toAddress);
         if (!isValid) {
           return wallet.provider === 'starknet'
             ? 'Invalid Starknet address format'
