@@ -280,14 +280,14 @@ export default function OnboardingPage() {
         stepId: currentStep.id,
         stepIndex: currentStep.index,
         stepTitle: currentStep.title,
-        role: values.role,
+        role: values.role as string,
         walletConnected: !!values.walletAddress,
       });
 
       // Save onboarding preference state locally so other pages know user is onboarded
       if (typeof window !== 'undefined') {
         localStorage.setItem('teachlink_onboarded', 'true');
-        localStorage.setItem('teachlink_user_role', values.role);
+        localStorage.setItem('teachlink_user_role', values.role as string);
       }
 
       // Redirect to main dashboard
