@@ -70,7 +70,7 @@ export type CollaborationMessage =
   | {
       type: 'poll:created';
       roomId: string;
-      poll: any;
+      poll: unknown;
     }
   | {
       type: 'poll:vote';

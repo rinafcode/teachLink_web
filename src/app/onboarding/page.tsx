@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
   GraduationCap,
   Calendar,
-  Check,
   Wallet,
   LogOut,
   Globe,
@@ -15,7 +14,6 @@ import {
   FileText,
   Loader2,
   BookOpen,
-  Mail,
 } from 'lucide-react';
 
 import { FormWizardController } from '@/form-management/components';
@@ -154,9 +152,9 @@ export default function OnboardingPage() {
   const safeTrack = useCallback(
     (name: string, properties: EventProperties = {}) => {
       try {
-        track(name as any, properties);
-      } catch (err) {
-        logger.warn('[Onboarding Analytics] Failed to track event', { error: err });
+        track(name as string, properties);
+      } catch (_err) {
+        logger.warn('[Onboarding Analytics] Failed to track event', { error: _err });
       }
     },
     [track],
@@ -225,7 +223,7 @@ export default function OnboardingPage() {
     };
   }, [hasFinishedOnboarding, safeTrack]);
 
-  const handleFieldChange = async (fieldId: string, value: any) => {
+  const handleFieldChange = async (fieldId: string, value: unknown) => {
     stateManager.updateField(fieldId, value);
 
     // Perform real-time validation
@@ -268,7 +266,7 @@ export default function OnboardingPage() {
   };
 
   // Final onboarding submission
-  const handleComplete = async (values: Record<string, any>) => {
+  const handleComplete = async (values: Record<string, unknown>) => {
     const loadingToastId = loading('Finalizing your registration profile...');
 
     try {
