@@ -1,13 +1,6 @@
 import { create } from 'zustand';
-
-export type AppNotification = {
-  id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  message: string;
-  createdAt: string; // ISO
-  read: boolean;
-  meta?: Record<string, any>;
-};
+import { AppNotification } from '@/lib/notifications/types';
+import { NotificationService } from '@/lib/notifications/service';
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -42,13 +35,24 @@ interface NotificationState {
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: load<AppNotification[]>(STORAGE_KEY, []),
   addNotification: (n) => {
-    const notif: AppNotification = {
-      id: n.id || `ntf_${Math.random().toString(36).slice(2)}_${Date.now()}`,
-      type: n.type,
+    const created = NotificationService.createNotification({
       message: n.message,
+      type: n.type,
       meta: n.meta,
-      createdAt: new Date().toISOString(),
-      read: false,
+    });
+    const incoming = n as Partial<AppNotification>;
+    const notif: AppNotification = {
+      ...created,
+      ...incoming,
+      id: incoming.id ?? created.id,
+      createdAt: incoming.createdAt ?? created.createdAt,
+      timestamp: incoming.timestamp ?? created.timestamp,
+      read: incoming.read ?? created.read,
+      title: incoming.title ?? created.title,
+      meta: {
+        ...created.meta,
+        ...incoming.meta,
+      },
     };
     const next = [notif, ...get().notifications].slice(0, 200);
     set({ notifications: next });

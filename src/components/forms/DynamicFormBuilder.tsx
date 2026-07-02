@@ -14,6 +14,9 @@ import { AutoSaveManagerImpl } from '@/form-management/auto-save/auto-save-manag
 import { useNotification } from '@/hooks/use-notification';
 import { useMutation } from '@/hooks/useMutation';
 import { SubmitButton } from '@/components/forms/SubmitButton';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('DynamicFormBuilder');
 
 interface DynamicFormBuilderProps {
   config: FormConfiguration | string;
@@ -65,7 +68,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       const validation = parser.validate(parsedConfig);
 
       if (!validation.isValid) {
-        console.error('Invalid form configuration:', validation.errors);
+        logger.error('Invalid form configuration', { context: { errors: validation.errors } });
         return;
       }
 
@@ -74,7 +77,7 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       // Initialize dependencies
       stateManager.initializeDependencies(parsedConfig.fields, parsedConfig.conditionalLogic || []);
     } catch (error) {
-      console.error('Error parsing form configuration:', error);
+      logger.error('Error parsing form configuration', { error });
     }
   }, [config, stateManager]);
 

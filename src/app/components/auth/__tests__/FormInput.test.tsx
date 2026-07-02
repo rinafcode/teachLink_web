@@ -57,9 +57,15 @@ describe('Auth FormInput', () => {
     fireEvent.click(toggle);
 
     expect(input).toHaveAttribute('type', 'text');
-    expect(screen.getByRole('button', { name: 'Hide Password' })).toHaveAttribute(
+    const hideToggle = screen.getByRole('button', { name: 'Hide Password' });
+    expect(hideToggle).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(hideToggle);
+
+    expect(input).toHaveAttribute('type', 'password');
+    expect(screen.getByRole('button', { name: 'Show Password' })).toHaveAttribute(
       'aria-pressed',
-      'true',
+      'false',
     );
   });
 });

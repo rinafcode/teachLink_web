@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
 import { formatMetricValue } from '@/utils/performanceUtils';
 import { CoreWebVitals } from './CoreWebVitals';
+import { useInternationalization } from '@/hooks/useInternationalization';
+import { translateWithFallback } from '@/components/dashboard/dashboardI18n';
 
 const showMonitorUi =
   process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_PERF_MONITOR_UI === 'true';
@@ -14,6 +16,7 @@ const showMonitorUi =
  */
 const PerformanceMonitor: React.FC = () => {
   const { metrics } = usePerformanceMonitoring();
+  const { t } = useInternationalization();
 
   const [expanded, setExpanded] = useState(false);
 
@@ -28,20 +31,24 @@ const PerformanceMonitor: React.FC = () => {
       }`}
     >
       <div className="flex justify-between items-center gap-2 border-b border-gray-200 dark:border-gray-700 px-3 py-2">
-        <span className="font-semibold">Performance</span>
+        <span className="font-semibold">
+          {translateWithFallback(t, 'performance.monitor.heading', 'Performance')}
+        </span>
         <div className="flex items-center gap-2">
           <Link
             href="/performance"
             className="text-indigo-600 dark:text-indigo-400 hover:underline text-[11px]"
           >
-            Dashboard
+            {translateWithFallback(t, 'performance.monitor.dashboardLink', 'Dashboard')}
           </Link>
           <button
             type="button"
             onClick={() => setExpanded((e) => !e)}
             className="text-[11px] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
           >
-            {expanded ? 'Compact' : 'Expand'}
+            {expanded
+              ? translateWithFallback(t, 'performance.monitor.compact', 'Compact')
+              : translateWithFallback(t, 'performance.monitor.expand', 'Expand')}
           </button>
         </div>
       </div>
@@ -53,10 +60,16 @@ const PerformanceMonitor: React.FC = () => {
       ) : (
         <ul
           className="p-3 space-y-1 font-mono max-h-40 overflow-y-auto"
-          aria-label="Latest performance metrics"
+          aria-label={translateWithFallback(
+            t,
+            'performance.monitor.ariaLabel',
+            'Latest performance metrics',
+          )}
         >
           {Object.values(metrics).length === 0 ? (
-            <li className="text-gray-500 dark:text-gray-400">Collecting vitals…</li>
+            <li className="text-gray-500 dark:text-gray-400">
+              {translateWithFallback(t, 'performance.monitor.collecting', 'Collecting vitals…')}
+            </li>
           ) : (
             Object.values(metrics).map((metric) => (
               <li key={metric.name} className="flex justify-between gap-4">

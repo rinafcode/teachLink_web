@@ -1,0 +1,35 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Git hooks run with a minimal PATH; ensure pnpm is available.
+if ! command -v pnpm >/dev/null 2>&1; then
+  if [ -n "$PNPM_HOME" ]; then
+    PATH="$PNPM_HOME:$PATH"
+  fi
+  PATH="$HOME/.local/share/pnpm:/opt/homebrew/bin:/usr/local/bin:$PATH"
+  export PATH
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  printf >&2 "\n❌ Pre-push blocked: pnpm not found on PATH.\nInstall pnpm or add it to PATH, then try pushing again.\n\n"
+  exit 1
+fi
+
+command -v git-lfs >/dev/null 2>&1 || {
+  printf >&2 "\n%s\n\n" "This repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting the 'pre-push' file in the hooks directory (set by 'core.hookspath'; usually '.git/hooks')."
+  exit 2
+}
+
+git lfs pre-push "$@" || exit $?
+
+echo "Running type-check before push..."
+pnpm run type-check || {
+  printf >&2 "\n❌ Pre-push blocked: TypeScript type-check failed.\nFix the errors above, then try pushing again.\n\n"
+  exit 1
+}
+
+echo "Running tests before push..."
+pnpm run test || {
+  printf >&2 "\n❌ Pre-push blocked: Tests failed.\nFix the failing tests above, then try pushing again.\n\n"
+  exit 1
+}

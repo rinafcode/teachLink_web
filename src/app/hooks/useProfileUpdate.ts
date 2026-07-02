@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('useProfileUpdate');
 
 interface ProfileData {
   firstName: string;
@@ -15,7 +17,7 @@ interface ProfileData {
 export function useProfileUpdate() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateProfile = async (data: ProfileData) => {
+  const updateProfile = useCallback(async (data: ProfileData) => {
     setIsLoading(true);
     try {
       // TODO: Replace with actual API call
@@ -36,15 +38,12 @@ export function useProfileUpdate() {
 
       return response.data;
     } catch (error) {
-      console.error('Error updating profile:', error);
+      logger.error('Error updating profile', { error });
       throw error;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  return {
-    updateProfile,
-    isLoading,
-  };
+  return useMemo(() => ({ updateProfile, isLoading }), [updateProfile, isLoading]);
 }

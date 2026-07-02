@@ -1,4 +1,7 @@
 import { useState, useCallback } from 'react';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-optimistic-updates');
 
 /**
  * Hook for handling optimistic UI updates with rollback support.
@@ -22,7 +25,7 @@ export const useOptimisticUpdates = <T,>() => {
       try {
         updateFn();
       } catch (e) {
-        console.error('[OptimisticUpdate] Local update failed:', e);
+        logger.error('[OptimisticUpdate] Local update failed', { error: e });
         setIsUpdating(false);
         return;
       }
@@ -34,7 +37,7 @@ export const useOptimisticUpdates = <T,>() => {
         return result;
       } catch (e) {
         // 3. Rollback on failure
-        console.error('[OptimisticUpdate] API call failed, rolling back:', e);
+        logger.error('[OptimisticUpdate] API call failed, rolling back', { error: e });
         setError(e instanceof Error ? e : new Error(String(e)));
         rollbackFn();
         setIsUpdating(false);

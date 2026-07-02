@@ -3,6 +3,11 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { TrendingUp, Lock, Loader2, ArrowUpRight, Zap, Info, Check } from 'lucide-react';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
+import { InvestmentSearchBar, InvestmentItem } from './InvestmentSearchBar';
+import { walletCache, walletCacheKeys, CACHE_TTL } from '@/utils/web3/walletCache';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('DeFiInterface');
 
 interface StakingPosition {
   id: string;
@@ -35,6 +40,39 @@ interface DeFiInterfaceProps {
 
 type Tab = 'protocols' | 'positions' | 'rewards';
 
+const PROTOCOLS: DeFiProtocol[] = [
+  {
+    id: 'aave',
+    name: 'Aave V3',
+    description: 'Decentralized lending protocol with variable and stable rates',
+    apy: 4.2,
+    tvl: '$10.2B',
+    riskLevel: 'low',
+    minStake: '0.1',
+    tokens: ['ETH', 'USDC', 'DAI'],
+  },
+  {
+    id: 'uniswap',
+    name: 'Uniswap V4 Liquidity',
+    description: 'Provide liquidity and earn swap fees',
+    apy: 15.8,
+    tvl: '$5.8B',
+    riskLevel: 'medium',
+    minStake: '0.05',
+    tokens: ['ETH', 'USDC', 'USDT'],
+  },
+  {
+    id: 'lido',
+    name: 'Lido Staking',
+    description: 'Earn staking rewards with liquid staking',
+    apy: 3.5,
+    tvl: '$32.1B',
+    riskLevel: 'low',
+    minStake: '0.01',
+    tokens: ['ETH'],
+  },
+];
+
 export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
   className = '',
   onStake,
@@ -48,45 +86,21 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
   const [stakeAmount, setStakeAmount] = useState('');
   const [stakeDuration, setStakeDuration] = useState('30');
   const [isStaking, setIsStaking] = useState(false);
-
-  const protocols: DeFiProtocol[] = [
-    {
-      id: 'aave',
-      name: 'Aave V3',
-      description: 'Decentralized lending protocol with variable and stable rates',
-      apy: 4.2,
-      tvl: '$10.2B',
-      riskLevel: 'low',
-      minStake: '0.1',
-      tokens: ['ETH', 'USDC', 'DAI'],
-    },
-    {
-      id: 'uniswap',
-      name: 'Uniswap V4 Liquidity',
-      description: 'Provide liquidity and earn swap fees',
-      apy: 15.8,
-      tvl: '$5.8B',
-      riskLevel: 'medium',
-      minStake: '0.05',
-      tokens: ['ETH', 'USDC', 'USDT'],
-    },
-    {
-      id: 'lido',
-      name: 'Lido Staking',
-      description: 'Earn staking rewards with liquid staking',
-      apy: 3.5,
-      tvl: '$32.1B',
-      riskLevel: 'low',
-      minStake: '0.01',
-      tokens: ['ETH'],
-    },
-  ];
+  const [filteredProtocols, setFilteredProtocols] = useState<DeFiProtocol[]>(PROTOCOLS);
 
   const fetchPositions = useCallback(async () => {
     if (!wallet.isConnected || !wallet.address) {
       setStakingPositions([]);
       return;
     }
+
+    const cacheKey = walletCacheKeys.defiPositions(wallet.address);
+    const cached = walletCache.get<StakingPosition[]>(cacheKey);
+    if (cached) {
+      setStakingPositions(cached);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const positions: StakingPosition[] = [
@@ -103,9 +117,10 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         },
       ];
       await new Promise((resolve) => setTimeout(resolve, 300));
+      walletCache.set(cacheKey, positions, CACHE_TTL.DEFI_POSITIONS);
       setStakingPositions(positions);
     } catch (error) {
-      console.error('[DeFiInterface] Error fetching positions:', error);
+      logger.error('Error fetching positions', { error });
     } finally {
       setIsLoading(false);
     }
@@ -132,30 +147,69 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         startDate: Date.now(),
         endDate: Date.now() + duration * 24 * 60 * 60 * 1000,
       };
-      setStakingPositions((prev) => [...prev, newPosition]);
+      setStakingPositions((prev) => {
+        const updated = [...prev, newPosition];
+        if (wallet.address) {
+          walletCache.set(
+            walletCacheKeys.defiPositions(wallet.address),
+            updated,
+            CACHE_TTL.DEFI_POSITIONS,
+          );
+        }
+        return updated;
+      });
       onStake?.(selectedProtocol.id, stakeAmount, duration);
       setStakeAmount('');
       setSelectedProtocol(null);
       setActiveTab('positions');
     } catch (error) {
-      console.error('[DeFiInterface] Staking failed:', error);
+      logger.error('Staking failed', { error });
     } finally {
       setIsStaking(false);
     }
-  }, [selectedProtocol, stakeAmount, stakeDuration, onStake]);
+  }, [selectedProtocol, stakeAmount, stakeDuration, onStake, wallet.address]);
 
   const handleUnstake = useCallback(
     async (positionId: string) => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 800));
-        setStakingPositions((prev) => prev.filter((p) => p.id !== positionId));
+        setStakingPositions((prev) => {
+          const updated = prev.filter((p) => p.id !== positionId);
+          if (wallet.address) {
+            walletCache.set(
+              walletCacheKeys.defiPositions(wallet.address),
+              updated,
+              CACHE_TTL.DEFI_POSITIONS,
+            );
+          }
+          return updated;
+        });
         onUnstake?.(positionId);
       } catch (error) {
-        console.error('[DeFiInterface] Unstaking failed:', error);
+        logger.error('Unstaking failed', { error });
       }
     },
-    [onUnstake],
+    [onUnstake, wallet.address],
   );
+
+  const investmentItems = React.useMemo<InvestmentItem[]>(() => {
+    return PROTOCOLS.map((p) => ({
+      id: p.id,
+      name: p.name,
+      symbol: p.tokens[0] || '',
+      apy: p.apy,
+      tvl: parseFloat(p.tvl.replace(/[^0-9.]/g, '')), // '$10.2B' -> 10.2
+      riskLevel: (p.riskLevel.charAt(0).toUpperCase() + p.riskLevel.slice(1)) as
+        | 'Low'
+        | 'Medium'
+        | 'High',
+    }));
+  }, []);
+
+  const handleSearchResults = useCallback((results: InvestmentItem[]) => {
+    const resultIds = new Set(results.map((r) => r.id));
+    setFilteredProtocols(PROTOCOLS.filter((p) => resultIds.has(p.id)));
+  }, []);
 
   const totalStaked = stakingPositions.reduce((sum, pos) => sum + parseFloat(pos.amount), 0);
   const totalRewards = stakingPositions.reduce((sum, pos) => sum + parseFloat(pos.rewards), 0);
@@ -236,7 +290,8 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
 
       {activeTab === 'protocols' && (
         <div className="space-y-3">
-          {protocols.map((protocol) => (
+          <InvestmentSearchBar items={investmentItems} onResultsChange={handleSearchResults} />
+          {filteredProtocols.map((protocol) => (
             <div
               key={protocol.id}
               className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-400 transition-colors"
@@ -376,6 +431,19 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
                   onChange={(e) => setStakeAmount(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Duration (Days)</label>
+                <select
+                  value={stakeDuration}
+                  onChange={(e) => setStakeDuration(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="30">30 Days</option>
+                  <option value="90">90 Days</option>
+                  <option value="180">180 Days</option>
+                  <option value="365">365 Days</option>
+                </select>
               </div>
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 rounded-lg flex gap-2">
                 <Info className="w-4 h-4 text-blue-600 mt-0.5" />

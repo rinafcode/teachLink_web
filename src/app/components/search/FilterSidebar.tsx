@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BarChart2, Clock, Tag, Users, Search, RotateCcw, X } from 'lucide-react';
+import { BarChart2, Clock, Tag, Users, Search, RotateCcw, X, Cpu } from 'lucide-react';
 import { FilterState } from '../../hooks/useSearchFilters';
 
 interface FilterSidebarProps {
@@ -61,6 +61,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     { id: '03', name: 'Business' },
     { id: '04', name: 'Marketing' },
     { id: '05', name: 'Health' },
+    { id: '06', name: 'Investment' },
   ];
 
   return (
@@ -220,6 +221,54 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 <span className="text-sm text-slate-600 font-medium group-hover:text-primary transition-colors">
                   {instructor}
                 </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Node Affinity Filter */}
+      <div className="glass-panel p-5 rounded-xl">
+        <h3 className="flex items-center gap-2 text-xs font-mono font-bold text-tech-text uppercase tracking-widest mb-4">
+          <Cpu className="w-3.5 h-3.5 text-blue-500" /> Node Affinity
+        </h3>
+        <p className="text-[11px] text-slate-400 font-sans mb-3 leading-relaxed">
+          Select target cluster node for query execution and data fetching.
+        </p>
+        <div className="space-y-3">
+          {[
+            { id: 'auto', label: 'Auto (Optimized)', desc: 'Dynamic load balancing' },
+            { id: 'primary', label: 'Primary Cluster', desc: 'Direct consistency check' },
+            { id: 'replica', label: 'Replica Node', desc: 'Fast read-heavy execution' },
+            { id: 'edge', label: 'Edge Cache', desc: 'Minimal latency routing' },
+          ].map((node) => {
+            const isSelected = (filters.nodeAffinity || 'auto') === node.id;
+            return (
+              <label key={node.id} className="flex items-start cursor-pointer group">
+                <input
+                  type="radio"
+                  name="nodeAffinity"
+                  className="hidden"
+                  checked={isSelected}
+                  onChange={() => onFilterChange({ nodeAffinity: node.id })}
+                />
+                <div
+                  className={`w-4 h-4 border rounded-sm flex items-center justify-center mr-3 mt-0.5 transition-colors ${
+                    isSelected ? 'border-primary' : 'border-slate-300 group-hover:border-primary'
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 bg-primary rounded-sm transition-opacity ${
+                      isSelected ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  ></div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">
+                    {node.label}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">{node.desc}</span>
+                </div>
               </label>
             );
           })}

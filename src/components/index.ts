@@ -4,6 +4,9 @@
  * Import from '@/components' rather than '@/app/components' for shared pieces.
  */
 
+export * from './ui/Accordion';
+export { Badge, badgeVariants } from './ui/Badge';
+export type { BadgeProps } from './ui/Badge';
 export { Button, buttonVariants } from './ui/Button';
 export type { ButtonProps } from './ui/Button';
 export { ButtonGroup } from './ui/ButtonGroup';
@@ -19,3 +22,6 @@ export { ShareModal } from './ShareModal';
 export * from './ui/Table';
 export { BulkImporter } from './BulkImporter';
 export type { BulkImporterProps, TargetFieldDef } from './BulkImporter';
+export { Tooltip } from './ui/Tooltip';
+export type { TooltipProps, TooltipPlacement } from './ui/Tooltip';
+export * from './shared/ReleaseNotes';

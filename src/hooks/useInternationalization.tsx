@@ -26,6 +26,9 @@ import {
   formatDuration,
 } from '@/utils/i18nUtils';
 import i18n, { loadLocale } from '@/lib/i18n/config';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-internationalization');
 
 interface I18nContextValue {
   language: LanguageCode;
@@ -95,9 +98,9 @@ export function I18nProvider({
               if (missing.length > 0) {
                 // Limit output to first 50 keys to avoid flooding logs
                 const sample = missing.slice(0, 50);
-                console.warn(
+                logger.warn(
                   `Translations for '${language}' missing ${missing.length} keys. Sample:`,
-                  sample,
+                  { sample },
                 );
               }
             }
@@ -149,7 +152,7 @@ export function I18nProvider({
 
   // Translation function
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>) => {
+    (key: string, params?: Record<string, unknown>) => {
       return getTranslation(translations, key, params);
     },
     [translations],
@@ -245,7 +248,35 @@ export function useInternationalization(): I18nContextValue {
   const context = useContext(I18nContext);
 
   if (!context) {
-    throw new Error('useInternationalization must be used within I18nProvider');
+    const fallbackLanguage: LanguageCode = DEFAULT_LANGUAGE;
+    const fallbackPreferences = getCulturalPreferences(fallbackLanguage);
+    const fallbackT = (key: string, params?: Record<string, unknown>) =>
+      getTranslation({}, key, params);
+
+    return {
+      language: fallbackLanguage,
+      translations: {},
+      preferences: fallbackPreferences,
+      isLoading: false,
+      error: null,
+      t: fallbackT,
+      changeLanguage: async () => {},
+      formatDate: (date: Date | string | number, formatStr?: string) =>
+        formatDateUtil(date, fallbackLanguage, formatStr),
+      formatRelativeTime: (date: Date | string | number) =>
+        formatRelativeTime(date, fallbackLanguage),
+      formatNumber: (value: number, options?: Intl.NumberFormatOptions) =>
+        formatNumberUtil(value, fallbackLanguage, options),
+      formatCurrency: (amount: number, currency?: string) =>
+        formatCurrencyUtil(amount, fallbackLanguage, currency),
+      formatPercentage: (value: number, decimals?: number) =>
+        formatPercentage(value, fallbackLanguage, decimals),
+      parseNumber: (value: string) => parseNumber(value, fallbackLanguage),
+      formatFileSize: (bytes: number) => formatFileSize(bytes, fallbackLanguage),
+      formatDuration: (seconds: number) => formatDuration(seconds, fallbackLanguage),
+      direction: getTextDirection(fallbackLanguage),
+      isRTL: isRTLUtil(fallbackLanguage),
+    };
   }
 
   return context;

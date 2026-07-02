@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Search, BookOpen, User } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Home, Search, BookOpen, User, Camera } from 'lucide-react';
+import { MobileNavigationScanner } from './MobileNavigationScanner';
 
 interface NavItem {
   id: string;
@@ -130,7 +130,7 @@ export const MobileNavigation: React.FC<{
         role="tablist"
         aria-label="Navigation Tabs"
         onKeyDown={handleKeyDown}
-        className="flex justify-around items-center h-16 landscape:h-12 px-2"
+        className={`flex justify-around items-center h-16 landscape:h-12 px-2 ${railListClasses}`}
       >
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
@@ -181,6 +181,18 @@ export const MobileNavigation: React.FC<{
           );
         })}
       </ul>
+      <div className="mt-2 flex justify-center sm:mt-0">
+        <button
+          type="button"
+          onClick={openScanner}
+          className="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+          aria-label="Open mobile scanner"
+        >
+          <Camera size={18} className="mr-2" aria-hidden="true" />
+          Scan
+        </button>
+      </div>
+      <MobileNavigationScanner isOpen={isScannerOpen} onClose={closeScanner} />
     </nav>
   );
 };

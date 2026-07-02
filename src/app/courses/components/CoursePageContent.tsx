@@ -38,7 +38,7 @@ export default function CoursePageContent() {
             <InstructorBio />
           </div>
           <div className="lg:col-span-4">
-            <EnrollmentCTA />
+            <EnrollmentCTA courseId="1" courseTitle="Web3 UX Design Principles" />
           </div>
         </div>
       </div>

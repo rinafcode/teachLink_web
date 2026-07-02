@@ -8,7 +8,7 @@ A comprehensive TypeScript solution for creating, managing, and processing compl
 - **Advanced Validation**: Synchronous and asynchronous validation with custom rules
 - **Auto-Save Functionality**: Automatic data persistence and recovery
 - **Multi-Step Navigation**: Wizard-style forms with progress tracking
-- **Analytics Tracking**: Form interaction and completion metrics
+- **Analytics Tracking**: Form interaction and completion metrics, including onboarding lifecycle events
 - **Accessibility Support**: Full WCAG compliance and screen reader support
 - **Performance Optimized**: Virtual scrolling and lazy loading for large forms
 - **Property-Based Testing**: Comprehensive testing with fast-check

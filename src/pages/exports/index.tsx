@@ -9,6 +9,9 @@ import ExportButton from '@/components/ExportButton';
 import { apiClient } from '@/lib/api';
 import { defaultSort, normalizeFilters } from '@/lib/export';
 import { ExportHistory, ExportSchedule, ExportTemplate } from '@/lib/export-scheduler';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('exports-dashboard');
 
 export default function ExportsPage() {
   const router = useRouter();
@@ -40,7 +43,7 @@ export default function ExportsPage() {
         setHistory(response.history);
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data', { error });
     } finally {
       setLoading(false);
     }
@@ -52,7 +55,7 @@ export default function ExportsPage() {
       await apiClient.delete(`/api/exports/templates/${id}`);
       void loadData();
     } catch (error) {
-      console.error('Error deleting template:', error);
+      logger.error('Error deleting template', { error });
     }
   };
 
@@ -62,7 +65,7 @@ export default function ExportsPage() {
       await apiClient.delete(`/api/exports/schedules/${id}`);
       void loadData();
     } catch (error) {
-      console.error('Error deleting schedule:', error);
+      logger.error('Error deleting schedule', { error });
     }
   };
 
@@ -71,7 +74,7 @@ export default function ExportsPage() {
       await apiClient.patch(`/api/exports/schedules/${scheduleId}`, { enabled });
       void loadData();
     } catch (error) {
-      console.error('Error toggling schedule:', error);
+      logger.error('Error toggling schedule', { error });
     }
   };
 
@@ -132,7 +135,8 @@ export default function ExportsPage() {
                 <div>
                   <h2 className="text-xl font-semibold">Export Templates</h2>
                   <p className="text-sm text-gray-500">
-                    Exports keep template filters and apply a deterministic sort before generating files.
+                    Exports keep template filters and apply a deterministic sort before generating
+                    files.
                   </p>
                 </div>
                 <button

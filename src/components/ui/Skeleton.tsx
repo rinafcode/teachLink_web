@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 
 interface SkeletonProps {
@@ -38,6 +36,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   return (
     <div
+      aria-hidden="true"
       className={`
         ${baseStyles}
         ${variantStyles[variant]}
