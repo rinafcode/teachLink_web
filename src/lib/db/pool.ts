@@ -13,23 +13,14 @@ import { retryWithBackoff } from '@/utils/errorUtils';
  * - Query queueing during reconnect windows
  */
 
-/**
- * Validate DB_SSL_CA is provided in production
- */
-function validateSSLConfig(): void {
-  if (process.env.NODE_ENV === 'production' && !process.env.DB_SSL_CA) {
-    throw new Error(
-      'DB_SSL_CA environment variable is required in production. ' +
-        'This should contain the path to your CA certificate file.',
-    );
-  }
-}
-
-// Validate on module load
-validateSSLConfig();
-
 const getSSLConfig = () => {
   if (process.env.NODE_ENV === 'production') {
+    if (!process.env.DB_SSL_CA) {
+      throw new Error(
+        'DB_SSL_CA environment variable is required in production. ' +
+          'This should contain the path to your CA certificate file.',
+      );
+    }
     return {
       rejectUnauthorized: true,
       ca: process.env.DB_SSL_CA,
