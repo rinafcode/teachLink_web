@@ -75,17 +75,7 @@ export function VideoPlayer({
   const videoAreaRef = useRef<HTMLDivElement | null>(null);
   const progress = getProgressPercent(currentTime, duration);
 
-  if (!cssLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] bg-gray-50 rounded-lg">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading video player...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Move all hooks before conditional returns (Rules of Hooks)
   useEffect(() => {
     if (!isExpanded) {
       return;
@@ -129,6 +119,17 @@ export function VideoPlayer({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded, playerRef]);
+
+  if (!cssLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] bg-gray-50 rounded-lg">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading video player...</p>
+        </div>
+      </div>
+    );
+  }
 
   const createThumbnail = async (time: number): Promise<string | null> => {
     const video = videoElementRef.current;
