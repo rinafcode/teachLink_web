@@ -24,7 +24,7 @@ export interface StructuredDataFilterGroup {
  * Uses schema.org ItemList to represent filterable options
  */
 export function generateFilterStructuredData(filterGroups: StructuredDataFilterGroup[]): string {
-  const itemListElement = filterGroups.map((group, groupIndex) => ({
+  const itemListElement = filterGroups.map((group, _groupIndex) => ({
     '@type': 'ItemList',
     name: group.name,
     description: group.description,
@@ -115,7 +115,7 @@ export function validateStructuredData(jsonLd: string): { valid: boolean; errors
     }
 
     return { valid: errors.length === 0, errors };
-  } catch (error) {
+  } catch (_error) {
     return { valid: false, errors: ['Invalid JSON format'] };
   }
 }

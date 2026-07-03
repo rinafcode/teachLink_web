@@ -83,6 +83,11 @@ export const setupCollaborationWebSocketServer = (httpServer: HttpServer): Socke
         return;
       }
 
+      if (message.type === 'poll:created' || message.type === 'poll:vote') {
+        socket.to(message.roomId).emit('collaboration:message', message);
+        return;
+      }
+
       if (message.type === 'operation') {
         const roomState = getRoomState(message.roomId);
 
