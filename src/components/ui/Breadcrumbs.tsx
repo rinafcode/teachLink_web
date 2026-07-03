@@ -30,6 +30,8 @@ export interface BreadcrumbItem {
   current?: boolean;
   /** Optional click handler (for custom navigation) */
   onClick?: (e: React.MouseEvent) => void;
+  /** Whether this item is a skeleton loading placeholder */
+  isSkeleton?: boolean;
 }
 
 export interface BreadcrumbsProps {
