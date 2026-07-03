@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('TipCanary');
 
 interface CanaryResult {
   enabled: boolean;
@@ -60,7 +62,7 @@ export function evaluateTipCanary(request: NextRequest): CanaryResult {
   try {
     // Logging minimal data: percent, bucket, enabled
     // Consumers can hook into logs to build metrics
-    console.info(JSON.stringify({ event: 'tip_canary_evaluation', percent, bucket, enabled }));
+    logger.info('tip_canary_evaluation', { context: JSON.parse(JSON.stringify({ event: 'tip_canary_evaluation' })) });
   } catch {}
 
   return { enabled, bucket, percent, identifier: setAnonId ? undefined : identifier, setAnonId };

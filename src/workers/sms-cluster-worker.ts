@@ -1,6 +1,9 @@
 import cluster from 'cluster';
 import os from 'os';
 import { sendSMS } from '../utils/notificationUtils'; // Assuming we have this or we'll mock it
+import { createLogger } from '../lib/logging';
+
+const logger = createLogger('sms-cluster-worker');
 
 const numCPUs = os.cpus().length;
 
@@ -30,8 +33,8 @@ for (let i = 0; i < 50; i++) {
 
 export const startSMSClusterWorker = () => {
   if (cluster.isPrimary) {
-    console.log(`Primary ${process.pid} is running`);
-    console.log(`Setting up cluster with ${numCPUs} workers for SMS processing...`);
+    logger.info(`Primary ${process.pid} is running`);
+    logger.info(`Setting up cluster with ${numCPUs} workers for SMS processing...`);
 
     // Fork workers.
     for (let i = 0; i < numCPUs; i++) {
@@ -39,27 +42,27 @@ export const startSMSClusterWorker = () => {
     }
 
     cluster.on('exit', (worker, code, signal) => {
-      console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
-      console.log('Starting a new worker...');
+      logger.warn(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
+      logger.info('Starting a new worker...');
       cluster.fork(); // Auto-heal workers
     });
   } else {
     // Workers can share any TCP connection
     // In this case it is an HTTP server or a message queue listener
-    console.log(`Worker ${process.pid} started for SMS processing`);
+    logger.info(`Worker ${process.pid} started for SMS processing`);
 
     const processQueue = async () => {
       // Basic mock of polling a queue
       const messageJob = smsQueue.dequeue();
       if (messageJob) {
         try {
-          console.log(`[Worker ${process.pid}] Processing SMS for ${messageJob.to}...`);
+          logger.debug(`[Worker ${process.pid}] Processing SMS for ${messageJob.to}...`);
           // Note: In a real app we'd use sendSMS(messageJob.to, messageJob.message)
           // For now we just mock the delay
           await new Promise((resolve) => setTimeout(resolve, Math.random() * 500 + 100));
-          console.log(`[Worker ${process.pid}] Successfully sent SMS to ${messageJob.to}`);
+          logger.info(`[Worker ${process.pid}] Successfully sent SMS to ${messageJob.to}`);
         } catch (error) {
-          console.error(`[Worker ${process.pid}] Failed to send SMS:`, error);
+          logger.error(`[Worker ${process.pid}] Failed to send SMS`, { error });
         }
       }
 

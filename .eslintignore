@@ -25,3 +25,8 @@ src/services/
 src/types/
 src/utils/virtualBackgroundUtils.ts
 src/workers/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+scripts/

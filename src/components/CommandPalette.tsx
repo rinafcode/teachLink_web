@@ -5,11 +5,14 @@ import { PollCreationModal, type PollDraft } from '@/components/polls/PollCreati
 import { useSettingsStore } from '@/lib/settings/store';
 import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/lib/theme-provider';
+import { wsManager } from '@/lib/websocketManager';
 import {
   type ShortcutActionId,
   type ShortcutCommand,
   useKeyboardShortcuts,
 } from '@/hooks/useKeyboardShortcuts';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('CommandPalette');
 
 function navigateTo(path: string): void {
   if (typeof window === 'undefined') return;
@@ -85,6 +88,7 @@ function ShortcutRow({
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [isSubmittingPoll, setIsSubmittingPoll] = useState(false);
   const [query, setQuery] = useState('');
   const { theme, setTheme } = useTheme();
   const [pollModalOpen, setPollModalOpen] = useState(false);
@@ -318,10 +322,42 @@ export function CommandPalette() {
       <PollCreationModal
         isOpen={pollModalOpen}
         onClose={() => setPollModalOpen(false)}
-        onCreate={(draft: PollDraft) => {
-          // TODO: integrate with poll creation backend/GraphQL.
-          // For now, keep placeholder to satisfy typing and modal behavior.
-          console.log('Create poll draft', draft);
+        onCreate={async (draft: PollDraft) => {
+          if (isSubmittingPoll) return;
+          setIsSubmittingPoll(true);
+
+          try {
+            const res = await fetch('/api/polls', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                question: draft.question,
+                options: draft.options.filter((option) => option.trim()),
+                durationDays: draft.durationDays,
+                allowAnonymous: draft.allowAnonymous,
+                resultsVisibility: draft.resultsVisibility,
+              }),
+            });
+
+            if (res.ok) {
+              const { data } = await res.json();
+              const statuses = wsManager.getAllStatuses();
+              const activeKey = Object.keys(statuses).find((key) => statuses[key].isConnected);
+
+              if (activeKey) {
+                const socket = wsManager.getSocket(activeKey);
+                socket?.emit('collaboration:message', {
+                  type: 'poll:created',
+                  roomId: 'global',
+                  poll: data,
+                });
+              }
+            }
+          } catch {
+            toastInfo('Failed to submit poll.');
+          } finally {
+            setIsSubmittingPoll(false);
+          }
         }}
       />
     </>

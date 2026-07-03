@@ -6,8 +6,7 @@ import { useNotificationStore } from '@/app/store/notificationStore';
 import NotificationCenter from '@/app/components/notifications/NotificationCenter';
 
 export default function NotificationBell() {
-  const { notifications } = useNotificationStore();
-  const unread = notifications.filter((n) => !n.read).length;
+  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.read).length);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -38,9 +37,9 @@ export default function NotificationBell() {
         className="relative inline-flex items-center justify-center w-9 h-9 rounded-full border bg-white hover:bg-gray-50"
       >
         <Bell size={18} className="text-gray-700" />
-        {unread > 0 && (
+        {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] leading-none rounded-full bg-red-600 text-white">
-            {unread}
+            {unreadCount}
           </span>
         )}
       </button>

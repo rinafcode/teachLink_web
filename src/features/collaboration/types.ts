@@ -66,4 +66,15 @@ export type CollaborationMessage =
       type: 'error';
       roomId: string;
       message: string;
+    }
+  | {
+      type: 'poll:created';
+      roomId: string;
+      poll: unknown;
+    }
+  | {
+      type: 'poll:vote';
+      roomId: string;
+      pollId: string;
+      optionIndex: number;
     };

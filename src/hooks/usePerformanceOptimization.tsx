@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-performance-optimization');
 
 interface UsePerformanceOptions {
   componentName: string;
@@ -21,7 +24,7 @@ export const usePerformanceOptimization = ({
     const duration = endTime - startTime.current;
 
     if (duration > threshold) {
-      console.warn(
+      logger.warn(
         `[Performance Warning] Component "${componentName}" took ${duration.toFixed(
           2,
         )}ms to mount. Threshold is ${threshold}ms.`,
@@ -39,7 +42,7 @@ export const usePerformanceOptimization = ({
     const end = performance.now();
     const duration = end - start;
     if (duration > threshold) {
-      console.warn(
+      logger.warn(
         `[Performance Warning] Interaction "${actionName}" in "${componentName}" took ${duration.toFixed(
           2,
         )}ms.`,

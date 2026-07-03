@@ -2,6 +2,9 @@
 
 import { useCallback, useState } from 'react';
 import { openDB, IDBPDatabase } from 'idb';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-offline-mode');
 
 // Database schema
 interface CourseData {
@@ -212,7 +215,7 @@ export const useOfflineMode = () => {
       setDb(database);
       setIsInitialized(true);
     } catch (error) {
-      console.error('Failed to initialize offline mode:', error);
+      logger.error('Failed to initialize offline mode', { error });
       throw error;
     }
   }, []);
@@ -250,7 +253,7 @@ export const useOfflineMode = () => {
 
         await db.saveCourse(course);
       } catch (error) {
-        console.error('Failed to download course:', error);
+        logger.error('Failed to download course', { error });
         throw error;
       }
     },
@@ -335,7 +338,7 @@ export const useOfflineMode = () => {
         await db.removeFromSyncQueue(item.id);
       }
     } catch (error) {
-      console.error('Failed to sync data:', error);
+      logger.error('Failed to sync data', { error });
       throw error;
     }
   }, [db]);
