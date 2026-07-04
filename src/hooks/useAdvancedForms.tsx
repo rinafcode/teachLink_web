@@ -13,6 +13,9 @@ import {
   ValidationResult,
   SaveStatus,
 } from '@/form-management/types/core';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-advanced-forms');
 
 interface UseAdvancedFormsOptions {
   formId: string;
@@ -273,7 +276,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
       const isValid = await validateForm();
 
       if (!isValid) {
-        console.warn('Form validation failed');
+        logger.warn('Form validation failed');
         return;
       }
 
@@ -288,7 +291,7 @@ export const useAdvancedForms = (options: UseAdvancedFormsOptions): UseAdvancedF
 
       stateManager.completeSubmission(true);
     } catch (error) {
-      console.error('Form submission error:', error);
+      logger.error('Form submission error', { error });
       stateManager.completeSubmission(false);
       throw error;
     } finally {

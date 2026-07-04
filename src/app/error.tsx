@@ -2,6 +2,8 @@
 import React, { useEffect } from 'react';
 import { UserFriendlyErrorDisplay } from '@/components/errors/UserFriendlyErrorDisplay';
 import { errorReportingService } from '@/services/errorReporting';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('ErrorPage');
 
 export default function ErrorBoundary({
   error,
@@ -16,7 +18,11 @@ export default function ErrorBoundary({
       errorMessage: error.message,
       digest: error.digest,
     });
-    console.error(error);
+    errorReportingService.reportError(error, {
+      errorInfo: { componentStack: '' },
+      ...(error.digest ? { digest: error.digest } : {}),
+    });
+    logger.error('Application error', { error });
   }, [error]);
 
   return (

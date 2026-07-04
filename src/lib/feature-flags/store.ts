@@ -103,8 +103,9 @@ for (const f of SEED_FLAGS) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export function generateId(prefix = 'flag'): string {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+export function generateId(prefix = ''): string {
+  const uuid = crypto.randomUUID();
+  return prefix ? `${prefix}_${uuid}` : uuid;
 }
 
 export function createAuditEntry(

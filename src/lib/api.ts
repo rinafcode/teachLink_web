@@ -12,6 +12,7 @@ import {
   STORAGE_KEYS,
   API_CACHE_TTL_DEFAULT,
 } from '@/constants/app.constants';
+import { logContextStorage } from './logging/context';
 
 export type { ErrorInfo };
 
@@ -42,6 +43,9 @@ export interface RequestConfig extends RequestInit {
   retries?: number;
   timeout?: number;
   schema?: z.ZodSchema;
+  useCache?: boolean;
+  _bypassCacheRead?: boolean;
+  ttl?: number;
 }
 
 export interface ApiClientConfig {
@@ -114,6 +118,18 @@ class ApiClientImpl {
     else this.cache.clear();
   }
 
+  addRequestInterceptor(interceptor: RequestInterceptor) {
+    this.requestInterceptors.push(interceptor);
+  }
+
+  addResponseInterceptor(interceptor: ResponseInterceptor) {
+    this.responseInterceptors.push(interceptor);
+  }
+
+  addErrorInterceptor(interceptor: ErrorInterceptor) {
+    this.errorInterceptors.push(interceptor);
+  }
+
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
     const token = this.getToken();
 
@@ -140,11 +156,13 @@ class ApiClientImpl {
 
     const timer = setTimeout(() => controller.abort(), timeout);
 
+    const contextStore = logContextStorage.getStore();
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(config.headers || {}),
       [API_VERSION_HEADER]: this.config.apiVersion,
+      ...(contextStore?.traceId ? { 'x-trace-id': contextStore.traceId } : {}),
     };
 
     try {
@@ -219,6 +237,9 @@ class ApiClientImpl {
     });
   }
 
+  /**
+   * PATCH request
+   */
   async patch<T>(
     url: string,
     body?: unknown,
@@ -232,6 +253,9 @@ class ApiClientImpl {
     });
   }
 
+  /**
+   * PUT request
+   */
   async put<T>(
     url: string,
     body?: unknown,
