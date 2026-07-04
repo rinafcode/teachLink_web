@@ -38,7 +38,10 @@ export async function requireAuth(request: NextRequest): Promise<NextResponse | 
  * Extract user from request using Bearer token or user-role cookie.
  * Returns null if user cannot be determined.
  */
-export function getUserFromRequest(request: NextRequest): User | null {
+// Narrow the returned type to only the fields this helper provides.
+type AuthUser = Pick<User, 'id' | 'name' | 'email' | 'role' | 'referralCount'>;
+
+export function getUserFromRequest(request: NextRequest): AuthUser | null {
   // Try to get user from Bearer token
   const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer ')) {
