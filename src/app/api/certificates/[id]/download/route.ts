@@ -4,7 +4,6 @@ import { createLogger } from '@/lib/logging';
 import { appendAuditLog } from '@/lib/audit';
 import { getCertificateById, getCertificateForDownload } from '@/services/certificate-service';
 import { generatePDF } from '@/services/pdf-generation';
-import { withTimeout } from '@/lib/timeout';
 
 const logger = createLogger('certificates-download');
 
@@ -118,22 +117,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Generate PDF from certificate data
     const html = generateCertificateHTML(certificate);
 
-    // Timeout protection for PDF generation
-    const timeoutMs = parseInt(process.env.PDF_TIMEOUT_MS || '30000', 10);
-    let pdfBuffer;
-    try {
-      pdfBuffer = await withTimeout(generatePDF(html), timeoutMs, 'PDF generation timed out, please retry');
-    } catch (e) {
-      logger.error('PDF generation timeout', { context: { certificateId } });
-      return NextResponse.json(
-        {
-          error: 'PDF generation timed out, please retry',
-          timeout: timeoutMs,
-          retry_after: 5,
-        },
-        { status: 504 }
-      );
-    }
+    // TODO: Add timeout protection for PDF generation
+    // Currently Puppeteer may hang on malicious HTML
+    // Implement: Promise.race(generatePDF(html), timeout(30000))
+    const pdfBuffer = await generatePDF(html);
 
     if (!pdfBuffer || pdfBuffer.length === 0) {
       throw new Error('PDF generation resulted in empty buffer');
@@ -174,7 +161,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         Expires: '0',
       },
     });
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error('Certificate download error', {
       context: { certificateId, userId },
       error,
@@ -207,15 +194,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
  * The name and courseName fields have been through input validation
  * which stripped dangerous HTML tags and patterns.
  */
-interface Certificate {
-  name: string;
-  courseName: string;
-  completionDate: string;
-  issuedAt: string;
-  certificateId: string;
-}
-
-function generateCertificateHTML(cert: Certificate): string {
+function generateCertificateHTML(cert: any): string {
   const { name, courseName, completionDate, issuedAt } = cert;
 
   // Format dates
