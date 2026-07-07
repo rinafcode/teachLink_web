@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 import path from 'path';
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: path.join(__dirname),
   serverExternalPackages: ['async_hooks'],
 
   // Code-splitting optimization for heavy libraries
@@ -129,6 +130,7 @@ const nextConfig: NextConfig = {
 
     // Enable bundle analysis when ANALYZE=true
     if (process.env.ANALYZE === 'true') {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic require for optional bundle analyzer
       const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
       config.plugins.push(
         new BundleAnalyzerPlugin({

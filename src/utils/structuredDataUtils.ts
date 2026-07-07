@@ -110,7 +110,14 @@ export function validateStructuredData(jsonLd: string): { valid: boolean; errors
       errors.push('Missing @type field');
     }
 
-    if (data['@context'] && !data['@context'].includes('schema.org')) {
+    const context = data['@context'];
+    const hasSchemaOrgContext =
+      typeof context === 'string'
+        ? context.includes('schema.org')
+        : Array.isArray(context) &&
+          context.some((entry) => typeof entry === 'string' && entry.includes('schema.org'));
+
+    if (context && !hasSchemaOrgContext) {
       errors.push('@context must include schema.org');
     }
 
