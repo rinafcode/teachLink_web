@@ -1,16 +1,20 @@
 /**
  * Registers the service worker for PWA offline capabilities
  */
+
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('pwa-utils');
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | undefined> {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
       });
-      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      logger.info('ServiceWorker registration successful', { scope: registration.scope });
       return registration;
     } catch (error) {
-      console.error('ServiceWorker registration failed: ', error);
+      logger.error('ServiceWorker registration failed', { error });
       return undefined;
     }
   }
@@ -36,7 +40,7 @@ export async function promptPWAInstall(installEvent: any): Promise<boolean> {
     const { outcome } = await installEvent.userChoice;
     return outcome === 'accepted';
   } catch (err) {
-    console.error('Error prompting PWA install:', err);
+    logger.error('Error prompting PWA install', { error: err });
     return false;
   }
 }

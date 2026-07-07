@@ -71,4 +71,65 @@ describe('API versioning middleware', () => {
     expect(response.headers.get(API_VERSION_HEADER)).toBe('v1');
     expect(response.headers.get(API_DEPRECATION_HEADER)).toBeNull();
   });
+
+  describe('valid version strings — should route correctly', () => {
+    it('accepts v1 and sets X-Api-Version header', () => {
+      const request = createMockRequest('/api/v1/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).not.toBe(400);
+      expect(response.headers.get(API_VERSION_HEADER)).toBe('v1');
+    });
+
+    it('accepts v2 and sets X-Api-Version header', () => {
+      const request = createMockRequest('/api/v2/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).not.toBe(400);
+      expect(response.headers.get(API_VERSION_HEADER)).toBe('v2');
+    });
+
+    it('accepts large version numbers like v10', () => {
+      const request = createMockRequest('/api/v10/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).not.toBe(400);
+      expect(response.headers.get(API_VERSION_HEADER)).toBe('v10');
+    });
+  });
+
+  describe('malformed version strings — should return 400', () => {
+    it('rejects alphabetic version string (vABC)', () => {
+      const request = createMockRequest('/api/vABC/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).toBe(400);
+    });
+
+    it('rejects path-traversal characters (/../)', () => {
+      const request = createMockRequest('/api/../v1/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).toBe(400);
+    });
+
+    it('rejects empty version segment (/api/v/)', () => {
+      const request = createMockRequest('/api/v/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).toBe(400);
+    });
+
+    it('rejects version with special characters (v1.2)', () => {
+      const request = createMockRequest('/api/v1.2/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).toBe(400);
+    });
+
+    it('rejects version with injection attempt (v1;drop)', () => {
+      const request = createMockRequest('/api/v1;drop/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).toBe(400);
+    });
+
+    it('rejects purely numeric version without v prefix (123)', () => {
+      const request = createMockRequest('/api/123/posts');
+      const response = middleware(request) as NextResponse;
+      expect(response.status).toBe(400);
+    });
+  });
 });

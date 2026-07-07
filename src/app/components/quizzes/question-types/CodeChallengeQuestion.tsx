@@ -4,6 +4,8 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Question, useQuizStore } from '@/app/store/quizStore';
 import { FaCheck, FaTimes, FaPlay } from 'react-icons/fa';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('CodeChallengeQuestion');
 
 // Lazy load Monaco Editor to reduce initial bundle size
 const Editor = dynamic(() => import('@monaco-editor/react'), {
@@ -46,7 +48,7 @@ export default function CodeChallengeQuestion({ question }: CodeChallengeQuestio
           const output = userFunction(testCase.input);
           return output === testCase.expectedOutput;
         } catch (error) {
-          console.error('Error running test:', error);
+          logger.error('Error running test', { error });
           return false;
         }
       },

@@ -1,6 +1,9 @@
 import { Pool, PoolConfig, QueryResult } from 'pg';
+import { createLogger } from '@/lib/logging';
 import { logContextStorage } from '@/lib/logging/context';
 import { retryWithBackoff } from '@/utils/errorUtils';
+
+const logger = createLogger('db-pool');
 
 /**
  * Database Connection Pool Management
@@ -13,13 +16,30 @@ import { retryWithBackoff } from '@/utils/errorUtils';
  * - Query queueing during reconnect windows
  */
 
-const DB_CONFIG: PoolConfig = {
+const getSSLConfig = () => {
+  if (process.env.NODE_ENV === 'production') {
+    if (!process.env.DB_SSL_CA) {
+      throw new Error(
+        'DB_SSL_CA environment variable is required in production. ' +
+          'This should contain the path to your CA certificate file.',
+      );
+    }
+    return {
+      rejectUnauthorized: true,
+      ca: process.env.DB_SSL_CA,
+    };
+  }
+  // Allow unverified certificates in development
+  return false;
+};
+
+const getDbConfig = (): PoolConfig => ({
   connectionString: process.env.DATABASE_URL,
   max: parseInt(process.env.DB_POOL_MAX || '20', 10),
   connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '5000', 10),
   idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-};
+  ssl: getSSLConfig(),
+});
 
 type CircuitState = 'CLOSED' | 'OPEN';
 
@@ -44,12 +64,14 @@ class DatabasePool {
 
   public static getInstance(): Pool {
     if (!DatabasePool.instance) {
-      DatabasePool.instance = new Pool(DB_CONFIG);
+      DatabasePool.instance = new Pool(getDbConfig());
 
       DatabasePool.instance.on('connect', () => {
         if (process.env.NODE_ENV === 'development') {
           const traceId = logContextStorage.getStore()?.traceId ?? '';
-          console.log('[DB Pool] New client connected to database', traceId ? { traceId } : '');
+          logger.info('[DB Pool] New client connected to database', {
+            context: { traceId },
+          });
         }
 
         DatabasePool.consecutiveFailures = 0;
@@ -60,7 +82,10 @@ class DatabasePool {
 
       DatabasePool.instance.on('error', (err) => {
         const traceId = logContextStorage.getStore()?.traceId ?? '';
-        console.error('[DB Pool] Unexpected error on idle client', err, traceId ? { traceId } : '');
+        logger.error('[DB Pool] Unexpected error on idle client', {
+          error: err,
+          context: { traceId },
+        });
 
         DatabasePool.consecutiveFailures++;
         DatabasePool.lastFailureTime = Date.now();
@@ -166,9 +191,6 @@ class DatabasePool {
     }
   }
 
-  /**
-   * Get current pool metrics for monitoring
-   */
   public static getMetrics() {
     if (!DatabasePool.instance) {
       return {
@@ -191,9 +213,6 @@ class DatabasePool {
     };
   }
 
-  /**
-   * Gracefully shutdown the pool
-   */
   public static async end(): Promise<void> {
     if (DatabasePool.instance) {
       await DatabasePool.instance.end();
@@ -201,11 +220,36 @@ class DatabasePool {
   }
 }
 
+export interface UserAuthRecord {
+  id: string;
+  password_hash: string;
+  role: string;
+}
+
+/**
+ * Precomputed bcrypt hash used when no user record exists so password
+ * verification takes comparable time and cannot reveal valid emails.
+ */
+export const TIMING_SAFE_DUMMY_HASH =
+  '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+
+export async function findUserByEmail(email: string): Promise<UserAuthRecord | null> {
+  const result = await query('SELECT id, password_hash, role FROM users WHERE email = $1', [
+    email,
+  ]);
+
+  if (!result.rows.length) {
+    return null;
+  }
+
+  return result.rows[0] as UserAuthRecord;
+}
+
 export const dbPool = DatabasePool;
 export const query = (text: string, params?: unknown[]) => {
   const traceId = logContextStorage.getStore()?.traceId ?? '';
   if (traceId && process.env.NODE_ENV === 'development') {
-    console.log('[DB Query]', { text: text.slice(0, 100), traceId });
+    logger.debug('[DB Query]', { context: { text: text.slice(0, 100), traceId } });
   }
   return DatabasePool.queryWithRetry(text, params);
 };
