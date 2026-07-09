@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { type PDFOptions } from 'puppeteer';
 
 /**
  * Generate a PDF from the provided HTML string using Puppeteer.
@@ -13,7 +13,7 @@ import puppeteer from 'puppeteer';
  */
 export async function generatePDF(
   html: string,
-  options?: puppeteer.PDFOptions
+  options?: PDFOptions
 ): Promise<Buffer> {
   // Launch a headless browser. The flags ensure compatibility in most CI
   // and server environments without a sandbox.
