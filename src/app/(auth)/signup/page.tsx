@@ -12,6 +12,7 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/utils/error-handler';
 import { DiscordButton } from '@/app/components/auth/DiscordButton';
 import { GoogleButton } from '@/app/components/auth/GoogleButton';
 import { GitHubButton } from '@/app/components/auth/GitHubButton';
@@ -37,6 +38,7 @@ export default function SignupPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -66,7 +68,17 @@ export default function SignupPage() {
   );
 
   const onSubmit = async (data: SignupFormData) => {
-    await signupMutation.mutate(data);
+    try {
+      await signupMutation.mutateAsync(data);
+    } catch (error) {
+      if (error instanceof ApiError && error.errors) {
+        for (const fieldError of error.errors) {
+          setError(fieldError.field as keyof SignupFormData, {
+            message: fieldError.message,
+          });
+        }
+      }
+    }
   };
 
   return (
@@ -217,7 +229,10 @@ export default function SignupPage() {
               </p>
             </div>
 
-            <FormError error={signupMutation.error?.message} id="signup-api-error" />
+            <FormError
+              error={(signupMutation.error as ApiError)?.errors ?? signupMutation.error?.message}
+              id="signup-api-error"
+            />
 
             {successMessage && (
               <motion.div

@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { type PDFOptions } from 'puppeteer';
 
 /**
  * Generate a PDF from the provided HTML string using Puppeteer.
@@ -13,7 +13,7 @@ import puppeteer from 'puppeteer';
  */
 export async function generatePDF(
   html: string,
-  options?: puppeteer.PDFOptions
+  options?: PDFOptions
 ): Promise<Buffer> {
   // Launch a headless browser. The flags ensure compatibility in most CI
   // and server environments without a sandbox.
@@ -27,12 +27,12 @@ export async function generatePDF(
     // Apply the required default timeout (25 000 ms) to prevent indefinite hangs.
     page.setDefaultTimeout(25000);
 
-    // Load the HTML content. "networkidle0" waits for all network requests to finish.
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    // Load the HTML content. Use "domcontentloaded" instead of "networkidle0"
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
     // Generate the PDF. Caller may supply additional options.
     const pdfBuffer = await page.pdf({ format: 'A4', ...options });
-    return pdfBuffer;
+    return Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer);
   } finally {
     // Ensure the browser process is always cleaned up, even on errors or timeouts.
     await browser.close();

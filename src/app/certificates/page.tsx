@@ -6,12 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { CertificateInputSchema, type CertificateInput } from '@/schemas/certificate.schema';
 import { apiClient } from '@/lib/api';
+import { ApiError, ApiFieldError } from '@/utils/error-handler';
 import { FormInput } from '@/components/forms/FormInput';
 import { FieldError, FormError } from '@/components/forms/FormError';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 
 export default function CertificateGenerationPage() {
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<ApiFieldError[] | string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const methods = useForm<CertificateInput>({
@@ -37,11 +38,13 @@ export default function CertificateGenerationPage() {
       setSuccessMessage(`Certificate generated successfully. ID: ${result.certificateId}`);
       reset();
     } catch (error) {
-      setApiError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to generate certificate. Please try again.',
-      );
+      if (error instanceof ApiError && error.errors) {
+        setApiError(error.errors);
+      } else if (error instanceof Error) {
+        setApiError(error.message);
+      } else {
+        setApiError('Unable to generate certificate. Please try again.');
+      }
     }
   };
 
