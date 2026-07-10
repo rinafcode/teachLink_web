@@ -2,7 +2,14 @@ import type { NextConfig } from 'next';
 import path from 'path';
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: path.join(__dirname),
   serverExternalPackages: ['async_hooks'],
+
+  // Code-splitting optimization for heavy libraries
+  experimental: {
+    optimizePackageImports: ['@monaco-editor/react', 'video.js', 'ethers'],
+  },
+
   modularizeImports: {
     lodash: {
       transform: 'lodash/{{member}}',
@@ -84,11 +91,56 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, './src'),
     };
+
+    // Optimize chunk splitting for heavy libraries
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization?.splitChunks,
+          cacheGroups: {
+            ...config.optimization?.splitChunks?.cacheGroups,
+            monaco: {
+              test: /[\\/]node_modules[\\/](@monaco-editor|monaco-editor)[\\/]/,
+              name: 'monaco-editor',
+              chunks: 'async',
+              priority: 30,
+            },
+            videojs: {
+              test: /[\\/]node_modules[\\/](video\.js|videojs-)[\\/]/,
+              name: 'video-player',
+              chunks: 'async',
+              priority: 30,
+            },
+            ethers: {
+              test: /[\\/]node_modules[\\/]ethers[\\/]/,
+              name: 'ethers',
+              chunks: 'async',
+              priority: 30,
+            },
+          },
+        },
+      };
+    }
+
+    // Enable bundle analysis when ANALYZE=true
+    if (process.env.ANALYZE === 'true') {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic require for optional bundle analyzer
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          reportFilename: isServer ? '../analyze/server.html' : './analyze/client.html',
+          openAnalyzer: false,
+        }),
+      );
+    }
+
     return config;
   },
 };

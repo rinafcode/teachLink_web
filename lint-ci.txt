@@ -1,0 +1,21 @@
+﻿
+> my-app@0.1.0 lint C:\Users\GODSWILL\teachLink_web
+> next lint --max-warnings=0
+
+pnpm.exe : `next lint` is deprecated and will be removed in Next.js 16.
+At C:\Users\GODSWILL\AppData\Local\pnpm\bin\pnpm.ps1:14 char:3
++   & "$basedir/../global/v11/1ff0-19ef193e7f2/node_modules/@pnpm/exe/p ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (`next lint` is ... in Next.js 16.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+For new projects, use create-next-app to choose your preferred linter.
+For existing projects, migrate to the ESLint CLI:
+npx @next/codemod@canary next-lint-to-eslint-cli .
+
+(node:11404) ESLintIgnoreWarning: The ".eslintignore" file is no longer supported. Switch to using the "ignores" 
+property in "eslint.config.js": https://eslint.org/docs/latest/use/configure/migration-guide#ignoring-files
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11404) ESLintIgnoreWarning: The ".eslintignore" file is no longer supported. Switch to using the "ignores" 
+property in "eslint.config.js": https://eslint.org/docs/latest/use/configure/migration-guide#ignoring-files
+Ô£ö No ESLint warnings or errors

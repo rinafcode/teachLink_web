@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { loader } from '@monaco-editor/react';
 import {
   Play,
   RotateCcw,
@@ -23,18 +22,23 @@ import { AutoCompletion } from './AutoCompletion';
 import { CollaborativeEditing } from './CollaborativeEditing';
 import type { CompletionSuggestion } from '@/utils/codeUtils';
 
-// Configure Monaco Web Worker to use CDN to prevent main-thread blocking
-loader.config({
-  paths: {
-    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
-  },
-});
-
 // Lazy-load Monaco using Next.js dynamic to avoid SSR issues and improve initial render
-const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((mod) => mod.default), {
-  ssr: false,
-  loading: () => <EditorSkeleton />,
-});
+const MonacoEditor = dynamic(
+  () =>
+    import('@monaco-editor/react').then((mod) => {
+      // Configure Monaco Web Worker to use CDN to prevent main-thread blocking
+      mod.loader.config({
+        paths: {
+          vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
+        },
+      });
+      return mod.default;
+    }),
+  {
+    ssr: false,
+    loading: () => <EditorSkeleton />,
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Props

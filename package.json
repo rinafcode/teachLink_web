@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:analyze": "ANALYZE=true pnpm run build",
     "start": "next start",
     "type-check": "tsc --noEmit",
     "type-check:all": "pnpm -r --if-present run type-check",
@@ -102,6 +103,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@next/bundle-analyzer": "^15.3.1",
     "@playwright/test": "^1.54.0",
     "@tailwindcss/postcss": "^4.0.0",
     "@tailwindcss/vite": "^4.2.0",
