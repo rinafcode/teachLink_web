@@ -29,8 +29,7 @@ export async function middleware(request: NextRequest) {
     return redirectResponse;
   }
 
-  // In a real application, you would verify the JWT or session here.
-  // Verify JWT from Authorization header or cookie — never trust client-supplied role cookies
+  // Verify JWT from Authorization header or cookie
   const token =
     request.headers.get('Authorization')?.replace('Bearer ', '') ??
     request.cookies.get('Authorization')?.value;
@@ -56,7 +55,6 @@ export async function middleware(request: NextRequest) {
   // CSRF Protection for API routes
   // ======================================================================
   if (pathname.startsWith('/api/')) {
-    // Exclude GET requests and auth endpoints from CSRF validation
     const csrfValidation = validateCsrfRequest(request, {
       skipMethods: ['GET', 'HEAD', 'OPTIONS'],
       exemptPaths: [
@@ -76,7 +74,7 @@ export async function middleware(request: NextRequest) {
       return withHeaders(csrfValidation);
     }
 
-    // Ensure CSRF cookie exists for GET requests (so client can read it)
+    // Ensure CSRF cookie exists for GET requests
     if (request.method === 'GET') {
       const existingToken = getCsrfTokenFromCookies(request);
       if (!existingToken) {
