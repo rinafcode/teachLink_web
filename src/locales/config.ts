@@ -1,6 +1,6 @@
 /**
  * Locale configuration for supported languages and regions
- * 
+ *
  * IMPORTANT: This is the single source of truth for supported languages.
  * Any language not in this list will be rejected by the translation manager
  * and fall back to English. This prevents path traversal attacks via dynamic imports.
