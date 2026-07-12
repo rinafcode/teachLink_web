@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
     return redirectResponse;
   }
 
-  // Verify JWT from Authorization header or cookie
+  // Verify JWT from Authorization header or cookie — never trust client-supplied role cookies
   const token =
     request.headers.get('Authorization')?.replace('Bearer ', '') ??
     request.cookies.get('Authorization')?.value;
@@ -109,6 +109,7 @@ export async function middleware(request: NextRequest) {
       return withHeaders(response);
     }
 
+    // Fix for #726 — validate version string before use
     const extractedVersion = pathname.split('/')[2];
     if (!extractedVersion || !/^v\d+$/.test(extractedVersion)) {
       return withHeaders(new NextResponse('Invalid API version', { status: 400 }));
