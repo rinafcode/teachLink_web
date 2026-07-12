@@ -17,6 +17,9 @@ import { ValidationEngineImpl } from '@/form-management/validation/validation-en
 import { useNotification } from '@/hooks/use-notification';
 import { useMutation } from '@/hooks/useMutation';
 import { SubmitButton } from '@/components/forms/SubmitButton';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('FormWizardController');
 
 interface FormWizardControllerProps {
   steps: WizardStep[];
@@ -127,7 +130,7 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
     const isValid = await validateCurrentStep();
 
     if (!isValid) {
-      console.warn('Current step validation failed');
+      logger.warn('Current step validation failed');
       return;
     }
 
@@ -153,13 +156,13 @@ export const FormWizardController: React.FC<FormWizardControllerProps> = ({
   const handleGoToStep = async (stepIndex: number) => {
     if (!allowNonLinearNavigation) {
       if (!completedSteps.includes(stepIndex) && stepIndex !== currentStepIndex) {
-        console.warn('Cannot navigate to incomplete step');
+        logger.warn('Cannot navigate to incomplete step');
         return;
       }
     }
 
     if (stepIndex < 0 || stepIndex >= steps.length) {
-      console.warn('Invalid step index');
+      logger.warn('Invalid step index');
       return;
     }
 

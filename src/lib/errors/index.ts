@@ -7,6 +7,8 @@
  */
 
 import { errorReportingService, BreadcrumbEntry } from '@/services/errorReporting';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('ErrorTracking');
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,7 +41,7 @@ export function init(dsn?: string): void {
 
   // TODO: replace with Sentry.init({ dsn, ... }) when SDK is installed.
   if (dsn) {
-    console.info('[ErrorTracking] Initialised with DSN:', dsn);
+    logger.info('[ErrorTracking] Initialised with DSN', { context: { dsn } });
   }
 
   // Forward global unhandled errors to the reporting service automatically.

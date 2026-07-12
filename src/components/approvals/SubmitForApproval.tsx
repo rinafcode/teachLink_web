@@ -15,6 +15,8 @@ interface SubmitForApprovalProps {
   onSubmitted?: (item: ApprovalItem) => void;
 }
 
+type ApiFieldError = { field: string; message: string };
+
 /**
  * Allows non-admin users (instructors) to submit content for admin review.
  * Implements RunAsNonRoot: the action is available without elevated privileges.
@@ -29,11 +31,13 @@ export function SubmitForApproval({
 }: SubmitForApprovalProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<ApiFieldError[]>([]);
 
   const submit = async () => {
     if (!user) return;
     setStatus('loading');
     setErrorMsg('');
+    setFieldErrors([]);
     try {
       const res = await fetch('/api/approvals', {
         method: 'POST',
@@ -50,7 +54,13 @@ export function SubmitForApproval({
         setStatus('done');
         onSubmitted?.(json.data);
       } else {
-        setErrorMsg(json.message ?? 'Submission failed');
+        const apiErrors = json.errors as ApiFieldError[] | undefined;
+        if (apiErrors && apiErrors.length > 0) {
+          setFieldErrors(apiErrors);
+          setErrorMsg(json.message ?? 'Submission failed');
+        } else {
+          setErrorMsg(json.message ?? 'Submission failed');
+        }
         setStatus('error');
       }
     } catch {
@@ -85,9 +95,17 @@ export function SubmitForApproval({
                   {status === 'loading' ? 'Submitting…' : 'Submit for Approval'}
                 </button>
                 {status === 'error' && (
-                  <p role="alert" className="text-xs text-red-600 dark:text-red-400">
-                    {errorMsg}
-                  </p>
+                  <div role="alert" className="text-xs text-red-600 dark:text-red-400 space-y-0.5">
+                    {fieldErrors.length > 0 ? (
+                      fieldErrors.map((fe, i) => (
+                        <p key={i}>
+                          <span className="font-semibold">{fe.field}</span>: {fe.message}
+                        </p>
+                      ))
+                    ) : (
+                      <p>{errorMsg}</p>
+                    )}
+                  </div>
                 )}
               </>
             )}

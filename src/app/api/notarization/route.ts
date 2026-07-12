@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { saveTipNotarization } from '@/services/notarizationStore';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-notarization');
 
 interface NotarizationPayload {
   txHash: string;
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
-    console.error('[Notarization API] Error creating notarization:', error);
+    logger.error('Error creating notarization', { error });
     return NextResponse.json({ message: 'Failed to create notarization' }, { status: 500 });
   }
 }

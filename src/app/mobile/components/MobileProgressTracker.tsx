@@ -11,6 +11,9 @@ import {
 import { apiService } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
 import { Course, Lesson, UserProgress } from '../types/mobile';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('MobileProgressTracker');
 
 interface ProgressCourse extends Course {
   lessons: Lesson[];
@@ -99,7 +102,7 @@ export default function MobileProgressTracker() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load progress data');
-      console.error('Error loading progress:', err);
+      logger.error('Error loading progress', { error: err });
     } finally {
       setLoading(false);
     }
@@ -171,7 +174,7 @@ export default function MobileProgressTracker() {
       try {
         await apiService.updateLessonProgress(lessonId, newCompleted);
       } catch (err) {
-        console.error('Failed to sync progress:', err);
+        logger.error('Failed to sync progress', { error: err });
       }
     }
   };

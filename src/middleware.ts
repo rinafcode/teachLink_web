@@ -29,6 +29,7 @@ export async function middleware(request: NextRequest) {
     return redirectResponse;
   }
 
+  // In a real application, you would verify the JWT or session here.
   // Verify JWT from Authorization header or cookie — never trust client-supplied role cookies
   const token =
     request.headers.get('Authorization')?.replace('Bearer ', '') ??
@@ -45,9 +46,7 @@ export async function middleware(request: NextRequest) {
 
   // Check route permissions
   const permissionResponse = checkRoutePermission(request, userRole);
-  if (permissionResponse) {
-    return withHeaders(permissionResponse);
-  }
+  if (permissionResponse) return withHeaders(permissionResponse);
 
   const { pathname } = request.nextUrl;
 
