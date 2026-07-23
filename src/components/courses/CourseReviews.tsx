@@ -75,8 +75,7 @@ export default function CourseReviews({
         })),
         { query, minRating, sortBy },
       ).map((scored) => scored.review),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [reviews, query, minRating, sortBy],
+    [reviews, query, minRating, sortBy, getHelpfulCount],
   );
 
   const sortOptions: { value: ReviewSortKey; label: string }[] = [
