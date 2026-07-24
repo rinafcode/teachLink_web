@@ -43,26 +43,40 @@ const TierIcon = ({ type }: { type: DiscountTier['icon'] }) => {
 };
 
 export default function DiscountProgressBar({ currentSpend }: DiscountProgressBarProps) {
-  const maxThreshold = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1].threshold;
-  const normalizedSpend = Math.round(currentSpend * 100) / 100;
-  const progressPercent = Math.min((normalizedSpend / maxThreshold) * 100, 100);
+  const maxThreshold = useMemo(() => DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1].threshold, []);
+  const normalizedSpend = useMemo(() => Math.round(currentSpend * 100) / 100, [currentSpend]);
+  const progressPercent = useMemo(
+    () => Math.min((normalizedSpend / maxThreshold) * 100, 100),
+    [normalizedSpend, maxThreshold]
+  );
 
   // Find the next tier the user hasn't unlocked yet
   const nextTier = useMemo(
     () => DISCOUNT_TIERS.find((tier) => normalizedSpend < tier.threshold),
-    [normalizedSpend],
+    [normalizedSpend]
   );
 
   // Find all unlocked tiers
   const unlockedTiers = useMemo(
     () => DISCOUNT_TIERS.filter((tier) => normalizedSpend >= tier.threshold),
-    [normalizedSpend],
+    [normalizedSpend]
   );
 
-  const amountToNext = nextTier
-    ? Math.max(0, nextTier.threshold - normalizedSpend).toFixed(2)
-    : null;
-  const allUnlocked = !nextTier;
+  const amountToNext = useMemo(
+    () => (nextTier ? Math.max(0, nextTier.threshold - normalizedSpend).toFixed(2) : null),
+    [nextTier, normalizedSpend]
+  );
+
+  const allUnlocked = useMemo(() => !nextTier, [nextTier]);
+
+  // Memoize tier list with unlocked status and computed positions
+  const memoizedTiers = useMemo(() => {
+    return DISCOUNT_TIERS.map((tier) => ({
+      ...tier,
+      isUnlocked: normalizedSpend >= tier.threshold,
+      markerPercent: (tier.threshold / maxThreshold) * 100,
+    }));
+  }, [normalizedSpend, maxThreshold]);
 
   return (
     <div
@@ -104,18 +118,16 @@ export default function DiscountProgressBar({ currentSpend }: DiscountProgressBa
           style={{ width: `${progressPercent}%` }}
         />
         {/* Tier markers */}
-        {DISCOUNT_TIERS.map((tier) => {
-          const markerPercent = (tier.threshold / maxThreshold) * 100;
-          const isUnlocked = currentSpend >= tier.threshold;
+        {memoizedTiers.map((tier) => {
           return (
             <div
               key={tier.reward}
               className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-colors duration-300 ${
-                isUnlocked
+                tier.isUnlocked
                   ? 'bg-[#00C2FF] border-white dark:border-[#0F172A]'
                   : 'bg-white dark:bg-[#334155] border-[#CBD5E1] dark:border-[#475569]'
               }`}
-              style={{ left: `calc(${markerPercent}% - 6px)` }}
+              style={{ left: `calc(${tier.markerPercent}% - 6px)` }}
               aria-hidden="true"
             />
           );
@@ -124,18 +136,17 @@ export default function DiscountProgressBar({ currentSpend }: DiscountProgressBa
 
       {/* Tier list */}
       <ul className="space-y-2">
-        {DISCOUNT_TIERS.map((tier) => {
-          const isUnlocked = currentSpend >= tier.threshold;
+        {memoizedTiers.map((tier) => {
           return (
             <li
               key={tier.reward}
               className={`flex items-center gap-2 text-xs transition-opacity ${
-                isUnlocked ? 'opacity-100' : 'opacity-50'
+                tier.isUnlocked ? 'opacity-100' : 'opacity-50'
               }`}
             >
               <span
                 className={`flex items-center justify-center w-5 h-5 rounded-full ${
-                  isUnlocked
+                  tier.isUnlocked
                     ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
                     : 'bg-[#E2E8F0] dark:bg-[#334155] text-[#94A3B8]'
                 }`}
@@ -144,14 +155,14 @@ export default function DiscountProgressBar({ currentSpend }: DiscountProgressBa
               </span>
               <span
                 className={`font-medium ${
-                  isUnlocked
+                  tier.isUnlocked
                     ? 'text-green-700 dark:text-green-400 line-through'
                     : 'text-[#475569] dark:text-[#CBD5E1]'
                 }`}
               >
                 ${tier.threshold.toFixed(2)} — {tier.label}
               </span>
-              {isUnlocked && (
+              {tier.isUnlocked && (
                 <span className="ml-auto text-green-600 dark:text-green-400 font-bold">
                   ✓ Unlocked
                 </span>
