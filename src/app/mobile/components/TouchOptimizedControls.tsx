@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize, X } from 'lucide-react';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('TouchOptimizedControls');
 
 interface TouchOptimizedControlsProps {
   videoTitle: string;
@@ -56,7 +59,7 @@ export default function TouchOptimizedControls({
         }
         setIsPlaying(!isPlaying);
       } catch (err) {
-        console.error('Error playing video:', err);
+        logger.error('Error playing video', { error: err });
       }
     }
     resetControlsTimer();
@@ -128,7 +131,7 @@ export default function TouchOptimizedControls({
 
     if (!document.fullscreenElement) {
       element.requestFullscreen().catch((err) => {
-        console.error('Error entering fullscreen:', err);
+        logger.error('Error entering fullscreen', { error: err });
       });
     } else {
       document.exitFullscreen();
@@ -172,7 +175,7 @@ export default function TouchOptimizedControls({
     const handlePause = () => setIsPlaying(false);
     const handleEnded = () => setIsPlaying(false);
     const handleError = () => {
-      console.error('Video error:', video.error);
+      logger.error('Video error', { error: video.error });
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);

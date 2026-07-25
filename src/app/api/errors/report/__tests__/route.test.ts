@@ -3,15 +3,28 @@ import { NextRequest } from 'next/server';
 import { POST } from '../route';
 import { RATE_LIMIT_TIERS } from '@/lib/ratelimit';
 
-// Silence the logger so error reports don't pollute test output.
-vi.mock('@/lib/logging', () => ({
-  createLogger: () => ({
-    error: vi.fn(),
-    warn: vi.fn(),
-    info: vi.fn(),
-    debug: vi.fn(),
-  }),
+// Capture what the route hands to the logger so tests can assert on it.
+// `vi.mock` factories are hoisted above imports, so the mock fns must be
+// created via `vi.hoisted` to be safely referenced inside the factory.
+const { loggerError, loggerWarn } = vi.hoisted(() => ({
+  loggerError: vi.fn(),
+  loggerWarn: vi.fn(),
 }));
+
+// Silence the logger so error reports don't pollute test output, but keep the
+// real `redactObject` implementation so PII-scrubbing behavior is exercised.
+vi.mock('@/lib/logging', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/logging')>('@/lib/logging');
+  return {
+    ...actual,
+    createLogger: () => ({
+      error: loggerError,
+      warn: loggerWarn,
+      info: vi.fn(),
+      debug: vi.fn(),
+    }),
+  };
+});
 
 const LIMIT = RATE_LIMIT_TIERS.REPORTING.limit;
 
@@ -40,6 +53,8 @@ const sampleReport = {
 describe('POST /api/errors/report rate limiting', () => {
   beforeEach(() => {
     ipCounter = 0;
+    loggerError.mockClear();
+    loggerWarn.mockClear();
   });
 
   it('accepts legitimate error reports within the limit', async () => {
@@ -86,5 +101,55 @@ describe('POST /api/errors/report rate limiting', () => {
     // A different IP is unaffected.
     const other = await POST(makeRequest(sampleReport, '198.51.100.4'));
     expect(other.status).toBe(200);
+  });
+});
+
+describe('POST /api/errors/report PII scrubbing', () => {
+  beforeEach(() => {
+    ipCounter = 0;
+    loggerError.mockClear();
+    loggerWarn.mockClear();
+  });
+
+  it('redacts known PII fields (email, password) before logging', async () => {
+    const reportWithPii = {
+      ...sampleReport,
+      email: 'user@example.com',
+      password: 'super-secret-password-123',
+      context: {
+        formState: {
+          email: 'nested@example.com',
+          password: 'nested-secret',
+          card: '4111111111111111',
+          ssn: '123-45-6789',
+          phone: '555-0100',
+          token: 'abc.def.ghi',
+        },
+      },
+    };
+
+    const res = await POST(makeRequest(reportWithPii));
+    expect(res.status).toBe(200);
+
+    expect(loggerError).toHaveBeenCalledTimes(1);
+    const [, payload] = loggerError.mock.calls[0];
+    const context = payload.context as Record<string, any>;
+
+    // Known PII fields are redacted.
+    expect(context.email).toBe('[REDACTED]');
+    expect(context.password).toBe('[REDACTED]');
+    expect(context.context.formState.email).toBe('[REDACTED]');
+    expect(context.context.formState.password).toBe('[REDACTED]');
+    expect(context.context.formState.card).toBe('[REDACTED]');
+    expect(context.context.formState.ssn).toBe('[REDACTED]');
+    expect(context.context.formState.phone).toBe('[REDACTED]');
+    expect(context.context.formState.token).toBe('[REDACTED]');
+
+    // Non-PII fields are logged as-is.
+    expect(context.url).toBe(sampleReport.url);
+    expect(context.environment).toBe(sampleReport.environment);
+    expect(context.sessionId).toBe(sampleReport.sessionId);
+    expect(payload.error?.message).toBe(sampleReport.errorData.message);
+    expect(payload.error?.name).toBe(sampleReport.errorData.type);
   });
 });

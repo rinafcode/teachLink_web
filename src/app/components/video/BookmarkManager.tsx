@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bookmark, Clock, Edit2, Trash2, Plus } from 'lucide-react';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('BookmarkManager');
 
 interface Bookmark {
   id: string;
@@ -43,7 +45,7 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = React.memo(
             })),
           );
         } catch (error) {
-          console.error('Failed to load bookmarks:', error);
+          logger.error('Failed to load bookmarks', { error });
         }
       }
     }, []);

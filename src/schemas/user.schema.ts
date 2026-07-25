@@ -10,6 +10,9 @@ export const UserSchema = z.object({
   referralCode: z.string().optional(),
   referredBy: z.string().optional(),
   referralCount: z.number().default(0),
+  createdAt: z.string(), // ISO 8601 date string
+  updatedAt: z.string(), // ISO 8601 date string
+  emailVerified: z.boolean().default(false),
 });
 
 export type User = z.infer<typeof UserSchema>;

@@ -16,6 +16,9 @@ import {
   type CircuitBreakerConfig,
   type CircuitBreakerMetrics,
 } from '@/utils/circuitBreaker';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('ToastContext');
 
 export interface ToastMessage {
   id: string;
@@ -77,9 +80,8 @@ export function ToastProvider({
           },
           () => {
             // Fallback: Log to console when circuit is open
-            console.warn('[Toast Circuit Breaker] Toast notification suppressed:', {
-              type,
-              message,
+            logger.warn('[Toast Circuit Breaker] Toast notification suppressed', {
+              context: { type, message },
             });
             // Optionally show a simplified fallback toast
             const id = Math.random().toString(36).substring(2, 11);
@@ -100,7 +102,7 @@ export function ToastProvider({
           },
         )
         .catch((error: unknown) => {
-          console.error('[Toast Circuit Breaker] Error:', error);
+          logger.error('[Toast Circuit Breaker] Error', { error });
         });
     },
     [removeToast, circuitBreaker],

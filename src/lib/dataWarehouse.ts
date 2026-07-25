@@ -6,6 +6,10 @@
  * for providers like BigQuery, Snowflake, Mixpanel, etc.
  */
 
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('data-warehouse');
+
 export interface TrackEventPayload {
   eventName: string;
   timestamp: string;
@@ -33,7 +37,7 @@ class DataWarehouseService {
 
     // Mock implementation for the data warehouse integration
     if (process.env.NODE_ENV !== 'test') {
-      console.log('[DataWarehouse] Event tracked:', JSON.stringify(payload, null, 2));
+      logger.info('[DataWarehouse] Event tracked', { payload });
     }
 
     // In a real implementation, you would do something like:

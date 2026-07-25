@@ -1,4 +1,7 @@
 import { useStore } from './stateManager';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('synchronization-engine');
 
 const CHANNEL_NAME = 'teachlink_state_sync';
 
@@ -56,6 +59,7 @@ export class SynchronizationEngine {
   private broadcastState(state: any) {
     if (!this.channel) return;
 
+    logger.debug('[SyncEngine] Broadcasting state update to other tabs');
     // Only send the synced slice
     const syncedState = SYNC_KEYS.reduce((acc, key) => {
       acc[key] = state[key as keyof typeof state];

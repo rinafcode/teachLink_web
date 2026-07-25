@@ -16,6 +16,9 @@ import {
   SyncConflict,
   SyncResult,
 } from '../services/offlineSync';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('offline-mode-context');
 
 interface OfflineModeContextType {
   isOnline: boolean;
@@ -137,7 +140,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
       await refreshStorageUsage();
       await refreshSyncStatus();
     } catch (error) {
-      console.error('Failed to enable offline mode:', error);
+      logger.error('Failed to enable offline mode', { error });
       setSyncStatus('error');
     }
   }, [initializeOfflineMode, refreshStorageUsage, refreshSyncStatus]);
@@ -152,7 +155,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
       setPendingConflicts([]);
       setStorageUsage({ used: 0, total: 0, percentage: 0 });
     } catch (error) {
-      console.error('Failed to disable offline mode:', error);
+      logger.error('Failed to disable offline mode', { error });
     }
   }, [cleanupOfflineMode]);
 
@@ -176,7 +179,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
       await refreshSyncStatus();
       return result;
     } catch (error) {
-      console.error('Failed to sync offline data:', error);
+      logger.error('Failed to sync offline data', { error });
       setSyncStatus('error');
       return {
         success: false,
@@ -204,7 +207,7 @@ export const OfflineModeProvider: React.FC<OfflineModeProviderProps> = ({ childr
       setPendingConflicts([]);
       setStorageUsage({ used: 0, total: 0, percentage: 0 });
     } catch (error) {
-      console.error('Failed to clear offline data:', error);
+      logger.error('Failed to clear offline data', { error });
     }
   }, [cleanupOfflineMode, initializeOfflineMode]);
 

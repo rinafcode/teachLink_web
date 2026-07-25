@@ -52,7 +52,7 @@ export default function handler(req, res) {
       subscriptions.delete(userId);
       console.log('[Push] Unsubscribed user:', userId);
       res.status(200).json({ success: true });
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ error: 'Failed to unsubscribe' });
     }
   } else if (req.method === 'GET') {

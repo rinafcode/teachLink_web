@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { Wallet, Send, Image as ImageIcon, TrendingUp, ChevronDown, Terminal } from 'lucide-react';
 import { WalletConnector, TransactionManager, NFTGallery, DeFiInterface } from '@/components/web3';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('web3-demo-page');
 
 type DemoTab = 'wallet' | 'transactions' | 'nfts' | 'defi' | 'code';
 
@@ -107,7 +110,7 @@ export default function Web3DemoPage() {
                   </h2>
                   <TransactionManager
                     onTransactionSent={(txHash) => {
-                      console.log('Transaction sent:', txHash);
+                      logger.info('Transaction sent', { context: { txHash } });
                     }}
                   />
                 </div>
@@ -121,7 +124,7 @@ export default function Web3DemoPage() {
                   <NFTGallery
                     showMintButton={true}
                     onNFTSelect={(nft) => {
-                      console.log('Selected NFT:', nft);
+                      logger.info('Selected NFT', { context: { nft } });
                     }}
                   />
                 </div>
@@ -134,7 +137,9 @@ export default function Web3DemoPage() {
                   </h2>
                   <DeFiInterface
                     onStake={(protocol, amount, duration) => {
-                      console.log(`Staked ${amount} in ${protocol} for ${duration} days`);
+                      logger.info(`Staked ${amount} in ${protocol} for ${duration} days`, {
+                        context: { protocol, amount, duration },
+                      });
                     }}
                   />
                 </div>
@@ -221,10 +226,10 @@ const result = performSecurityChecks(
 );
 
 if (!result.isSecure) {
-  console.error('Warnings:', result.warnings);
-  console.error('Errors:', result.errors);
+  logger.error('Security warnings', { context: { warnings: result.warnings } });
+  logger.error('Security errors', { context: { errors: result.errors } });
 } else {
-  console.log('Transaction is safe to proceed');
+  logger.info('Transaction is safe to proceed');
 }`}
                       </pre>
                     )}

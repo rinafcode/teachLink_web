@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import { query } from '@/lib/db/pool';
 import { createLogger } from '@/lib/logging';
 import {
   CertificateInput,
@@ -17,29 +18,53 @@ const logger = createLogger('certificate-service');
 const certificateStore = new Map<string, CertificateRecord>();
 
 /**
- * Verify or get course completion status.
+ * Verify course completion status via the user_progress table.
  *
  * SECURITY: Server-side verification prevents users from generating certificates
  * for courses they haven't completed. Check must happen before generation.
- *
- * In production: Query enrollment/progress database with user ID and course ID.
- * Returns: completion record with isCompleted boolean and completedAt timestamp.
  */
 async function getCourseCompletion(
   userId: string,
   courseId: string,
 ): Promise<CourseCompletion | null> {
-  // MOCK IMPLEMENTATION — Replace with actual database query
-  // Pattern: Query IDB or backend progress table for:
-  // SELECT * FROM user_progress WHERE userId = ? AND courseId = ? AND isCompleted = true
-
   logger.debug('Checking course completion', {
     context: { userId, courseId },
   });
 
-  // For now, all requests return null (requires implementation with actual data source)
-  // TODO: Connect to actual progress/enrollment tracking system
-  return null;
+  try {
+    const result = await query(
+      `SELECT user_id, course_id, progress, completed_lessons, last_accessed_at, completed_at
+       FROM user_progress
+       WHERE user_id = $1 AND course_id = $2`,
+      [userId, courseId],
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0] as {
+      user_id: string;
+      course_id: string;
+      progress: number;
+      completed_lessons: string[];
+      last_accessed_at: string;
+      completed_at: string | null;
+    };
+
+    return {
+      userId: row.user_id,
+      courseId: row.course_id,
+      isCompleted: row.progress >= 100,
+      completedAt: row.completed_at ?? undefined,
+    };
+  } catch (error) {
+    logger.error('Failed to check course completion', {
+      context: { userId, courseId },
+      error,
+    });
+    return null;
+  }
 }
 
 /**
@@ -121,7 +146,7 @@ function computeCertificateHash(
  *
  * SECURITY CHECKS:
  * 1. User must be authenticated (verified by caller via requireAuth)
- * 2. User must have completed the course (server-side verification)
+ * 2. User must have completed the course (server-side verification against user_progress)
  * 3. Input must be sanitized (schema validation)
  * 4. Rate limiting applied by caller
  * 5. All changes logged to audit trail by caller

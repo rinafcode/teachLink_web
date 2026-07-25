@@ -15,6 +15,11 @@ import {
   referralCodeExists,
   getReferralCodeOwner,
   generateReferralCode,
+  generateReferralCode,
+  getReferralCodeOwner,
+  referralCodeExists,
+  storeReferralCode,
+  validateReferralCode,
 } from '@/lib/referral';
 
 export const runtime = 'nodejs';
@@ -123,6 +128,7 @@ export async function POST(
 
     const userId = randomUUID();
     const userReferralCode = generateReferralCode();
+    storeReferralCode(email, userReferralCode);
     edgeLog('info', route, 'Account created', {
       userId,
       verificationId: verificationResult.record.verificationId,

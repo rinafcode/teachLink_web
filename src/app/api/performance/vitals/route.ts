@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { edgeLog } from '@/../infra/edge-config';
 import { query } from '@/lib/db/pool';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-performance-vitals');
 import { requireAuth } from '@/lib/authMiddleware';
 
 export const runtime = 'nodejs';
@@ -54,7 +57,7 @@ async function checkPoorRate(name: string): Promise<void> {
 
   const poorPct = (row.poor_count / row.total) * 100;
   if (poorPct > POOR_ALERT_THRESHOLD_PCT) {
-    console.warn(
+    logger.warn(
       `[PERFORMANCE ALERT] "${name}" poor-rate ${poorPct.toFixed(
         1,
       )}% exceeds ${POOR_ALERT_THRESHOLD_PCT}% threshold (${row.poor_count}/${
@@ -96,14 +99,14 @@ export async function POST(request: NextRequest) {
     const insertedId = result.rows[0]?.id as string | undefined;
 
     if (rating === 'poor') {
-      console.warn(
+      logger.warn(
         `[PERFORMANCE ALERT] Critical degradation detected for ${name} on ${
           url ?? '/'
         }. Value: ${value}`,
       );
       await checkPoorRate(name);
     } else if (rating === 'needs-improvement') {
-      console.info(
+      logger.info(
         `[PERFORMANCE WARNING] ${name} needs improvement on ${url ?? '/'}. Value: ${value}`,
       );
     }
@@ -115,7 +118,7 @@ export async function POST(request: NextRequest) {
       alertTriggered: rating === 'poor',
     });
   } catch (error) {
-    console.error('[Performance Analytics] Error processing metric:', error);
+    logger.error('[Performance Analytics] Error processing metric', { error });
     return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -152,7 +155,7 @@ export async function GET(request: NextRequest) {
       range: range ?? '7d',
     });
   } catch (error) {
-    console.error('[Performance Analytics] Error fetching vitals:', error);
+    logger.error('[Performance Analytics] Error fetching vitals', { error });
     return NextResponse.json(
       { success: false, message: 'Failed to fetch metrics' },
       { status: 500 },

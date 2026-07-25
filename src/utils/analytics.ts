@@ -11,6 +11,9 @@
 //   track("button_clicked", { label: "Enroll" });
 // ──────────────────────────────────────────────────────────────────────────────
 
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('Analytics');
+
 export type EventName =
   // Navigation
   | 'page_view'
@@ -86,7 +89,7 @@ export type AnalyticsAdapter = (event: AnalyticsEvent) => void | Promise<void>;
 /** Logs to console in development */
 export const consoleAdapter: AnalyticsAdapter = (event) => {
   if (process.env.NODE_ENV !== 'production') {
-    console.info(`[Analytics] ${event.name}`, event.properties);
+    logger.info(`[Analytics] ${event.name}`, { context: { properties: event.properties } });
   }
 };
 
@@ -101,7 +104,7 @@ export function createApiAdapter(endpoint: string): AnalyticsAdapter {
         keepalive: true, // survive page unload
       });
     } catch (err) {
-      console.warn('[Analytics] Failed to send event', err);
+      logger.warn('[Analytics] Failed to send event', { error: err });
     }
   };
 }
@@ -199,7 +202,7 @@ class Analytics {
       try {
         adapter(event);
       } catch (err) {
-        console.warn(`[Analytics] Adapter error for "${name}"`, err);
+        logger.warn(`[Analytics] Adapter error for "${name}"`, { error: err });
       }
     }
   }

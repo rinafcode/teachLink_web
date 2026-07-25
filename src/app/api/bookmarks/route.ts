@@ -17,14 +17,7 @@ import type {
   BookmarksSuccessResponseDTO,
 } from '@/types/api/bookmarks.dto';
 
-export const runtime = 'edge';
-
-const bookmarksStore = new Map<string, VideoBookmark[]>();
-
-const keyFor = (userId: string | undefined, lessonId: string): string => {
-  const safeUserId = encodeURIComponent(userId ?? 'anon');
-  return `${safeUserId}::${encodeURIComponent(lessonId)}`;
-};
+import * as bookmarksRepo from '@/lib/db/repositories/bookmarks.repository';
 
 // ---------------------------------------------------------------------------
 // GET /api/bookmarks
@@ -40,12 +33,26 @@ export async function GET(request: Request): Promise<NextResponse<BookmarksListR
   const result = validateQuery(BookmarksGetQuerySchema, searchParams);
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  return addHeaders(
-    NextResponse.json({
-      data: bookmarksStore.get(keyFor(result.data.userId, result.data.lessonId)) ?? [],
-      success: true,
-    }),
-  );
+  try {
+    const bookmarks = await bookmarksRepo.findByUserAndLesson(
+      result.data.userId,
+      result.data.lessonId,
+    );
+    return addHeaders(
+      NextResponse.json({
+        data: bookmarks,
+        success: true,
+      }),
+    );
+  } catch (error) {
+    edgeLog('error', '/api/bookmarks', 'Database error in GET', { error });
+    return addHeaders(
+      NextResponse.json(
+        { data: [], success: false, message: 'Internal server error' },
+        { status: 500 },
+      ),
+    ) as NextResponse;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -61,38 +68,45 @@ export async function POST(request: Request): Promise<NextResponse<BookmarkRespo
   const result = validateBody(BookmarksCreateBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  const now = new Date().toISOString();
+  try {
+    const bookmarkData = {
+      id: result.data.bookmark.id ?? `bookmark-${Date.now()}`,
+      time: result.data.bookmark.time,
+      title: result.data.bookmark.title,
+      note: result.data.bookmark.note,
+    };
 
-  const persisted: VideoBookmark = {
-    id: result.data.bookmark.id ?? `bookmark-${Date.now()}`,
-    time: result.data.bookmark.time,
-    title: result.data.bookmark.title,
-    note: result.data.bookmark.note,
-    createdAt: now,
-    updatedAt: now,
-  };
+    const persisted = await bookmarksRepo.create(
+      result.data.userId,
+      result.data.lessonId,
+      bookmarkData,
+    );
 
-  const key = keyFor(result.data.userId, result.data.lessonId);
-  const prev = bookmarksStore.get(key) ?? [];
+    const response = addHeaders(
+      NextResponse.json({
+        success: true,
+        data: persisted,
+      }),
+    );
 
-  bookmarksStore.set(key, [persisted, ...prev.filter((b) => b.id !== persisted.id)]);
+    logAuditMutation(request, {
+      action: 'create',
+      targetType: 'video-bookmark',
+      targetId: persisted.id,
+      statusCode: response.status,
+      metadata: { lessonId: result.data.lessonId },
+    });
 
-  const response = addHeaders(
-    NextResponse.json({
-      success: true,
-      data: persisted,
-    }),
-  );
-
-  logAuditMutation(request, {
-    action: 'create',
-    targetType: 'video-bookmark',
-    targetId: persisted.id,
-    statusCode: response.status,
-    metadata: { lessonId: result.data.lessonId },
-  });
-
-  return response;
+    return response;
+  } catch (error) {
+    edgeLog('error', '/api/bookmarks', 'Database error in POST', { error });
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'Internal server error' } as unknown as BookmarkResponseDTO,
+        { status: 500 },
+      ),
+    ) as NextResponse;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -108,35 +122,29 @@ export async function PATCH(request: Request): Promise<NextResponse<BookmarksSuc
   const result = validateBody(BookmarksPatchBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  const key = keyFor(result.data.userId, result.data.lessonId);
-  const prev = bookmarksStore.get(key) ?? [];
-  const now = new Date().toISOString();
+  try {
+    await bookmarksRepo.update(result.data.id, result.data.userId, result.data.lessonId, {
+      title: result.data.title,
+      note: result.data.note,
+      time: result.data.time,
+    });
 
-  bookmarksStore.set(
-    key,
-    prev.map((b) =>
-      b.id === result.data.id
-        ? {
-            ...b,
-            title: result.data.title,
-            note: result.data.note,
-            time: result.data.time ?? b.time,
-            updatedAt: now,
-          }
-        : b,
-    ),
-  );
+    const response = addHeaders(NextResponse.json({ success: true }));
+    logAuditMutation(request, {
+      action: 'update',
+      targetType: 'video-bookmark',
+      targetId: result.data.id,
+      statusCode: response.status,
+      metadata: { lessonId: result.data.lessonId },
+    });
 
-  const response = addHeaders(NextResponse.json({ success: true }));
-  logAuditMutation(request, {
-    action: 'update',
-    targetType: 'video-bookmark',
-    targetId: result.data.id,
-    statusCode: response.status,
-    metadata: { lessonId: result.data.lessonId },
-  });
-
-  return response;
+    return response;
+  } catch (error) {
+    edgeLog('error', '/api/bookmarks', 'Database error in PATCH', { error });
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 }),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -152,22 +160,23 @@ export async function DELETE(request: Request): Promise<NextResponse<BookmarksSu
   const result = validateBody(BookmarksDeleteBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  const key = keyFor(result.data.userId, result.data.lessonId);
-  const prev = bookmarksStore.get(key) ?? [];
+  try {
+    await bookmarksRepo.remove(result.data.id, result.data.userId, result.data.lessonId);
 
-  bookmarksStore.set(
-    key,
-    prev.filter((b) => b.id !== result.data.id),
-  );
+    const response = addHeaders(NextResponse.json({ success: true }));
+    logAuditMutation(request, {
+      action: 'delete',
+      targetType: 'video-bookmark',
+      targetId: result.data.id,
+      statusCode: response.status,
+      metadata: { lessonId: result.data.lessonId },
+    });
 
-  const response = addHeaders(NextResponse.json({ success: true }));
-  logAuditMutation(request, {
-    action: 'delete',
-    targetType: 'video-bookmark',
-    targetId: result.data.id,
-    statusCode: response.status,
-    metadata: { lessonId: result.data.lessonId },
-  });
-
-  return response;
+    return response;
+  } catch (error) {
+    edgeLog('error', '/api/bookmarks', 'Database error in DELETE', { error });
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 }),
+    );
+  }
 }

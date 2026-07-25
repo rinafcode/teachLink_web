@@ -7,6 +7,9 @@
  */
 
 import { bundleSecurityContext, type ChunkSecurityMetadata } from './bundleSecurityContext';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('bundle-optimizer');
 
 export interface BundleChunk {
   id: string;
@@ -65,11 +68,11 @@ class BundleOptimizer {
     );
 
     if (heavyChunks.length > 0) {
-      console.warn(
+      logger.warn(
         `[Bundle Analysis] Found ${heavyChunks.length} heavy chunks (> ${threshold}KB). Consider further code splitting.`,
       );
       heavyChunks.forEach((chunk) => {
-        console.warn(` - Chunk: ${chunk.name} (${chunk.size}KB)`);
+        logger.warn(` - Chunk: ${chunk.name} (${chunk.size}KB)`);
       });
     }
 

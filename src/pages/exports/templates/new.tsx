@@ -6,6 +6,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { apiClient } from '@/lib/api';
 import { ExportFormat } from '@/lib/export-scheduler';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('export-templates-new');
 
 export default function NewTemplatePage() {
   const router = useRouter();
@@ -35,7 +38,7 @@ export default function NewTemplatePage() {
 
       router.push('/exports');
     } catch (error) {
-      console.error('Error creating template:', error);
+      logger.error('Error creating template', { error });
       alert('Failed to create template');
     } finally {
       setLoading(false);

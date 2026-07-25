@@ -1,11 +1,31 @@
+import { SignJWT } from 'jose';
 import { UserRole } from '@/types/api';
 
-interface JWTPayload {
+export interface JWTPayload {
   sub: string;
   role: UserRole;
   email?: string;
   iat?: number;
   exp?: number;
+}
+
+const getSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET environment variable is not set');
+  return new TextEncoder().encode(secret);
+};
+
+/**
+ * Signs a new JWT for the given payload. Uses the `jose` library (Node runtime).
+ */
+export async function signToken(
+  payload: Omit<JWTPayload, 'iat' | 'exp'>,
+): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(getSecret());
 }
 
 /**
@@ -27,7 +47,6 @@ export async function verifyToken(token: string | undefined | null): Promise<JWT
 
     const [headerB64, payloadB64, signatureB64] = parts;
 
-    // Import the secret key
     const keyData = new TextEncoder().encode(secret);
     const key = await crypto.subtle.importKey(
       'raw',
@@ -37,7 +56,6 @@ export async function verifyToken(token: string | undefined | null): Promise<JWT
       ['verify'],
     );
 
-    // Verify signature
     const signatureBytes = base64UrlDecode(signatureB64).buffer as ArrayBuffer;
     const dataToVerify = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
 
@@ -49,14 +67,11 @@ export async function verifyToken(token: string | undefined | null): Promise<JWT
     );
     if (!isValid) return null;
 
-    // Decode payload
     const payloadJson = new TextDecoder().decode(base64UrlDecode(payloadB64));
     const payload = JSON.parse(payloadJson) as JWTPayload;
 
-    // Check expiry
     if (payload.exp && Date.now() / 1000 > payload.exp) return null;
 
-    // Validate role is a known value
     const validRoles: UserRole[] = [
       UserRole.ADMIN,
       UserRole.INSTRUCTOR,

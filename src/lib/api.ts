@@ -187,6 +187,7 @@ class ApiClientImpl {
           body?.message || response.statusText,
           statusToUserMessage(response.status),
           response.status,
+          body?.errors,
         );
       }
 

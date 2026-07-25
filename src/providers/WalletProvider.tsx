@@ -9,6 +9,9 @@ import React, {
   ReactNode,
 } from 'react';
 import { walletConnectionQueue } from '@/utils/web3/walletQueue';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('wallet-provider');
 
 // Environment validation for wallet config
 const validateWalletEnv = () => {
@@ -23,7 +26,7 @@ const validateWalletEnv = () => {
     process.env.NODE_ENV === 'development' &&
     warnings.length > 0
   ) {
-    console.warn('[WalletProvider] Environment warnings:', warnings);
+    logger.warn('[WalletProvider] Environment warnings', { warnings });
   }
 
   return {
@@ -112,7 +115,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           isConnecting: false,
           error: message,
         }));
-        console.error('[WalletProvider] Connection failed:', message);
+        logger.error('[WalletProvider] Connection failed', { error: message });
         throw error;
       }
     });
@@ -169,7 +172,7 @@ export function useWallet(): WalletContextType {
     return {
       ...initialState,
       connect: async () => {
-        console.warn('WalletProvider not found');
+        logger.warn('WalletProvider not found');
       },
       disconnect: async () => {},
       clearError: () => {},

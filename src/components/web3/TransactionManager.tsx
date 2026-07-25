@@ -12,6 +12,8 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { useWeb3Wallet, type TransactionDetails } from '@/hooks/useWeb3Wallet';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('TransactionManager');
 
 interface TransactionManagerProps {
   className?: string;
@@ -64,7 +66,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       try {
         setTxHistory(JSON.parse(saved));
       } catch (error) {
-        console.error('[TransactionManager] Failed to load history:', error);
+        logger.error('[TransactionManager] Failed to load history', { error });
         setTxHistory([]);
       }
     } else {

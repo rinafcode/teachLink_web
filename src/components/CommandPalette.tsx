@@ -11,6 +11,8 @@ import {
   type ShortcutCommand,
   useKeyboardShortcuts,
 } from '@/hooks/useKeyboardShortcuts';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('CommandPalette');
 
 function navigateTo(path: string): void {
   if (typeof window === 'undefined') return;

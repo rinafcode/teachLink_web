@@ -12,7 +12,11 @@ vi.mock('pg', () => {
     idleCount: 2,
     waitingCount: 1,
   };
-  return { Pool: vi.fn(() => mPool) };
+  return {
+    Pool: vi.fn(function MockPool() {
+      return mPool;
+    }),
+  };
 });
 
 function getMockPool() {
