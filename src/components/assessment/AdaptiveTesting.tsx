@@ -40,9 +40,9 @@ const SAMPLE_QUESTIONS: AssessmentQuestion[] = [
     points: 10,
     difficulty: 4,
     language: 'javascript',
-    codeTemplate: 'function solution(a, b) {
+    codeTemplate: `function solution(a, b) {
   return a + b;
-}',
+}`,
     testCases: [
       { id: 't1', input: '1,2', expectedOutput: '3' },
       { id: 't2', input: '-1,4', expectedOutput: '3' },
@@ -91,11 +91,13 @@ const pickNextQuestion = (
 
 export function AdaptiveTesting() {
   const [activeQuestion, setActiveQuestion] = useState<AssessmentQuestion | null>(null);
-  const [history, setHistory] = useState<{
-    question: AssessmentQuestion;
-    answer: string;
-    correct: boolean;
-  }[]>([]);
+  const [history, setHistory] = useState<
+    {
+      question: AssessmentQuestion;
+      answer: string;
+      correct: boolean;
+    }[]
+  >([]);
   const [answerDraft, setAnswerDraft] = useState('');
   const [difficultyTarget, setDifficultyTarget] = useState(3);
   const [isRunning, setIsRunning] = useState(false);
@@ -148,8 +150,13 @@ export function AdaptiveTesting() {
     <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Adaptive Testing</h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">An intelligent assessment mode that adjusts question difficulty in real time based on performance.</p>
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            Adaptive Testing
+          </h2>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            An intelligent assessment mode that adjusts question difficulty in real time based on
+            performance.
+          </p>
         </div>
         <button
           type="button"
@@ -165,8 +172,12 @@ export function AdaptiveTesting() {
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <div className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Current difficulty goal</div>
-                <div className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">{currentDifficultyLabel(difficultyTarget)}</div>
+                <div className="text-sm uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  Current difficulty goal
+                </div>
+                <div className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                  {currentDifficultyLabel(difficultyTarget)}
+                </div>
               </div>
               <div className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                 Target level {difficultyTarget}
@@ -176,16 +187,23 @@ export function AdaptiveTesting() {
 
           {!isRunning && history.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
-              Click &ldquo;Start adaptive session&rdquo; to practice a dynamically curated quiz path.
+              Click &ldquo;Start adaptive session&rdquo; to practice a dynamically curated quiz
+              path.
             </div>
           ) : activeQuestion ? (
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-sm text-slate-500 dark:text-slate-400">Question {history.length + 1} of {SAMPLE_QUESTIONS.length}</div>
-                  <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">{activeQuestion.text}</div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                    Question {history.length + 1} of {SAMPLE_QUESTIONS.length}
+                  </div>
+                  <div className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    {activeQuestion.text}
+                  </div>
                 </div>
-                <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">Difficulty {activeQuestion.difficulty}</div>
+                <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                  Difficulty {activeQuestion.difficulty}
+                </div>
               </div>
 
               <div className="mt-5 space-y-4">
@@ -197,7 +215,9 @@ export function AdaptiveTesting() {
                         type="button"
                         onClick={() => setAnswerDraft(option.id)}
                         className={`w-full rounded-3xl border px-4 py-3 text-left text-sm transition ${
-                          answerDraft === option.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-400'
+                          answerDraft === option.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 bg-white hover:border-blue-300 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-400'
                         }`}
                       >
                         {option.text}
@@ -212,7 +232,9 @@ export function AdaptiveTesting() {
                         type="button"
                         onClick={() => setAnswerDraft(value)}
                         className={`flex-1 rounded-3xl px-4 py-4 text-sm font-semibold transition ${
-                          answerDraft === value ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+                          answerDraft === value
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
                         }`}
                       >
                         {value}
@@ -221,7 +243,9 @@ export function AdaptiveTesting() {
                   </div>
                 ) : activeQuestion.type === 'code-challenge' ? (
                   <div className="space-y-3">
-                    <pre className="rounded-3xl bg-slate-950 p-4 text-sm text-slate-100 overflow-x-auto">{activeQuestion.codeTemplate}</pre>
+                    <pre className="rounded-3xl bg-slate-950 p-4 text-sm text-slate-100 overflow-x-auto">
+                      {activeQuestion.codeTemplate}
+                    </pre>
                     <textarea
                       rows={8}
                       value={answerDraft}
@@ -239,7 +263,9 @@ export function AdaptiveTesting() {
                       className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-900"
                       placeholder="Write your essay response here..."
                     />
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Word limit: {activeQuestion.wordLimit}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Word limit: {activeQuestion.wordLimit}
+                    </div>
                   </div>
                 )}
                 <button
@@ -254,7 +280,9 @@ export function AdaptiveTesting() {
             </div>
           ) : (
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
-              {history.length > 0 ? 'The adaptive session is complete. Review your performance summary to see how difficulty adjusted.' : 'No active question. Start the adaptive session to begin.'}
+              {history.length > 0
+                ? 'The adaptive session is complete. Review your performance summary to see how difficulty adjusted.'
+                : 'No active question. Start the adaptive session to begin.'}
             </div>
           )}
         </div>
@@ -267,28 +295,39 @@ export function AdaptiveTesting() {
             <div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
               <div className="flex items-center justify-between">
                 <span>Answered</span>
-                <span>{history.length}/{SAMPLE_QUESTIONS.length}</span>
+                <span>
+                  {history.length}/{SAMPLE_QUESTIONS.length}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Total score</span>
-                <span>{totalScore}/{maxPossible}</span>
+                <span>
+                  {totalScore}/{maxPossible}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
               </div>
               <div className="rounded-3xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950">
-                <div className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Recent history</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                  Recent history
+                </div>
                 <div className="mt-3 space-y-2">
                   {history.slice(-3).map((item, index) => (
-                    <div key={`${item.question.id}-${index}`} className="flex items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+                    <div
+                      key={`${item.question.id}-${index}`}
+                      className="flex items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    >
                       <span className="truncate">{item.question.text}</span>
                       <span className={item.correct ? 'text-emerald-600' : 'text-red-600'}>
                         {item.correct ? 'Correct' : 'Incorrect'}
                       </span>
                     </div>
                   ))}
-                  {!history.length && <div className="text-slate-500 dark:text-slate-400">No answers yet.</div>}
+                  {!history.length && (
+                    <div className="text-slate-500 dark:text-slate-400">No answers yet.</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -305,7 +344,10 @@ export function AdaptiveTesting() {
               </div>
               <div className="rounded-3xl bg-white p-4 dark:bg-slate-950">
                 <div className="font-semibold">Adaptation rule</div>
-                <p className="mt-2">Correct answer increases challenge; incorrect answer routes the student to a more accessible level.</p>
+                <p className="mt-2">
+                  Correct answer increases challenge; incorrect answer routes the student to a more
+                  accessible level.
+                </p>
               </div>
               {history.length > 0 && (
                 <div className="rounded-3xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">

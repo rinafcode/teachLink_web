@@ -7,7 +7,9 @@ This document describes the implementation of Capabilities for User Settings as 
 ## Virtual Background Feature (v3)
 
 ### Overview
+
 The virtual background feature allows users to replace their actual background during video calls with various effects:
+
 - **Blur**: Applies a blur effect to the background
 - **Image**: Uses a custom image as the background
 - **Color**: Uses a solid color as the background
@@ -16,7 +18,9 @@ The virtual background feature allows users to replace their actual background d
 ### Implementation Details
 
 #### Settings Schema (v3)
+
 Added the following fields to `AppSettings`:
+
 - `virtualBackgroundEnabled`: boolean - Master toggle for virtual background
 - `virtualBackgroundType`: enum ('none' | 'blur' | 'image' | 'color') - Type of background effect
 - `virtualBackgroundImage`: string (max 500 chars) - URL for custom background image
@@ -24,12 +28,15 @@ Added the following fields to `AppSettings`:
 - `virtualBackgroundColor`: string (max 7 chars) - Hex color for solid color backgrounds
 
 #### UI Components
+
 - Added Virtual Background section to settings page (`src/pages/settings/index.tsx`)
 - Integrated with video conference component (`src/components/collaboration/VideoConference.tsx`)
 - Created custom hook for virtual background management (`src/hooks/useVirtualBackground.ts`)
 
 #### Utility Functions
+
 Created `src/utils/virtualBackgroundUtils.ts` with:
+
 - `applyVirtualBackground()`: Applies virtual background effects to video streams
 - `settingsToVirtualBackgroundConfig()`: Converts settings to config object
 - `isValidImageUrl()`: Validates image URLs
@@ -37,6 +44,7 @@ Created `src/utils/virtualBackgroundUtils.ts` with:
 - `isValidBlurIntensity()`: Validates blur intensity values
 
 #### Migration
+
 - Schema version updated from v2 to v3
 - Automatic migration from v2 to v3 adds default virtual background settings
 - Preserves existing user settings during migration
@@ -46,12 +54,14 @@ Created `src/utils/virtualBackgroundUtils.ts` with:
 ### Before Implementation
 
 1. **Basic Architecture**: The User Settings implementation was limited to a simple API route with in-memory storage:
+
    - No service layer for business logic
    - Limited validation capabilities
    - No comprehensive testing
    - Basic error handling
 
-2. **Limited Functionality**: 
+2. **Limited Functionality**:
+
    - No settings validation service
    - No sync capabilities or conflict resolution
    - No import/export functionality
@@ -171,6 +181,7 @@ export * from './service';
 Most existing code will continue to work without changes due to backward compatibility in the API route. However, consider these updates:
 
 #### Before (Old Pattern)
+
 ```typescript
 // Direct API calls without service layer
 const response = await fetch('/api/user/settings?userId=123');
@@ -178,6 +189,7 @@ const data = await response.json();
 ```
 
 #### After (Recommended Pattern)
+
 ```typescript
 import { SettingsService } from '@/lib/settings';
 
@@ -226,6 +238,7 @@ Service layer has comprehensive unit tests covering:
 - Virtual background migration from v2 to v3 (NEW)
 
 Run unit tests:
+
 ```bash
 pnpm test src/lib/settings/__tests__/service.test.ts
 pnpm test src/utils/__tests__/virtualBackgroundUtils.test.ts
@@ -247,6 +260,7 @@ Integration tests verify:
 - Virtual background settings reset to defaults (NEW)
 
 Run integration tests:
+
 ```bash
 pnpm test src/lib/settings/__tests__/integration.test.ts
 ```
@@ -256,6 +270,7 @@ pnpm test src/lib/settings/__tests__/integration.test.ts
 ### 1. Settings Validation
 
 Comprehensive validation for all settings operations:
+
 - Schema validation with detailed error messages
 - Individual setting value validation
 - Partial update validation
@@ -264,6 +279,7 @@ Comprehensive validation for all settings operations:
 ### 2. Settings Sync
 
 Robust synchronization capabilities:
+
 - Last-write-wins conflict resolution
 - Timestamp-based merging
 - Sync status detection
@@ -272,6 +288,7 @@ Robust synchronization capabilities:
 ### 3. Import/Export
 
 Settings backup and restore:
+
 - JSON-based export format with metadata
 - Version compatibility checking
 - Data integrity validation
@@ -280,6 +297,7 @@ Settings backup and restore:
 ### 4. Capabilities System
 
 Permission-based access control:
+
 - Per-setting edit permissions
 - Capability flags for different operations (including `canEditPollSettings` for custom poll preferences)
 - Extensible for future features
@@ -288,6 +306,7 @@ Permission-based access control:
 ### 5. Poll Creation Preferences
 
 The system includes support for user-configurable default preferences for interactive polls:
+
 - `pollCreationEnabled`: Master toggle for creating polls in classes, study groups, or discussions.
 - `defaultPollDuration`: Active duration of created polls (1 to 30 days).
 - `allowAnonymousVoting`: Default setting for enabling anonymous votes.
@@ -296,6 +315,7 @@ The system includes support for user-configurable default preferences for intera
 ### 6. Migration Support
 
 Schema version management:
+
 - Automatic migration between versions
 - User data preservation during migration
 - Future-proof schema evolution
@@ -303,6 +323,7 @@ Schema version management:
 ### 6. Virtual Background (NEW in v3)
 
 Virtual background support for video conferences:
+
 - Four background types: none, blur, image, color
 - Custom image background support with URL validation
 - Configurable blur intensity (0-100)

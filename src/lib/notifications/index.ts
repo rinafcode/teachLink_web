@@ -5,6 +5,8 @@
 
 export * from './types';
 export * from './service';
+export * from './socket';
+export { generateRecommendations } from './recommendation-engine';
 
 // Re-export utility functions from notificationUtils
 export {

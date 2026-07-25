@@ -14,7 +14,7 @@ describe('Data Validation', () => {
       };
 
       const result = UserSchema.parse(validUser);
-      expect(result).toEqual(validUser);
+      expect(result).toEqual({ ...validUser, referralCount: 0 });
     });
 
     it('should throw error for invalid email', () => {
@@ -87,7 +87,7 @@ describe('Data Validation', () => {
       };
 
       const result = validateData(UserSchema, validUser);
-      expect(result).toEqual(validUser);
+      expect(result).toEqual({ ...validUser, referralCount: 0 });
     });
 
     it('should throw ValidationError when incorrect', () => {

@@ -16,7 +16,7 @@ describe('Course Listing API Security', () => {
       const maliciousQueries = [
         new URLSearchParams({ category: '<script>alert(1)</script>' }),
         new URLSearchParams({ q: 'javascript:void(0)' }),
-        new URLSearchParams({ 'onmouseover': 'hack()' }),
+        new URLSearchParams({ onmouseover: 'hack()' }),
       ];
 
       for (const params of maliciousQueries) {
@@ -29,8 +29,8 @@ describe('Course Listing API Security', () => {
     it('should detect and block SQL injection patterns', () => {
       const maliciousQueries = [
         new URLSearchParams({ category: "Design' UNION SELECT null, null--" }),
-        new URLSearchParams({ q: "1; DROP TABLE courses;" }),
-        new URLSearchParams({ id: "1 or 1=1" }),
+        new URLSearchParams({ q: '1; DROP TABLE courses;' }),
+        new URLSearchParams({ id: '1 or 1=1' }),
       ];
 
       for (const params of maliciousQueries) {
@@ -55,15 +55,15 @@ describe('Course Listing API Security', () => {
       const input = {
         title: 'Course with <script>danger</script>',
         description: 'Safe text & "dangerous" quotes / slashes',
-        lessons: [
-          { title: '<img src=x onerror=alert(1)>' }
-        ]
+        lessons: [{ title: '<img src=x onerror=alert(1)>' }],
       };
 
       const sanitized = sanitizeObject(input);
 
       expect(sanitized.title).toBe('Course with &lt;script&gt;danger&lt;&#x2F;script&gt;');
-      expect(sanitized.description).toBe('Safe text &amp; &quot;dangerous&quot; quotes &#x2F; slashes');
+      expect(sanitized.description).toBe(
+        'Safe text &amp; &quot;dangerous&quot; quotes &#x2F; slashes',
+      );
       expect(sanitized.lessons[0].title).toBe('&lt;img src=x onerror=alert(1)&gt;');
     });
   });

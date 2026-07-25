@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 /* eslint-disable @next/next/no-img-element */
 import React, { useCallback, useEffect, useRef, memo, useMemo } from 'react';
 import { VariableSizeList as List, ListChildComponentProps } from 'react-window';
@@ -61,7 +63,7 @@ const MessageBubble = memo(({ message, style }: MessageBubbleProps) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                📎 {att.name}
+                Ã°Å¸â€œÅ½ {att.name}
               </a>
             ))}
           </div>

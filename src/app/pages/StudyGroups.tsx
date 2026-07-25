@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { Search, Plus, X, Users } from 'lucide-react';
 import StudyGroupCard from '@/app/components/social/StudyGroupCard';
 import GroupDiscussionThread from '@/app/components/social/GroupDiscussionThread';
+import CertificateManagementPanel from '@/app/components/social/CertificateManagementPanel';
 import SharedResourceLibrary from '@/app/components/social/SharedResourceLibrary';
 import LearningChallengeBoard from '@/app/components/social/LearningChallengeBoard';
 import { useStudyGroups } from '@/app/hooks/useStudyGroups';
@@ -20,7 +21,9 @@ export default function StudyGroupsPage() {
     () => sg.groups.find((g) => g.id === selectedGroupId) || null,
     [sg.groups, selectedGroupId],
   );
-  const [tab, setTab] = useState<'discussion' | 'resources' | 'challenges'>('discussion');
+  const [tab, setTab] = useState<'discussion' | 'resources' | 'challenges' | 'certificates'>(
+    'discussion',
+  );
 
   const filteredGroups = useMemo(() => {
     if (!searchQuery.trim()) return sg.groups;
@@ -181,6 +184,7 @@ export default function StudyGroupsPage() {
                       { id: 'discussion', label: 'Discussion' },
                       { id: 'resources', label: 'Resources' },
                       { id: 'challenges', label: 'Challenges' },
+                      { id: 'certificates', label: 'Certificates' },
                     ].map((t) => (
                       <button
                         key={t.id}
@@ -209,7 +213,9 @@ export default function StudyGroupsPage() {
                       >
                         <GroupDiscussionThread
                           messages={sg.groupMessages(selected.id)}
-                          onPost={(html, files) => sg.postMessage(selected.id, html, files)}
+                          onPost={(html, files, parentId) =>
+                            sg.postMessage(selected.id, html, files, parentId)
+                          }
                         />
                       </motion.div>
                     )}
@@ -238,6 +244,20 @@ export default function StudyGroupsPage() {
                           onCreate={(c) => sg.createChallenge(selected.id, c)}
                           onUpdateProgress={(id, p) => sg.updateChallengeProgress(id, p)}
                           getLeaderboard={(id) => sg.challengeLeaderboard(id)}
+                        />
+                      </motion.div>
+                    )}
+                    {tab === 'certificates' && (
+                      <motion.div
+                        key="certificates"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                      >
+                        <CertificateManagementPanel
+                          certificates={sg.groupCertificates(selected.id)}
+                          onIssue={(certificate) => sg.issueCertificate(selected.id, certificate)}
+                          onRevoke={sg.revokeCertificate}
                         />
                       </motion.div>
                     )}

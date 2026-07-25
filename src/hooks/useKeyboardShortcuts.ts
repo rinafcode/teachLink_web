@@ -6,6 +6,7 @@ const STORAGE_KEY = 'teachlink-keyboard-shortcuts-v1';
 
 export type ShortcutActionId =
   | 'openCommandPalette'
+  | 'openPollCreation'
   | 'goHome'
   | 'goCourses'
   | 'goDashboard'
@@ -38,6 +39,14 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     category: 'Interface',
     defaultBinding: 'mod+k',
     binding: 'mod+k',
+  },
+  {
+    id: 'openPollCreation',
+    label: 'Create poll',
+    description: 'Open poll creation dialog',
+    category: 'Interface',
+    defaultBinding: 'mod+shift+p',
+    binding: 'mod+shift+p',
   },
   {
     id: 'goHome',

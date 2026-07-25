@@ -9,6 +9,7 @@ Successfully implemented Microservices-aware Offline Capabilities for the TeachL
 ### New Files Created
 
 1. **`src/lib/offline/OfflineSyncManager.ts`**
+
    - Core queue management implementation.
    - Network event listeners (`online`/`offline`).
    - Configuration for microservice gateways/URLs.

@@ -8,16 +8,11 @@ import { CONSENT_SCHEMA_VERSION } from './constants';
  * - `functional`  — Enhanced UX features (e.g. saved preferences beyond necessary).
  * - `marketing`   — Advertising and cross-site tracking.
  */
-export const cookieCategorySchema = z.enum([
-  'necessary',
-  'analytics',
-  'functional',
-  'marketing',
-]);
+export const cookieCategorySchema = z.enum(['necessary', 'analytics', 'functional', 'marketing']);
 export type CookieCategory = z.infer<typeof cookieCategorySchema>;
 
 export const consentPreferencesSchema = z.object({
-  necessary: z.literal(true),   // always required
+  necessary: z.literal(true), // always required
   analytics: z.boolean(),
   functional: z.boolean(),
   marketing: z.boolean(),

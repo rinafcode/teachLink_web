@@ -11,9 +11,9 @@ const logger = createLogger('certificates-generate');
 
 /**
  * POST /api/certificates/generate
- * 
+ *
  * Generate a certificate for a completed course.
- * 
+ *
  * SECURITY CHECKS:
  * ✓ T4: Auth middleware (requireAuth)
  * ✓ T5: Per-user rate limiting (10 per 15 minutes)
@@ -33,10 +33,7 @@ export async function POST(request: NextRequest) {
   const userId = request.headers.get('x-user-id') || 'anonymous';
   if (userId === 'anonymous') {
     logger.error('User ID not provided in request headers');
-    return NextResponse.json(
-      { error: 'User identification failed' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'User identification failed' }, { status: 500 });
   }
 
   // T5 MITIGATION: Per-user rate limiting
@@ -131,10 +128,7 @@ export async function POST(request: NextRequest) {
         metadata: { reason: 'course_not_completed_or_invalid' },
       });
 
-      return NextResponse.json(
-        { error: 'Course not completed or invalid' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'Course not completed or invalid' }, { status: 403 });
     }
 
     // T8 MITIGATION: Log successful certificate generation
@@ -192,10 +186,7 @@ export async function POST(request: NextRequest) {
       metadata: { reason: 'internal_error' },
     });
 
-    return NextResponse.json(
-      { error: 'Failed to generate certificate' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to generate certificate' }, { status: 500 });
   }
 }
 

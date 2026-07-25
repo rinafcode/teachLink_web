@@ -164,7 +164,10 @@ describe('LeaderboardConference', () => {
       expect(joinBtn).toHaveAttribute('aria-pressed', 'false');
 
       await userEvent.click(joinBtn);
-      expect(screen.getByRole('button', { name: /^leave$/i })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: /^leave$/i })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
     });
   });
 

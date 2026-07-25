@@ -48,14 +48,17 @@ export default function ProfileEditForm() {
     defaultValues: profileFormDefaults,
   });
 
-  const onSubmit = useCallback(async (data: ProfileFormData) => {
-    try {
-      await updateProfile(data);
-      toast.success('Profile updated successfully!');
-    } catch {
-      toast.error('Failed to update profile. Please try again.');
-    }
-  }, [updateProfile]);
+  const onSubmit = useCallback(
+    async (data: ProfileFormData) => {
+      try {
+        await updateProfile(data);
+        toast.success('Profile updated successfully!');
+      } catch {
+        toast.error('Failed to update profile. Please try again.');
+      }
+    },
+    [updateProfile],
+  );
 
   const handleImageSelect = useCallback(() => {}, []);
 

@@ -13,19 +13,13 @@ interface FilterSupportGuideProps {
 
 type GuideTab = 'guide' | 'faq' | 'contact';
 
-export function FilterSupportGuide({
-  isOpen,
-  onClose,
-  helpContent,
-}: FilterSupportGuideProps) {
+export function FilterSupportGuide({ isOpen, onClose, helpContent }: FilterSupportGuideProps) {
   const [activeTab, setActiveTab] = useState<GuideTab>('guide');
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const sections = Object.values(helpContent);
 
-  const allFaqs = sections.flatMap((s) =>
-    s.faqs.map((faq) => ({ ...faq, section: s.title })),
-  );
+  const allFaqs = sections.flatMap((s) => s.faqs.map((faq) => ({ ...faq, section: s.title })));
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Filter Controls Help" className="max-w-2xl">
@@ -68,9 +62,7 @@ export function FilterSupportGuide({
               <button
                 type="button"
                 onClick={() =>
-                  setExpandedSection(
-                    expandedSection === section.id ? null : section.id,
-                  )
+                  setExpandedSection(expandedSection === section.id ? null : section.id)
                 }
                 aria-expanded={expandedSection === section.id}
                 className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
@@ -140,9 +132,7 @@ export function FilterSupportGuide({
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-1">
                     Q: {faq.question}
                   </p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
-                    A: {faq.answer}
-                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">A: {faq.answer}</p>
                 </div>
               ))}
             </div>
@@ -159,8 +149,8 @@ export function FilterSupportGuide({
               Still need help?
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-              If you couldn&apos;t find what you need in the guide or FAQ, our
-              support team is here to help.
+              If you couldn&apos;t find what you need in the guide or FAQ, our support team is here
+              to help.
             </p>
             <a
               href="mailto:support@teachlink.app"

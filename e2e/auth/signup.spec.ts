@@ -72,6 +72,96 @@ test.describe('Signup flow', () => {
     await expect(page.getByText(/email already registered/i)).toBeVisible();
   });
 
+  // ── Referral Program ───────────────────────────────────────────────────────
+
+  test('shows referral code input field on signup page', async ({ page }) => {
+    await expect(page.getByLabel('Referral Code')).toBeVisible();
+  });
+
+  test('allows signup with valid referral code', async ({ page }) => {
+    // First, create a user to get a referral code
+    await page.route('**/api/auth/signup', async (route) => {
+      const requestBody = await route.request().postDataJSON();
+      const referralCode = 'REFERRAL1'; // Mock referral code
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          message: 'Account created successfully',
+          user: {
+            id: '123',
+            name: requestBody.name,
+            email: requestBody.email,
+            referralCode: referralCode,
+            referredBy: requestBody.referralCode || null,
+            referralCount: 0,
+            role: 'STUDENT',
+          },
+          token: 'mock-jwt-token',
+        }),
+      });
+    });
+
+    await page.getByLabel('Full Name').fill('New User');
+    await page.getByLabel('Email').fill('newuser@example.com');
+    await page.getByLabel('Password').fill('password123');
+    await page.getByLabel('Confirm Password').fill('password123');
+    await page.getByLabel('Referral Code').fill('REFERRAL1');
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    await expect(page.getByText(/account created successfully/i)).toBeVisible();
+  });
+
+  test('allows signup without referral code', async ({ page }) => {
+    await page.route('**/api/auth/signup', async (route) => {
+      const requestBody = await route.request().postDataJSON();
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          message: 'Account created successfully',
+          user: {
+            id: '123',
+            name: requestBody.name,
+            email: requestBody.email,
+            referralCode: 'NEWCODE1',
+            referredBy: null,
+            referralCount: 0,
+            role: 'STUDENT',
+          },
+          token: 'mock-jwt-token',
+        }),
+      });
+    });
+
+    await page.getByLabel('Full Name').fill('New User');
+    await page.getByLabel('Email').fill('newuser@example.com');
+    await page.getByLabel('Password').fill('password123');
+    await page.getByLabel('Confirm Password').fill('password123');
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    await expect(page.getByText(/account created successfully/i)).toBeVisible();
+  });
+
+  test('shows error for invalid referral code format', async ({ page }) => {
+    await page.route('**/api/auth/signup', async (route) => {
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Invalid referral code format' }),
+      });
+    });
+
+    await page.getByLabel('Full Name').fill('New User');
+    await page.getByLabel('Email').fill('newuser@example.com');
+    await page.getByLabel('Password').fill('password123');
+    await page.getByLabel('Confirm Password').fill('password123');
+    await page.getByLabel('Referral Code').fill('INVALID');
+    await page.getByRole('button', { name: /create account/i }).click();
+
+    await expect(page.getByText(/invalid referral code/i)).toBeVisible();
+  });
+
   // ── Navigation ────────────────────────────────────────────────────────────
 
   test('navigates to login page from signup', async ({ page }) => {

@@ -84,8 +84,27 @@ class SesProvider implements EmailProvider {
   }
 }
 
+class MockProvider implements EmailProvider {
+  readonly type: EmailProviderType = 'mock';
+
+  async send(_message: EmailMessage): Promise<EmailSendResult> {
+    return {
+      success: true,
+      provider: this.type,
+      messageId: `mock-${Date.now()}`,
+    };
+  }
+}
+
 export function createEmailProvider(providerType?: string): EmailProvider {
   const type = (providerType ?? process.env.EMAIL_PROVIDER ?? 'sendgrid').toLowerCase();
+
+  if (
+    type === 'mock' ||
+    (type === 'sendgrid' && !process.env.SENDGRID_API_KEY && process.env.NODE_ENV !== 'production')
+  ) {
+    return new MockProvider();
+  }
 
   if (type === 'ses') {
     return new SesProvider();

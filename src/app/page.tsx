@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import HomeContent from './components/home/HomeContent';
+import { getFeaturedCourses } from '@/lib/course-config';
 
 export const metadata: Metadata = {
   title: 'TeachLink - Offline Learning Platform',
@@ -18,5 +19,16 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <HomeContent />;
+  const featured = getFeaturedCourses(3);
+  const featuredCourses = featured.map((course) => ({
+    title: course.title,
+    subtitle: course.subtitle ?? course.description,
+    author: course.author ?? course.instructor,
+    progress: course.progress,
+    timeRemaining: course.timeRemaining ?? '12h remaining',
+    imageUrl: course.thumbnailUrl,
+    courseHref: `/courses/${course.id}`,
+  }));
+
+  return <HomeContent featuredCourses={featuredCourses} />;
 }

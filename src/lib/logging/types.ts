@@ -15,6 +15,7 @@ export interface LogRecord {
   timestamp: string;
   requestId?: string;
   correlationId?: string;
+  traceId?: string;
   context?: Record<string, unknown>;
   metrics?: PerformanceMetric[];
   error?: {

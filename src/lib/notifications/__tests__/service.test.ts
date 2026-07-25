@@ -12,7 +12,9 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function createMockPreferences(overrides: Partial<UserNotificationPreferences> = {}): UserNotificationPreferences {
+function createMockPreferences(
+  overrides: Partial<UserNotificationPreferences> = {},
+): UserNotificationPreferences {
   return {
     userId: 'test-user',
     channels: {
@@ -239,7 +241,10 @@ describe('NotificationService', () => {
         channels: ['in-app', 'email'],
       };
 
-      const results = await NotificationService.deliverToChannels(notification, ['in-app', 'email']);
+      const results = await NotificationService.deliverToChannels(notification, [
+        'in-app',
+        'email',
+      ]);
 
       expect(results).toHaveLength(2);
       expect(results.every((r) => r.success)).toBe(true);

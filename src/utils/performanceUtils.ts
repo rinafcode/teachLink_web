@@ -4,6 +4,9 @@
 
 import { STORAGE_KEYS, MAX_TREND_POINTS, DEFAULT_IDLE_TIMEOUT_MS } from '@/constants/app.constants';
 import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('performance-utils');
 
 export interface PerformanceMetric {
   name: string;
@@ -337,7 +340,7 @@ export async function reportVitalToAnalytics(metric: PerformanceMetric): Promise
     process.env.NEXT_PUBLIC_ENABLE_PERF_ANALYTICS === 'true';
 
   if (!shouldReport) {
-    console.debug(`[Performance Analytics] Skipping report for ${metric.name} in development`);
+    logger.debug(`[Performance Analytics] Skipping report for ${metric.name} in development`);
     return;
   }
 
@@ -359,12 +362,12 @@ export async function reportVitalToAnalytics(metric: PerformanceMetric): Promise
       });
 
       if (!response.ok) {
-        console.warn(
+        logger.warn(
           `[Performance Analytics] Failed to send ${metric.name}: ${response.statusText}`,
         );
       }
     } catch (err) {
-      console.error(`[Performance Analytics] Error sending ${metric.name}:`, err);
+      logger.error(`[Performance Analytics] Error sending ${metric.name}`, { error: err });
     }
   });
 }

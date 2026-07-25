@@ -10,20 +10,24 @@ const COLLABORATORS = [
 export const CollaborativeEditingTools: React.FC = () => {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex -space-x-2">
+      <div className="flex -space-x-2" role="list" aria-label="Active collaborators">
         {COLLABORATORS.map((user) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={user.id}
+            role="listitem"
             src={user.avatar}
-            alt={user.name}
+            alt={`${user.name} is editing`}
             title={`${user.name} is editing`}
             className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800"
           />
         ))}
       </div>
-      <span className="text-xs text-green-500 font-medium px-2 py-1 bg-green-100 dark:bg-green-900 rounded-full">
-        3 active
+      <span
+        aria-label={`${COLLABORATORS.length} active collaborators`}
+        className="text-xs text-green-500 font-medium px-2 py-1 bg-green-100 dark:bg-green-900 rounded-full"
+      >
+        {COLLABORATORS.length} active
       </span>
     </div>
   );

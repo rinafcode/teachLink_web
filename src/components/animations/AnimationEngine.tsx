@@ -90,7 +90,7 @@ class AnimationControllerImpl implements AnimationController {
       dt,
       this.config,
     );
-    
+
     this.state.position = res.position;
     this.state.velocity = res.velocity;
 

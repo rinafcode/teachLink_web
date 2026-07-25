@@ -54,9 +54,7 @@ describe('FilterHelpPopover', () => {
       />,
     );
     expect(screen.getByText('Test Filter')).toBeInTheDocument();
-    expect(
-      screen.getByText('This is a test filter description.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('This is a test filter description.')).toBeInTheDocument();
   });
 
   it('displays tips and FAQs', () => {
@@ -145,24 +143,12 @@ describe('FilterHelpPopover', () => {
 
 describe('FilterSupportGuide', () => {
   it('does not render when closed', () => {
-    render(
-      <FilterSupportGuide
-        isOpen={false}
-        onClose={() => {}}
-        helpContent={MOCK_ALL_CONTENT}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={false} onClose={() => {}} helpContent={MOCK_ALL_CONTENT} />);
     expect(screen.queryByText('Filter Controls Help')).not.toBeInTheDocument();
   });
 
   it('renders guide content when open', () => {
-    render(
-      <FilterSupportGuide
-        isOpen={true}
-        onClose={() => {}}
-        helpContent={MOCK_ALL_CONTENT}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={true} onClose={() => {}} helpContent={MOCK_ALL_CONTENT} />);
     expect(screen.getByText('Filter Controls Help')).toBeInTheDocument();
     expect(screen.getByText('Guide')).toBeInTheDocument();
     expect(screen.getByText('FAQ')).toBeInTheDocument();
@@ -170,58 +156,30 @@ describe('FilterSupportGuide', () => {
   });
 
   it('shows sections in guide tab', () => {
-    render(
-      <FilterSupportGuide
-        isOpen={true}
-        onClose={() => {}}
-        helpContent={MOCK_ALL_CONTENT}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={true} onClose={() => {}} helpContent={MOCK_ALL_CONTENT} />);
     expect(screen.getByText('Test Filter')).toBeInTheDocument();
     expect(screen.getByText('Another Filter')).toBeInTheDocument();
   });
 
   it('expands section on click', async () => {
-    render(
-      <FilterSupportGuide
-        isOpen={true}
-        onClose={() => {}}
-        helpContent={MOCK_ALL_CONTENT}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={true} onClose={() => {}} helpContent={MOCK_ALL_CONTENT} />);
     const sectionBtn = screen.getByText('Test Filter').closest('button')!;
     await userEvent.click(sectionBtn);
-    expect(
-      screen.getByText('This is a test filter description.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('This is a test filter description.')).toBeInTheDocument();
   });
 
   it('switches to FAQ tab', async () => {
-    render(
-      <FilterSupportGuide
-        isOpen={true}
-        onClose={() => {}}
-        helpContent={MOCK_ALL_CONTENT}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={true} onClose={() => {}} helpContent={MOCK_ALL_CONTENT} />);
     await userEvent.click(screen.getByText('FAQ'));
     expect(screen.getByText(/Test question/)).toBeInTheDocument();
     expect(screen.getByText(/Another question/)).toBeInTheDocument();
   });
 
   it('switches to Contact Support tab', async () => {
-    render(
-      <FilterSupportGuide
-        isOpen={true}
-        onClose={() => {}}
-        helpContent={MOCK_ALL_CONTENT}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={true} onClose={() => {}} helpContent={MOCK_ALL_CONTENT} />);
     await userEvent.click(screen.getByText('Contact Support'));
     expect(screen.getByText(/Still need help/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/couldn't find what you need/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/couldn't find what you need/)).toBeInTheDocument();
   });
 
   it('shows "No FAQs" when no FAQs exist', async () => {
@@ -234,28 +192,14 @@ describe('FilterSupportGuide', () => {
         faqs: [],
       },
     };
-    render(
-      <FilterSupportGuide
-        isOpen={true}
-        onClose={() => {}}
-        helpContent={noFaqContent}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={true} onClose={() => {}} helpContent={noFaqContent} />);
     await userEvent.click(screen.getByText('FAQ'));
-    expect(
-      screen.getByText('No FAQs available at this time.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('No FAQs available at this time.')).toBeInTheDocument();
   });
 
   it('calls onClose when clicking close button', async () => {
     const onClose = vi.fn();
-    render(
-      <FilterSupportGuide
-        isOpen={true}
-        onClose={onClose}
-        helpContent={MOCK_ALL_CONTENT}
-      />,
-    );
+    render(<FilterSupportGuide isOpen={true} onClose={onClose} helpContent={MOCK_ALL_CONTENT} />);
     await userEvent.click(screen.getByLabelText('Close dialog'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -313,9 +257,7 @@ describe('useFilterCustomerSupport', () => {
       const support = useFilterCustomerSupport();
       return (
         <div>
-          <span data-testid="guide-open">
-            {support.guideOpen ? 'open' : 'closed'}
-          </span>
+          <span data-testid="guide-open">{support.guideOpen ? 'open' : 'closed'}</span>
           <button onClick={support.openGuide}>Open Guide</button>
           <button onClick={support.closeGuide}>Close Guide</button>
         </div>

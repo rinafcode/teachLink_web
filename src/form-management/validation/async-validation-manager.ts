@@ -3,6 +3,9 @@
  */
 
 import { ValidationResult, FormState, ValidationFunction } from '../types/core.js';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('async-validation-manager');
 
 export interface AsyncValidationState {
   isLoading: boolean;
@@ -95,6 +98,8 @@ export class AsyncValidationManager {
     const existingTimer = this.debounceTimers.get(fieldId);
     if (existingTimer) {
       clearTimeout(existingTimer);
+      this.debounceTimers.delete(fieldId);
+      this.pendingValidations.delete(fieldId);
     }
 
     // Return existing validation if in progress
@@ -359,7 +364,7 @@ export class AsyncValidationManager {
       try {
         callback(response);
       } catch (error) {
-        console.error('Error in async validation callback:', error);
+        logger.error('Error in async validation callback', { error });
       }
     });
   }

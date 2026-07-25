@@ -48,7 +48,7 @@ describe('Privacy Policy Page', () => {
         'Contact Us',
       ];
 
-      sections.forEach(section => {
+      sections.forEach((section) => {
         expect(screen.getByText(new RegExp(section, 'i'))).toBeInTheDocument();
       });
     });
@@ -81,7 +81,7 @@ describe('Privacy Policy Page', () => {
       const { container } = render(<PrivacyPolicyContent locale="en" />);
 
       const sections = ['introduction', 'information-collection', 'data-security', 'your-rights'];
-      sections.forEach(section => {
+      sections.forEach((section) => {
         const element = container.querySelector(`[id="${section}"]`);
         expect(element).toBeInTheDocument();
       });
@@ -90,13 +90,9 @@ describe('Privacy Policy Page', () => {
     it('should include data security measures in English', () => {
       render(<PrivacyPolicyContent locale="en" />);
 
-      const securityMeasures = [
-        'SSL/TLS encryption',
-        'Regular security audits',
-        'Access controls',
-      ];
+      const securityMeasures = ['SSL/TLS encryption', 'Regular security audits', 'Access controls'];
 
-      securityMeasures.forEach(measure => {
+      securityMeasures.forEach((measure) => {
         expect(screen.getByText(new RegExp(measure, 'i'))).toBeInTheDocument();
       });
     });
@@ -106,7 +102,7 @@ describe('Privacy Policy Page', () => {
 
       const rights = ['Access', 'Correction', 'Deletion', 'Portability'];
 
-      rights.forEach(right => {
+      rights.forEach((right) => {
         expect(screen.getByText(new RegExp(right, 'i'))).toBeInTheDocument();
       });
     });

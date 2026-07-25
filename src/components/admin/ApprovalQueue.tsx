@@ -2,18 +2,19 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
+import { ApprovalStatus, ReviewDecision } from '@/types/approvals';
 import { PermissionGate } from '@/app/components/auth/PermissionGate';
 import { Permission, User } from '@/types/api';
-import type { ApprovalItem, ApprovalStatus } from '@/types/api';
+import type { ApprovalItem } from '@/types/api';
 
 interface ApprovalQueueProps {
   user: User | null | undefined;
 }
 
 const STATUS_FILTER_OPTIONS: Array<{ label: string; value: ApprovalStatus | 'ALL' }> = [
-  { label: 'Pending', value: 'PENDING' },
-  { label: 'Approved', value: 'APPROVED' },
-  { label: 'Rejected', value: 'REJECTED' },
+  { label: 'Pending', value: ApprovalStatus.PENDING },
+  { label: 'Approved', value: ApprovalStatus.APPROVED },
+  { label: 'Rejected', value: ApprovalStatus.REJECTED },
   { label: 'All', value: 'ALL' },
 ];
 
@@ -38,13 +39,16 @@ function StatusBadge({ status }: { status: ApprovalStatus }) {
   );
 }
 
+type ApiFieldError = { field: string; message: string };
+
 export function ApprovalQueue({ user }: ApprovalQueueProps) {
   const [items, setItems] = useState<ApprovalItem[]>([]);
-  const [filter, setFilter] = useState<ApprovalStatus | 'ALL'>('PENDING');
+  const [filter, setFilter] = useState<ApprovalStatus | 'ALL'>(ApprovalStatus.PENDING);
   const [loading, setLoading] = useState(false);
   const [reviewNote, setReviewNote] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ApiFieldError[]>([]);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -53,8 +57,16 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       const params = filter !== 'ALL' ? `?status=${filter}` : '';
       const res = await fetch(`/api/approvals${params}`);
       const json = await res.json();
-      if (json.success) setItems(json.data);
-      else setError(json.message ?? 'Failed to load approvals');
+      if (json.success) {
+        setItems(json.data);
+      } else {
+        const apiErrors = json.errors as ApiFieldError[] | undefined;
+        if (apiErrors && apiErrors.length > 0) {
+          setError(apiErrors.map((e) => `${e.field}: ${e.message}`).join('; '));
+        } else {
+          setError(json.message ?? 'Failed to load approvals');
+        }
+      }
     } catch {
       setError('Network error');
     } finally {
@@ -66,7 +78,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
     fetchItems();
   }, [fetchItems]);
 
-  const review = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+  const review = async (id: string, status: ReviewDecision) => {
     if (!user) return;
     setSubmitting(id);
     setError(null);
@@ -85,7 +97,12 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
       if (json.success) {
         setItems((prev) => prev.map((item) => (item.id === id ? json.data : item)));
       } else {
-        setError(json.message ?? 'Review failed');
+        const apiErrors = json.errors as ApiFieldError[] | undefined;
+        if (apiErrors && apiErrors.length > 0) {
+          setError(apiErrors.map((e) => `${e.field}: ${e.message}`).join('; '));
+        } else {
+          setError(json.message ?? 'Review failed already');
+        }
       }
     } catch {
       setError('Network error');
@@ -142,6 +159,15 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
             {error}
           </p>
         )}
+        {fieldErrors.length > 0 && (
+          <div role="alert" className="text-sm text-red-600 dark:text-red-400 space-y-0.5">
+            {fieldErrors.map((fe, i) => (
+              <p key={i}>
+                <span className="font-semibold">{fe.field}</span>: {fe.message}
+              </p>
+            ))}
+          </div>
+        )}
 
         {/* List */}
         {loading && items.length === 0 ? (
@@ -167,7 +193,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
                   <StatusBadge status={item.status} />
                 </div>
 
-                {item.status === 'PENDING' && (
+                {item.status === ApprovalStatus.PENDING && (
                   <div className="space-y-2">
                     <textarea
                       value={reviewNote[item.id] ?? ''}
@@ -181,15 +207,15 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
                     />
                     <div className="flex gap-2">
                       <button
-                        onClick={() => review(item.id, 'APPROVED')}
+                        onClick={() => review(item.id, ReviewDecision.APPROVED)}
                         disabled={submitting === item.id}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                       >
                         <CheckCircle className="w-4 h-4" />
-                        Approve
+                        Approve It
                       </button>
                       <button
-                        onClick={() => review(item.id, 'REJECTED')}
+                        onClick={() => review(item.id, ReviewDecision.REJECTED)}
                         disabled={submitting === item.id}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                       >

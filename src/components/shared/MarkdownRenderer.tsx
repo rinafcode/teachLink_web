@@ -214,7 +214,6 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
   return (
     <div
       className={`prose prose-sm max-w-none dark:prose-invert ${className}`.trim()}
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   );

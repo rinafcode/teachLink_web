@@ -207,6 +207,7 @@ export async function retryWithBackoff<T>(
     initialDelayMs?: number;
     maxDelayMs?: number;
     backoffFactor?: number;
+    jitterMs?: number;
   },
 ): Promise<T> {
   const {
@@ -214,10 +215,10 @@ export async function retryWithBackoff<T>(
     initialDelayMs = 1000,
     maxDelayMs = 30000,
     backoffFactor = 2,
+    jitterMs = 500,
   } = options || {};
 
   let lastError: any;
-  let delayMs = initialDelayMs;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -229,9 +230,11 @@ export async function retryWithBackoff<T>(
         throw error;
       }
 
-      const actualDelay = Math.min(delayMs, maxDelayMs);
+      const actualDelay = Math.min(
+        initialDelayMs * Math.pow(backoffFactor, attempt - 1) + Math.random() * jitterMs,
+        maxDelayMs,
+      );
       await new Promise((resolve) => setTimeout(resolve, actualDelay));
-      delayMs *= backoffFactor;
     }
   }
 

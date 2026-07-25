@@ -7,6 +7,8 @@
 
 import { AutoSaveManagerImpl } from '../auto-save/auto-save-manager.js';
 import { FormState } from '../types/core.js';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('AutoSaveExample');
 
 // Example: Basic Auto-Save Setup
 export function basicAutoSaveExample() {
@@ -23,7 +25,7 @@ export function basicAutoSaveExample() {
     if (status.lastSaved) {
     }
     if (status.error) {
-      console.error('Save error:', status.error.message);
+      logger.error('Save error', { error: status.error });
     }
   });
 
@@ -63,7 +65,7 @@ export async function manualSaveExample() {
   try {
     await autoSaveManager.saveNow(formId, formState);
   } catch (error) {
-    console.error('Failed to save form data:', error);
+    logger.error('Failed to save form data', { error });
   }
 
   return autoSaveManager;

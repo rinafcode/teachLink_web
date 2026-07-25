@@ -4,13 +4,15 @@ export type TransactionalTemplateId =
   | 'welcome'
   | 'password-reset'
   | 'security-alert'
-  | 'course-enrollment';
+  | 'course-enrollment'
+  | 'email-verification';
 
 const TEMPLATE_SUBJECTS: Record<TransactionalTemplateId, string> = {
   welcome: 'Welcome to TeachLink',
   'password-reset': 'Reset your TeachLink password',
   'security-alert': 'New sign-in detected',
   'course-enrollment': 'You are enrolled successfully',
+  'email-verification': 'Verify your TeachLink email address',
 };
 
 function escapeHtml(value: string): string {
@@ -38,6 +40,8 @@ const HTML_TEMPLATES: Record<TransactionalTemplateId, string> = {
     '<h2>Security alert</h2><p>We noticed a sign-in from {{device}} on {{timestamp}}.</p><p>If this was not you, secure your account immediately.</p>',
   'course-enrollment':
     '<h2>Enrollment confirmed</h2><p>You are now enrolled in <strong>{{courseName}}</strong>.</p><p>Start here: <a href="{{courseUrl}}">Open course</a></p>',
+  'email-verification':
+    '<h2>Verify your email</h2><p>Welcome, {{name}}. Confirm your email address using this link:</p><p><a href="{{verificationUrl}}">Verify Email</a></p><p>If you lose access, restore it with backup code <strong>{{backupCode}}</strong> or use <a href="{{restoreUrl}}">this recovery link</a>.</p><p>This verification link expires in {{expiresInMinutes}} minutes.</p>',
 };
 
 const TEXT_TEMPLATES: Record<TransactionalTemplateId, string> = {
@@ -47,6 +51,8 @@ const TEXT_TEMPLATES: Record<TransactionalTemplateId, string> = {
   'security-alert':
     'Security alert: sign-in from {{device}} on {{timestamp}}. If not you, secure your account.',
   'course-enrollment': 'Enrollment confirmed for {{courseName}}. Start here: {{courseUrl}}',
+  'email-verification':
+    'Verify your email, {{name}}: {{verificationUrl}}. Backup code: {{backupCode}}. Recovery link: {{restoreUrl}}. Expires in {{expiresInMinutes}} minutes.',
 };
 
 export class EmailTemplateManager {

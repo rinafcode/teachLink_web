@@ -5,19 +5,13 @@ import { z } from 'zod';
  * Enforces max lengths, rejects dangerous patterns, and validates types.
  */
 export const CertificateInputSchema = z.object({
-  courseId: z
-    .string()
-    .uuid('courseId must be a valid UUID')
-    .describe('UUID of the course'),
+  courseId: z.string().uuid('courseId must be a valid UUID').describe('UUID of the course'),
 
   name: z
     .string()
     .min(1, 'name is required')
     .max(100, 'name must be 100 characters or less')
-    .regex(
-      /^[^<>]*$/,
-      'name must not contain HTML tags',
-    )
+    .regex(/^[^<>]*$/, 'name must not contain HTML tags')
     .regex(
       /^(?!.*(?:javascript:|data:|<script|\.\.\/|\.\.\\))/i,
       'name contains forbidden patterns',
@@ -40,7 +34,12 @@ export const CertificateRecordSchema = z.object({
   issuedAt: z.string().datetime().describe('Timestamp when certificate was issued'),
   completionDate: z.string().datetime().describe('Timestamp when course was completed'),
   verificationHash: z.string().describe('SHA256 hash for verification'),
-  revokedAt: z.string().datetime().nullable().optional().describe('Revocation timestamp if revoked'),
+  revokedAt: z
+    .string()
+    .datetime()
+    .nullable()
+    .optional()
+    .describe('Revocation timestamp if revoked'),
 });
 
 export type CertificateRecord = z.infer<typeof CertificateRecordSchema>;

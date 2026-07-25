@@ -8,19 +8,16 @@ const logger = createLogger('certificates-retrieve');
 
 /**
  * GET /api/certificates/:id
- * 
+ *
  * Retrieve certificate metadata (requires ownership verification).
- * 
+ *
  * SECURITY CHECKS:
  * ✓ T4: Auth middleware (requireAuth)
  * ✓ T1: Ownership verification (IDOR mitigation)
  * ✓ T7: Opaque UUIDs (no sequential ID enumeration)
  * ✓ T8: Audit logging of access attempts
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   // T4 MITIGATION: Require authentication
   const authError = requireAuth(request);
   if (authError) {
@@ -33,10 +30,7 @@ export async function GET(
 
   if (userId === 'anonymous') {
     logger.error('User ID not provided in request headers');
-    return NextResponse.json(
-      { error: 'User identification failed' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'User identification failed' }, { status: 500 });
   }
 
   try {
@@ -62,10 +56,7 @@ export async function GET(
         metadata: { reason: 'not_found' },
       });
 
-      return NextResponse.json(
-        { error: 'Not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // T1 MITIGATION: Ownership verification (IDOR prevention)
@@ -98,18 +89,12 @@ export async function GET(
       // SECURITY: Return 404, not 403, to avoid leaking certificate existence
       // Tradeoff: Legitimate owner cannot distinguish "doesn't exist" from "not mine"
       // Rationale: Prevents enumeration of valid certificate IDs by iterating numbers
-      return NextResponse.json(
-        { error: 'Not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     const response = await getCertificateForDownload(certificateId);
     if (!response) {
-      return NextResponse.json(
-        { error: 'Certificate revoked or deleted' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Certificate revoked or deleted' }, { status: 404 });
     }
 
     // T8 MITIGATION: Log successful access
@@ -150,10 +135,7 @@ export async function GET(
       metadata: { reason: 'internal_error' },
     });
 
-    return NextResponse.json(
-      { error: 'Failed to retrieve certificate' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to retrieve certificate' }, { status: 500 });
   }
 }
 

@@ -110,6 +110,47 @@ describe('useFollowUser', () => {
     expect(result.current.isFollowing).toBe(false);
     expect(apiClient.delete).toHaveBeenCalledWith('/api/social/follow/user-1');
   });
+
+  it('follow() sets loading true then false', async () => {
+    let resolvePost!: (v: unknown) => void;
+    vi.mocked(apiClient.post).mockReturnValue(new Promise((res) => (resolvePost = res)));
+
+    const { result } = renderHook(() => useFollowUser('user-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.follow();
+    });
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => resolvePost({}));
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('unfollow() sets loading true then false', async () => {
+    let resolveDelete!: (v: unknown) => void;
+    vi.mocked(apiClient.delete).mockReturnValue(new Promise((res) => (resolveDelete = res)));
+
+    vi.mocked(apiClient.get).mockResolvedValue({ isFollowing: true });
+    const { result } = renderHook(() => useFollowUser('user-1'));
+    await waitFor(() => expect(result.current.isFollowing).toBe(true));
+
+    act(() => {
+      result.current.unfollow();
+    });
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => resolveDelete({}));
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('follow() handles API error and resets loading', async () => {
+    vi.mocked(apiClient.post).mockRejectedValue(new Error('Network error'));
+    const { result } = renderHook(() => useFollowUser('user-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(() => result.current.follow().catch(() => {}));
+    expect(result.current.loading).toBe(false);
+  });
 });
 
 // ─── useActivityFeed ─────────────────────────────────────────────────────────
@@ -144,6 +185,54 @@ describe('useActivityFeed', () => {
     const { result } = renderHook(() => useActivityFeed('user-1'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.hasMore).toBe(true);
+  });
+
+  it('loadMore appends activities and uses cursor', async () => {
+    const page1 = [mockActivities[0]];
+    const page2 = [{ ...mockActivities[1], id: '3', action: 'shared' }];
+
+    vi.mocked(apiClient.get)
+      .mockResolvedValueOnce({ data: page1, nextCursor: 'cursor-1' })
+      .mockResolvedValueOnce({ data: page2, nextCursor: undefined });
+
+    const { result } = renderHook(() => useActivityFeed('user-1'));
+    await waitFor(() => expect(result.current.activities).toHaveLength(1));
+
+    await act(() => result.current.loadMore());
+    expect(result.current.activities).toHaveLength(2);
+    expect(result.current.activities[1].action).toBe('shared');
+    expect(apiClient.get).toHaveBeenLastCalledWith(expect.stringContaining('cursor=cursor-1'));
+  });
+
+  it('handles API error in initial load gracefully', async () => {
+    vi.mocked(apiClient.get).mockRejectedValue(new Error('Server error'));
+    const { result } = renderHook(() => useActivityFeed('user-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.activities).toHaveLength(0);
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('converts createdAt strings to Date objects', async () => {
+    const raw = {
+      id: '1',
+      actorId: 'u1',
+      actorName: 'Alice',
+      action: 'liked',
+      createdAt: '2024-06-15T12:00:00.000Z' as unknown as Date,
+    };
+    vi.mocked(apiClient.get).mockResolvedValue({ data: [raw], nextCursor: undefined });
+    const { result } = renderHook(() => useActivityFeed('user-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.activities[0].createdAt).toBeInstanceOf(Date);
+  });
+
+  it('does not call loadMore while already loading', async () => {
+    vi.mocked(apiClient.get).mockReturnValue(new Promise(() => {}));
+    const { result } = renderHook(() => useActivityFeed('user-1'));
+
+    await act(() => result.current.loadMore());
+    // Should not have made a second request while first is pending
+    expect(apiClient.get).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -191,6 +280,61 @@ describe('useSocialInteractions', () => {
     await act(() => result.current.addComment('Nice!'));
     expect(result.current.comments).toHaveLength(1);
     expect(result.current.comments[0].body).toBe('Nice!');
+  });
+
+  it('toggleLike sends POST when not liked', async () => {
+    const { result } = renderHook(() => useSocialInteractions('post-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(() => result.current.toggleLike());
+    expect(apiClient.post).toHaveBeenCalledWith('/api/social/interactions/post-1/like', {});
+  });
+
+  it('toggleLike sends DELETE when liked', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ likes: 5, liked: true, comments: [] });
+    const { result } = renderHook(() => useSocialInteractions('post-1'));
+    await waitFor(() => expect(result.current.liked).toBe(true));
+    await act(() => result.current.toggleLike());
+    expect(apiClient.delete).toHaveBeenCalledWith('/api/social/interactions/post-1/like');
+  });
+
+  it('toggleLike sets loading true then false', async () => {
+    let resolvePost!: (v: unknown) => void;
+    vi.mocked(apiClient.post).mockReturnValue(new Promise((res) => (resolvePost = res)));
+
+    const { result } = renderHook(() => useSocialInteractions('post-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.toggleLike();
+    });
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => resolvePost({}));
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('toggleLike handles API error gracefully and resets loading', async () => {
+    vi.mocked(apiClient.post).mockRejectedValue(new Error('Server error'));
+    const { result } = renderHook(() => useSocialInteractions('post-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(() => result.current.toggleLike().catch(() => {}));
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('addComment handles API error gracefully and resets loading', async () => {
+    vi.mocked(apiClient.post).mockRejectedValue(new Error('Server error'));
+    const { result } = renderHook(() => useSocialInteractions('post-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(() => result.current.addComment('Will fail').catch(() => {}));
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('handles initial load API error gracefully', async () => {
+    vi.mocked(apiClient.get).mockRejectedValue(new Error('Server error'));
+    const { result } = renderHook(() => useSocialInteractions('post-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.likes).toBe(0);
+    expect(result.current.comments).toHaveLength(0);
   });
 });
 
@@ -409,5 +553,72 @@ describe('SocialInteractions', () => {
       '/api/social/interactions/post-1/comments',
       expect.anything(),
     );
+  });
+
+  it('like button is disabled during loading', async () => {
+    vi.mocked(apiClient.post).mockReturnValue(new Promise(() => {}));
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await waitFor(() => screen.getByText('10'));
+    const likeBtn = screen.getByLabelText('Like');
+    await user_.click(likeBtn);
+    expect(likeBtn).toBeDisabled();
+  });
+
+  it('like button changes aria-label to Unlike after clicking', async () => {
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await waitFor(() => screen.getByText('10'));
+    await user_.click(screen.getByLabelText('Like'));
+    await waitFor(() => expect(screen.getByLabelText('Unlike')).toBeInTheDocument());
+  });
+
+  it('unlike changes aria-label back to Like', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ likes: 10, liked: true, comments: [] });
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await waitFor(() => screen.getByText('10'));
+    await user_.click(screen.getByLabelText('Unlike'));
+    await waitFor(() => expect(screen.getByLabelText('Like')).toBeInTheDocument());
+  });
+
+  it('share button shows Copied! then reverts after timeout', async () => {
+    vi.useFakeTimers();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user_.click(screen.getByLabelText('Copy link'));
+    await waitFor(() => expect(screen.getByText('Copied!')).toBeInTheDocument());
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(screen.queryByText('Copied!')).not.toBeInTheDocument();
+    expect(screen.getByText('Share')).toBeInTheDocument();
+
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('share without contentUrl copies window.location.href', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+    const originalHref = window.location.href;
+
+    const user_ = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user_.click(screen.getByLabelText('Copy link'));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(originalHref));
+
+    vi.unstubAllGlobals();
+  });
+
+  it('handles initial load API failure without crashing', async () => {
+    vi.mocked(apiClient.get).mockRejectedValue(new Error('Server error'));
+    render(<SocialInteractions contentId="post-1" />);
+    await waitFor(() => expect(screen.getByText('Share')).toBeInTheDocument());
+    expect(screen.getByText('0')).toBeInTheDocument();
   });
 });

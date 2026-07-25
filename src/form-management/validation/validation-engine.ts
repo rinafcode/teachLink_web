@@ -13,12 +13,15 @@ import {
   ValidationFunction,
   FieldDescriptor,
 } from '../types/core.js';
+import { ImageOptimizationTaskManager } from './image-optimization-task-manager';
 
 export interface ValidationEngine {
   validateField(fieldId: string, value: any, context: FormState): ValidationResult;
   validateForm(formState: FormState): Promise<FormValidationResult>;
   addCustomRule(name: string, rule: ValidationFunction): void;
   executeAsyncValidation(fieldId: string, value: any): Promise<ValidationResult>;
+  getImageOptimizationTaskManager?(): ImageOptimizationTaskManager;
+  setImageOptimizationTaskManager?(manager: ImageOptimizationTaskManager): void;
 }
 
 export interface ValidationContext {
@@ -38,6 +41,7 @@ export class ValidationEngineImpl implements ValidationEngine {
   private customRules: Map<string, ValidationFunction> = new Map();
   private fieldDescriptors: Map<string, FieldDescriptor> = new Map();
   private asyncValidationCache: Map<string, Promise<ValidationResult>> = new Map();
+  private imageOptimizationTaskManager: ImageOptimizationTaskManager;
   private defaultAsyncOptions: AsyncValidationOptions = {
     timeout: 5000,
     retryAttempts: 3,
@@ -45,8 +49,23 @@ export class ValidationEngineImpl implements ValidationEngine {
   };
 
   constructor(fieldDescriptors: FieldDescriptor[] = []) {
+    this.imageOptimizationTaskManager = new ImageOptimizationTaskManager();
     this.initializeFieldDescriptors(fieldDescriptors);
     this.initializeBuiltInRules();
+  }
+
+  /**
+   * Get the image optimization task manager instance
+   */
+  getImageOptimizationTaskManager(): ImageOptimizationTaskManager {
+    return this.imageOptimizationTaskManager;
+  }
+
+  /**
+   * Set a custom image optimization task manager instance
+   */
+  setImageOptimizationTaskManager(manager: ImageOptimizationTaskManager): void {
+    this.imageOptimizationTaskManager = manager;
   }
 
   /**
@@ -168,14 +187,19 @@ export class ValidationEngineImpl implements ValidationEngine {
   /**
    * Execute asynchronous validation for a field
    */
-  async executeAsyncValidation(fieldId: string, value: any, context?: FormState): Promise<ValidationResult> {
+  async executeAsyncValidation(
+    fieldId: string,
+    value: any,
+    context?: FormState,
+  ): Promise<ValidationResult> {
     const fieldDescriptor = this.fieldDescriptors.get(fieldId);
     if (!fieldDescriptor) {
       return { isValid: true, errors: [] };
     }
 
     const asyncRules = fieldDescriptor.validation.filter(
-      (rule) => rule.type === 'async' || rule.type === 'imageDimensions' || rule.type === 'imageOptimize'
+      (rule) =>
+        rule.type === 'async' || rule.type === 'imageDimensions' || rule.type === 'imageOptimize',
     );
     if (asyncRules.length === 0) {
       return { isValid: true, errors: [] };
@@ -594,7 +618,8 @@ export class ValidationEngineImpl implements ValidationEngine {
         errors: [
           {
             code: 'fileType',
-            message: rule.message || `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`,
+            message:
+              rule.message || `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`,
           },
         ],
       };
@@ -603,7 +628,10 @@ export class ValidationEngineImpl implements ValidationEngine {
     return { isValid: true, errors: [] };
   }
 
-  private async validateImageDimensions(value: any, rule: ValidationRule): Promise<ValidationResult> {
+  private async validateImageDimensions(
+    value: any,
+    rule: ValidationRule,
+  ): Promise<ValidationResult> {
     if (!value) {
       return { isValid: true, errors: [] };
     }
@@ -619,8 +647,13 @@ export class ValidationEngineImpl implements ValidationEngine {
     const maxHeight = rule.params?.maxHeight;
 
     try {
-      const { validateImageDimensions } = await import('./image-optimizer.js');
-      const result = await validateImageDimensions(file, { minWidth, maxWidth, minHeight, maxHeight });
+      const { validateImageDimensions } = await import('./image-optimizer');
+      const result = await validateImageDimensions(file, {
+        minWidth,
+        maxWidth,
+        minHeight,
+        maxHeight,
+      });
 
       if (!result.isValid) {
         return {
@@ -639,7 +672,9 @@ export class ValidationEngineImpl implements ValidationEngine {
         errors: [
           {
             code: 'imageDimensionsError',
-            message: `Dimensions check failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+            message: `Dimensions check failed: ${
+              error instanceof Error ? error.message : 'unknown error'
+            }`,
           },
         ],
       };
@@ -670,14 +705,15 @@ export class ValidationEngineImpl implements ValidationEngine {
     const preserveAspectRatio = rule.params?.preserveAspectRatio;
 
     try {
-      const { optimizeImage } = await import('./image-optimizer.js');
-      const optimizedFile = await optimizeImage(file, {
+      const taskId = this.imageOptimizationTaskManager.enqueue(file, {
         maxWidth,
         maxHeight,
         quality,
         format,
         preserveAspectRatio,
       });
+
+      const optimizedFile = await this.imageOptimizationTaskManager.waitForTask(taskId);
 
       if (context && context.values) {
         context.values[fieldId] = optimizedFile;
@@ -703,7 +739,11 @@ export class ValidationEngineImpl implements ValidationEngine {
         errors: [
           {
             code: 'imageOptimizeError',
-            message: rule.message || `Failed to optimize image: ${error instanceof Error ? error.message : 'unknown error'}`,
+            message:
+              rule.message ||
+              `Failed to optimize image: ${
+                error instanceof Error ? error.message : 'unknown error'
+              }`,
           },
         ],
       };

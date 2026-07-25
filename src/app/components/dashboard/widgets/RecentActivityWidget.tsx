@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { AccessibleLoading } from '../../accessibility/ScreenReaderOptimizer';
 import { motion } from 'framer-motion';
 import { Activity, Settings, Clock } from 'lucide-react';

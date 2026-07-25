@@ -1,8 +1,8 @@
-export * from './envValidation';
 /**
  * Web3 Utilities
  * Barrel export for web3-related utilities
  */
+export * from './envValidation';
 
 export {
   validateWeb3Env,
@@ -14,12 +14,15 @@ export {
 
 export { validateWalletInteraction, type WalletInteractionResult } from './walletValidation';
 
+export { WalletCache, walletCache, walletCacheKeys, CACHE_TTL } from './walletCache';
+
 export {
-  WalletCache,
-  walletCache,
-  walletCacheKeys,
-  CACHE_TTL,
-} from './walletCache';
+  WalletConnectionQueue,
+  walletConnectionQueue,
+  type QueuedOperation,
+  type QueueEntry,
+  type WalletQueueStats,
+} from './walletQueue';
 
 export {
   isValidEthereumAddress,

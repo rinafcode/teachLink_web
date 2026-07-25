@@ -75,8 +75,7 @@ const FILTER_HELP_CONTENT: Record<string, FilterHelpContent> = {
       },
       {
         question: 'What currency are prices shown in?',
-        answer:
-          'Prices are displayed in USD. Currency conversion is not currently supported.',
+        answer: 'Prices are displayed in USD. Currency conversion is not currently supported.',
       },
     ],
   },
@@ -93,8 +92,7 @@ const FILTER_HELP_CONTENT: Record<string, FilterHelpContent> = {
     faqs: [
       {
         question: 'How many topics can I select?',
-        answer:
-          'There is no limit. Select as many topics as you need to refine your search.',
+        answer: 'There is no limit. Select as many topics as you need to refine your search.',
       },
       {
         question: 'Can I search for topics not in the list?',

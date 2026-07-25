@@ -37,9 +37,7 @@ export function ButtonGroup({
     const container = containerRef.current;
     if (!container) return;
 
-    const buttons = container.querySelectorAll<HTMLButtonElement>(
-      'button:not(:disabled)',
-    );
+    const buttons = container.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
     buttons.forEach((btn, i) => {
       btn.tabIndex = i === focusIndex ? 0 : -1;
     });
@@ -50,12 +48,8 @@ export function ButtonGroup({
       const container = containerRef.current;
       if (!container) return;
 
-      const buttons = container.querySelectorAll<HTMLButtonElement>(
-        'button:not(:disabled)',
-      );
-      let currentIndex = Array.from(buttons).findIndex(
-        (btn) => btn.tabIndex === 0,
-      );
+      const buttons = container.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+      let currentIndex = Array.from(buttons).findIndex((btn) => btn.tabIndex === 0);
       if (currentIndex === -1) currentIndex = 0;
 
       let newIndex = currentIndex;
@@ -99,10 +93,9 @@ export function ButtonGroup({
     >
       {Children.map(children, (child, index) => {
         if (isValidElement(child)) {
-          return cloneElement(
-            child as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
-            { tabIndex: index === 0 ? 0 : -1 },
-          );
+          return cloneElement(child as React.ReactElement<React.HTMLAttributes<HTMLElement>>, {
+            tabIndex: index === 0 ? 0 : -1,
+          });
         }
         return child;
       })}

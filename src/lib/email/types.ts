@@ -1,4 +1,4 @@
-export type EmailProviderType = 'sendgrid' | 'ses';
+export type EmailProviderType = 'sendgrid' | 'ses' | 'mock';
 
 export interface EmailAddress {
   email: string;

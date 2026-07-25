@@ -19,18 +19,18 @@ spec:
         component: sms-worker
     spec:
       containers:
-      - name: sms-worker
-        image: rinafcode/teachlink-sms-worker:latest
-        imagePullPolicy: Always
-        resources:
-          requests:
-            cpu: 250m
-            memory: 256Mi
-          limits:
-            cpu: 1000m
-            memory: 512Mi
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: WORKER_TYPE
-          value: "sms"
+        - name: sms-worker
+          image: rinafcode/teachlink-sms-worker:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: WORKER_TYPE
+              value: 'sms'

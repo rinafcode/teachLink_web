@@ -4,6 +4,7 @@ export interface Topic {
   description?: string;
   postCount: number;
   followerCount: number;
+  isFollowing?: boolean;
 }
 
 export interface TopicPost {
@@ -17,6 +18,7 @@ export interface TopicPost {
   likes: number;
   commentCount: number;
   createdAt: Date;
+  tags?: string[];
 }
 
 export interface Activity {

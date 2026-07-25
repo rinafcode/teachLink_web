@@ -21,11 +21,13 @@ export function createRequestLogger(
 ) {
   const requestId = request.headers.get('x-request-id') ?? createRequestId();
   const correlationId = request.headers.get('x-correlation-id') ?? requestId;
+  const traceId = request.headers.get('x-trace-id') ?? '';
 
   return createLogger(scope, {
     ...context,
     requestId,
     correlationId,
+    traceId,
     method: request.method,
     path: request.nextUrl.pathname,
   });
@@ -38,21 +40,23 @@ export async function withRequestLogging<T>(
 ): Promise<T> {
   const requestId = request.headers.get('x-request-id') ?? createRequestId();
   const correlationId = request.headers.get('x-correlation-id') ?? requestId;
+  const traceId = request.headers.get('x-trace-id') ?? '';
   const log = createLogger(scope, {
     requestId,
     correlationId,
+    traceId,
     method: request.method,
     path: request.nextUrl.pathname,
   });
   const start = globalThis.performance?.now?.() ?? Date.now();
 
-  log.info('Request started', { requestId, correlationId });
+  log.info('Request started', { requestId, correlationId, traceId });
 
   try {
-    const result = await runWithLogContext({ requestId, correlationId }, () => handler(requestId));
-    const duration = Number(
-      ((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2),
+    const result = await runWithLogContext({ requestId, correlationId, traceId }, () =>
+      handler(requestId),
     );
+    const duration = Number(((globalThis.performance?.now?.() ?? Date.now()) - start).toFixed(2));
     const status = getResponseStatus(result);
     const metric = recordMetric({
       name: 'http.request.duration',
@@ -69,6 +73,7 @@ export async function withRequestLogging<T>(
     log.info('Request completed', {
       requestId,
       correlationId,
+      traceId,
       context: { status },
       metrics: [metric, createCounterMetric('http.requests', 1, { status: status ?? 'unknown' })],
     });
@@ -90,6 +95,7 @@ export async function withRequestLogging<T>(
     log.error('Request failed', {
       requestId,
       correlationId,
+      traceId,
       error,
       metrics: [metric, createCounterMetric('http.request.errors')],
     });

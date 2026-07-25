@@ -25,9 +25,14 @@ interface UseWalletKnowledgeGraphReturn {
   /** Record a tip transaction */
   recordTip: (tx: Omit<TransactionNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>) => void;
   /** Register a token holding */
-  registerToken: (token: Omit<TokenNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>, walletAddress: string) => void;
+  registerToken: (
+    token: Omit<TokenNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>,
+    walletAddress: string,
+  ) => void;
   /** Register authored content */
-  registerContent: (content: Omit<ContentNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>) => void;
+  registerContent: (
+    content: Omit<ContentNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>,
+  ) => void;
 }
 
 /**

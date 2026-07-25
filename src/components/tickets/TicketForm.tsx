@@ -45,7 +45,10 @@ export function TicketForm({ submittedBy, onSuccess }: TicketFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" aria-label="Submit support ticket">
       <div>
-        <label htmlFor="ticket-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="ticket-title"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Title
         </label>
         <input
@@ -62,7 +65,10 @@ export function TicketForm({ submittedBy, onSuccess }: TicketFormProps) {
       </div>
 
       <div>
-        <label htmlFor="ticket-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="ticket-description"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Description
         </label>
         <textarea
@@ -80,7 +86,10 @@ export function TicketForm({ submittedBy, onSuccess }: TicketFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="ticket-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="ticket-category"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Category
           </label>
           <select
@@ -90,13 +99,18 @@ export function TicketForm({ submittedBy, onSuccess }: TicketFormProps) {
             className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           >
             {CATEGORIES.map((c) => (
-              <option key={c} value={c} className="capitalize">{c}</option>
+              <option key={c} value={c} className="capitalize">
+                {c}
+              </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label htmlFor="ticket-priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="ticket-priority"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Priority
           </label>
           <select
@@ -106,14 +120,18 @@ export function TicketForm({ submittedBy, onSuccess }: TicketFormProps) {
             className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           >
             {PRIORITIES.map((p) => (
-              <option key={p} value={p} className="capitalize">{p}</option>
+              <option key={p} value={p} className="capitalize">
+                {p}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
       )}
 
       <button

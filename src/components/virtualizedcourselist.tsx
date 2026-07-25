@@ -9,6 +9,9 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('NotificationSocket');
 
 export type NotificationType =
   | 'info'
@@ -65,7 +68,7 @@ class NotificationSocketService {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        console.info('[NotificationSocket] Connected');
+        logger.info('[NotificationSocket] Connected');
         this.reconnectDelay = 1000; // reset back-off
       };
 
@@ -78,7 +81,7 @@ class NotificationSocketService {
             this.listeners.forEach((cb) => cb(notification));
           }
         } catch {
-          console.warn('[NotificationSocket] Failed to parse message', event.data);
+          logger.warn('[NotificationSocket] Failed to parse message', event.data);
         }
       };
 
@@ -90,18 +93,18 @@ class NotificationSocketService {
       };
 
       this.ws.onerror = (err) => {
-        console.error('[NotificationSocket] Error', err);
+        logger.error('[NotificationSocket] Error', { error: err });
         this.ws?.close();
       };
     } catch (err) {
-      console.error('[NotificationSocket] Failed to open', err);
+      logger.error('[NotificationSocket] Failed to open', { error: err });
       this.scheduleReconnect();
     }
   }
 
   private scheduleReconnect() {
     this.reconnectTimer = setTimeout(() => {
-      console.info(`[NotificationSocket] Reconnecting…`);
+      logger.info(`[NotificationSocket] Reconnecting…`);
       this.open();
       this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
     }, this.reconnectDelay);

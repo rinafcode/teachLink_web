@@ -6,6 +6,9 @@ import { Modal } from '@/components/ui/Modal';
 import QRCodeComponent from '@/components/QRCode';
 import { downloadQRCode, printQRCode, copyQRCodeToClipboard } from '@/utils/generate-qr';
 import toast from 'react-hot-toast';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('share-modal');
 
 export interface ShareModalProps {
   isOpen: boolean;
@@ -68,7 +71,7 @@ export function ShareModal({
       toast.success('QR code downloaded successfully');
     } catch (error) {
       toast.error('Failed to download QR code');
-      console.error(error);
+      logger.error('Failed to download QR code', { error });
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +86,7 @@ export function ShareModal({
       toast.success('Print dialog opened');
     } catch (error) {
       toast.error('Failed to open print dialog');
-      console.error(error);
+      logger.error('Failed to open print dialog', { error });
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +101,7 @@ export function ShareModal({
       toast.success('QR code copied to clipboard');
     } catch (error) {
       toast.error('Failed to copy QR code');
-      console.error(error);
+      logger.error('Failed to copy QR code', { error });
     } finally {
       setIsLoading(false);
     }
@@ -110,14 +113,14 @@ export function ShareModal({
       toast.success('URL copied to clipboard');
     } catch (error) {
       toast.error('Failed to copy URL');
-      console.error(error);
+      logger.error('Failed to copy URL', { error });
     }
   }, [shareUrl]);
 
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} className="max-w-md">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
       <div className="space-y-6">
         {/* Description */}
         {description && <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>}

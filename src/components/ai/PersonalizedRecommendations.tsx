@@ -31,8 +31,8 @@ export default function PersonalizedRecommendations() {
 
   useEffect(() => {
     apiClient
-      .get<ApiResponse<Recommendation[]>>('/api/ai/recommendations')
-      .then((r) => setItems(r.data))
+      .get<{ items: Recommendation[] }>('/api/ai/recommendations')
+      .then((r) => setItems(r.items))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
@@ -45,18 +45,10 @@ export default function PersonalizedRecommendations() {
       </div>
 
       <div className="p-4 space-y-3">
-        {loading && (
-          <div aria-label="Loading recommendations">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        )}
+        {loading && Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
 
         {error && (
-          <p className="text-sm text-center text-red-500 py-4" role="alert">
-            Could not load recommendations. Please try again.
-          </p>
+          <p className="text-sm text-center text-red-500 py-4">Failed to load recommendations.</p>
         )}
 
         {!loading && !error && items.length === 0 && (

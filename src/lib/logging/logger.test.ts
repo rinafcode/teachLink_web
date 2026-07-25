@@ -42,25 +42,25 @@ describe('structured logging', () => {
         authHeader: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
         nestedSecret: {
           token: 'some-api-token-value',
-          normalField: 'all-clear'
+          normalField: 'all-clear',
         },
         nestedObject: {
           token: 'some-api-token-value',
-          normalField: 'all-clear'
-        }
-      }
+          normalField: 'all-clear',
+        },
+      },
     });
 
     const results = queryLogs({ scope: 'tests.logging' });
     expect(results).toHaveLength(1);
-    
+
     const record = results[0];
     // Check that sensitive fields and strings are fully redacted
     expect(record.message).toContain('Bearer [REDACTED]');
     expect(record.context?.email).toBe('[REDACTED]');
     expect(record.context?.password).toBe('[REDACTED]');
     expect(record.context?.authHeader).toBe('[REDACTED]');
-    
+
     // Parent key contains "secret" -> entire object redacted to string "[REDACTED]"
     expect(record.context?.nestedSecret).toBe('[REDACTED]');
 
@@ -73,17 +73,20 @@ describe('structured logging', () => {
     const { runWithLogContext } = await import('./index');
     const log = createLogger('tests.logging');
 
-    await runWithLogContext({ requestId: 'test-req-123', correlationId: 'test-corr-456' }, async () => {
-      log.info('Log within async context');
-      
-      // Simulating a nested async call or helper execution
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          log.warn('Log inside timeout callback');
-          resolve();
-        }, 10);
-      });
-    });
+    await runWithLogContext(
+      { requestId: 'test-req-123', correlationId: 'test-corr-456' },
+      async () => {
+        log.info('Log within async context');
+
+        // Simulating a nested async call or helper execution
+        await new Promise<void>((resolve) => {
+          setTimeout(() => {
+            log.warn('Log inside timeout callback');
+            resolve();
+          }, 10);
+        });
+      },
+    );
 
     const results = queryLogs({ scope: 'tests.logging' });
     expect(results).toHaveLength(2);

@@ -9,6 +9,8 @@ export {
   type BreadcrumbItem,
   type BreadcrumbsProps,
 } from './Breadcrumbs';
+export { Badge, badgeVariants } from './Badge';
+export type { BadgeProps } from './Badge';
 export { Button } from './Button';
 export { ButtonGroup } from './ButtonGroup';
 export { EmptyState } from './EmptyState';

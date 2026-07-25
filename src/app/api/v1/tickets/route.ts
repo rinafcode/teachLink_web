@@ -34,7 +34,9 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return addHeaders(NextResponse.json({ success: false, message: 'Invalid JSON' }, { status: 400 }));
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Invalid JSON' }, { status: 400 }),
+    );
   }
 
   const parsed = CreateTicketInputSchema.safeParse(body);

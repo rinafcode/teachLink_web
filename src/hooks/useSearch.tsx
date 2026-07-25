@@ -14,7 +14,11 @@ interface UseSearchOptions {
 }
 
 export function useSearch<T extends SearchResult>(
-  fetchFn: (query: string, cursor?: string) => Promise<{ items: T[]; nextCursor?: string }>,
+  fetchFn: (
+    query: string,
+    cursor?: string,
+    signal?: AbortSignal,
+  ) => Promise<{ items: T[]; nextCursor?: string }>,
   options: UseSearchOptions = {},
 ) {
   const { debounceMs = 300 } = options;
@@ -25,6 +29,8 @@ export function useSearch<T extends SearchResult>(
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortController = useRef<AbortController | null>(null);
+  const cache = useRef<Record<string, { items: T[]; nextCursor?: string }>>({});
 
   const fetchFnRef = useRef(fetchFn);
   useEffect(() => {
@@ -39,18 +45,52 @@ export function useSearch<T extends SearchResult>(
       return;
     }
 
+    const cacheKey = searchQuery.trim().toLowerCase();
+
+    // Check cache for initial fetch
+    if (!cursor && cache.current[cacheKey]) {
+      const cached = cache.current[cacheKey];
+      setResults(cached.items);
+      setNextCursor(cached.nextCursor);
+      setHasMore(!!cached.nextCursor);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
+    // Cancel previous request
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    abortController.current = new AbortController();
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const { items, nextCursor: next } = await fetchFnRef.current(searchQuery, cursor);
+      const { items, nextCursor: next } = await fetchFnRef.current(
+        searchQuery,
+        cursor,
+        abortController.current.signal,
+      );
+
       setResults((prev) => (cursor ? [...prev, ...items] : items));
       setNextCursor(next);
       setHasMore(!!next);
+
+      // Cache initial result
+      if (!cursor) {
+        cache.current[cacheKey] = { items, nextCursor: next };
+      }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return; // Ignore aborted requests
+      }
       setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
-      setIsLoading(false);
+      if (abortController.current && !abortController.current.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -58,7 +98,15 @@ export function useSearch<T extends SearchResult>(
     (value: string) => {
       setQuery(value);
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(() => search(value), debounceMs);
+
+      const cacheKey = value.trim().toLowerCase();
+      // Fast path: if cached, resolve immediately instead of debouncing
+      if (cache.current[cacheKey]) {
+        search(value);
+      } else {
+        if (value.trim()) setIsLoading(true);
+        debounceTimer.current = setTimeout(() => search(value), debounceMs);
+      }
     },
     [search, debounceMs],
   );
@@ -75,11 +123,18 @@ export function useSearch<T extends SearchResult>(
     setNextCursor(undefined);
     setHasMore(false);
     setError(null);
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
   }, []);
 
   useEffect(() => {
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      if (abortController.current) abortController.current.abort();
     };
   }, []);
 

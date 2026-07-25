@@ -1,7 +1,6 @@
 const CACHE_NAME = 'teachlink-cache-v1';
 const OFFLINE_URL = '/offline.html';
 
-// Core assets to cache immediately upon service worker installation
 const URLS_TO_CACHE = [
   '/',
   '/offline.html',
@@ -9,7 +8,6 @@ const URLS_TO_CACHE = [
   '/favicon.ico'
 ];
 
-// Install event - cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -20,7 +18,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -37,26 +34,104 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - network first, falling back to cache strategy
-self.addEventListener('fetch', (event) => {
-  // Only handle GET requests for navigation and assets
-  if (event.request.method !== 'GET') return;
+// PUSH NOTIFICATION HANDLER - Tracks DELIVERED events
+self.addEventListener('push', (event) => {
+  console.log('[ServiceWorker] Push received');
+  
+  let data = { title: 'TeachLink', body: 'New notification' };
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'New Update', body: event.data.text() };
+    }
+  }
+  
+  const notificationId = data.id || `notif_${Date.now()}`;
+  
+  fetch('/api/notifications/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      notificationId: notificationId,
+      event: 'delivered',
+      userId: data.userId || 'anonymous',
+      timestamp: new Date().toISOString(),
+      message: data.body,
+      title: data.title
+    })
+  }).catch(err => console.error('[Push] Delivery tracking failed:', err));
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'TeachLink', {
+      body: data.body || 'New notification',
+      icon: '/favicon.ico',
+      badge: '/favicon.ico',
+      data: {
+        url: data.url || '/',
+        notificationId: notificationId,
+        userId: data.userId || 'anonymous'
+      }
+    })
+  );
+});
 
+// NOTIFICATION CLICK HANDLER - Tracks CLICKED events
+self.addEventListener('notificationclick', (event) => {
+  console.log('[ServiceWorker] Notification clicked');
+  event.notification.close();
+  
+  const notificationId = event.notification.data?.notificationId || 'unknown';
+  const userId = event.notification.data?.userId || 'anonymous';
+  
+  fetch('/api/notifications/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      notificationId: notificationId,
+      event: 'clicked',
+      userId: userId,
+      timestamp: new Date().toISOString()
+    })
+  }).catch(err => console.error('[Push] Click tracking failed:', err));
+  
+  const urlToOpen = event.notification.data?.url || '/';
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windowClients) => {
+        for (const client of windowClients) {
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
+});
+
+// Fetch event handler
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  if (event.request.url.startsWith('chrome-extension://')) return;
+  
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful network responses dynamically for future offline use
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone);
-        });
+        if (response.status === 200 && event.request.url.startsWith(self.location.origin)) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          }).catch(err => console.error('Cache put error:', err));
+        }
         return response;
       })
       .catch(async () => {
-        console.log('[ServiceWorker] Fetch failed; returning offline page instead.', event.request.url);
+        console.log('[ServiceWorker] Fetch failed; returning offline page');
         const cache = await caches.open(CACHE_NAME);
         const cachedResponse = await cache.match(event.request);
-        // Return cached response if available, otherwise return the fallback offline page
         return cachedResponse || cache.match(OFFLINE_URL);
       })
   );

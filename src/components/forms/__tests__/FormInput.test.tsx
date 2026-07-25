@@ -52,7 +52,9 @@ describe('FormInput', () => {
       />,
     );
 
-    expect(screen.getByText('Certification program: Certificate of completion')).toBeInTheDocument();
+    expect(
+      screen.getByText('Certification program: Certificate of completion'),
+    ).toBeInTheDocument();
 
     const input = screen.getByRole('textbox', { name: 'Student Name' });
     expect(input).toHaveAccessibleDescription(

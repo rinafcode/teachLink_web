@@ -1,12 +1,18 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { PollCreationModal, type PollDraft } from '@/components/polls/PollCreationModal';
+import { useSettingsStore } from '@/lib/settings/store';
+import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/lib/theme-provider';
+import { wsManager } from '@/lib/websocketManager';
 import {
   type ShortcutActionId,
   type ShortcutCommand,
   useKeyboardShortcuts,
 } from '@/hooks/useKeyboardShortcuts';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('CommandPalette');
 
 function navigateTo(path: string): void {
   if (typeof window === 'undefined') return;
@@ -82,8 +88,13 @@ function ShortcutRow({
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [isSubmittingPoll, setIsSubmittingPoll] = useState(false);
   const [query, setQuery] = useState('');
   const { theme, setTheme } = useTheme();
+  const [pollModalOpen, setPollModalOpen] = useState(false);
+
+  const settings = useSettingsStore((s) => s.settings);
+  const { info: toastInfo } = useToast();
 
   const commands = useMemo<ShortcutCommand[]>(() => {
     return [
@@ -130,13 +141,25 @@ export function CommandPalette() {
         run: () => findSearchInput()?.focus(),
       },
       {
+        id: 'openPollCreation',
+        title: 'Create poll',
+        description: 'Open poll creation dialog',
+        run: () => {
+          if (!settings.pollCreationEnabled) {
+            toastInfo('Poll creation is disabled in your settings.');
+            return;
+          }
+          setPollModalOpen(true);
+        },
+      },
+      {
         id: 'openShortcutHelp',
         title: 'Show keyboard shortcuts',
         description: 'Open shortcuts help and customization panel',
         run: () => setShowHelp(true),
       },
     ];
-  }, [setTheme, theme]);
+  }, [setTheme, theme, settings.pollCreationEnabled, toastInfo]);
 
   const {
     shortcuts,
@@ -295,6 +318,48 @@ export function CommandPalette() {
           </div>
         </>
       ) : null}
+
+      <PollCreationModal
+        isOpen={pollModalOpen}
+        onClose={() => setPollModalOpen(false)}
+        onCreate={async (draft: PollDraft) => {
+          if (isSubmittingPoll) return;
+          setIsSubmittingPoll(true);
+
+          try {
+            const res = await fetch('/api/polls', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                question: draft.question,
+                options: draft.options.filter((option) => option.trim()),
+                durationDays: draft.durationDays,
+                allowAnonymous: draft.allowAnonymous,
+                resultsVisibility: draft.resultsVisibility,
+              }),
+            });
+
+            if (res.ok) {
+              const { data } = await res.json();
+              const statuses = wsManager.getAllStatuses();
+              const activeKey = Object.keys(statuses).find((key) => statuses[key].isConnected);
+
+              if (activeKey) {
+                const socket = wsManager.getSocket(activeKey);
+                socket?.emit('collaboration:message', {
+                  type: 'poll:created',
+                  roomId: 'global',
+                  poll: data,
+                });
+              }
+            }
+          } catch {
+            toastInfo('Failed to submit poll.');
+          } finally {
+            setIsSubmittingPoll(false);
+          }
+        }}
+      />
     </>
   );
 }

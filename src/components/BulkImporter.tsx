@@ -31,6 +31,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import {
   parseCsv,
   parseXlsxAsync,
@@ -166,48 +167,82 @@ export function BulkImporter<T>({
   const [isDragging, setIsDragging] = useState(false);
   const fileInputId = useId();
   const abortRef = useRef<AbortController | null>(null);
+  const importStartedAtRef = useRef<number | null>(null);
+  const validationStartedAtRef = useRef<number | null>(null);
   const rollbackRef = useRef<RollbackManager>(createRollbackManager());
+  const { track } = useAnalytics({ context: { feature: 'bulk_import' } });
 
   // ── File ingestion ──────────────────────────────────────────────────────────
 
-  const processFile = useCallback(async (file: File) => {
-    const name = file.name.toLowerCase();
-    const isExcel = name.endsWith('.xlsx') || name.endsWith('.xls');
-    const isCsv = name.endsWith('.csv');
+  const processFile = useCallback(
+    async (file: File) => {
+      const name = file.name.toLowerCase();
+      const isExcel = name.endsWith('.xlsx') || name.endsWith('.xls');
+      const isCsv = name.endsWith('.csv');
 
-    if (!isExcel && !isCsv) {
-      dispatch({
-        type: 'SET_ERROR',
-        error: 'Unsupported file type. Please upload a CSV or XLSX file.',
-      });
-      return;
-    }
-
-    try {
-      let rows: RawRow[] | null = null;
-
-      if (isCsv) {
-        const text = await file.text();
-        rows = parseCsv(text);
-      } else {
-        const buffer = await file.arrayBuffer();
-        rows = await parseXlsxAsync(buffer);
-      }
-
-      if (!rows || rows.length === 0) {
-        dispatch({ type: 'SET_ERROR', error: 'The file is empty or could not be parsed.' });
+      if (!isExcel && !isCsv) {
+        track('import_failed', {
+          stage: 'file_selection',
+          reason: 'unsupported_file_type',
+        });
+        dispatch({
+          type: 'SET_ERROR',
+          error: 'Unsupported file type. Please upload a CSV or XLSX file.',
+        });
         return;
       }
 
-      const headers = Object.keys(rows[0]);
-      dispatch({ type: 'FILE_LOADED', fileName: file.name, rawRows: rows, headers });
-    } catch (e: unknown) {
-      dispatch({
-        type: 'SET_ERROR',
-        error: `Failed to read file: ${e instanceof Error ? e.message : String(e)}`,
-      });
-    }
-  }, []);
+      try {
+        const fileType = isCsv ? 'csv' : 'xlsx';
+        const parseStartedAt = Date.now();
+        importStartedAtRef.current = parseStartedAt;
+        track('import_started', {
+          fileType,
+          fileSizeBytes: file.size,
+          fileSizeKb: Math.round(file.size / 1024),
+        });
+
+        let rows: RawRow[] | null = null;
+
+        if (isCsv) {
+          const text = await file.text();
+          rows = parseCsv(text);
+        } else {
+          const buffer = await file.arrayBuffer();
+          rows = await parseXlsxAsync(buffer);
+        }
+
+        if (!rows || rows.length === 0) {
+          track('import_failed', {
+            stage: 'parsing',
+            reason: 'empty_or_unreadable',
+            fileType,
+          });
+          dispatch({ type: 'SET_ERROR', error: 'The file is empty or could not be parsed.' });
+          return;
+        }
+
+        const headers = Object.keys(rows[0]);
+        track('import_file_parsed', {
+          fileType,
+          rowCount: rows.length,
+          columnCount: headers.length,
+          parseDurationMs: Date.now() - parseStartedAt,
+        });
+        dispatch({ type: 'FILE_LOADED', fileName: file.name, rawRows: rows, headers });
+      } catch (e: unknown) {
+        track('import_failed', {
+          stage: 'parsing',
+          reason: 'file_read_error',
+        });
+        dispatch({
+          type: 'SET_ERROR',
+          error: `Failed to read file: ${e instanceof Error ? e.message : String(e)}`,
+        });
+      }
+    },
+    [track],
+  );
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,6 +267,12 @@ export function BulkImporter<T>({
   const runValidation = useCallback(async () => {
     // START_VALIDATION is already dispatched by the button click; do not repeat it.
     abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
+    validationStartedAtRef.current = Date.now();
+    track('import_validation_started', {
+      rowCount: state.rawRows.length,
+      mappedColumns: state.mappings.filter((mapping) => mapping.targetField.trim() !== '').length,
+    });
 
     const result = await runValidationPipeline<T>(
       state.rawRows,
@@ -239,11 +280,26 @@ export function BulkImporter<T>({
       state.mappings,
       (processed, total) => dispatch({ type: 'PROGRESS', processed, total }),
       100,
-      abortRef.current.signal,
+      signal,
     );
 
+    if (signal.aborted) {
+      validationStartedAtRef.current = null;
+      return;
+    }
+
+    track('import_validation_completed', {
+      totalRows: result.total,
+      succeededRows: result.succeeded,
+      failedRows: result.failed,
+      validationDurationMs:
+        validationStartedAtRef.current === null
+          ? undefined
+          : Date.now() - validationStartedAtRef.current,
+    });
+    validationStartedAtRef.current = null;
     dispatch({ type: 'VALIDATION_DONE', result: result as ImportResult });
-  }, [state.rawRows, schema, state.mappings]);
+  }, [state.rawRows, schema, state.mappings, track]);
 
   // ── Import confirmed ────────────────────────────────────────────────────────
 
@@ -255,9 +311,26 @@ export function BulkImporter<T>({
 
     try {
       await onImport(validRecords, rollbackRef.current);
+      track('import_completed', {
+        importedRows: validRecords.length,
+        totalRows: state.result.total,
+        failedRows: state.result.failed,
+        importDurationMs:
+          importStartedAtRef.current === null ? undefined : Date.now() - importStartedAtRef.current,
+      });
       dispatch({ type: 'IMPORT_SUCCESS', count: validRecords.length });
     } catch (e: unknown) {
       const rbResult = await rollbackRef.current.rollback();
+      track('import_rollback_completed', {
+        rolledBackRows: rbResult.rolledBack,
+        rollbackErrors: rbResult.errors.length,
+      });
+      track('import_failed', {
+        stage: 'import',
+        reason: 'onImport_error',
+        rolledBackRows: rbResult.rolledBack,
+        rollbackErrors: rbResult.errors.length,
+      });
       dispatch({ type: 'ROLLBACK_DONE' });
       dispatch({
         type: 'SET_ERROR',
@@ -266,12 +339,26 @@ export function BulkImporter<T>({
         }: ${e instanceof Error ? e.message : String(e)}`,
       });
     }
-  }, [state.result, onImport]);
+  }, [state.result, onImport, track]);
 
-  const handleCancel = useCallback(() => {
+  const resetFlow = useCallback(() => {
     abortRef.current?.abort();
+    importStartedAtRef.current = null;
+    validationStartedAtRef.current = null;
     dispatch({ type: 'RESET' });
   }, []);
+
+  const handleCancel = useCallback(() => {
+    if (state.stage !== 'idle') {
+      track('import_cancelled', {
+        stage: state.stage,
+        rowCount: state.rawRows.length,
+        validRows: state.result?.succeeded ?? 0,
+        failedRows: state.result?.failed ?? 0,
+      });
+    }
+    resetFlow();
+  }, [resetFlow, state.stage, state.rawRows.length, state.result, track]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -515,7 +602,7 @@ export function BulkImporter<T>({
           </div>
           <button
             type="button"
-            onClick={handleCancel}
+            onClick={resetFlow}
             className="mt-2 rounded-md border border-green-300 bg-white px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-green-700 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800"
           >
             Import another file

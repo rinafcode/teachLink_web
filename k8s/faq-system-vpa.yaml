@@ -1,0 +1,28 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: teachlink-faq-system-vpa
+  namespace: production
+  labels:
+    app: teachlink
+    component: faq-system
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: teachlink-faq-system
+  updatePolicy:
+    updateMode: 'Auto'
+  resourcePolicy:
+    containerPolicies:
+      - containerName: faq-system
+        minAllowed:
+          cpu: 100m
+          memory: 128Mi
+        maxAllowed:
+          cpu: 2000m
+          memory: 2Gi
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits

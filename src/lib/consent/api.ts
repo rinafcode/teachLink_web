@@ -13,9 +13,7 @@ export interface RemoteConsentPayload {
 }
 
 /** Fetch stored consent preferences for a user from the server. */
-export async function fetchRemoteConsent(
-  userId: string,
-): Promise<RemoteConsentPayload | null> {
+export async function fetchRemoteConsent(userId: string): Promise<RemoteConsentPayload | null> {
   try {
     const res = await fetch(`${CONSENT_API}?userId=${encodeURIComponent(userId)}`);
     if (!res.ok) return null;

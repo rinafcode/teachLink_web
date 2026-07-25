@@ -21,6 +21,8 @@ export interface TooltipProps {
   delayMs?: number;
   /** Whether the tooltip is disabled */
   disabled?: boolean;
+  /** Whether the tooltip should allow pointer events for interactive content */
+  interactive?: boolean;
   /** Optional extra class for the tooltip bubble */
   className?: string;
   /** Optional zoom scale for the tooltip bubble (1 = normal size) */
@@ -49,11 +51,13 @@ export const Tooltip: React.FC<TooltipProps> = ({
   placement = 'top',
   delayMs = 200,
   disabled = false,
+  interactive = false,
   className = '',
   zoomScale = 1,
   onAnomaly,
 }) => {
   const [visible, setVisible] = useState(false);
+  const [isTooltipHovered, setIsTooltipHovered] = useState(false);
   const tooltipId = useId();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openCountRef = useRef(0);
@@ -65,6 +69,35 @@ export const Tooltip: React.FC<TooltipProps> = ({
       timerRef.current = null;
     }
   };
+
+  const hide = useCallback(
+    (tooltipHovered = isTooltipHovered) => {
+      clearTimer();
+      if (interactive) {
+        timerRef.current = setTimeout(() => {
+          if (!tooltipHovered) {
+            setVisible(false);
+          }
+        }, 100);
+      } else {
+        setVisible(false);
+      }
+    },
+    [interactive, isTooltipHovered],
+  );
+
+  const handleTooltipEnter = useCallback(() => {
+    if (!interactive) return;
+    clearTimer();
+    setIsTooltipHovered(true);
+    setVisible(true);
+  }, [interactive]);
+
+  const handleTooltipLeave = useCallback(() => {
+    if (!interactive) return;
+    setIsTooltipHovered(false);
+    hide(false);
+  }, [interactive, hide]);
 
   /** Anomaly detection: flag if tooltip opens >5 times in 3 seconds */
   const trackOpen = useCallback(() => {
@@ -90,17 +123,23 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }, delayMs);
   }, [disabled, delayMs, trackOpen]);
 
-  const hide = useCallback(() => {
-    clearTimer();
-    setVisible(false);
-  }, []);
-
   const child = React.Children.only(children);
   const normalizedZoom = Math.max(0.5, Math.min(3, zoomScale ?? 1));
   const tooltipStyle = {
     transform: normalizedZoom === 1 ? undefined : `scale(${normalizedZoom})`,
     transformOrigin: TRANSFORM_ORIGINS[placement],
   };
+
+  const tooltipClasses = [
+    interactive
+      ? 'pointer-events-auto whitespace-normal max-w-[28rem]'
+      : 'pointer-events-none whitespace-nowrap',
+    'absolute z-50 rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg dark:bg-gray-700',
+    PLACEMENT_CLASSES[placement],
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <span className="relative inline-flex">
@@ -129,13 +168,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
           id={tooltipId}
           role="tooltip"
           style={tooltipStyle}
-          className={[
-            'pointer-events-none absolute z-50 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg dark:bg-gray-700',
-            PLACEMENT_CLASSES[placement],
-            className,
-          ]
-            .filter(Boolean)
-            .join(' ')}
+          onMouseEnter={handleTooltipEnter}
+          onMouseLeave={handleTooltipLeave}
+          onFocus={handleTooltipEnter}
+          onBlur={handleTooltipLeave}
+          className={tooltipClasses}
         >
           {content}
         </span>

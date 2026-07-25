@@ -15,13 +15,13 @@ import type { ButtonProps } from '@/components';
 
 ### Variants
 
-| Variant    | Usage                         |
-| ---------- | ----------------------------- |
-| `primary`  | Main call to action (default) |
-| `secondary`| Alternative action            |
-| `outline`  | Bordered, low emphasis        |
-| `ghost`    | Minimal, no border            |
-| `danger`   | Destructive action            |
+| Variant     | Usage                         |
+| ----------- | ----------------------------- |
+| `primary`   | Main call to action (default) |
+| `secondary` | Alternative action            |
+| `outline`   | Bordered, low emphasis        |
+| `ghost`     | Minimal, no border            |
+| `danger`    | Destructive action            |
 
 ```tsx
 <Button variant="primary">Enroll Now</Button>
@@ -33,11 +33,11 @@ import type { ButtonProps } from '@/components';
 
 ### Sizes
 
-| Size | Height |
-| ---- | ------ |
-| `sm` | 32px   |
+| Size | Height         |
+| ---- | -------------- |
+| `sm` | 32px           |
 | `md` | 40px (default) |
-| `lg` | 48px   |
+| `lg` | 48px           |
 
 ```tsx
 <Button size="sm">Small</Button>
@@ -63,11 +63,11 @@ import type { ButtonProps } from '@/components';
 
 ### Keyboard Behavior
 
-| Key       | Action                  |
-| --------- | ----------------------- |
-| `Tab`     | Focus next button       |
-| `Enter` / `Space` | Click the focused button |
-| `focus-visible` | Blue outline ring on keyboard focus only |
+| Key               | Action                                   |
+| ----------------- | ---------------------------------------- |
+| `Tab`             | Focus next button                        |
+| `Enter` / `Space` | Click the focused button                 |
+| `focus-visible`   | Blue outline ring on keyboard focus only |
 
 ## ButtonGroup
 
@@ -101,12 +101,12 @@ Groups buttons with arrow-key navigation (roving tabindex).
 
 ### Keyboard Behavior
 
-| Key (Horizontal) | Key (Vertical)  | Action                         |
-| ---------------- | --------------- | ------------------------------ |
-| `ArrowRight`     | `ArrowDown`     | Focus next button (wraps)      |
-| `ArrowLeft`      | `ArrowUp`       | Focus previous button (wraps)  |
-| `Home`           | `Home`          | Focus first button             |
-| `End`            | `End`           | Focus last button              |
+| Key (Horizontal) | Key (Vertical) | Action                        |
+| ---------------- | -------------- | ----------------------------- |
+| `ArrowRight`     | `ArrowDown`    | Focus next button (wraps)     |
+| `ArrowLeft`      | `ArrowUp`      | Focus previous button (wraps) |
+| `Home`           | `Home`         | Focus first button            |
+| `End`            | `End`          | Focus last button             |
 
 ## Dark Mode
 

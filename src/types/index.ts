@@ -13,6 +13,14 @@ export type {
 } from './api';
 
 export type {
+  Invoice,
+  InvoiceStatus,
+  InvoiceContentType,
+  InvoiceSummary,
+  InvoiceFilter,
+} from './invoice';
+
+export type {
   UserRole,
   Metric,
   ChartConfig,
@@ -20,7 +28,4 @@ export type {
   DashboardLayout,
   ExportOptions,
 } from './analytics';
-export type {
-  Conference,
-  ConferenceInput,
-} from './conference';
+export type { Conference, ConferenceInput } from './conference';

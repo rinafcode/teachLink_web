@@ -9,16 +9,19 @@ This document describes the refactoring of the Notification System implemented a
 ### Before Refactoring
 
 1. **Multiple Conflicting Implementations**: The codebase had three separate notification systems:
+
    - `notificationStore.ts` - Zustand-based local state management
    - `Notificationprovider.tsx` - React Context with WebSocket integration
    - `use-notification.ts` - Simple toast-based utility hook
 
 2. **Inconsistent Data Structures**: Different notification types and interfaces across implementations:
+
    - `AppNotification` type vs `Notification` type
    - Different field naming conventions
    - Inconsistent timestamp handling (ISO string vs Date object)
 
 3. **Scattered Responsibilities**: Business logic spread across multiple files without clear organization:
+
    - Validation logic mixed with UI components
    - Duplicate utility functions
    - No clear service layer
@@ -112,6 +115,15 @@ Enhanced React hook with:
 - Improved preference validation
 - Better multi-channel delivery support
 - Enhanced analytics integration
+- Notification preference heartbeat state for liveness monitoring
+
+The notification preferences heartbeat runs from `useNotifications` after preferences load. It
+writes `notification_preferences_heartbeat_v1` to `localStorage` with the current `userId`,
+`lastBeatAt`, `intervalMs`, and `staleAfterMs`. Consumers can read
+`preferencesHeartbeat.status` (`online`, `stale`, or `offline`) and call
+`refreshPreferencesHeartbeat()` to re-check the stored heartbeat without waiting for the next
+interval. The preferences UI surfaces this as a compact sync status so users are not left guessing
+when preference persistence is delayed or unavailable.
 
 ## Migration Guide
 
@@ -120,23 +132,25 @@ Enhanced React hook with:
 Most existing code will continue to work without changes due to backward compatibility. However, consider these updates:
 
 #### Before (Old Pattern)
+
 ```typescript
 const { addNotification } = useNotificationStore();
 addNotification({
   type: 'info',
   message: 'Hello',
-  meta: { custom: 'data' }
+  meta: { custom: 'data' },
 });
 ```
 
 #### After (Recommended Pattern)
+
 ```typescript
 import { NotificationService } from '@/lib/notifications';
 
 const notification = NotificationService.createNotification({
   message: 'Hello',
   type: 'info',
-  meta: { custom: 'data' }
+  meta: { custom: 'data' },
 });
 
 // Then use with store or hook
@@ -170,6 +184,7 @@ Service layer has comprehensive unit tests covering:
 - Default preference generation
 
 Run unit tests:
+
 ```bash
 pnpm test src/lib/notifications/__tests__/service.test.ts
 ```
@@ -185,6 +200,7 @@ Integration tests verify:
 - Analytics calculation
 
 Run integration tests:
+
 ```bash
 pnpm test src/lib/notifications/__tests__/integration.test.ts
 ```
@@ -192,6 +208,7 @@ pnpm test src/lib/notifications/__tests__/integration.test.ts
 ### Existing Tests
 
 Updated existing tests to use new type imports:
+
 - `src/app/store/__tests__/notificationStore.test.ts`
 - `src/app/hooks/__tests__/useNotifications.test.ts`
 
@@ -225,6 +242,28 @@ The refactoring maintains performance characteristics:
 - Service layer methods are lightweight and fast
 - LocalStorage operations remain unchanged
 - WebSocket integration unaffected
+
+## WebSocket Reconnection (Issue #405)
+
+The real-time notification provider now uses a dedicated `NotificationSocketService`
+(`src/lib/notifications/socket.ts`) with production-ready reconnection behavior:
+
+- **Exponential backoff** with configurable jitter to avoid thundering herds
+- **Automatic reconnect** on unexpected disconnects and connection errors
+- **Outbound message queue** so read/clear actions are sent after reconnect
+- **Browser lifecycle hooks** (`online`, `visibilitychange`) for faster recovery
+- **Connection state API** exposed via `NotificationProvider` context (`connectionState`)
+- **Graceful shutdown** that clears timers, listeners, and pending reconnect attempts
+
+Example:
+
+```typescript
+const { connectionState } = useNotifications();
+
+if (connectionState.status === 'reconnecting') {
+  // show subtle reconnecting indicator in the notification UI
+}
+```
 
 ## Future Enhancements
 

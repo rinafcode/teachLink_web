@@ -68,12 +68,12 @@ export type GraphNode = WalletNode | UserNode | TransactionNode | TokenNode | Co
 // ─── Edge Types ──────────────────────────────────────────────────────────────
 
 export type EdgeType =
-  | 'OWNS'          // user → wallet
-  | 'SENT'          // wallet → transaction
-  | 'RECEIVED'      // wallet → transaction
-  | 'TIPPED'        // wallet → wallet (via transaction)
-  | 'HOLDS'         // wallet → token
-  | 'AUTHORED'      // wallet → content
+  | 'OWNS' // user → wallet
+  | 'SENT' // wallet → transaction
+  | 'RECEIVED' // wallet → transaction
+  | 'TIPPED' // wallet → wallet (via transaction)
+  | 'HOLDS' // wallet → token
+  | 'AUTHORED' // wallet → content
   | 'TIPPED_CONTENT'; // wallet → content
 
 export interface GraphEdge {

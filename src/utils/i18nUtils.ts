@@ -6,6 +6,9 @@ import type { LanguageCode, CulturalPreferences } from '@/locales/types';
 import { getLocaleConfig } from '@/locales/config';
 import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import { enUS, es, fr, de, ar, he, ja, zhCN, ptBR, ru, it, ko } from 'date-fns/locale';
+import { getNumberFormat } from './intlCache';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('i18nUtils');
 
 // Date-fns locale mapping
 const dateFnsLocales: Record<LanguageCode, Locale> = {
@@ -33,13 +36,13 @@ export function getCulturalPreferences(
   const config = getLocaleConfig(language);
 
   // Create Intl formatters to detect cultural preferences
-  const numberFormatter = new Intl.NumberFormat(config.numberFormat);
+  const numberFormatter = getNumberFormat(config.numberFormat);
   const parts = numberFormatter.formatToParts(1234.56);
 
   const decimalSeparator = parts.find((p) => p.type === 'decimal')?.value || '.';
   const thousandsSeparator = parts.find((p) => p.type === 'group')?.value || ',';
 
-  const currencyFormatter = new Intl.NumberFormat(config.numberFormat, {
+  const currencyFormatter = getNumberFormat(config.numberFormat, {
     style: 'currency',
     currency: config.currency || 'USD',
   });
@@ -85,7 +88,7 @@ export function formatDate(
   try {
     return format(dateObj, formatPattern, { locale });
   } catch (error) {
-    console.warn('Date formatting error:', error);
+    logger.warn('Date formatting error', { error });
     return format(dateObj, 'PP', { locale: enUS });
   }
 }
@@ -101,7 +104,7 @@ export function formatRelativeTime(date: Date | string | number, language: Langu
   try {
     return formatDistanceToNow(dateObj, { addSuffix: true, locale });
   } catch (error) {
-    console.warn('Relative time formatting error:', error);
+    logger.warn('Relative time formatting error', { error });
     return formatDistanceToNow(dateObj, { addSuffix: true, locale: enUS });
   }
 }
@@ -117,9 +120,9 @@ export function formatNumber(
   const config = getLocaleConfig(language);
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, options).format(value);
+    return getNumberFormat(config.numberFormat, options).format(value);
   } catch (error) {
-    console.warn('Number formatting error:', error);
+    logger.warn('Number formatting error', { error });
     return value.toString();
   }
 }
@@ -132,12 +135,12 @@ export function formatCurrency(amount: number, language: LanguageCode, currency?
   const currencyCode = currency || config.currency || 'USD';
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, {
+    return getNumberFormat(config.numberFormat, {
       style: 'currency',
       currency: currencyCode,
     }).format(amount);
   } catch (error) {
-    console.warn('Currency formatting error:', error);
+    logger.warn('Currency formatting error', { error });
     return `${currencyCode} ${amount.toFixed(2)}`;
   }
 }
@@ -149,13 +152,13 @@ export function formatPercentage(value: number, language: LanguageCode, decimals
   const config = getLocaleConfig(language);
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, {
+    return getNumberFormat(config.numberFormat, {
       style: 'percent',
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(value / 100);
   } catch (error) {
-    console.warn('Percentage formatting error:', error);
+    logger.warn('Percentage formatting error', { error });
     return `${value.toFixed(decimals)}%`;
   }
 }
@@ -195,7 +198,7 @@ export function isRTL(language: LanguageCode): boolean {
  */
 export function formatFileSize(bytes: number, language: LanguageCode): string {
   const config = getLocaleConfig(language);
-  const formatter = new Intl.NumberFormat(config.numberFormat, {
+  const formatter = getNumberFormat(config.numberFormat, {
     maximumFractionDigits: 2,
   });
 

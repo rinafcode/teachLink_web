@@ -266,9 +266,23 @@ docker image prune
 docker system prune -a --volumes
 ```
 
+## SEO: Sitemap Submission
+
+The build pipeline automatically generates `public/sitemap.xml` via the `postbuild` script. After deploying to production:
+
+1. **Verify the sitemap** is accessible at `https://your-domain.com/sitemap.xml`
+2. **Submit to Google Search Console:**
+   - Navigate to [Google Search Console](https://search.google.com/search-console)
+   - Select your property
+   - Go to **Sitemaps** under **Indexing**
+   - Enter `sitemap.xml` and click Submit
+3. **Monitor** for crawl errors and indexing status in Search Console
+
 ## Reference
 
 - [Next.js Docker Documentation](https://nextjs.org/docs/deployment/docker)
 - [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
 - [Docker Compose Reference](https://docs.docker.com/compose/compose-file/)
 - [Alpine Linux Benefits](https://www.alpinelinux.org/)
+- [Google Search Console](https://search.google.com/search-console)
+- [Sitemaps.org Protocol](https://www.sitemaps.org/)

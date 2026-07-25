@@ -15,6 +15,18 @@ This project uses URL-based API versioning to protect clients from breaking chan
 - Path-based versioning is the primary version selection mechanism
 - API clients should prefer explicit `/api/v1/...` paths when available
 
+## Supported version numbers
+
+The middleware validates version strings against the pattern `/^v\d+$/` (the letter
+`v` followed by one or more digits). Any other format is rejected with `400 Bad Request`.
+
+| Version | Status  | Notes                   |
+|---------|---------|-------------------------|
+| `v1`    | Active  | Current stable version  |
+| `v2`    | Planned | Reserved for future use |
+
+Examples of **invalid** version strings that are rejected: `vABC`, `v1.2`, `../v1`, `123`.
+
 ## Compatibility layer
 
 The middleware rewrites legacy API requests from `/api/*` to `/api/v1/*`.

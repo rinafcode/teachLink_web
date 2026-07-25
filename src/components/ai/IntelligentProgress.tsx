@@ -39,8 +39,8 @@ export default function IntelligentProgress() {
 
   useEffect(() => {
     apiClient
-      .get<ApiResponse<ProgressData>>('/api/ai/progress')
-      .then((response) => setData(response.data))
+      .get<ProgressData>('/api/ai/progress')
+      .then(setData)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
@@ -69,11 +69,7 @@ export default function IntelligentProgress() {
           </div>
         )}
 
-        {error && (
-          <p className="text-sm text-center text-red-500 py-4" role="alert">
-            Could not load progress. Please try again.
-          </p>
-        )}
+        {error && <p className="text-sm text-center text-red-500 py-4">Failed to load progress.</p>}
 
         {data && (
           <>

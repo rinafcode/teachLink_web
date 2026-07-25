@@ -27,10 +27,10 @@ export type RegionCode =
   | 'CO' // Spanish regions
   | 'FR'
   | 'BE'
-  | 'CH' // French regions
+  | 'CH' // French/German regions (Switzerland)
   | 'DE'
   | 'AT'
-  | 'CH' // German regions
+  | 'LI' // German regions (Liechtenstein)
   | 'SA'
   | 'AE'
   | 'EG' // Arabic regions

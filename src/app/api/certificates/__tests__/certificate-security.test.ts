@@ -1,9 +1,9 @@
 /**
  * Security Tests for Certificate Generation Feature
- * 
+ *
  * Tests verify all threat mitigations from the threat model:
  * T1: IDOR Prevention
- * T2: Input Sanitization  
+ * T2: Input Sanitization
  * T3: Certificate Forgery Prevention
  * T4: Auth Requirement
  * T5: Rate Limiting

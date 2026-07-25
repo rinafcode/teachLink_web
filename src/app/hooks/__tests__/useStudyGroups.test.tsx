@@ -87,4 +87,55 @@ describe('useStudyGroups', () => {
     expect(result.current.groupResources(groupId).length).toBe(1);
     expect(result.current.groupResources(groupId)[0].type).toBe('link');
   });
+
+  it('issues, lists, and revokes forum certificates securely', () => {
+    const { result } = renderHook(() => useStudyGroups({ id: 'mentor', name: 'Mentor' }));
+    let groupId = '';
+    let certificateId = '';
+
+    act(() => {
+      groupId = result.current.createGroup({ name: 'Security Forum' }).id;
+    });
+
+    act(() => {
+      certificateId = result.current.issueCertificate(groupId, {
+        subjectUserId: 'learner-1',
+        subjectName: 'Learner One',
+        fingerprint: 'aa:'.repeat(31) + 'aa',
+        validFrom: '2026-05-28T00:00:00.000Z',
+        validUntil: '2026-06-28T00:00:00.000Z',
+      }).id;
+    });
+
+    expect(result.current.groupCertificates(groupId)[0]).toMatchObject({
+      fingerprint: 'A'.repeat(64),
+      status: 'active',
+      subjectName: 'Learner One',
+    });
+
+    act(() => {
+      result.current.revokeCertificate(certificateId);
+    });
+
+    expect(result.current.groupCertificates(groupId)[0].status).toBe('revoked');
+  });
+
+  it('rejects invalid certificate fingerprints', () => {
+    const { result } = renderHook(() => useStudyGroups({ id: 'mentor', name: 'Mentor' }));
+    let groupId = '';
+
+    act(() => {
+      groupId = result.current.createGroup({ name: 'Security Forum' }).id;
+    });
+
+    expect(() =>
+      result.current.issueCertificate(groupId, {
+        subjectUserId: 'learner-1',
+        subjectName: 'Learner One',
+        fingerprint: 'not-a-fingerprint',
+        validFrom: '2026-05-28T00:00:00.000Z',
+        validUntil: '2026-06-28T00:00:00.000Z',
+      }),
+    ).toThrow(/64-character SHA-256/);
+  });
 });

@@ -10,10 +10,7 @@ export const runtime = 'edge';
  * Ephemeral in-memory store for consent records.
  * Replace with a persistent KV / DB in production.
  */
-const consentDb = new Map<
-  string,
-  { preferences: ConsentPreferences; decidedAt: number }
->();
+const consentDb = new Map<string, { preferences: ConsentPreferences; decidedAt: number }>();
 
 const putBodySchema = z.object({
   userId: z.string().min(1).max(256),
@@ -39,13 +36,14 @@ export async function GET(request: Request) {
   const row = consentDb.get(userId);
   if (!row) {
     return addHeaders(
-      NextResponse.json({ success: false, message: 'No consent record found', data: null }, { status: 404 }),
+      NextResponse.json(
+        { success: false, message: 'No consent record found', data: null },
+        { status: 404 },
+      ),
     );
   }
 
-  return addHeaders(
-    NextResponse.json({ success: true, data: { userId, ...row } }),
-  );
+  return addHeaders(NextResponse.json({ success: true, data: { userId, ...row } }));
 }
 
 /** PUT /api/v1/consent — store or update consent preferences for a user */
@@ -76,9 +74,7 @@ export async function PUT(request: Request) {
   const { userId, preferences, decidedAt } = parsed.data;
   consentDb.set(userId, { preferences, decidedAt });
 
-  return addHeaders(
-    NextResponse.json({ success: true, message: 'Consent preferences saved' }),
-  );
+  return addHeaders(NextResponse.json({ success: true, message: 'Consent preferences saved' }));
 }
 
 /** DELETE /api/v1/consent?userId=<id> — withdraw consent and remove record */
@@ -98,7 +94,5 @@ export async function DELETE(request: Request) {
 
   consentDb.delete(userId);
 
-  return addHeaders(
-    NextResponse.json({ success: true, message: 'Consent record removed' }),
-  );
+  return addHeaders(NextResponse.json({ success: true, message: 'Consent record removed' }));
 }

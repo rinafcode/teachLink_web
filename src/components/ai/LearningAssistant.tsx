@@ -21,7 +21,6 @@ export default function LearningAssistant({ context = 'learning' }: LearningAssi
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -35,22 +34,21 @@ export default function LearningAssistant({ context = 'learning' }: LearningAssi
 
     const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text };
     setMessages((prev) => [...prev, userMsg]);
+    setError(null);
     setInput('');
     setLoading(true);
     setError(false);
 
     try {
-      const response = await apiClient.post<ApiResponse<{ reply: string }>>('/api/ai/chat', {
+      const { reply } = await apiClient.post<{ reply: string }>('/api/ai/chat', {
         message: text,
         context,
       });
-      const reply = response.data.reply;
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), role: 'assistant', content: reply },
       ]);
     } catch {
-      setError(true);
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), role: 'assistant', content: 'Sorry, something went wrong.' },
@@ -83,11 +81,6 @@ export default function LearningAssistant({ context = 'learning' }: LearningAssi
         aria-label="Conversation"
         className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
       >
-        {error && (
-          <p className="text-sm text-center text-red-500" role="alert">
-            Failed to get a response. Please try again.
-          </p>
-        )}
         {messages.length === 0 && (
           <p className="text-sm text-center text-gray-400 mt-8">
             Ask me anything about your courses!

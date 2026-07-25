@@ -65,7 +65,11 @@ describe('Button', () => {
 
   it('does not fire onClick when disabled', async () => {
     const handleClick = vi.fn();
-    render(<Button disabled onClick={handleClick}>Disabled</Button>);
+    render(
+      <Button disabled onClick={handleClick}>
+        Disabled
+      </Button>,
+    );
     const btn = screen.getByRole('button');
     expect(btn).toBeDisabled();
     await userEvent.click(btn);
@@ -114,10 +118,7 @@ describe('ButtonGroup', () => {
 
   it('defaults to horizontal orientation', () => {
     renderGroup();
-    expect(screen.getByRole('toolbar')).toHaveAttribute(
-      'aria-orientation',
-      'horizontal',
-    );
+    expect(screen.getByRole('toolbar')).toHaveAttribute('aria-orientation', 'horizontal');
   });
 
   it('supports vertical orientation', () => {
@@ -127,10 +128,7 @@ describe('ButtonGroup', () => {
         <Button>Down</Button>
       </ButtonGroup>,
     );
-    expect(screen.getByRole('toolbar')).toHaveAttribute(
-      'aria-orientation',
-      'vertical',
-    );
+    expect(screen.getByRole('toolbar')).toHaveAttribute('aria-orientation', 'vertical');
   });
 
   it('navigates with ArrowRight in horizontal group', () => {

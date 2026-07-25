@@ -15,6 +15,8 @@ import {
 } from '../types/core';
 import type { FormStateManager as IFormStateManager } from '../types/interfaces';
 import { DependencyManager, CascadeUpdateResult } from './dependency-manager';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('FormStateManager');
 
 export class FormStateManager implements IFormStateManager {
   private state: FormState;
@@ -163,7 +165,7 @@ export class FormStateManager implements IFormStateManager {
       try {
         callback(event);
       } catch (error) {
-        console.error('Error in state change callback:', error);
+        logger.error('Error in state change callback', { error });
       }
     });
   }
@@ -525,7 +527,7 @@ export class FormStateManager implements IFormStateManager {
     // Validate dependencies
     const validation = this.dependencyManager.validateDependencies(fields);
     if (!validation.isValid) {
-      console.warn('Dependency validation errors:', validation.errors);
+      logger.warn('Dependency validation errors', { context: { errors: validation.errors } });
     }
   }
 

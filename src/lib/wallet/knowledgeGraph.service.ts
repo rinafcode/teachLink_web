@@ -101,7 +101,9 @@ export class WalletKnowledgeGraphService {
     return user;
   }
 
-  addTransaction(tx: Omit<TransactionNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>): TransactionNode {
+  addTransaction(
+    tx: Omit<TransactionNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>,
+  ): TransactionNode {
     const node: TransactionNode = {
       ...tx,
       type: 'transaction',
@@ -147,7 +149,9 @@ export class WalletKnowledgeGraphService {
     this.addEdge('HOLDS', walletAddress, tokenId);
   }
 
-  addContent(content: Omit<ContentNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>): ContentNode {
+  addContent(
+    content: Omit<ContentNode, 'type' | 'createdAt' | 'updatedAt' | 'metadata'>,
+  ): ContentNode {
     const node: ContentNode = {
       ...content,
       type: 'content',
@@ -256,9 +260,7 @@ export class WalletKnowledgeGraphService {
 
     return tipEdges.map((edge) => {
       // Count transactions between these two wallets
-      const txEdges = this.getEdgesBetween(address, edge.toId).filter(
-        (e) => e.type === 'SENT',
-      );
+      const txEdges = this.getEdgesBetween(address, edge.toId).filter((e) => e.type === 'SENT');
       const txNodes = txEdges
         .map((e) => this.getNode<TransactionNode>(e.toId))
         .filter((t): t is TransactionNode => !!t && t.to === edge.toId);

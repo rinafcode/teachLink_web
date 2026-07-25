@@ -1,21 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { CodeChallengeQuizQuestion, UseQuizReturn } from '@/hooks/useQuiz';
+import {
+  normalizeQuizOutput,
+  type CodeChallengeQuizQuestion,
+  type UseQuizReturn,
+} from '@/hooks/useQuiz';
 
 interface CodeChallengeQuestionProps {
   question: CodeChallengeQuizQuestion;
   quizState: UseQuizReturn;
-}
-
-function normalizeOutput(value: unknown) {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return String(value);
-  }
 }
 
 export default function CodeChallengeQuestion({ question, quizState }: CodeChallengeQuestionProps) {
@@ -29,30 +23,47 @@ export default function CodeChallengeQuestion({ question, quizState }: CodeChall
   const [isRunning, setIsRunning] = useState(false);
 
   const hasTestCases = Boolean(question.testCases && question.testCases.length);
+  const passedTests = testResults.filter(Boolean).length;
+  const totalTests = testResults.length;
 
   const overallPassed = useMemo(
     () => (testResults.length ? testResults.every(Boolean) : false),
     [testResults],
   );
+  const partialPass =
+    totalTests > 0 &&
+    passedTests > 0 &&
+    !overallPassed &&
+    Boolean(question.gradingPolicy?.partialCredit);
 
   const runTests = () => {
     if (!hasTestCases || !question.testCases) return;
 
     setIsRunning(true);
 
-    const results = question.testCases.map((testCase) => {
-      try {
-        const userFunction = new Function('input', code);
-        const output = userFunction(testCase.input);
-        return normalizeOutput(output) === normalizeOutput(testCase.expectedOutput);
-      } catch {
-        return false;
-      }
-    });
+    try {
+      const userFunction = new Function('input', code) as (input: string) => unknown;
+      const results = question.testCases.map((testCase) => {
+        try {
+          const output = userFunction(testCase.input);
+          return (
+            normalizeQuizOutput(output, question.gradingPolicy) ===
+            normalizeQuizOutput(testCase.expectedOutput, question.gradingPolicy)
+          );
+        } catch {
+          return false;
+        }
+      });
 
-    setTestResults(results);
-    actions.setCodeChallengeResult(question.id, { code, testResults: results });
-    setIsRunning(false);
+      setTestResults(results);
+      actions.setCodeChallengeResult(question.id, { code, testResults: results });
+    } catch {
+      const results = question.testCases.map(() => false);
+      setTestResults(results);
+      actions.setCodeChallengeResult(question.id, { code, testResults: results });
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const onChangeCode = (value: string) => {
@@ -85,11 +96,26 @@ export default function CodeChallengeQuestion({ question, quizState }: CodeChall
         <div className="space-y-2">
           <div
             className={`text-sm font-medium ${
-              overallPassed ? 'text-[#0066FF] dark:text-[#00C2FF]' : 'text-red-700'
+              overallPassed
+                ? 'text-[#0066FF] dark:text-[#00C2FF]'
+                : partialPass
+                ? 'text-amber-700 dark:text-amber-300'
+                : 'text-red-700'
             }`}
           >
-            {overallPassed ? 'All tests passed' : 'Some tests failed'}
+            {overallPassed
+              ? 'All tests passed'
+              : partialPass
+              ? `${passedTests} of ${totalTests} tests passed`
+              : 'Some tests failed'}
           </div>
+
+          {partialPass && question.gradingPolicy?.partialCredit ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+              This submission is partially correct. The grader will tolerate the failed tests and
+              award partial credit.
+            </div>
+          ) : null}
 
           {question.testCases.map((testCase, index) => (
             <div
@@ -97,6 +123,8 @@ export default function CodeChallengeQuestion({ question, quizState }: CodeChall
               className={`p-3 rounded-lg border ${
                 testResults[index]
                   ? 'bg-[#F0F9FF] dark:bg-[#1E3A8A]/20 border-[#0066FF]/20 dark:border-[#00C2FF]/20'
+                  : partialPass
+                  ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-700'
                   : 'bg-red-50 border-red-200'
               }`}
             >
@@ -114,7 +142,11 @@ export default function CodeChallengeQuestion({ question, quizState }: CodeChall
                 </div>
                 <div
                   className={`text-sm font-medium ${
-                    testResults[index] ? 'text-[#0066FF] dark:text-[#00C2FF]' : 'text-red-700'
+                    testResults[index]
+                      ? 'text-[#0066FF] dark:text-[#00C2FF]'
+                      : partialPass
+                      ? 'text-amber-700 dark:text-amber-300'
+                      : 'text-red-700'
                   }`}
                 >
                   {testResults[index] ? 'Pass' : 'Fail'}

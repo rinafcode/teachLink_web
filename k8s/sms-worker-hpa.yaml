@@ -11,16 +11,16 @@ spec:
   minReplicas: 2
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: External
-    external:
-      metric:
-        name: sms_queue_length
-      target:
-        type: AverageValue
-        averageValue: 500
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: External
+      external:
+        metric:
+          name: sms_queue_length
+        target:
+          type: AverageValue
+          averageValue: 500

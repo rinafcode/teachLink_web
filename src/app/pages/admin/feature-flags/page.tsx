@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Flag,
   Plus,
@@ -24,6 +24,7 @@ import {
 import type { FeatureFlag, TargetingRule, RolloutStrategy, AuditEntry } from '@/lib/feature-flags';
 import { useAllFeatureFlags } from '@/hooks/useFeatureFlag';
 import AdminThemeToggle from '@/components/admin/AdminThemeToggle';
+import { useToast } from '@/context/ToastContext';
 
 // ─── Small shared UI ──────────────────────────────────────────────────────────
 
@@ -572,6 +573,7 @@ function FlagRow({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function FeatureFlagsPage() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const { flags, isLoading, error, reload } = useAllFeatureFlags();
 
   const [search, setSearch] = useState('');
@@ -584,6 +586,12 @@ export default function FeatureFlagsPage() {
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      toastError(error);
+    }
+  }, [error, toastError]);
 
   // All unique tags for filter chips
   const allTags = [...new Set(flags.flatMap((f) => f.tags))].sort();
@@ -608,11 +616,19 @@ export default function FeatureFlagsPage() {
       headers: { 'Content-Type': 'application/json', 'x-admin-user': 'admin' },
       body: JSON.stringify({ enabled: !flag.enabled }),
     });
+
     if (!res.ok) {
-      setActionError(`Toggle failed: HTTP ${res.status}`);
+      const body = await res.json().catch(() => null);
+      const message = body?.message
+        ? `Toggle failed: ${body.message}`
+        : `Toggle failed: HTTP ${res.status}`;
+      setActionError(message);
+      toastError(message);
       return;
     }
+
     await reload();
+    toastSuccess(`Feature flag '${flag.name}' ${flag.enabled ? 'disabled' : 'enabled'}.`);
   };
 
   const doDelete = async (id: string) => {
@@ -622,11 +638,17 @@ export default function FeatureFlagsPage() {
       headers: { 'x-admin-user': 'admin' },
     });
     if (!res.ok) {
-      setActionError(`Delete failed: HTTP ${res.status}`);
+      const body = await res.json().catch(() => null);
+      const message = body?.message
+        ? `Delete failed: ${body.message}`
+        : `Delete failed: HTTP ${res.status}`;
+      setActionError(message);
+      toastError(message);
       return;
     }
     setDeleteConfirmId(null);
     await reload();
+    toastSuccess('Feature flag deleted successfully.');
   };
 
   const doSave = async (data: Partial<FeatureFlag>) => {
@@ -641,9 +663,18 @@ export default function FeatureFlagsPage() {
       headers: { 'Content-Type': 'application/json', 'x-admin-user': 'admin' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      const message = body?.message
+        ? `Save failed: ${body.message}`
+        : `Save failed: HTTP ${res.status}`;
+      toastError(message);
+      throw new Error(message);
+    }
+
     setEditingFlag(false);
     await reload();
+    toastSuccess(`Feature flag ${isNew ? 'created' : 'updated'} successfully.`);
   };
 
   return (

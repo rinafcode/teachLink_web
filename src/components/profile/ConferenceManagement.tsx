@@ -83,7 +83,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
       // For now, rely on parent component or manual invocation
     }
     return true;
-  }, []);
+  }, [conferences.length, isLoading, editingId]);
 
   const onSubmit = async (data: ConferenceFormData) => {
     try {
@@ -93,9 +93,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
       if (editingId) {
         // Update existing conference
         const updated = await updateConference(effectiveUserId, editingId, data);
-        setConferences((prev) =>
-          prev.map((conf) => (conf.id === editingId ? updated : conf))
-        );
+        setConferences((prev) => prev.map((conf) => (conf.id === editingId ? updated : conf)));
         toast.success('Conference updated successfully');
         setEditingId(null);
       } else {
@@ -217,7 +215,11 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
           role="alert"
           aria-live="polite"
         >
-          <AlertCircle size={20} className="flex-shrink-0 text-red-600 dark:text-red-400" aria-hidden="true" />
+          <AlertCircle
+            size={20}
+            className="flex-shrink-0 text-red-600 dark:text-red-400"
+            aria-hidden="true"
+          />
           <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}
@@ -235,12 +237,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
                   required
                 />
 
-                <FormInput
-                  name="role"
-                  label="Your Role"
-                  as="select"
-                  required
-                >
+                <FormInput name="role" label="Your Role" as="select" required>
                   <option value="attendee">Attendee</option>
                   <option value="speaker">Speaker</option>
                   <option value="organizer">Organizer</option>
@@ -302,14 +299,11 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
           aria-label={showForm ? undefined : 'No conferences added yet'}
         >
           <p className="text-sm">
-            {isLoading ? 'Loading conferences...' : "No conferences yet. Add one to get started!"}
+            {isLoading ? 'Loading conferences...' : 'No conferences yet. Add one to get started!'}
           </p>
         </div>
       ) : (
-        <ul
-          className="space-y-3"
-          aria-label="Conference list"
-        >
+        <ul className="space-y-3" aria-label="Conference list">
           {conferences.map((conference) => (
             <li
               key={conference.id}
@@ -320,7 +314,11 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
                   {conference.title}
                 </h4>
                 <div className="mt-1 flex flex-wrap gap-2 items-center text-sm text-gray-600 dark:text-slate-400">
-                  <span className={`px-2 py-1 rounded-md text-xs font-semibold ${getRoleColor(conference.role)}`}>
+                  <span
+                    className={`px-2 py-1 rounded-md text-xs font-semibold ${getRoleColor(
+                      conference.role,
+                    )}`}
+                  >
                     {getRoleLabel(conference.role)}
                   </span>
                   {conference.date && (

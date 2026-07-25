@@ -267,9 +267,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                   <span className="text-sm font-medium text-slate-600 group-hover:text-primary transition-colors">
                     {node.label}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {node.desc}
-                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">{node.desc}</span>
                 </div>
               </label>
             );

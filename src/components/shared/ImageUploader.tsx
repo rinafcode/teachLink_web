@@ -3,6 +3,10 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Image from 'next/image';
+import { dataWarehouse } from '@/lib/dataWarehouse';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('image-uploader');
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -10,14 +14,16 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-function ImageUploader({
-  onImageSelect,
-  initialImageUrl,
-  className = '',
-}: ImageUploaderProps) {
+function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: ImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (initialImageUrl) {
+      setPreviewUrl(initialImageUrl);
+    }
+  }, [initialImageUrl]);
 
   useEffect(() => {
     return () => {
@@ -27,20 +33,153 @@ function ImageUploader({
     };
   }, []);
 
-  const handleFileChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
+  const setObjectPreviewUrl = useCallback((objectUrl: string) => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+    }
+
+    objectUrlRef.current = objectUrl;
+    setPreviewUrl(objectUrl);
+  }, []);
+
+  // const handleFileChange = useCallback(
+  //   async (event: ChangeEvent<HTMLInputElement>) => {
+  //     const file = event.target.files?.[0];
+  //     if (!file) return;
+
+  //     if (file.type.startsWith('video/')) {
+  //       try {
+  //         const video = document.createElement('video');
+  //         const videoObjectUrl = URL.createObjectURL(file);
+  //         video.src = videoObjectUrl;
+  //         video.crossOrigin = 'anonymous';
+  //         video.muted = true;
+
+  //         await new Promise<void>((resolve, reject) => {
+  //           video.onloadeddata = () => {
+  //             video.currentTime = Math.min(1, video.duration / 2);
+  //           };
+  //           video.onseeked = () => resolve();
+  //           video.onerror = () => reject(new Error('Failed to load video'));
+  //         });
+
+  //         const canvas = document.createElement('canvas');
+  //         canvas.width = video.videoWidth;
+  //         canvas.height = video.videoHeight;
+  //         const ctx = canvas.getContext('2d');
+  //         if (ctx) {
+  //           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  //           canvas.toBlob(
+  //             (blob) => {
+  //               if (blob) {
+  //                 const objectUrl = URL.createObjectURL(blob);
+  //                 setObjectPreviewUrl(objectUrl);
+  //                 const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+  //                   type: 'image/jpeg',
+  //                 });
+  //                 onImageSelect(optimizedFile);
+  //               }
+  //             },
+  //             'image/jpeg',
+  //             0.85,
+  //           );
+  //         }
+  //         URL.revokeObjectURL(videoObjectUrl);
+  //       } catch (error) {
+  //         console.error('Video optimization failed:', error);
+  //       }
+  //     } else if (file.type.startsWith('image/')) {
+  //       const objectUrl = URL.createObjectURL(file);
+  //       setObjectPreviewUrl(objectUrl);
+  //       onImageSelect(file);
+  //     }
+
+  //     if (fileInputRef.current) {
+  //       fileInputRef.current.value = '';
+  //     }
+  //   },
+  //   [onImageSelect, setObjectPreviewUrl],
+  // );
+  const handleFileChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      if (file.type.startsWith('video/')) {
+        try {
+          const video = document.createElement('video');
+          const videoObjectUrl = URL.createObjectURL(file);
+          video.src = videoObjectUrl;
+          video.crossOrigin = 'anonymous';
+          video.muted = true;
+
+          await new Promise<void>((resolve, reject) => {
+            video.onloadeddata = () => {
+              // Seek to 1s or midway if shorter
+              video.currentTime = Math.min(1, video.duration / 2);
+            };
+            video.onseeked = () => resolve();
+            video.onerror = () => reject(new Error('Failed to load video'));
+          });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  const objectUrl = URL.createObjectURL(blob);
+                  setObjectPreviewUrl(objectUrl);
+                  const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                    type: 'image/jpeg',
+                  });
+
+                  dataWarehouse
+                    .trackEvent('IMAGE_UPLOADED', {
+                      fileName: optimizedFile.name,
+                      fileSize: optimizedFile.size,
+                      fileType: optimizedFile.type,
+                    })
+                    .catch((error) =>
+                      logger.error('Failed to track image upload event', { error }),
+                    );
+
+                  onImageSelect(optimizedFile);
+                }
+              },
+              'image/jpeg',
+              0.85,
+            );
+          }
+          URL.revokeObjectURL(videoObjectUrl);
+        } catch (error) {
+          logger.error('Video optimization failed', { error });
+        }
+      } else if (file.type.startsWith('image/')) {
+        const objectUrl = URL.createObjectURL(file);
+        setObjectPreviewUrl(objectUrl);
+
+        // Track the image upload event
+        dataWarehouse
+          .trackEvent('IMAGE_UPLOADED', {
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+          })
+          .catch((error) => logger.error('Failed to track image upload event', { error }));
+
+        onImageSelect(file);
       }
 
-      const objectUrl = URL.createObjectURL(file);
-      objectUrlRef.current = objectUrl;
-      setPreviewUrl(objectUrl);
-
-      onImageSelect(file);
-    }
-  }, [onImageSelect]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    },
+    [onImageSelect, setObjectPreviewUrl],
+  );
 
   const handleClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -60,7 +199,7 @@ function ImageUploader({
             alt="Profile Preview"
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
-            unoptimized={previewUrl.startsWith('blob:')}
+            unoptimized={previewUrl.startsWith('data:') || previewUrl.startsWith('blob:')}
             className="object-cover"
           />
         ) : (
@@ -92,7 +231,7 @@ function ImageUploader({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         onChange={handleFileChange}
         className="hidden"
       />

@@ -1,9 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Question, useQuizStore } from '@/app/store/quizStore';
-import Editor from '@monaco-editor/react';
 import { FaCheck, FaTimes, FaPlay } from 'react-icons/fa';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('CodeChallengeQuestion');
+
+// Lazy load Monaco Editor to reduce initial bundle size
+const Editor = dynamic(() => import('@monaco-editor/react'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[300px] border rounded-lg bg-gray-50">
+      <div className="text-gray-500">Loading editor...</div>
+    </div>
+  ),
+});
 
 interface CodeChallengeQuestionProps {
   question: Question;
@@ -36,7 +48,7 @@ export default function CodeChallengeQuestion({ question }: CodeChallengeQuestio
           const output = userFunction(testCase.input);
           return output === testCase.expectedOutput;
         } catch (error) {
-          console.error('Error running test:', error);
+          logger.error('Error running test', { error });
           return false;
         }
       },

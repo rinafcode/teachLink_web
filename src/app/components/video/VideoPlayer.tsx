@@ -22,6 +22,9 @@ import type { VideoPlayerContextValue } from './VideoPlayerContext';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
 import { useAudioEnhancement } from '../../hooks/useAudioEnhancement';
+import { AudioInvoiceManager, AudioInvoiceButton } from '@/components/audio';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('VideoPlayer');
 
 interface VideoPlayerProps {
   src: string;
@@ -31,6 +34,7 @@ interface VideoPlayerProps {
   onBookmark?: (bookmark: { time: number; title: string; note?: string }) => void;
   onNote?: (note: { time: number; text: string }) => void;
   className?: string;
+  lessonId?: string;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -41,6 +45,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onBookmark,
   onNote,
   className = '',
+  lessonId,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,6 +55,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [showTranscript, setShowTranscript] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [showInvoices, setShowInvoices] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartTime, setTouchStartTime] = useState(0);
@@ -179,7 +185,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         await videoRef.current.requestPictureInPicture();
       }
     } catch (error) {
-      console.error('PiP error:', error);
+      logger.error('PiP error', { error });
     }
   }, []);
 
@@ -301,7 +307,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onNote: onNote ?? (() => undefined),
       audioEnhancement,
     }),
-    [transcript, currentTime, duration, playbackRate, seekTo, setPlaybackRate, onBookmark, onNote, audioEnhancement],
+    [
+      transcript,
+      currentTime,
+      duration,
+      playbackRate,
+      seekTo,
+      setPlaybackRate,
+      onBookmark,
+      onNote,
+      audioEnhancement,
+    ],
   );
 
   if (error) {
@@ -576,6 +592,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     </button>
                   )}
 
+                  <AudioInvoiceButton onClick={() => setShowInvoices(true)} />
+
                   <button
                     onClick={toggleFullscreen}
                     className="p-3 rounded bg-white/20 hover:bg-white/30 transition-colors md:p-2"
@@ -596,6 +614,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        <AudioInvoiceManager
+          isOpen={showInvoices}
+          onClose={() => setShowInvoices(false)}
+          lessonId={lessonId}
+        />
 
         {/* Side Panels */}
         <div className="absolute top-0 right-0 h-full flex">

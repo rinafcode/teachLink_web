@@ -12,15 +12,32 @@ import { FormError, FieldError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 import { useMutation } from '../../../hooks/useMutation';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/utils/error-handler';
+import { DiscordButton } from '@/app/components/auth/DiscordButton';
+import { GoogleButton } from '@/app/components/auth/GoogleButton';
+import { GitHubButton } from '@/app/components/auth/GitHubButton';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
 
+  const handleDiscordLogin = () => {
+    window.location.href = '/api/auth/discord';
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = '/api/auth/google';
+  };
+
+  const handleGitHubLogin = () => {
+    window.location.href = '/api/auth/github';
+  };
+
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -39,7 +56,17 @@ export default function LoginPage() {
   );
 
   const onSubmit = async (data: LoginFormData) => {
-    await loginMutation.mutate(data);
+    try {
+      await loginMutation.mutateAsync(data);
+    } catch (error) {
+      if (error instanceof ApiError && error.errors) {
+        for (const fieldError of error.errors) {
+          setError(fieldError.field as keyof LoginFormData, {
+            message: fieldError.message,
+          });
+        }
+      }
+    }
   };
 
   return (
@@ -93,7 +120,9 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="john.doe@example.com"
-                className={`w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none transition-all`}
+                className={`w-full px-4 py-3 border ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none transition-all`}
                 aria-invalid={!!errors.email}
                 aria-describedby="email-error"
                 {...register('email')}
@@ -107,7 +136,9 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none transition-all pr-12`}
+                  className={`w-full px-4 py-3 border ${
+                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none transition-all pr-12`}
                   aria-invalid={!!errors.password}
                   aria-describedby="password-error"
                   {...register('password')}
@@ -132,7 +163,10 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <FormError error={loginMutation.error?.message} id="login-api-error" />
+            <FormError
+              error={(loginMutation.error as ApiError)?.errors ?? loginMutation.error?.message}
+              id="login-api-error"
+            />
 
             {successMessage && (
               <motion.div
@@ -161,6 +195,12 @@ export default function LoginPage() {
                 Sign up
               </Link>
             </p>
+            <p className="mt-2 text-sm text-gray-600">
+              Need to verify email or restore access?{' '}
+              <Link href="/verify-email" className="text-blue-600 hover:text-blue-700 font-medium">
+                Open recovery
+              </Link>
+            </p>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
@@ -171,16 +211,10 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {['Google', 'GitHub'].map((provider) => (
-                <button
-                  key={provider}
-                  type="button"
-                  className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-gray-700"
-                >
-                  <span>{provider}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-3 gap-4">
+              <DiscordButton onClick={handleDiscordLogin} />
+              <GoogleButton onClick={handleGoogleLogin} />
+              <GitHubButton onClick={handleGitHubLogin} />
             </div>
           </div>
         </div>

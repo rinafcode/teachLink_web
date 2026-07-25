@@ -12,8 +12,10 @@ import {
   RotateCcw,
   Check,
   AlertCircle,
+  Activity,
 } from 'lucide-react';
 import { useNotifications } from '@/app/hooks/useNotifications';
+import RecommendationPanel from './RecommendationPanel';
 import {
   UserNotificationPreferences,
   NotificationChannel,
@@ -64,8 +66,29 @@ const channelIcons: Record<NotificationChannel, React.ReactNode> = {
   sms: <MessageSquare size={16} />,
 };
 
+const heartbeatStatusStyles = {
+  online: 'bg-green-50 text-green-700 border-green-200',
+  stale: 'bg-amber-50 text-amber-700 border-amber-200',
+  offline: 'bg-red-50 text-red-700 border-red-200',
+};
+
+const heartbeatStatusLabels = {
+  online: 'Live',
+  stale: 'Sync delayed',
+  offline: 'Offline',
+};
+
 export default function UserPreferences({ userId, onSave }: UserPreferencesProps) {
-  const { preferences, updatePreferences, isLoading } = useNotifications({ userId });
+  const {
+    preferences,
+    preferencesHeartbeat,
+    updatePreferences,
+    refreshPreferencesHeartbeat,
+    isLoading,
+    recommendations,
+    applyRecommendation,
+    dismissRecommendation,
+  } = useNotifications({ userId });
 
   const [localPreferences, setLocalPreferences] = useState<UserNotificationPreferences | null>(
     null,
@@ -179,14 +202,34 @@ export default function UserPreferences({ userId, onSave }: UserPreferencesProps
     <div className="bg-white border rounded-lg shadow-lg overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b bg-gray-50">
-        <div className="flex items-center gap-2">
-          <Settings size={20} className="text-gray-700" />
-          <h2 className="text-lg font-semibold text-gray-900">Notification Preferences</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Settings size={20} className="text-gray-700" />
+            <h2 className="text-lg font-semibold text-gray-900">Notification Preferences</h2>
+          </div>
+          <button
+            type="button"
+            onClick={refreshPreferencesHeartbeat}
+            aria-label="Refresh notification preference sync status"
+            className={`ml-auto inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium ${
+              heartbeatStatusStyles[preferencesHeartbeat.status]
+            }`}
+          >
+            <Activity size={14} aria-hidden="true" />
+            <span aria-live="polite">{heartbeatStatusLabels[preferencesHeartbeat.status]}</span>
+          </button>
         </div>
         <p className="text-sm text-gray-500 mt-1">
           Customize how and when you receive notifications
         </p>
       </div>
+
+      {/* Recommendation Engine Panel */}
+      <RecommendationPanel
+        recommendations={recommendations}
+        onApply={applyRecommendation}
+        onDismiss={dismissRecommendation}
+      />
 
       {/* Global Channel Settings */}
       <div className="p-4 border-b">

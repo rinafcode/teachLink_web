@@ -81,14 +81,17 @@ export function validateQuerySafety(searchParams: URLSearchParams): {
   reason?: string;
 } {
   const suspiciousPatterns = [
-    /(<script|javascript:|on\w+=)/i,
-    /(union\s+select|drop\s+table|insert\s+into)/i,
+    /(<script|javascript:|on\w+\s*=|on\w+)/i,
+    /(union\s+select|drop\s+table|insert\s+into|or\s+1=1|and\s+1=1|--|;)/i,
     /(\.\.\/)/, // path traversal
   ];
 
   for (const [key, value] of searchParams.entries()) {
+    const normalizedKey = decodeURIComponent(key.toString()).toLowerCase();
+    const normalizedValue = decodeURIComponent(value.toString()).toLowerCase();
+
     for (const pattern of suspiciousPatterns) {
-      if (pattern.test(key) || pattern.test(value)) {
+      if (pattern.test(normalizedKey) || pattern.test(normalizedValue)) {
         return { safe: false, reason: `Suspicious input detected in parameter: ${key}` };
       }
     }

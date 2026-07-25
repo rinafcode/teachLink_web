@@ -19,20 +19,20 @@ spec:
         component: user-preferences
     spec:
       containers:
-      - name: user-preferences
-        image: rinafcode/teachlink-user-preferences:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 3000
-        resources:
-          requests:
-            cpu: 250m
-            memory: 256Mi
-          limits:
-            cpu: 1000m
-            memory: 512Mi
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: PORT
-          value: "3000"
+        - name: user-preferences
+          image: rinafcode/teachlink-user-preferences:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '3000'

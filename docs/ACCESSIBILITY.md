@@ -38,6 +38,7 @@ Use **assertive** only for urgent errors or time-sensitive status.
 
 - Give the primary `<main>` a stable id such as `main-content` so skip links and **Alt+M** work everywhere. There should be **exactly one** `<main>` (or `role="main"`) per view.
 - For horizontal toolbars, add `data-roving-root` on the toolbar container. **Left/Right arrow** moves among buttons, links, tabs, and elements marked with `data-roving-item` (including those using `tabindex="-1"` for roving patterns).
+- Rich post editors should expose a named multiline textbox, a named formatting toolbar with pressed states, and helper text connected through `aria-describedby`. Post composer message lists should use `role="log"` with polite updates so new discussion activity is announced without interrupting the current task.
 
 ## What automation does _not_ prove
 

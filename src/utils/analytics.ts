@@ -11,6 +11,9 @@
 //   track("button_clicked", { label: "Enroll" });
 // ──────────────────────────────────────────────────────────────────────────────
 
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('Analytics');
+
 export type EventName =
   // Navigation
   | 'page_view'
@@ -19,6 +22,11 @@ export type EventName =
   | 'login'
   | 'logout'
   | 'signup'
+  // Onboarding
+  | 'onboarding_started'
+  | 'onboarding_step_completed'
+  | 'onboarding_completed'
+  | 'onboarding_abandoned'
   // Courses
   | 'course_view'
   | 'course_started'
@@ -44,6 +52,15 @@ export type EventName =
   | 'modal_closed'
   | 'filter_applied'
   | 'sort_changed'
+  // Import
+  | 'import_started'
+  | 'import_file_parsed'
+  | 'import_validation_started'
+  | 'import_validation_completed'
+  | 'import_completed'
+  | 'import_failed'
+  | 'import_cancelled'
+  | 'import_rollback_completed'
   // Errors
   | 'error_boundary_triggered'
   | 'api_error'
@@ -72,7 +89,7 @@ export type AnalyticsAdapter = (event: AnalyticsEvent) => void | Promise<void>;
 /** Logs to console in development */
 export const consoleAdapter: AnalyticsAdapter = (event) => {
   if (process.env.NODE_ENV !== 'production') {
-    console.info(`[Analytics] ${event.name}`, event.properties);
+    logger.info(`[Analytics] ${event.name}`, { context: { properties: event.properties } });
   }
 };
 
@@ -87,7 +104,7 @@ export function createApiAdapter(endpoint: string): AnalyticsAdapter {
         keepalive: true, // survive page unload
       });
     } catch (err) {
-      console.warn('[Analytics] Failed to send event', err);
+      logger.warn('[Analytics] Failed to send event', { error: err });
     }
   };
 }
@@ -161,6 +178,11 @@ class Analytics {
     this.globalProperties = {};
   }
 
+  /** Reset adapters to the default console adapter. Useful for tests. */
+  clearAdapters(): void {
+    this.adapters = [consoleAdapter];
+  }
+
   /** Properties merged into every subsequent event */
   setGlobalProperties(properties: EventProperties): void {
     this.globalProperties = { ...this.globalProperties, ...properties };
@@ -180,7 +202,7 @@ class Analytics {
       try {
         adapter(event);
       } catch (err) {
-        console.warn(`[Analytics] Adapter error for "${name}"`, err);
+        logger.warn(`[Analytics] Adapter error for "${name}"`, { error: err });
       }
     }
   }

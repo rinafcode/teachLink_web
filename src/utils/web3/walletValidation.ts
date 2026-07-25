@@ -3,6 +3,10 @@
  * Safe checks for wallet operations that won't break builds
  */
 
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('wallet-validation');
+
 export interface WalletInteractionResult {
   canInteract: boolean;
   reason: string | null;
@@ -51,7 +55,7 @@ export async function safeWalletCall<T>(
     return { success: true, data, error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown wallet error';
-    console.error('[safeWalletCall]', message);
+    logger.error('[safeWalletCall] failed', { error });
     return { success: false, data: fallback, error: message };
   }
 }

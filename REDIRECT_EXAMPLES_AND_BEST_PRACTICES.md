@@ -27,10 +27,10 @@ export const CONFIGURED_REDIRECTS: RedirectRule[] = [
   {
     from: '/temporary-location',
     to: '/permanent-location',
-    status: 302,              // Temporary redirect
-    preserveQuery: true,      // Keep query params
-    preserveHash: true,       // Keep hash fragment
-    isLegacy: false,          // Not a legacy URL
+    status: 302, // Temporary redirect
+    preserveQuery: true, // Keep query params
+    preserveHash: true, // Keep hash fragment
+    isLegacy: false, // Not a legacy URL
   },
 ];
 
@@ -46,13 +46,13 @@ export const LOCALE_REDIRECTS: RedirectRule[] = [
   {
     from: '/politica-privacidad',
     to: '/es/privacy',
-    locales: ['es', 'es-MX', 'es-AR'],  // Only for Spanish users
+    locales: ['es', 'es-MX', 'es-AR'], // Only for Spanish users
     preserveQuery: true,
   },
   {
     from: '/politique-confidentialite',
     to: '/fr/privacy',
-    locales: ['fr', 'fr-CA', 'fr-BE'],  // Only for French users
+    locales: ['fr', 'fr-CA', 'fr-BE'], // Only for French users
     preserveQuery: true,
   },
 ];
@@ -127,8 +127,8 @@ export const PRODUCT_REDIRECTS: RedirectRule[] = [
   {
     from: '/courses/python-basics',
     to: '/courses/programming/python-basics',
-    status: 301,              // Permanent (SEO improvement)
-    preserveQuery: true,      // Preserve sorting/filtering
+    status: 301, // Permanent (SEO improvement)
+    preserveQuery: true, // Preserve sorting/filtering
     isLegacy: true,
   },
   {
@@ -264,15 +264,15 @@ it('should redirect /old to /new', () => {
 it('should redirect /old to /new with all parameters', () => {
   // Test 1: Basic redirect
   expect(findRedirectRule({ pathname: '/old' })).toBeTruthy();
-  
+
   // Test 2: With query params
   expect(
     findRedirectRule({
       pathname: '/old',
       searchParams: new URLSearchParams('id=1'),
-    })?.destination
+    })?.destination,
   ).toContain('?id=1');
-  
+
   // Test 3: With multiple params
   // Test 4: With special characters
   // Test 5: Edge cases
@@ -489,20 +489,26 @@ test('redirect works', () => {
 // ✅ GOOD: Comprehensive edge case testing
 test('redirect handles edge cases', () => {
   // Empty query string
-  expect(findRedirectRule({ pathname: '/old', searchParams: new URLSearchParams() }))
-    .toBeTruthy();
-  
+  expect(findRedirectRule({ pathname: '/old', searchParams: new URLSearchParams() })).toBeTruthy();
+
   // Only question mark
-  expect(findRedirectRule({ pathname: '/old?', searchParams: new URLSearchParams() }))
-    .toBeTruthy();
-  
+  expect(findRedirectRule({ pathname: '/old?', searchParams: new URLSearchParams() })).toBeTruthy();
+
   // Special characters
-  expect(findRedirectRule({ pathname: '/old', searchParams: new URLSearchParams('q=hello@world') }))
-    .toBeTruthy();
-  
+  expect(
+    findRedirectRule({ pathname: '/old', searchParams: new URLSearchParams('q=hello@world') }),
+  ).toBeTruthy();
+
   // Array parameters
-  expect(findRedirectRule({ pathname: '/old', searchParams: new URLSearchParams([['tag', 'a'], ['tag', 'b']]) }))
-    .toBeTruthy();
+  expect(
+    findRedirectRule({
+      pathname: '/old',
+      searchParams: new URLSearchParams([
+        ['tag', 'a'],
+        ['tag', 'b'],
+      ]),
+    }),
+  ).toBeTruthy();
 });
 ```
 
@@ -536,7 +542,7 @@ export const ALL_REDIRECTS = [
   // Most common redirects first
   { from: '/privacy-policy', to: '/privacy', ... },
   { from: '/terms-of-service', to: '/terms', ... },
-  
+
   // Less common redirects later
   { from: '/obscure-old-url', to: '/new-url', ... },
 ];
@@ -588,12 +594,12 @@ function isValidRedirectDestination(url: string): boolean {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return false;
   }
-  
+
   // Must start with /
   if (!url.startsWith('/')) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -639,6 +645,7 @@ const SAFE_DESTINATIONS = ['/privacy', '/terms', '/home'];
 ## Conclusion
 
 These examples and best practices ensure:
+
 - ✅ Robust redirect handling
 - ✅ Good SEO outcomes
 - ✅ User experience preservation
@@ -647,6 +654,7 @@ These examples and best practices ensure:
 - ✅ Maintainability over time
 
 For more information, see:
+
 - [Redirect Management Guide](./REDIRECT_MANAGEMENT_GUIDE.md)
 - [Implementation Summary](./IMPLEMENTATION_SUMMARY.md)
 - [Migration Plan](./REDIRECT_MIGRATION_PLAN.md)

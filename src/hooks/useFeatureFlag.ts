@@ -30,12 +30,17 @@ export function useFeatureFlag(flagId: string, context: Record<string, string> =
 
   const contextKey = JSON.stringify(context);
 
+  const getErrorMessage = async (response: Response) => {
+    const body = await response.json().catch(() => null);
+    return body?.message ? `Server error: ${body.message}` : `HTTP ${response.status}`;
+  };
+
   const load = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
       const params = new URLSearchParams({ id: flagId, ...context });
       const res = await fetch(`/api/admin/feature-flags/evaluate?${params}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(await getErrorMessage(res));
       const data = (await res.json()) as { flag: FeatureFlag; isEnabled: boolean };
       setState({ flag: data.flag, isEnabled: data.isEnabled, isLoading: false, error: null });
     } catch (err) {
@@ -59,12 +64,17 @@ export function useAllFeatureFlags() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const getErrorMessage = async (response: Response) => {
+    const body = await response.json().catch(() => null);
+    return body?.message ? `Server error: ${body.message}` : `HTTP ${response.status}`;
+  };
+
   const reload = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/admin/feature-flags');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(await getErrorMessage(res));
       const data = (await res.json()) as { flags: FeatureFlag[] };
       setFlags(data.flags);
     } catch (err) {

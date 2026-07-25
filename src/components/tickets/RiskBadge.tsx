@@ -19,12 +19,12 @@ export function RiskBadge({ level, score, showScore = false }: RiskBadgeProps) {
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${STYLES[level]}`}
-      aria-label={`Risk level: ${level}${showScore && score !== undefined ? `, score ${score}` : ''}`}
+      aria-label={`Risk level: ${level}${
+        showScore && score !== undefined ? `, score ${score}` : ''
+      }`}
     >
       <span className="capitalize">{level}</span>
-      {showScore && score !== undefined && (
-        <span className="opacity-70">({score})</span>
-      )}
+      {showScore && score !== undefined && <span className="opacity-70">({score})</span>}
     </span>
   );
 }

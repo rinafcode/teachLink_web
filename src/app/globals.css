@@ -39,6 +39,11 @@ html.a11y-high-contrast body {
   }
 }
 
+html.dark {
+  --background: #111827;
+  --foreground: #f9fafb;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -183,5 +188,104 @@ a[data-skip-link]:focus {
     cursor: pointer;
     background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-accent) 100%);
     border-radius: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Form Wizard Custom Styles (TeachLink Design System Extension)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.form-wizard {
+  @apply max-w-3xl mx-auto bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-2xl p-6 md:p-10 transition-all duration-300;
+}
+
+.wizard-progress-bar {
+  @apply flex items-center justify-between mb-8 border-b border-slate-100 dark:border-slate-800/80 pb-6;
+}
+
+.progress-step {
+  @apply flex flex-col items-center flex-1 relative cursor-pointer transition-all duration-200;
+}
+
+.progress-step:not(:last-child)::after {
+  content: '';
+  @apply absolute top-5 left-1/2 w-full h-[2px] bg-slate-200 dark:bg-slate-800 -z-10 transition-all duration-300;
+}
+
+.progress-step.completed:not(:last-child)::after {
+  @apply bg-gradient-to-r from-cyan-500 to-blue-500;
+}
+
+.step-indicator {
+  @apply w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-400 dark:text-slate-600 transition-all duration-300 shadow-sm;
+}
+
+.progress-step.current .step-indicator {
+  @apply border-cyan-500 text-cyan-600 dark:text-cyan-400 scale-110 ring-4 ring-cyan-500/10 dark:ring-cyan-400/10;
+}
+
+.progress-step.completed .step-indicator {
+  @apply border-green-500 bg-green-500 text-white scale-100;
+}
+
+.progress-step.accessible:hover .step-indicator {
+  @apply border-cyan-400 text-cyan-500 dark:text-cyan-300 shadow-md;
+}
+
+.step-label {
+  @apply mt-2 text-xs font-semibold tracking-wide uppercase text-slate-400 dark:text-slate-500 transition-colors duration-200 text-center;
+}
+
+.progress-step.current .step-label {
+  @apply text-cyan-600 dark:text-cyan-400;
+}
+
+.progress-step.completed .step-label {
+  @apply text-slate-700 dark:text-slate-300;
+}
+
+.wizard-content {
+  @apply min-h-[350px] mb-8 transition-all duration-300;
+}
+
+.wizard-navigation {
+  @apply flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-6;
+}
+
+.btn-previous {
+  @apply px-5 py-2 text-sm md:text-base rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800/50 disabled:opacity-30 disabled:pointer-events-none transition-colors duration-200 outline-none;
+}
+
+.step-counter {
+  @apply text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400;
+}
+
+.btn-next {
+  @apply px-6 py-2 text-sm md:text-base rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-lg shadow-cyan-500/20 hover:from-cyan-600 hover:to-blue-600 hover:shadow-cyan-600/25 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 outline-none;
+}
+
+.btn-complete {
+  @apply px-6 py-2 text-sm md:text-base rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-600 hover:shadow-emerald-600/25 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 outline-none;
+}
+@layer components {
+  .env-banner {
+    width: 100%;
+    text-align: center;
+    font-weight: 600;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .env-dev {
+    background-color: #ff4d4f; /* red */
+    color: #ffffff;
+  }
+  .env-staging {
+    background-color: #fa8c16; /* orange */
+    color: #ffffff;
+  }
+  .env-prod {
+    background-color: #52c41a; /* subtle green */
+    color: #ffffff;
   }
 }

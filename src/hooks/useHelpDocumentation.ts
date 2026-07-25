@@ -20,7 +20,7 @@ const helpBatcher = createBatcher<HelpArticle>({
   debounceMs: 10,
   maxBatchSize: 20,
   executor: async (requests: BatchRequest[]) => {
-    const res = await fetch('/api/help', {
+    const res = await fetch('/api/v1/help', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ requests }),

@@ -28,6 +28,7 @@ import { TranscriptView } from './TranscriptView';
 import { clamp, formatTime } from '@/utils/videoUtils';
 import { usePlaybackAnalytics } from './PlaybackAnalytics';
 import { VideoPlayerContext } from './VideoPlayerContext';
+import { AudioInvoiceManager, AudioInvoiceButton } from '@/components/audio';
 
 export type VideoQualityOption = {
   label: string;
@@ -60,6 +61,7 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
   const [showTranscript, setShowTranscript] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [showInvoices, setShowInvoices] = useState(false);
 
   const [announcement, setAnnouncement] = useState('');
   const [touchStartX, setTouchStartX] = useState(0);
@@ -577,6 +579,8 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
                     </button>
                   )}
 
+                  <AudioInvoiceButton onClick={() => setShowInvoices(true)} />
+
                   <button
                     onClick={toggleFullscreen}
                     className="p-3 rounded bg-white/20 hover:bg-white/30 transition-colors md:p-2"
@@ -603,6 +607,12 @@ export function AdvancedVideoPlayer(props: AdvancedVideoPlayerProps) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <AudioInvoiceManager
+          isOpen={showInvoices}
+          onClose={() => setShowInvoices(false)}
+          lessonId={lessonId}
+        />
 
         {/* Side Panels */}
         <div className="absolute top-0 right-0 h-full flex">

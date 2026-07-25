@@ -55,10 +55,7 @@ export function CookieConsentBanner() {
         </div>
       </div>
 
-      <CookiePreferencesModal
-        isOpen={showPreferences}
-        onClose={() => setShowPreferences(false)}
-      />
+      <CookiePreferencesModal isOpen={showPreferences} onClose={() => setShowPreferences(false)} />
     </>
   );
 }

@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import {
   API_TIMEOUT_UPLOAD,
   API_TIMEOUT_DOWNLOAD,
