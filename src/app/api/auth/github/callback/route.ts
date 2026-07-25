@@ -3,6 +3,7 @@ import { withRateLimit } from '@/lib/ratelimit';
 import { exchangeCodeForToken, getGitHubUser, getGitHubAvatarUrl } from '@/lib/github/oauth';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
+import { createLogger } from '@/lib/logging';
 
 export const runtime = 'edge';
 
@@ -88,8 +89,9 @@ export async function GET(
 
     return addHeaders(response) as NextResponse;
   } catch (error) {
+    const logger = createLogger('api.auth.github-callback');
     edgeLog('error', '/api/auth/github/callback', `Error: ${error}`);
-    console.error('GitHub OAuth callback error:', error);
+    logger.error('GitHub OAuth callback error', { error });
 
     return addHeaders(
       NextResponse.json({ message: 'Internal server error' }, { status: 500 }),

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { UserFriendlyErrorDisplay } from '@/components/errors/UserFriendlyErrorDisplay';
-import { errorReportingService } from '@/services/errorReporting';
+import { captureException, addBreadcrumb } from '@/lib/errors';
 
 export default function GlobalError({
   error,
@@ -12,11 +12,16 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    errorReportingService.addBreadcrumb('global-error', {
-      errorMessage: error.message,
-      digest: error.digest,
+    // Report the error through the structured error tracking system
+    addBreadcrumb({
+      category: 'global-error',
+      message: error.message,
+      data: { digest: error.digest },
+      level: 'error',
     });
-    errorReportingService.reportError(error);
+    captureException(error, {
+      extra: { digest: error.digest },
+    });
   }, [error]);
 
   return (

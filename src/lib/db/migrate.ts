@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dbPool, query } from './pool';
+import { createLogger } from '@/lib/logging';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,7 +53,8 @@ if (isMain) {
       process.exit(0);
     })
     .catch((err) => {
-      console.error('Migration failed:', err);
+      const logger = createLogger('lib.db.migrate');
+      logger.error('Migration failed', { error: err });
       process.exit(1);
     });
 }

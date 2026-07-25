@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react';
+import { captureException } from '@/lib/errors';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('pages.system-health');
 
 export default function SystemHealthDashboard() {
   const [isClient, setIsClient] = useState(false);
@@ -45,7 +49,10 @@ export default function SystemHealthDashboard() {
       });
       setLastUpdate(new Date());
     } catch (error) {
-      console.error('Fetch error:', error);
+      logger.error('Fetch error', { error });
+      captureException(error, {
+        extra: { source: 'fetchAllData' },
+      });
     }
   };
 
@@ -83,7 +90,10 @@ export default function SystemHealthDashboard() {
         alert('Successfully subscribed to push notifications!');
       }
     } catch (error) {
-      console.error('Subscription error:', error);
+      logger.error('Subscription error', { error });
+      captureException(error, {
+        extra: { source: 'enableNotifications' },
+      });
       alert('Failed to subscribe: ' + error.message);
     }
   };
@@ -114,7 +124,10 @@ export default function SystemHealthDashboard() {
         alert(' Failed to send notification');
       }
     } catch (err) {
-      console.error('Send error:', err);
+      logger.error('Send error', { error: err });
+      captureException(err, {
+        extra: { source: 'sendNotification' },
+      });
       alert('Failed to send: ' + err.message);
     }
     setLoading(false);
