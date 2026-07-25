@@ -3,7 +3,13 @@
  *
  * Merges concurrent identical requests so only one network call is made.
  * Subsequent callers receive the same promise as the in-flight request.
+ *
+ * The cache is bounded: at most MAX_INFLIGHT entries can be in-flight at once,
+ * and each entry has a TTL of DEDUPE_TTL_MS after which it is automatically evicted.
  */
+
+const MAX_INFLIGHT = 200;
+const DEDUPE_TTL_MS = 30_000;
 
 type Resolver<T> = {
   resolve: (value: T) => void;
@@ -13,6 +19,7 @@ type Resolver<T> = {
 interface InFlight<T> {
   promise: Promise<T>;
   resolvers: Resolver<T>[];
+  timer?: ReturnType<typeof setTimeout>;
 }
 
 const cache = new Map<string, InFlight<unknown>>();
@@ -34,10 +41,16 @@ export function buildDedupeKey(method: string, url: string, body?: unknown): str
  * @param key   - Unique identifier for this request (use buildDedupeKey)
  * @param fn    - Factory that performs the actual request
  */
-export async function dedupe<T>(key: string, fn: () => Promise<T>): Promise<T> {
+export function dedupe<T>(key: string, fn: () => Promise<T>): Promise<T> {
   const existing = cache.get(key) as InFlight<T> | undefined;
   if (existing) {
     return existing.promise;
+  }
+
+  if (cache.size >= MAX_INFLIGHT) {
+    return Promise.reject(
+      new Error(`Deduplication cache full (max ${MAX_INFLIGHT} entries)`),
+    );
   }
 
   let resolve!: (value: T) => void;
@@ -49,26 +62,42 @@ export async function dedupe<T>(key: string, fn: () => Promise<T>): Promise<T> {
   });
 
   const entry: InFlight<T> = { promise, resolvers: [{ resolve, reject }] };
+  entry.timer = setTimeout(() => {
+    cache.delete(key);
+    reject(new Error(`Deduplication entry timed out after ${DEDUPE_TTL_MS}ms`));
+  }, DEDUPE_TTL_MS);
+
   cache.set(key, entry as InFlight<unknown>);
 
-  try {
-    const result = await fn();
-    resolve(result);
-    return result;
-  } catch (err) {
-    reject(err);
-    throw err;
-  } finally {
-    cache.delete(key);
-  }
+  fn()
+    .then((result) => {
+      clearTimeout(entry.timer);
+      resolve(result);
+    })
+    .catch((err) => {
+      clearTimeout(entry.timer);
+      reject(err);
+    })
+    .finally(() => {
+      cache.delete(key);
+    });
+
+  return promise;
 }
 
 /** Remove a specific key from the cache (e.g. on cancellation). */
 export function cancelDedupe(key: string): void {
+  const entry = cache.get(key) as InFlight<unknown> | undefined;
+  if (entry?.timer) {
+    clearTimeout(entry.timer);
+  }
   cache.delete(key);
 }
 
 /** Clear the entire deduplication cache. */
 export function clearDedupeCache(): void {
+  for (const entry of cache.values()) {
+    if (entry.timer) clearTimeout(entry.timer);
+  }
   cache.clear();
 }

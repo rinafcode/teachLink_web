@@ -409,11 +409,25 @@ export class SMSLogAggregator {
     };
   }
 
+  private static stats = {
+    totalMessages: 0,
+    successfulMessages: 0,
+    failedMessages: 0,
+  };
+
   /**
    * Add log to store, maintaining size limit
    */
   private static addToStore(log: AggregatedSMSLog): void {
     smsLogStore.push(log);
+
+    // Update stats incrementally
+    this.stats.totalMessages++;
+    if (log.context.status === 'sent') {
+      this.stats.successfulMessages++;
+    } else if (log.context.status === 'failed') {
+      this.stats.failedMessages++;
+    }
 
     if (smsLogStore.length > MAX_SMS_LOGS) {
       smsLogStore.splice(0, smsLogStore.length - MAX_SMS_LOGS);
@@ -437,6 +451,9 @@ export class SMSLogAggregator {
       utilizationPercent: (smsLogStore.length / MAX_SMS_LOGS) * 100,
       oldestLog: smsLogStore.length > 0 ? smsLogStore[0].timestamp : null,
       newestLog: smsLogStore.length > 0 ? smsLogStore[smsLogStore.length - 1].timestamp : null,
+      totalMessages: this.stats.totalMessages,
+      failedCount: this.stats.failedMessages,
+      successRate: this.stats.totalMessages > 0 ? (this.stats.successfulMessages / this.stats.totalMessages) * 100 : 0
     };
   }
 }

@@ -1,4 +1,4 @@
-export type AuditAction = 'create' | 'update' | 'delete';
+export type AuditAction = 'create' | 'update' | 'delete' | 'read';
 
 export interface AuditLogEntry {
   id: string;

@@ -10,6 +10,9 @@ import { getAvailableLanguages } from '@/locales/config';
 import { hasTranslation } from '@/locales/translationManager';
 import { AlertCircle, CheckCircle2, XCircle, Search, Download } from 'lucide-react';
 import type { LanguageCode, Translations } from '@/locales/types';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('LocalizationTester');
 
 interface LocalizationTesterProps {
   /**
@@ -108,13 +111,13 @@ export function LocalizationTester({
             });
           }
         } catch (error) {
-          console.error(`Failed to validate ${lang}:`, error);
+          logger.error(`Failed to validate ${lang}`, { error });
         }
       }
 
       setIssues(newIssues);
     } catch (error) {
-      console.error('Validation failed:', error);
+      logger.error('Validation failed', { error });
     } finally {
       setIsValidating(false);
     }

@@ -1,9 +1,26 @@
 'use client';
 
 import React from 'react';
-import { VideoPlayer } from '@/components/video/VideoPlayer';
+import dynamic from 'next/dynamic';
 import type { TranscriptCue } from '@/components/video/types';
 import { DUMMY_VIDEO_URL } from '@/constants/media';
+
+// Lazy-load VideoPlayer to reduce initial bundle size
+const VideoPlayer = dynamic(
+  () =>
+    import('@/components/video/VideoPlayerLazy').then((mod) => ({ default: mod.VideoPlayerLazy })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px] bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading video player...</p>
+        </div>
+      </div>
+    ),
+  },
+);
 
 const sampleTranscript: TranscriptCue[] = [
   { id: 'cue-1', start: 0, end: 6, text: 'Welcome to the advanced learning module.' },

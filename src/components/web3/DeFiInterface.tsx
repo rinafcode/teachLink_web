@@ -5,6 +5,9 @@ import { TrendingUp, Lock, Loader2, ArrowUpRight, Zap, Info, Check } from 'lucid
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
 import { InvestmentSearchBar, InvestmentItem } from './InvestmentSearchBar';
 import { walletCache, walletCacheKeys, CACHE_TTL } from '@/utils/web3/walletCache';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('DeFiInterface');
 
 interface StakingPosition {
   id: string;
@@ -117,7 +120,7 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
       walletCache.set(cacheKey, positions, CACHE_TTL.DEFI_POSITIONS);
       setStakingPositions(positions);
     } catch (error) {
-      console.error('[DeFiInterface] Error fetching positions:', error);
+      logger.error('Error fetching positions', { error });
     } finally {
       setIsLoading(false);
     }
@@ -160,7 +163,7 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
       setSelectedProtocol(null);
       setActiveTab('positions');
     } catch (error) {
-      console.error('[DeFiInterface] Staking failed:', error);
+      logger.error('Staking failed', { error });
     } finally {
       setIsStaking(false);
     }
@@ -183,7 +186,7 @@ export const DeFiInterface: React.FC<DeFiInterfaceProps> = ({
         });
         onUnstake?.(positionId);
       } catch (error) {
-        console.error('[DeFiInterface] Unstaking failed:', error);
+        logger.error('Unstaking failed', { error });
       }
     },
     [onUnstake, wallet.address],

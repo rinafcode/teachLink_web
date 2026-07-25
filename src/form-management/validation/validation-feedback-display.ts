@@ -3,6 +3,9 @@
  */
 
 import { ValidationResult, ValidationError, ValidationWarning } from '../types/core.js';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('validation-feedback-display');
 
 export interface FeedbackDisplayOptions {
   position: 'top' | 'bottom' | 'left' | 'right' | 'inline' | 'tooltip';
@@ -484,7 +487,7 @@ export class ValidationFeedbackDisplay {
       try {
         callback(state);
       } catch (error) {
-        console.error('Error in feedback display callback:', error);
+        logger.error('Error in feedback display callback', { error });
       }
     });
   }

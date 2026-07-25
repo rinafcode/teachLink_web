@@ -1,3 +1,5 @@
+import { SendNotificationSchema } from '../../../src/schemas/notification.schema.ts';
+
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     return res.status(200).json({
@@ -11,7 +13,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { userId, title, body, url } = req.body;
+    const parsed = SendNotificationSchema.safeParse(req.body || {});
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const { userId, title, body, url } = parsed.data;
     const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 
     console.log('\n🚀 ========== SENDING NOTIFICATION ==========');

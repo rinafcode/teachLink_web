@@ -6,7 +6,6 @@
 import { formatErrorForLogging } from '@/utils/errorUtils';
 import { createLogger } from '@/lib/logging';
 
-const logger = createLogger('errorReporting');
 
 export interface ErrorReport {
   id: string;
@@ -99,18 +98,6 @@ class ErrorReportingService {
   async reportError(error: any, context?: Record<string, any>): Promise<ErrorReport> {
     const report = this.createErrorReport(error, context);
 
-    // Log to structured logger
-    logger.error('Error reported', {
-      context: {
-        reportId: report.id,
-        errorType: report.errorData.type,
-        errorMessage: report.errorData.message,
-        userId: report.userId,
-        sessionId: report.sessionId,
-        ...context,
-      },
-      error,
-    });
 
     // Send to error tracking service (e.g., Sentry, LogRocket)
     if (this.isProduction) {
@@ -156,9 +143,7 @@ class ErrorReportingService {
       });
 
       if (!response.ok) {
-        logger.warn('Failed to send error report', {
-          context: { status: response.status, statusText: response.statusText },
-        });
+
       }
     } catch (err) {
       logger.error('Error sending error report', { error: err });

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Clock, Edit2, Trash2, Save } from 'lucide-react';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('NotesTaker');
 
 interface Note {
   id: string;
@@ -41,7 +43,7 @@ export const NotesTaker: React.FC<NotesTakerProps> = React.memo(({ currentTime, 
           })),
         );
       } catch (error) {
-        console.error('Failed to load notes:', error);
+        logger.error('Failed to load notes', { error });
       }
     }
   }, []);

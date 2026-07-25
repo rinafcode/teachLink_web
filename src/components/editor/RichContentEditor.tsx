@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+
 import { EditorContent } from '@tiptap/react';
 import {
   Bold,
@@ -28,8 +28,15 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
   initialContent,
   onUpdate,
 }) => {
+  const editorTitleId = useId();
+  const editorDescriptionId = useId();
+  const toolbarId = useId();
+  const editorRegionId = useId();
+
   const { editor, addImage, addYoutubeVideo } = useContentEditor({
     initialContent,
+    ariaLabelledBy: editorTitleId,
+    ariaDescribedBy: `${editorDescriptionId} ${toolbarId}`,
     onUpdate,
   });
 
@@ -111,6 +118,7 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
     title?: string;
   }) => (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       aria-pressed={isActive}
@@ -125,19 +133,12 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
   );
 
   return (
-    <div className="flex h-[calc(100vh-100px)] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <section
+      aria-labelledby={editorTitleId}
+      className="flex h-[calc(100vh-100px)] rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden"
+    >
       <div className="flex flex-col flex-1 w-full min-w-0">
-        {/* Skip to editor link */}
-        <a
-          href="#editor-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded"
-        >
-          Skip to editor content
-        </a>
 
-        {/* Toolbar */}
-        <nav
-          aria-label="Text formatting toolbar"
           className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-x-auto"
         >
           <div className="flex items-center gap-1">
@@ -232,19 +233,13 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
         </nav>
 
         {/* Editor Content */}
-        <div
-          id="editor-content"
-          role="region"
-          aria-label="Post content editor"
-          tabIndex={-1}
-          className="flex-1 overflow-y-auto bg-white dark:bg-gray-800"
-        >
+
           <EditorContent editor={editor} className="h-full p-8" />
         </div>
       </div>
 
       {/* Sidebar - Template Library */}
       <ContentTemplateLibrary editor={editor} />
-    </div>
+    </section>
   );
 };

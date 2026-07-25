@@ -1,4 +1,5 @@
 import { subscriptions } from '../../../lib/subscriptions';
+import { TrackNotificationSchema } from '../../../src/schemas/notification.schema.ts';
 
 let trackingLogs = [];
 
@@ -13,7 +14,14 @@ export default function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { notificationId, event, userId, timestamp, message, title, error } = req.body;
+      const parsed = TrackNotificationSchema.safeParse(req.body || {});
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          details: parsed.error.flatten().fieldErrors,
+        });
+      }
+      const { notificationId, event, userId, timestamp, message, title, error } = parsed.data;
 
       // Enhanced logging - shows full message body
       console.log('\n========================================');

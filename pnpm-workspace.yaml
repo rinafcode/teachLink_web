@@ -1,3 +1,26 @@
 packages:
   - .
   - packages/*
+allowBuilds:
+  '@reown/appkit': true
+  '@swc/core': true
+  esbuild: true
+  puppeteer: true
+  secp256k1: true
+  sharp: true
+  unrs-resolver: true
+
+auditConfig:
+  ignoreCves: []
+  ignoreGhsas: []
+
+overrides:
+  eslint: ^9
+  next: 15.5.19
+  prettier: ^2.8.8
+  react: ^18.3.1
+  react-dom: ^18.3.1
+  typescript: ^5.8.3
+  vite: '>=6.4.3'
+  vitest: '>=3.2.6'
+  ws: '>=8.21.0'

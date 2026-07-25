@@ -10,6 +10,9 @@
  */
 
 import { z } from 'zod';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('web3-security');
 
 /**
  * Address validation schema
@@ -220,7 +223,7 @@ export function decodeContractData(data: string): {
       params: { encoded: params },
     };
   } catch (error) {
-    console.error('[Web3Utils] Error decoding contract data:', error);
+    logger.error('[Web3Utils] Error decoding contract data', { error });
     return null;
   }
 }

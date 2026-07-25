@@ -9,6 +9,8 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, XCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { ValidationResult, ValidationRule, FormState } from '@/form-management/types/core';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('AdvancedValidation');
 
 interface AdvancedValidationProps {
   fieldId: string;
@@ -58,7 +60,7 @@ export const AdvancedValidation: React.FC<AdvancedValidationProps> = ({
         onValidationComplete(result);
       }
     } catch (error) {
-      console.error('Validation error:', error);
+      logger.error('Validation error', { error });
     } finally {
       setIsValidating(false);
     }

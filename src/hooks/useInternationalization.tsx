@@ -26,6 +26,9 @@ import {
   formatDuration,
 } from '@/utils/i18nUtils';
 import i18n, { loadLocale } from '@/lib/i18n/config';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-internationalization');
 
 interface I18nContextValue {
   language: LanguageCode;
@@ -95,9 +98,9 @@ export function I18nProvider({
               if (missing.length > 0) {
                 // Limit output to first 50 keys to avoid flooding logs
                 const sample = missing.slice(0, 50);
-                console.warn(
+                logger.warn(
                   `Translations for '${language}' missing ${missing.length} keys. Sample:`,
-                  sample,
+                  { sample },
                 );
               }
             }
@@ -149,7 +152,7 @@ export function I18nProvider({
 
   // Translation function
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>) => {
+    (key: string, params?: Record<string, unknown>) => {
       return getTranslation(translations, key, params);
     },
     [translations],
@@ -247,7 +250,7 @@ export function useInternationalization(): I18nContextValue {
   if (!context) {
     const fallbackLanguage: LanguageCode = DEFAULT_LANGUAGE;
     const fallbackPreferences = getCulturalPreferences(fallbackLanguage);
-    const fallbackT = (key: string, params?: Record<string, string | number>) =>
+    const fallbackT = (key: string, params?: Record<string, unknown>) =>
       getTranslation({}, key, params);
 
     return {

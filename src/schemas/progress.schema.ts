@@ -10,3 +10,14 @@ export const UserProgressSchema = z.object({
 });
 
 export type UserProgress = z.infer<typeof UserProgressSchema>;
+
+export const CourseProgressSchema = z.object({
+  userId: z.string().min(1),
+  courseId: z.string().min(1),
+  progress: z.number().min(0).max(100),
+  completedLessons: z.array(z.string()),
+  lastAccessedAt: z.string(),
+  completedAt: z.string().optional(),
+});
+
+export type CourseProgress = z.infer<typeof CourseProgressSchema>;

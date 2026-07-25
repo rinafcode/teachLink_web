@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, SlotInfo, Views } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, addWeeks, addDays } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
@@ -48,7 +48,7 @@ interface CalendarProps {
 }
 
 export default function Calendar({ events, onSelectSlot, onSelectEvent }: CalendarProps) {
-  const expanded = events.flatMap(expandRecurring);
+  const expanded = useMemo(() => events.flatMap(expandRecurring), [events]);
 
   const eventStyleGetter = useCallback(
     (event: CalendarEvent) => ({

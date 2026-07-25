@@ -1,6 +1,6 @@
 import cluster from 'cluster';
 import os from 'os';
-import { sanitizeString } from '../lib/security';
+
 
 const numCPUs = os.cpus().length;
 
@@ -371,9 +371,7 @@ for (let i = 0; i < 50; i++) {
 
 export const startSMSClusterWorker = () => {
   if (cluster.isPrimary) {
-    console.log(`Primary ${process.pid} is running`);
-    console.log(`Setting up cluster with ${numCPUs} workers for SMS processing...`);
-    console.log(`Security config: Max queue size=${SECURITY_CONFIG.MAX_QUEUE_SIZE}, Rate limit=${SECURITY_CONFIG.RATE_LIMIT_MAX_PER_WINDOW}/min`);
+
 
     // Fork workers with resource limits
     for (let i = 0; i < numCPUs; i++) {
@@ -396,14 +394,7 @@ export const startSMSClusterWorker = () => {
       }, SECURITY_CONFIG.WORKER_TIMEOUT_MS);
     }
 
-    cluster.on('exit', (worker: cluster.Worker, code: number, signal: NodeJS.Signals | null) => {
-      console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
-      logSecurityEvent({
-        type: 'worker_timeout',
-        timestamp: Date.now(),
-        details: `Worker ${worker.process.pid} exited unexpectedly. Code: ${code}, Signal: ${signal}`,
-      });
-      console.log('Starting a new worker...');
+
       cluster.fork(); // Auto-heal workers
     });
 
@@ -418,42 +409,14 @@ export const startSMSClusterWorker = () => {
   } else {
     // Workers can share any TCP connection
     // In this case it is an HTTP server or a message queue listener
-    const workerId = process.env.WORKER_ID ? parseInt(process.env.WORKER_ID) : process.pid;
-    console.log(`Worker ${process.pid} (ID: ${workerId}) started for SMS processing`);
+
 
     const processQueue = async () => {
       const messageJob = smsQueue.dequeue();
       if (messageJob) {
         const startTime = Date.now();
         try {
-          console.log(`[Worker ${process.pid}] Processing SMS for ${messageJob.to}...`);
-          
-          // Validate before processing (double-check)
-          const validation = sanitizeAndValidateSMS(messageJob.to, messageJob.message);
-          if (!validation.valid) {
-            console.error(`[Worker ${process.pid}] Validation failed: ${validation.reason}`);
-            if (validation.reason?.includes('Circuit breaker')) {
-              recordCircuitBreakerFailure();
-            }
-            return;
-          }
 
-          // Note: In a real app we'd use sendSMS(messageJob.to, messageJob.message)
-          // For now we just mock the delay
-          await new Promise((resolve) => setTimeout(resolve, Math.random() * 500 + 100));
-          
-          const processingTime = Date.now() - startTime;
-          console.log(`[Worker ${process.pid}] Successfully sent SMS to ${messageJob.to} in ${processingTime}ms`);
-        } catch (error) {
-          console.error(`[Worker ${process.pid}] Failed to send SMS:`, error);
-          recordCircuitBreakerFailure();
-          logSecurityEvent({
-            type: 'validation_failure',
-            timestamp: Date.now(),
-            details: `SMS processing failed for ${messageJob.to}: ${error}`,
-            workerId,
-            severity: 'high',
-          });
         }
       }
 
