@@ -16,10 +16,13 @@ import { ApiError } from '@/utils/error-handler';
 import { DiscordButton } from '@/app/components/auth/DiscordButton';
 import { GoogleButton } from '@/app/components/auth/GoogleButton';
 import { GitHubButton } from '@/app/components/auth/GitHubButton';
+import { BiometricLoginButton } from '@/app/components/auth/BiometricLoginButton';
+import { BiometricReEnrollModal } from '@/app/components/auth/BiometricReEnrollModal';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showReEnroll, setShowReEnroll] = useState(false);
   const router = useRouter();
 
   const handleDiscordLogin = () => {
@@ -38,10 +41,13 @@ export default function LoginPage() {
     register,
     handleSubmit,
     setError,
+    watch,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  const watchEmail = watch('email');
 
   const loginMutation = useMutation(
     async (data: LoginFormData) => {
@@ -211,6 +217,14 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Biometric Login */}
+            <div className="mt-4">
+              <BiometricLoginButton
+                email={watchEmail}
+                onRequireReEnroll={() => setShowReEnroll(true)}
+              />
+            </div>
+
             <div className="grid grid-cols-3 gap-4">
               <DiscordButton onClick={handleDiscordLogin} />
               <GoogleButton onClick={handleGoogleLogin} />
@@ -219,6 +233,16 @@ export default function LoginPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Biometric Re-enrollment Modal */}
+      <BiometricReEnrollModal
+        isOpen={showReEnroll}
+        onClose={() => setShowReEnroll(false)}
+        email={watchEmail}
+        onComplete={() => {
+          setSuccessMessage('Biometric re-enrollment complete! You can now sign in with biometrics.');
+        }}
+      />
 
       {/* Right side - Hero Section */}
       <motion.div
