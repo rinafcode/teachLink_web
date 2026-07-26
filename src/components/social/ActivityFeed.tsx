@@ -1,11 +1,12 @@
 'use client';
 import Image from 'next/image';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { UserCircle } from 'lucide-react';
 import { useActivityFeed } from '@/hooks/useSocialFeatures';
 import { getRelativeTime, groupActivitiesByDate } from '@/utils/socialUtils';
-import { AutoSizer, List, ListRowProps } from 'react-virtualized';
-import 'react-virtualized/styles.css';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { VariableSizeList as List } from 'react-window';
+import type { CSSProperties } from 'react';
 import type { Activity } from '@/utils/socialUtils';
 
 const HEADER_HEIGHT = 32;
@@ -33,6 +34,7 @@ interface ActivityFeedProps {
 
 export default function ActivityFeed({ userId }: ActivityFeedProps) {
   const { activities, loadMore, loading, hasMore } = useActivityFeed(userId);
+  const listRef = useRef<List>(null);
 
   // Flatten grouped activities into a virtualizable row list with date headers
   const rows: Row[] = useMemo(() => {
@@ -50,19 +52,19 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
   const rowCount = rows.length;
 
   const getRowHeight = useCallback(
-    ({ index }: { index: number }) =>
+    (index: number) =>
       rows[index]?.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT,
     [rows],
   );
 
   const rowRenderer = useCallback(
-    ({ index, key, style }: ListRowProps) => {
+    ({ index, style }: { index: number; style: CSSProperties }) => {
       const row = rows[index];
       if (!row) return null;
 
       if (row.type === 'header') {
         return (
-          <div key={key} style={style}>
+          <div style={style}>
             <p className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/50">
               {row.date}
             </p>
@@ -72,7 +74,7 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
 
       const activity = row.activity;
       return (
-        <div key={key} style={style} className="flex gap-3 px-4 py-3">
+        <div style={style} className="flex gap-3 px-4 py-3">
           {activity.actorAvatar ? (
             <Image
               src={activity.actorAvatar}
@@ -105,6 +107,15 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
     [rows],
   );
 
+  const handleItemsRendered = useCallback(
+    ({ visibleStopIndex }: { visibleStopIndex: number }) => {
+      if (hasMore && !loading && visibleStopIndex >= rowCount - 5) {
+        loadMore();
+      }
+    },
+    [hasMore, loading, rowCount, loadMore],
+  );
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -130,18 +141,16 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
           <AutoSizer>
             {({ height, width }: { height: number; width: number }) => (
               <List
+                ref={listRef}
                 height={height}
                 width={width}
-                rowCount={rowCount}
-                rowHeight={getRowHeight}
-                rowRenderer={rowRenderer}
-                overscanRowCount={5}
-                onRowsRendered={({ stopIndex }: { stopIndex: number }) => {
-                  if (hasMore && !loading && stopIndex >= rowCount - 5) {
-                    loadMore();
-                  }
-                }}
-              />
+                itemCount={rowCount}
+                itemSize={getRowHeight}
+                onItemsRendered={handleItemsRendered}
+                overscanCount={5}
+              >
+                {rowRenderer}
+              </List>
             )}
           </AutoSizer>
         </div>
