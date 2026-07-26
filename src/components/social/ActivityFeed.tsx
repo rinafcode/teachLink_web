@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { UserCircle } from 'lucide-react';
 import { useActivityFeed } from '@/hooks/useSocialFeatures';
 import { getRelativeTime, groupActivitiesByDate } from '@/utils/socialUtils';
@@ -39,7 +39,7 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
     return () => observer.disconnect();
   }, [loadMore]);
 
-  const grouped = groupActivitiesByDate(activities);
+  const grouped = useMemo(() => groupActivitiesByDate(activities), [activities]);
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
