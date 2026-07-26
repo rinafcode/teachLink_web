@@ -1,9 +1,19 @@
 'use client';
 import Image from 'next/image';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import { UserCircle } from 'lucide-react';
 import { useActivityFeed } from '@/hooks/useSocialFeatures';
 import { getRelativeTime, groupActivitiesByDate } from '@/utils/socialUtils';
+import { AutoSizer, List, ListRowProps } from 'react-virtualized';
+import 'react-virtualized/styles.css';
+import type { Activity } from '@/utils/socialUtils';
+
+const HEADER_HEIGHT = 32;
+const ROW_HEIGHT = 64;
+
+type Row =
+  | { type: 'header'; date: string }
+  | { type: 'activity'; activity: Activity };
 
 function Skeleton() {
   return (
@@ -23,23 +33,77 @@ interface ActivityFeedProps {
 
 export default function ActivityFeed({ userId }: ActivityFeedProps) {
   const { activities, loadMore, loading, hasMore } = useActivityFeed(userId);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Trigger loadMore when sentinel enters viewport
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) loadMore();
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [loadMore]);
+  // Flatten grouped activities into a virtualizable row list with date headers
+  const rows: Row[] = useMemo(() => {
+    const grouped = groupActivitiesByDate(activities);
+    const result: Row[] = [];
+    for (const [date, items] of Object.entries(grouped)) {
+      result.push({ type: 'header', date });
+      for (const activity of items) {
+        result.push({ type: 'activity', activity });
+      }
+    }
+    return result;
+  }, [activities]);
 
-  const grouped = useMemo(() => groupActivitiesByDate(activities), [activities]);
+  const rowCount = rows.length;
+
+  const getRowHeight = useCallback(
+    ({ index }: { index: number }) =>
+      rows[index]?.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT,
+    [rows],
+  );
+
+  const rowRenderer = useCallback(
+    ({ index, key, style }: ListRowProps) => {
+      const row = rows[index];
+      if (!row) return null;
+
+      if (row.type === 'header') {
+        return (
+          <div key={key} style={style}>
+            <p className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/50">
+              {row.date}
+            </p>
+          </div>
+        );
+      }
+
+      const activity = row.activity;
+      return (
+        <div key={key} style={style} className="flex gap-3 px-4 py-3">
+          {activity.actorAvatar ? (
+            <Image
+              src={activity.actorAvatar}
+              alt={activity.actorName}
+              width={36}
+              height={36}
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <UserCircle className="w-9 h-9 text-gray-400 shrink-0" />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-gray-900 dark:text-white">
+              <span className="font-medium">{activity.actorName}</span>{' '}
+              <span className="text-gray-600 dark:text-gray-400">{activity.action}</span>
+              {activity.targetTitle && (
+                <>
+                  {' '}
+                  <span className="font-medium">{activity.targetTitle}</span>
+                </>
+              )}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {getRelativeTime(activity.createdAt)}
+            </p>
+          </div>
+        </div>
+      );
+    },
+    [rows],
+  );
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -47,72 +111,53 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
         <h3 className="font-semibold text-gray-900 dark:text-white">Activity</h3>
       </div>
 
-      <div className="divide-y divide-gray-100 dark:divide-gray-800">
-        {loading && activities.length === 0 && (
-          <div className="px-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} />
-            ))}
-          </div>
-        )}
+      {loading && activities.length === 0 && (
+        <div className="px-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} />
+          ))}
+        </div>
+      )}
 
-        {Object.entries(grouped).map(([date, items]) => (
-          <div key={date}>
-            <p className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/50">
-              {date}
-            </p>
-            {items.map((activity) => (
-              <div key={activity.id} className="flex gap-3 px-4 py-3">
-                {activity.actorAvatar ? (
-                  <Image
-                    src={activity.actorAvatar}
-                    alt={activity.actorName}
-                    width={36}
-                    height={36}
-                    className="w-9 h-9 rounded-full object-cover shrink-0"
-                  />
-                ) : (
-                  <UserCircle className="w-9 h-9 text-gray-400 shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    <span className="font-medium">{activity.actorName}</span>{' '}
-                    <span className="text-gray-600 dark:text-gray-400">{activity.action}</span>
-                    {activity.targetTitle && (
-                      <>
-                        {' '}
-                        <span className="font-medium">{activity.targetTitle}</span>
-                      </>
-                    )}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {getRelativeTime(activity.createdAt)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
+      {!loading && activities.length === 0 && (
+        <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          No activity yet.
+        </p>
+      )}
 
-        {/* Infinite scroll sentinel */}
-        {hasMore && <div ref={sentinelRef} className="h-4" />}
+      {activities.length > 0 && (
+        <div className="divide-y divide-gray-100 dark:divide-gray-800" style={{ height: '60vh' }}>
+          <AutoSizer>
+            {({ height, width }: { height: number; width: number }) => (
+              <List
+                height={height}
+                width={width}
+                rowCount={rowCount}
+                rowHeight={getRowHeight}
+                rowRenderer={rowRenderer}
+                overscanRowCount={5}
+                onRowsRendered={({ stopIndex }: { stopIndex: number }) => {
+                  if (hasMore && !loading && stopIndex >= rowCount - 5) {
+                    loadMore();
+                  }
+                }}
+              />
+            )}
+          </AutoSizer>
+        </div>
+      )}
 
-        {loading && activities.length > 0 && (
-          <div className="px-4">
-            <Skeleton />
-          </div>
-        )}
+      {loading && activities.length > 0 && (
+        <div className="px-4 border-t border-gray-100 dark:border-gray-800">
+          <Skeleton />
+        </div>
+      )}
 
-        {!loading && !hasMore && activities.length > 0 && (
-          <p className="py-4 text-center text-xs text-gray-400">No more activity</p>
-        )}
-
-        {!loading && activities.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-            No activity yet.
-          </p>
-        )}
-      </div>
+      {!loading && !hasMore && activities.length > 0 && (
+        <p className="py-4 text-center text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800">
+          No more activity
+        </p>
+      )}
     </div>
   );
 }
