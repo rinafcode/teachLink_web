@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import type { EditorProps } from '@monaco-editor/react';
 import {
   Play,
   RotateCcw,
@@ -128,6 +129,30 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
   };
 
   const isDark = theme === 'vs-dark';
+  const editorOptions = useMemo<NonNullable<EditorProps['options']>>(
+    () => ({
+      fontSize,
+      minimap: { enabled: true },
+      wordWrap: 'on',
+      lineNumbers: 'on',
+      renderLineHighlight: 'all',
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+      padding: { top: 12, bottom: 12 },
+      suggestOnTriggerCharacters: autoCompleteEnabled,
+      quickSuggestions: autoCompleteEnabled,
+      tabSize: languageConfig.id === 'python' ? 4 : 2,
+      detectIndentation: false,
+      formatOnPaste: true,
+      smoothScrolling: true,
+      cursorBlinking: 'expand',
+      cursorSmoothCaretAnimation: 'on',
+      bracketPairColorization: { enabled: true },
+      fontFamily: '"Fira Code", "Cascadia Code", "Consolas", monospace',
+      fontLigatures: true,
+    }),
+    [autoCompleteEnabled, fontSize, languageConfig.id],
+  );
 
   return (
     <div
@@ -282,27 +307,7 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
           value={code}
           onChange={(val) => setCode(val ?? '')}
           onMount={handleEditorMount}
-          options={{
-            fontSize,
-            minimap: { enabled: true },
-            wordWrap: 'on',
-            lineNumbers: 'on',
-            renderLineHighlight: 'all',
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            padding: { top: 12, bottom: 12 },
-            suggestOnTriggerCharacters: autoCompleteEnabled,
-            quickSuggestions: autoCompleteEnabled,
-            tabSize: languageConfig.id === 'python' ? 4 : 2,
-            detectIndentation: false,
-            formatOnPaste: true,
-            smoothScrolling: true,
-            cursorBlinking: 'expand',
-            cursorSmoothCaretAnimation: 'on',
-            bracketPairColorization: { enabled: true },
-            fontFamily: '"Fira Code", "Cascadia Code", "Consolas", monospace',
-            fontLigatures: true,
-          }}
+          options={editorOptions}
           height="100%"
           width="100%"
         />

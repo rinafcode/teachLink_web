@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, UserCircle } from 'lucide-react';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
 import { apiClient } from '@/lib/api';
@@ -40,11 +40,10 @@ function UserRow({ user }: { user: SocialUser }) {
       <button
         onClick={isFollowing ? unfollow : follow}
         disabled={loading}
-        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
-          isFollowing
-            ? 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-            : 'bg-blue-600 text-white hover:bg-blue-500'
-        }`}
+        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${isFollowing
+          ? 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+          : 'bg-blue-600 text-white hover:bg-blue-500'
+          }`}
       >
         {isFollowing ? 'Unfollow' : 'Follow'}
       </button>
@@ -56,7 +55,17 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
   const [tab, setTab] = useState<ListTab>('followers');
   const [users, setUsers] = useState<SocialUser[]>([]);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Debounce the search input query by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   useEffect(() => {
     setLoading(true);
@@ -67,7 +76,11 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
       .finally(() => setLoading(false));
   }, [tab, userId]);
 
-  const filtered = users.filter((u) => u.name.toLowerCase().includes(query.toLowerCase()));
+  // Memoize the filtered user results based on the debounced query
+  const filtered = useMemo(() => {
+    const lowercaseQuery = debouncedQuery.toLowerCase();
+    return users.filter((u) => u.name.toLowerCase().includes(lowercaseQuery));
+  }, [users, debouncedQuery]);
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -77,11 +90,10 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 py-3 text-sm font-medium capitalize transition-colors ${
-              tab === t
-                ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
+            className={`flex-1 py-3 text-sm font-medium capitalize transition-colors ${tab === t
+              ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
           >
             {t}
           </button>
