@@ -27,26 +27,45 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasError, setHasError] = useState<boolean>(false);
+
+  // Reset state when source changes
+  useEffect(() => {
+    setIsLoading(true);
+    setHasError(false);
+  }, [src]);
 
   // When the audio can start playing, hide the loader.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const handleCanPlay = () => setIsLoading(false);
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      setHasError(false);
+    };
     const handleStalled = () => setIsLoading(true);
+    const handleError = () => {
+      setIsLoading(false);
+      setHasError(true);
+    };
+    
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('stalled', handleStalled);
+    audio.addEventListener('error', handleError);
     // Cleanup listeners on unmount.
     return () => {
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('stalled', handleStalled);
+      audio.removeEventListener('error', handleError);
     };
   }, [src]);
 
   // Auto‑play if requested.
   useEffect(() => {
     if (autoPlay && audioRef.current) {
-      // eslint‑disable-next-line @typescript-eslint/no-floating-promises
+      // Reset autoplay correctly on source change
+      audioRef.current.load();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       audioRef.current.play().catch(() => {
         // Fail silently – the user may need to interact first.
       });
@@ -57,7 +76,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     <div className={`relative inline-block ${className}`}>
       {/* Loading animation – visible only while isLoading is true */}
       <AnimatePresence>
-        {isLoading && (
+        {isLoading && !hasError && (
           <motion.div
             className="absolute inset-0 flex items-center justify-center bg-white/30 rounded"
             initial={{ opacity: 0 }}
@@ -86,6 +105,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             </div>
           </motion.div>
         )}
+        {hasError && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center bg-red-50 rounded z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className="text-sm font-medium text-red-500">Failed to load audio</span>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Native audio element – always present but hidden behind the loader */}
@@ -94,7 +124,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         src={src}
         controls={controls}
         className="w-full"
-        style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 0.2s' }}
+        style={{ opacity: isLoading || hasError ? 0 : 1, transition: 'opacity 0.2s' }}
       />
     </div>
   );
