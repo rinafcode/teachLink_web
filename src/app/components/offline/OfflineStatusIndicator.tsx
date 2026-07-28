@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wifi,
@@ -29,10 +29,50 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const prevOnlineRef = useRef(true);
+  const prevSyncRef = useRef('idle');
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    if (prevOnlineRef.current !== isOnline) {
+      setAnnouncement(isOnline ? 'You are back online.' : 'Connection lost. You are offline.');
+      prevOnlineRef.current = isOnline;
+    }
+  }, [isOnline]);
+
+  React.useEffect(() => {
+    if (prevSyncRef.current !== syncStatus) {
+      if (syncStatus === 'error') {
+        setAnnouncement('Sync failed. Please try again.');
+      } else if (syncStatus === 'synced') {
+        setAnnouncement('Sync complete.');
+      }
+      prevSyncRef.current = syncStatus;
+    }
+  }, [syncStatus]);
+
+  React.useEffect(() => {
+    if (announcement) {
+      const timer = setTimeout(() => setAnnouncement(''), 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [announcement]);
+
+  React.useEffect(() => {
+    if (showTooltip && panelRef.current) {
+      const focusable = panelRef.current.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      focusable?.focus();
+    }
+  }, [showTooltip]);
 
   const {
     isOnline,
@@ -146,10 +186,29 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && showTooltip) {
+      setShowTooltip(false);
+      e.stopPropagation();
+      triggerRef.current?.focus();
+    }
+  };
+
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} onKeyDown={handleKeyDown}>
+      {/* Announcements for screen readers */}
+      <span
+        role="status"
+        aria-live="assertive"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </span>
+
       {/* Main Status Indicator */}
       <button
+        ref={triggerRef}
         onClick={() => setShowTooltip(!showTooltip)}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
@@ -172,6 +231,7 @@ export const OfflineStatusIndicator: React.FC<OfflineStatusIndicatorProps> = ({
       <AnimatePresence>
         {showTooltip && (
           <motion.div
+            ref={panelRef}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
