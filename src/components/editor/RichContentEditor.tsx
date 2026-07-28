@@ -24,6 +24,36 @@ interface RichContentEditorProps {
   onUpdate?: (content: string) => void;
 }
 
+interface ToolbarButtonProps {
+  onClick: () => void;
+  isActive?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+  title?: string;
+}
+
+const ToolbarButton = ({
+  onClick,
+  isActive = false,
+  disabled = false,
+  children,
+  title,
+}: ToolbarButtonProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    aria-pressed={isActive}
+    aria-label={title}
+    className={`p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+      isActive ? 'bg-gray-200 dark:bg-gray-600 text-blue-600' : 'text-gray-600 dark:text-gray-300'
+    } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    title={title}
+  >
+    {children}
+  </button>
+);
+
 export const RichContentEditor: React.FC<RichContentEditorProps> = ({
   initialContent,
   onUpdate,
@@ -103,34 +133,6 @@ export const RichContentEditor: React.FC<RichContentEditorProps> = ({
   if (!editor) {
     return null;
   }
-
-  const ToolbarButton = ({
-    onClick,
-    isActive = false,
-    disabled = false,
-    children,
-    title,
-  }: {
-    onClick: () => void;
-    isActive?: boolean;
-    disabled?: boolean;
-    children: React.ReactNode;
-    title?: string;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-pressed={isActive}
-      aria-label={title}
-      className={`p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-        isActive ? 'bg-gray-200 dark:bg-gray-600 text-blue-600' : 'text-gray-600 dark:text-gray-300'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-      title={title}
-    >
-      {children}
-    </button>
-  );
 
   return (
     <section
