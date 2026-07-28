@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Wifi, WifiOff, Activity, Pause, Play, RefreshCw } from 'lucide-react';
 import { InteractiveChartLibrary } from '@/components/visualization/InteractiveChartLibrary';
 import { useDataVisualization } from '@/hooks/useDataVisualization';
@@ -84,18 +84,26 @@ export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(
       websocketUrl,
     });
 
+    const dataRef = useRef(data);
+    dataRef.current = data;
+    const addDataPointRef = useRef(addDataPoint);
+    addDataPointRef.current = addDataPoint;
+    const updateDataRef = useRef(updateData);
+    updateDataRef.current = updateData;
+
     useEffect(() => {
       if (!simulationEnabled || isPaused) return;
 
       const timer = setInterval(() => {
         const timeLabel = new Date().toLocaleTimeString(language);
         const value = Math.floor(Math.random() * 100);
-        addDataPoint(0, value, timeLabel);
+        addDataPointRef.current(0, value, timeLabel);
 
-        if (data && data.labels.length > maxDataPoints) {
-          updateData({
-            labels: data.labels.slice(-maxDataPoints),
-            datasets: data.datasets.map((dataset) => ({
+        const currentData = dataRef.current;
+        if (currentData && currentData.labels.length > maxDataPoints) {
+          updateDataRef.current({
+            labels: currentData.labels.slice(-maxDataPoints),
+            datasets: currentData.datasets.map((dataset) => ({
               ...dataset,
               data: dataset.data.slice(-maxDataPoints),
             })),
@@ -105,14 +113,11 @@ export const RealTimeUpdater = React.memo<RealTimeUpdaterProps>(
 
       return () => clearInterval(timer);
     }, [
-      addDataPoint,
-      data,
       interval,
       isPaused,
       language,
       maxDataPoints,
       simulationEnabled,
-      updateData,
     ]);
 
     const stats = calculateStats();
