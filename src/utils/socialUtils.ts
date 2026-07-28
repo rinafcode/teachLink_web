@@ -57,8 +57,13 @@ export function getRelativeTime(date: Date): string {
   return `${years} year${years === 1 ? '' : 's'} ago`;
 }
 
+const groupActivitiesCache = new WeakMap<Activity[], Record<string, Activity[]>>();
+
 /** Groups activities by calendar date label ("Today", "Yesterday", or "MMM D, YYYY"). */
 export function groupActivitiesByDate(activities: Activity[]): Record<string, Activity[]> {
+  const cached = groupActivitiesCache.get(activities);
+  if (cached) return cached;
+
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
@@ -69,9 +74,12 @@ export function groupActivitiesByDate(activities: Activity[]): Record<string, Ac
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  return activities.reduce<Record<string, Activity[]>>((acc, activity) => {
+  const result = activities.reduce<Record<string, Activity[]>>((acc, activity) => {
     const key = label(new Date(activity.createdAt));
     (acc[key] ??= []).push(activity);
     return acc;
   }, {});
+
+  groupActivitiesCache.set(activities, result);
+  return result;
 }

@@ -17,6 +17,29 @@ vi.mock('next/router', () => ({
   useRouter: () => ({ push: vi.fn(), query: {} }),
 }));
 
+// Mock react-window's VariableSizeList to render all children inline
+vi.mock('react-window', () => ({
+  VariableSizeList: vi.fn(({ children, height, width, itemCount, itemSize, overscanCount, onItemsRendered }) => {
+    // Call onItemsRendered to simulate the list rendering all items
+    if (onItemsRendered) {
+      onItemsRendered({ visibleStopIndex: itemCount - 1 });
+    }
+    // Render each item by calling the children render prop
+    const items: React.ReactNode[] = [];
+    for (let i = 0; i < itemCount; i++) {
+      const style = { height: typeof itemSize === 'function' ? itemSize(i) : itemSize, width, position: 'absolute' as const, top: 0, left: 0 };
+      items.push(children({ index: i, style }));
+    }
+    return <div style={{ height, width }}>{items}</div>;
+  }),
+  FixedSizeList: vi.fn(() => null),
+}));
+
+// Mock react-virtualized-auto-sizer to provide non-zero dimensions
+vi.mock('react-virtualized-auto-sizer', () => ({
+  default: vi.fn(({ children }) => children({ height: 600, width: 400 })),
+}));
+
 // ─── Imports after mocks ───────────────────────────────────────────────────────
 
 import { apiClient } from '@/lib/api';
