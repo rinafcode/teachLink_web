@@ -1,5 +1,6 @@
 import { SignJWT } from 'jose';
 import { UserRole } from '@/types/api';
+import { createLogger } from '@/lib/logging';
 
 export interface JWTPayload {
   sub: string;
@@ -38,7 +39,8 @@ export async function verifyToken(token: string | undefined | null): Promise<JWT
   try {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
-      console.error('JWT_SECRET is not set');
+      const logger = createLogger('lib.auth.jwt');
+      logger.error('JWT_SECRET is not set');
       return null;
     }
 

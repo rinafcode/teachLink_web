@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db/pool';
+import { createLogger } from '@/lib/logging';
 
 export async function GET(request: Request) {
   try {
@@ -20,7 +21,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: polls });
   } catch (error) {
-    console.error('Failed to fetch polls:', error);
+    const logger = createLogger('api.polls');
+    logger.error('Failed to fetch polls', { error });
     return NextResponse.json({ error: 'Failed to fetch polls' }, { status: 500 });
   }
 }
@@ -57,7 +59,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ data: result.rows[0] }, { status: 201 });
   } catch (error) {
-    console.error('Failed to create poll:', error);
+    const logger = createLogger('api.polls');
+    logger.error('Failed to create poll', { error });
     return NextResponse.json({ error: 'Failed to create poll' }, { status: 500 });
   }
 }

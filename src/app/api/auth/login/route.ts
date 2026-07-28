@@ -74,8 +74,6 @@ export async function POST(
     );
   } catch (error) {
     logger.error('Login error', { error });
-
-    console.error('Login error:', error);
     return addHeaders(NextResponse.json({ message: 'Internal server error' }, { status: 500 }));
   }
 }

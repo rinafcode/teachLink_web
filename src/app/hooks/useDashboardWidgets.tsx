@@ -53,14 +53,13 @@ export const useDashboardWidgets = () => {
           if (!pending) return;
           localStorage.setItem('dashboard-widgets', JSON.stringify(pending));
         } catch (error) {
-          console.error('Failed to save widget layout:', error);
+          logger.error('Failed to save widget layout', { error });
         } finally {
           saveTimerRef.current = null;
         }
       }, 500);
     } catch (error) {
-      logger.error('Failed to save widget layout', { error });
-      console.error('Failed to schedule dashboard layout save:', error);
+      logger.error('Failed to schedule dashboard layout save', { error });
     }
   }, []);
 

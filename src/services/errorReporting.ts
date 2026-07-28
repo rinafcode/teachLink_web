@@ -1,6 +1,16 @@
 /**
  * Error Reporting Service
- * Handles error logging, analytics, and debugging insights
+ * Handles error logging, analytics, and debugging insights.
+ *
+ * This service is the engine behind the Sentry-compatible public API in
+ * `src/lib/errors/index.ts`. It integrates with the structured logging
+ * system (`src/lib/logging`) so that every error report is:
+ *
+ * - Emitted as a structured JSON log record (via the Pino logger)
+ * - Stored in the in-memory transport for diagnostics/testing
+ * - Optionally forwarded to an HTTP aggregation endpoint
+ * - Optionally sent to `/api/errors/report` in production for server-side
+ *   persistence with PII redaction and rate limiting
  */
 
 import { formatErrorForLogging } from '@/utils/errorUtils';
@@ -26,17 +36,35 @@ export interface BreadcrumbEntry {
   details?: Record<string, any>;
 }
 
+export interface ErrorReportingConfig {
+  /**
+   * Optional Sentry DSN. When set, the service knows a remote error
+   * tracking backend is available. The actual Sentry SDK integration
+   * would replace the `sendToServer` call in a future migration.
+   */
+  dsn: string | null;
+}
+
 class ErrorReportingService {
   private breadcrumbs: BreadcrumbEntry[] = [];
   private maxBreadcrumbs = 50;
   private sessionId: string;
   private userId?: string;
   private isProduction: boolean;
+  private config: ErrorReportingConfig = { dsn: null };
 
   constructor() {
     this.sessionId = this.generateSessionId();
     this.isProduction = typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
     this.setupGlobalErrorHandlers();
+  }
+
+  /**
+   * Update runtime configuration (DSN, etc.).
+   * Called by the public API `init()` function.
+   */
+  configure(config: Partial<ErrorReportingConfig>): void {
+    this.config = { ...this.config, ...config };
   }
 
   /**
@@ -96,12 +124,19 @@ class ErrorReportingService {
   async reportError(error: any, context?: Record<string, any>): Promise<ErrorReport> {
     const report = this.createErrorReport(error, context);
 
-    // Log to console in development
-    if (!this.isProduction) {
-      logger.error('Error Report', { error: report });
-    }
+    // Always log to the structured logger — this feeds the in-memory transport,
+    // the HTTP transport (if configured), and the console via Pino.
+    logger.error('Error Report', {
+      context: {
+        ...report,
+        hasDsn: !!this.config.dsn,
+        isProduction: this.isProduction,
+      },
+      error,
+    });
 
-    // Send to error tracking service (e.g., Sentry, LogRocket)
+    // In production, also send to the server-side reporting endpoint for
+    // persistent storage with PII redaction and rate limiting.
     if (this.isProduction) {
       await this.sendToServer(report);
     }
@@ -145,7 +180,7 @@ class ErrorReportingService {
       });
 
       if (!response.ok) {
-        logger.error('Failed to send error report', { status: response.statusText });
+        logger.warn('Failed to send error report', { status: response.statusText });
       }
     } catch (err) {
       logger.error('Error sending error report', { error: err });

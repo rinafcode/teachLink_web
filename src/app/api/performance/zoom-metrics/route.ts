@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createLogger } from '@/lib/logging';
 
 /**
  * API endpoint to expose Zoom integration performance metrics.
@@ -49,7 +50,8 @@ export async function GET() {
       ],
     });
   } catch (error) {
-    console.error('Failed to fetch Zoom metrics:', error);
+    const logger = createLogger('api.performance.zoom-metrics');
+    logger.error('Failed to fetch Zoom metrics', { error });
     return NextResponse.json(
       { success: false, message: 'Failed to fetch Zoom integration metrics' },
       { status: 500 },

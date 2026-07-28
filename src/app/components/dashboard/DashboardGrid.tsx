@@ -11,6 +11,7 @@ import {
   useSensors,
   DragEndEvent,
 } from '@dnd-kit/core';
+import { createLogger } from '@/lib/logging';
 import {
   arrayMove,
   SortableContext,
@@ -156,7 +157,8 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
       try {
         localStorage.setItem('dashboard-widgets', JSON.stringify(widgets));
       } catch (error) {
-        console.error('Error saving widget layout', error);
+        const logger = createLogger('components.dashboard.DashboardGrid');
+        logger.error('Error saving widget layout', { error });
       } finally {
         saveTimerRef.current = null;
       }
