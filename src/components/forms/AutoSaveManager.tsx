@@ -153,7 +153,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
 
   return (
     <div className={`auto-save-manager ${className}`}>
-      <div className={`save-status save-status-${saveStatus.status}`}>
+      <div className={`save-status save-status-${saveStatus.status}`} role="status" aria-live="polite">
         <span className="status-icon">{getStatusIcon()}</span>
         <span className="status-text">{getStatusText()}</span>
 
@@ -178,7 +178,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
       </div>
 
       {saveStatus.error && (
-        <div className="save-error">
+        <div className="save-error" role="alert">
           <span className="error-icon">⚠️</span>
           <span className="error-message">{saveStatus.error.message}</span>
         </div>
