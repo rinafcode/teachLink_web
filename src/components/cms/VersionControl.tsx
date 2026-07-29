@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useCMS } from '@/hooks/useCMS';
 import { History, RotateCcw, Clock, CheckCircle2 } from 'lucide-react';
 
 export const VersionControl: React.FC = () => {
   const { history, historyIndex, undo, redo, course } = useCMS();
+  const reversedHistory = useMemo(() => history.slice().reverse(), [history]);
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -21,13 +22,13 @@ export const VersionControl: React.FC = () => {
             <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
 
             <div className="space-y-8 relative">
-              {history
-                .map((snapshot, index) => {
-                  const isCurrent = index === historyIndex;
-                  const isPast = index < historyIndex;
+              {reversedHistory.map((snapshot, reversedIndex) => {
+                  const originalIndex = history.length - 1 - reversedIndex;
+                  const isCurrent = originalIndex === historyIndex;
+                  const isPast = originalIndex < historyIndex;
 
                   return (
-                    <div key={index} className="flex gap-4 items-start pl-2">
+                    <div key={snapshot.historyId} className="flex gap-4 items-start pl-2">
                       <div
                         className={`z-10 w-4 h-4 rounded-full mt-1.5 border-2 ${
                           isCurrent
@@ -47,7 +48,7 @@ export const VersionControl: React.FC = () => {
                       >
                         <div className="flex justify-between items-start mb-1">
                           <div className="text-sm font-semibold text-gray-800 dark:text-white">
-                            {isCurrent ? 'Current Version' : `Version ${index + 1}`}
+                            {isCurrent ? 'Current Version' : `Version ${originalIndex + 1}`}
                           </div>
                           <div className="text-[10px] text-gray-500 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
@@ -81,8 +82,7 @@ export const VersionControl: React.FC = () => {
                       </div>
                     </div>
                   );
-                })
-                .reverse()}{' '}
+                })}{' '}
               {/* Show newest first */}
             </div>
           </div>
