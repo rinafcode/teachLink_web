@@ -1,5 +1,6 @@
 # Pull Request: Data Table Virtualization (Close #258)
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ## PR Title
 
 ✨ feat: Add Data Table Virtualization with Sticky Headers and Resizable Columns (Close #258)
