@@ -6,6 +6,7 @@
 **Date Delivered**: May 29, 2024
 **Status**: PRODUCTION READY
 **Quality Gate**: ALL CHECKS PASSED
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 <!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 
 ---

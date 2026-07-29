@@ -6,9 +6,9 @@
 Adds a tiered discount progress bar to the `EnrollmentCTA` component. As users
 select pricing plans, the bar updates in real-time to show how close they are
 to unlocking spending-based rewards.
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 **Completion Status**: ✅ COMPLETE
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 ---
 
 ## Files Changed

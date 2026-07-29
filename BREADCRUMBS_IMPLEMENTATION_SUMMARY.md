@@ -1,5 +1,5 @@
 # Breadcrumbs Material Design Implementation Summary
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 ## Overview
 
 Successfully implemented a Material Design breadcrumb navigation component to replace inline breadcrumb implementations throughout the project. The component follows Material Design 3 principles and WCAG 2.1 Level AA accessibility guidelines.

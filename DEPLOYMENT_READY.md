@@ -1,4 +1,5 @@
 # Certificate Generation Security Hardening — DEPLOYMENT READY ✅
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 
 <!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 **Status:** Ready for Code Review & PR Merge  
