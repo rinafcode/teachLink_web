@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { VideoSource } from '@/components/video/types';
 import { clampSeekTime } from '@/utils/videoPlayerUtils';
+import { createLogger } from '@/lib/logging';
 
 type UseVideoPlayerOptions = {
   sources: VideoSource[];
@@ -66,7 +67,8 @@ export const useVideoPlayerLazy = ({ sources, poster }: UseVideoPlayerOptions) =
           setIsReady(true);
         }
       } catch (error) {
-        console.error('Failed to load video.js:', error);
+        const logger = createLogger('hooks.useVideoPlayerLazy');
+        logger.error('Failed to load video.js', { error });
       }
     };
 

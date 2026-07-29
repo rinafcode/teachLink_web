@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   // Code-splitting optimization for heavy libraries
   experimental: {
     optimizePackageImports: ['@monaco-editor/react', 'video.js', 'ethers'],
+    // Enable Next.js instrumentation so src/instrumentation.ts is loaded
+    // at startup for error tracking initialisation (#327).
+    instrumentationHook: true,
   },
 
   modularizeImports: {

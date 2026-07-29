@@ -6,6 +6,7 @@ import { validateBody, validateQuery } from '@/lib/validation';
 import { ApprovalStatus } from '@/types/approvals';
 import { query } from '@/lib/db/pool';
 import type { ApprovalItem, ReviewDecision } from '@/types/api';
+import { createLogger } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 
@@ -66,7 +67,8 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     return addHeaders(NextResponse.json({ success: true, data: dbResult.rows }));
   } catch (error) {
-    console.error('[approvals] GET error:', error);
+    const logger = createLogger('api.approvals');
+    logger.error('GET request failed', { error, method: 'GET' });
     return addHeaders(
       NextResponse.json({ success: false, message: 'Database error' }, { status: 500 }),
     );
@@ -108,7 +110,8 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return response;
   } catch (error) {
-    console.error('[approvals] POST error:', error);
+    const logger = createLogger('api.approvals');
+    logger.error('POST request failed', { error, method: 'POST' });
     return addHeaders(
       NextResponse.json({ success: false, message: 'Database error' }, { status: 500 }),
     );
@@ -167,7 +170,8 @@ export async function PATCH(request: Request): Promise<NextResponse> {
 
     return response;
   } catch (error) {
-    console.error('[approvals] PATCH error:', error);
+    const logger = createLogger('api.approvals');
+    logger.error('PATCH request failed', { error, method: 'PATCH' });
     return addHeaders(
       NextResponse.json({ success: false, message: 'Database error' }, { status: 500 }),
     );

@@ -1,13 +1,41 @@
 /**
  * Error Tracking Integration (#327)
  *
- * Wires a Sentry-compatible interface over the existing errorReportingService.
- * Drop-in: swap the stub init() for a real Sentry.init() call when the SDK
- * is installed, without changing any call-sites.
+ * Enhanced error tracking using existing infrastructure with structured logging,
+ * breadcrumbs, and server-side reporting. Provides Sentry-compatible interface
+ * for easy migration to Sentry in the future if needed.
+ *
+ * ## Architecture
+ *
+ * The error tracking system has three layers:
+ *
+ * 1. **Public API** (`src/lib/errors/index.ts`) — Sentry-compatible functions
+ *    (`init`, `captureException`, `captureMessage`, `addBreadcrumb`, `setUser`,
+ *    `getBreadcrumbs`) that application code calls.
+ *
+ * 2. **ErrorReportingService** (`src/services/errorReporting.ts`) — Singleton
+ *    that manages breadcrumbs, session IDs, user identity, and dispatches
+ *    error reports to the structured logging system and (in production) the
+ *    `/api/errors/report` endpoint.
+ *
+ * 3. **Structured Logging** (`src/lib/logging`) — Pino-based logger with PII
+ *    redaction, correlation IDs, and multi-transport support (in-memory, HTTP).
+ *
+ * ## Configuration
+ *
+ * Set `NEXT_PUBLIC_SENTRY_DSN` (or `SENTRY_DSN` on the server) to enable
+ * remote error reporting. When no DSN is configured, errors are still logged
+ * locally via the structured logger and stored in the in-memory transport.
+ *
+ * ## Initialization
+ *
+ * Call `init()` once at application startup via `src/instrumentation.ts`.
+ * The instrumentation file is automatically loaded by Next.js.
  */
 
 import { errorReportingService, BreadcrumbEntry } from '@/services/errorReporting';
 import { createLogger } from '@/lib/logging';
+
 const logger = createLogger('ErrorTracking');
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -27,22 +55,31 @@ export interface Breadcrumb {
 
 // ── Sentry-compatible stub ────────────────────────────────────────────────────
 // Replace the body of each function with the real Sentry SDK call once
-// `@sentry/nextjs` is installed.
+// `@sentry/nextjs` is installed. The current implementation delegates to the
+// internal ErrorReportingService which provides structured logging, breadcrumb
+// tracking, and server-side reporting.
 
 let _initialized = false;
 
 /**
  * Initialise the error tracking SDK.
  * Call once at application startup (e.g. in instrumentation.ts).
+ *
+ * @param dsn - Optional Sentry DSN. When provided, error reports are also
+ *   sent to the remote Sentry endpoint. When omitted, errors are logged
+ *   locally via the structured logger and stored in-memory.
  */
 export function init(dsn?: string): void {
   if (_initialized) return;
   _initialized = true;
 
-  // TODO: replace with Sentry.init({ dsn, ... }) when SDK is installed.
-  if (dsn) {
-    logger.info('[ErrorTracking] Initialised with DSN', { context: { dsn } });
-  }
+  logger.info('[ErrorTracking] Initialized with structured error tracking', {
+    context: { hasDsn: !!dsn, environment: process.env.NODE_ENV },
+  });
+
+  // Configure the DSN on the reporting service so it knows whether to
+  // attempt remote delivery.
+  errorReportingService.configure({ dsn: dsn ?? null });
 
   // Forward global unhandled errors to the reporting service automatically.
   if (typeof window !== 'undefined') {
@@ -117,6 +154,20 @@ export function setUser(user: { id: string; [key: string]: unknown } | null): vo
  */
 export function getBreadcrumbs(): BreadcrumbEntry[] {
   return errorReportingService.getBreadcrumbs();
+}
+
+/**
+ * Check whether the error tracking system has been initialized.
+ */
+export function isInitialized(): boolean {
+  return _initialized;
+}
+
+/**
+ * Reset the initialization state (primarily for testing).
+ */
+export function _resetForTesting(): void {
+  _initialized = false;
 }
 
 // Re-export the underlying service for advanced use-cases.

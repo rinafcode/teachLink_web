@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import { UserFriendlyErrorDisplay } from '@/components/errors/UserFriendlyErrorDisplay';
-import { errorReportingService } from '@/services/errorReporting';
+import { captureException, addBreadcrumb } from '@/lib/errors';
 import { createLogger } from '@/lib/logging';
 const logger = createLogger('ErrorPage');
 
@@ -13,14 +13,18 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    errorReportingService.addBreadcrumb('error.tsx', {
-      errorMessage: error.message,
-      digest: error.digest,
+    // Report the error through the structured error tracking system
+    addBreadcrumb({
+      category: 'error.tsx',
+      message: error.message,
+      data: { digest: error.digest },
+      level: 'error',
     });
-    errorReportingService.reportError(error, {
-      errorInfo: { componentStack: '' },
-      ...(error.digest ? { digest: error.digest } : {}),
+    captureException(error, {
+      extra: {
+        errorInfo: { componentStack: '' },
+        ...(error.digest ? { digest: error.digest } : {}),
+      },
     });
     logger.error('Application error', { error });
   }, [error]);

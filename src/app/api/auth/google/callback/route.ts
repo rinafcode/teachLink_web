@@ -3,6 +3,7 @@ import { withRateLimit } from '@/lib/ratelimit';
 import { exchangeCodeForToken, getGoogleUser, getGoogleAvatarUrl } from '@/lib/google/oauth';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
+import { createLogger } from '@/lib/logging';
 
 export const runtime = 'edge';
 
@@ -95,8 +96,9 @@ export async function GET(
 
     return addHeaders(response) as NextResponse;
   } catch (error) {
+    const logger = createLogger('api.auth.google-callback');
     edgeLog('error', '/api/auth/google/callback', `Error: ${error}`);
-    console.error('Google OAuth callback error:', error);
+    logger.error('Google OAuth callback error', { error });
 
     return addHeaders(
       NextResponse.json({ message: 'Internal server error' }, { status: 500 }),
