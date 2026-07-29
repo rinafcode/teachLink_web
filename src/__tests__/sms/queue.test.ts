@@ -13,6 +13,7 @@ describe('SMSQueue', () => {
   let provider: TwilioProvider;
 
   beforeEach(() => {
+    SMSQueue.clearAllDeliveryLogs();
     provider = new TwilioProvider();
     queue = new SMSQueue(provider, {
       maxRetries: 3,
@@ -251,9 +252,9 @@ describe('SMSQueue', () => {
 
       const logs = queue.getDeliveryLogs();
 
-      if (logs.length > 0) {
-        expect(logs[0].metadata).toBeDefined();
-      }
+      expect(logs.length).toBeGreaterThan(0);
+      // Logs are returned newest-last; check the most recent entry
+      expect(logs[logs.length - 1].metadata).toBeDefined();
     });
   });
 });
