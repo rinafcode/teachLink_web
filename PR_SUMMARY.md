@@ -1,7 +1,8 @@
 # Pull Request Summary
 
 ## Issue #84: Implement Advanced Data Visualization
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ### Overview
 
 This PR implements a comprehensive data visualization system for the TeachLink platform with interactive charts, real-time updates, custom chart builder, and data exploration tools.

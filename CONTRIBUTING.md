@@ -1,7 +1,8 @@
 # Contributing to TeachLink Frontend
 
 Thanks for contributing to TeachLink.
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ## Branching & workflow
 
 - **Do not push directly** to protected branches (`main`, `develop`).
