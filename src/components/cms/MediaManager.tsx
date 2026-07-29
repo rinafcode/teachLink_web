@@ -2,29 +2,19 @@
 // @ts-nocheck
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { useCMS } from '@/hooks/useCMS';
 import { Upload, File, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export const MediaManager: React.FC = () => {
   const { mediaQueue, addToQueue, updateUploadProgress, setUploadStatus } = useCMS();
+  // Track all active upload intervals per file so they can be cleared on unmount or completion
+  const uploadIntervalsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  // Track component mounted state to prevent state updates after unmount
+  const isMountedRef = useRef(true);
 
-  const handleFileDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      const files = Array.from(e.dataTransfer.files);
-      uploadFiles(files);
-    },
-    [uploadFiles],
-  );
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      uploadFiles(Array.from(e.target.files));
-    }
-  };
-
+  // Declare uploadFiles first (before handleFileDrop that depends on it)
   const uploadFiles = useCallback(
     (files: File[]) => {
       const tasks = files.map((file) => ({
@@ -41,20 +31,62 @@ export const MediaManager: React.FC = () => {
       tasks.forEach((task) => {
         let progress = 0;
         const interval = setInterval(() => {
+          // Only update state if component is still mounted
+          if (!isMountedRef.current) {
+            return;
+          }
+
           progress += Math.random() * 30;
           if (progress >= 100) {
             progress = 100;
+            // Clear this file's interval immediately when upload completes
+            // to prevent unnecessary ticks after completion
             clearInterval(interval);
-            setUploadStatus(task.id, 'completed', 'https://example.com/media/dummy.jpg');
-            toast.success(`${task.fileName} uploaded successfully!`);
+            uploadIntervalsRef.current.delete(task.id);
+            
+            if (isMountedRef.current) {
+              setUploadStatus(task.id, 'completed', 'https://example.com/media/dummy.jpg');
+              toast.success(`${task.fileName} uploaded successfully!`);
+            }
           } else {
             updateUploadProgress(task.id, progress);
           }
         }, 500);
+        
+        // Track this interval so it can be cleared on unmount
+        uploadIntervalsRef.current.set(task.id, interval);
       });
     },
     [addToQueue, setUploadStatus, updateUploadProgress],
   );
+
+  const handleFileDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files);
+      uploadFiles(files);
+    },
+    [uploadFiles],
+  );
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      uploadFiles(Array.from(e.target.files));
+    }
+  };
+
+  // Clean up all active intervals on component unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      // Clear all pending upload intervals when component unmounts
+      // This prevents memory leaks and state updates on unmounted components
+      uploadIntervalsRef.current.forEach((interval) => {
+        clearInterval(interval);
+      });
+      uploadIntervalsRef.current.clear();
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">

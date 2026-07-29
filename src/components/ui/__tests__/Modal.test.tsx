@@ -32,25 +32,28 @@ describe('Modal', () => {
     expect(screen.getByText('Content')).toBeInTheDocument();
   });
 
-  it('calls onClose when backdrop is clicked', () => {
+  it('calls onClose("backdrop") when backdrop is clicked', () => {
     const onClose = vi.fn();
     render(<Modal {...defaultProps} onClose={onClose} />);
     fireEvent.click(screen.getByRole('dialog').previousElementSibling!);
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledWith('backdrop');
   });
 
-  it('calls onClose when Escape is pressed', () => {
+  it('calls onClose("escape") when Escape is pressed', () => {
     const onClose = vi.fn();
     render(<Modal {...defaultProps} onClose={onClose} />);
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledWith('escape');
   });
 
-  it('calls onClose when close button is clicked', () => {
+  it('calls onClose("button") when close button is clicked', () => {
     const onClose = vi.fn();
     render(<Modal {...defaultProps} onClose={onClose} />);
     fireEvent.click(screen.getByLabelText('Close dialog'));
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledWith('button');
   });
 
   describe('size classes', () => {

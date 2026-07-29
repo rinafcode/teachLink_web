@@ -8,6 +8,14 @@ The Discord OAuth integration allows users to authenticate using their Discord a
 
 ## Features
 
+## Overview
+
+This project uses URL-based API versioning to protect clients from breaking changes.
+
+- Stable API paths continue to be served at `/api/v1/*`
+- Legacy paths under `/api/*` remain supported through a compatibility layer
+- Older `/api/*` requests are rewritten to `/api/v1/*` and receive deprecation headers
+
 - **OAuth2 Flow**: Implements the standard Discord OAuth2 authorization code flow
 - **Security**: Uses state parameter to prevent CSRF attacks
 - **Email Verification**: Requires Discord accounts to have verified emails

@@ -1,5 +1,6 @@
 # Docker Deployment Guide
 
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 This document provides comprehensive instructions for building, running, and deploying the TeachLink application using Docker.
 
 ## Architecture
@@ -10,7 +11,8 @@ The Docker setup uses **multi-stage builds** to optimize:
 - **Runtime Stage**: Lean production image with minimal dependencies
 
 ### Image Optimization
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 - Base image: `node:20-alpine` (~150MB)
 - Production image size: ~250-300MB (after build)
 - Development image: Includes dev dependencies for fast iteration

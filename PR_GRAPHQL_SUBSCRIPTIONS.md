@@ -1,5 +1,6 @@
 # Pull Request: GraphQL Subscriptions - Real-Time Data Updates
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ## PR Title
 
 ✨ feat: Implement GraphQL Subscriptions with Real-Time Data Updates (Close #266)

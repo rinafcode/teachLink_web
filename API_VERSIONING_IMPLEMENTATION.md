@@ -3,7 +3,8 @@
 ### ✅ Implementation Completed
 
 You have successfully implemented URL-based API versioning for the TeachLink backend to prevent breaking changes and maintain backward compatibility.
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ---
 <!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 

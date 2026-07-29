@@ -58,17 +58,21 @@ const QuizContainer = React.memo(({ quiz }: QuizContainerProps) => {
         />
       ) : null}
 
-      <QuestionCard question={currentQuestion} quizState={quizState} />
+      {!isCompleted && (
+        <>
+          <QuestionCard question={currentQuestion} quizState={quizState} />
 
-      <QuizNavigation
-        onPrevious={handleGoPrevious}
-        onNext={handleGoNext}
-        onComplete={handleComplete}
-        canGoPrevious={quizState.canGoPrevious}
-        canGoNext={quizState.canGoNext}
-        isLastQuestion={currentQuestionIndex === totalQuestions - 1}
-        isCompleted={isCompleted}
-      />
+          <QuizNavigation
+            onPrevious={handleGoPrevious}
+            onNext={handleGoNext}
+            onComplete={handleComplete}
+            canGoPrevious={quizState.canGoPrevious}
+            canGoNext={quizState.canGoNext}
+            isLastQuestion={currentQuestionIndex === totalQuestions - 1}
+            isCompleted={isCompleted}
+          />
+        </>
+      )}
     </div>
   );
 });
