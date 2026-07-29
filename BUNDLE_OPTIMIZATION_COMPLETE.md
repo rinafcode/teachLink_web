@@ -2,6 +2,7 @@
 
 ## Overview
 
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 Successfully implemented code-splitting for Monaco Editor, video.js, and ethers.js to reduce initial bundle size and improve Time to Interactive (TTI).
 
 ## Changes Implemented

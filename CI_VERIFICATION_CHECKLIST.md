@@ -2,6 +2,7 @@
 
 ## Pre-Build Checks
 
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 ### ✅ File Structure
 
 - [x] `src/services/ethersService.ts` - Created

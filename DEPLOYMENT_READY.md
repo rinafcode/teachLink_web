@@ -1,5 +1,6 @@
 # Certificate Generation Security Hardening — DEPLOYMENT READY ✅
 
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 **Status:** Ready for Code Review & PR Merge  
 **Branch:** `feature/449-certificate-generation-pentest`  
 **Commit:** `4b5bf73`  

@@ -1,5 +1,6 @@
 # Docker Deployment Guide
 
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 This document provides comprehensive instructions for building, running, and deploying the TeachLink application using Docker.
 
 ## Architecture
