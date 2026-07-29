@@ -3,7 +3,7 @@
 This document provides comprehensive instructions for building, running, and deploying the TeachLink application using Docker.
 
 ## Architecture
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 The Docker setup uses **multi-stage builds** to optimize:
 
 - **Build Stage**: Compiles Next.js and validates i18n configuration

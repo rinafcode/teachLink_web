@@ -1,5 +1,5 @@
 # Certificate Generation Security Implementation
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 ## Overview
 
 This document summarizes the security hardening of the certificate generation feature for TeachLink. All certificate generation endpoints have been implemented with comprehensive security controls to prevent OWASP Top 10 vulnerabilities and enforce best practices for credential platforms.

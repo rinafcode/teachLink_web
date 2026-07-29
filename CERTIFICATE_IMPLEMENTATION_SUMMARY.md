@@ -1,7 +1,7 @@
 # Certificate Generation Security Hardening - Implementation Summary
 
 ## Executive Summary
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 Successfully audited and hardened the certificate generation feature against all identified security vulnerabilities. All 8 threat vectors from the threat model (T1-T8) have been mitigated with comprehensive security controls. The implementation includes:
 
 - ✅ **8/8 Threat Mitigations** implemented

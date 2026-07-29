@@ -1,5 +1,5 @@
 # Bundle Optimization Implementation Summary
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 ## Overview
 
 Successfully implemented code-splitting for Monaco Editor, video.js, and ethers.js to reduce initial JavaScript bundle size by 200KB+ gzipped.

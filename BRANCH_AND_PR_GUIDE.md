@@ -1,5 +1,5 @@
 # Branch and Pull Request Guide
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 ## Current Status ✅
 
 Your Material Design Breadcrumbs implementation is now properly on a feature branch!

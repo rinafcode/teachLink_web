@@ -1,5 +1,5 @@
 # Contributing to TeachLink Frontend
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 Thanks for contributing to TeachLink.
 
 ## Branching & workflow
