@@ -7,6 +7,7 @@ export interface ProfileUser {
   bio: string;
   learningGoal: string;
   dailyLearningTime: string;
+  avatarUrl?: string;
 }
 
 export interface SelectOption {
