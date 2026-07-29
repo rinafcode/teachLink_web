@@ -22,7 +22,6 @@ export const IntelligentAutoComplete = React.memo<IntelligentAutoCompleteProps>(
 
     const debouncedValue = useDebounce(value, debounceMs);
     const suggestions = useMemo(() => getSearchSuggestions(debouncedValue), [debouncedValue]);
-    const suggestions = useMemo(() => getSearchSuggestions(value), [value]);
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
