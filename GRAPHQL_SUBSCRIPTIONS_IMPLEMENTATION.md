@@ -3,7 +3,8 @@
 ## Issue Reference
 
 **#266 GraphQL Subscriptions** - Real-time data updates via WebSocket
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ---
 
 ## Overview

@@ -12,6 +12,10 @@ Each section follows the same structure:
 5. **Escalation** – who to page if the steps above don't resolve it within SLA.
 
 ---
+<!-- 
+The production notification system stores durable notification data on a Kubernetes
+PersistentVolumeClaim so pod restarts do not discard queued or cached notification
+state. -->
 
 ## Table of Contents
 

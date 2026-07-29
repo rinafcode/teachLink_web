@@ -4,7 +4,8 @@
 **Status:** ✅ COMPLETE — All tasks executed  
 **Auditor:** Security Hardening Agent  
 **Scope:** Certificate generation feature (new implementation)
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ---
 
 ## Execution Summary
