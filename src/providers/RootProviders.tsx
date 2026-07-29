@@ -22,6 +22,7 @@ import { FeatureFlagProvider } from '@/components/shared/FeatureFlagProvider';
 import { ToastProvider } from '@/context/ToastContext';
 import { Loading } from '@/components/ui/Loading';
 import i18n from '@/lib/i18n/config';
+import { Toaster } from 'react-hot-toast';
 
 // Lazy load heavy/non-critical providers/components to improve initial render time
 const OfflineModeProvider = dynamic(
@@ -107,6 +108,7 @@ export function RootProviders({
                               <Suspense fallback={<Loading />}>{children}</Suspense>
                             </ErrorBoundary>
                             <CookieConsentBanner />
+                            <Toaster />
                           </ToastProvider>
                         </OfflineModeProvider>
                       </PerformanceMonitoringProvider>
