@@ -1,6 +1,7 @@
 # Discount Progress Indicator - Implementation Summary
 
 ## Overview
+<!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 
 Adds a tiered discount progress bar to the `EnrollmentCTA` component. As users
 select pricing plans, the bar updates in real-time to show how close they are

@@ -1,7 +1,8 @@
 ﻿
 > my-app@0.1.0 lint C:\Users\GODSWILL\teachLink_web
 > next lint --max-warnings=0
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 pnpm.exe : `next lint` is deprecated and will be removed in Next.js 16.
 At C:\Users\GODSWILL\AppData\Local\pnpm\bin\pnpm.ps1:14 char:3
 +   & "$basedir/../global/v11/1ff0-19ef193e7f2/node_modules/@pnpm/exe/p ...

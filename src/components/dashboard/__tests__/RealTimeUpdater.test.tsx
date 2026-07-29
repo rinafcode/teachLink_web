@@ -138,4 +138,19 @@ describe('RealTimeUpdater', () => {
     // Just verify no errors were thrown; component is still mounted
     expect(screen.getByText(/simulating/i)).toBeInTheDocument();
   });
+
+  it('does not recreate interval on data updates (Issue #981)', async () => {
+    const setIntervalSpy = vi.spyOn(global, 'setInterval');
+    render(<RealTimeUpdater updateInterval={1000} />);
+
+    const initialCalls = setIntervalSpy.mock.calls.length;
+
+    // Advance through 3 update ticks
+    await act(async () => {
+      vi.advanceTimersByTime(3500);
+    });
+
+    // setInterval should still have the same call count, not torn down and recreated per point
+    expect(setIntervalSpy.mock.calls.length).toBe(initialCalls);
+  });
 });
