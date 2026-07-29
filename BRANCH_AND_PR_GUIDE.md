@@ -2,7 +2,7 @@
 
 ## Current Status ✅
 
-Your Material Design Breadcrumbs implementation is now properly on a feature branch!
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 
 ### Branch Information
 

@@ -1,5 +1,6 @@
 # Contributing to TeachLink Frontend
 
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 Thanks for contributing to TeachLink.
 
 ## Branching & workflow
