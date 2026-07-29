@@ -7,6 +7,7 @@
 <!-- 
 This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ---
+<!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 
 ## Execution Summary
 
