@@ -32,7 +32,7 @@ This document describes the implementation of Structured Data (JSON-LD) for Filt
 1. **`src/components/search/FilterSidebar.tsx`**
 
    - Added structured data generation for search filters
-   - Includes: difficulty, duration, price, topics, instructor, node affinity
+   - Includes: difficulty, duration, price, topics, instructor, learning format
    - Integrated `StructuredDataScript` component
 
 2. **`src/components/dashboard/DashboardFilters.tsx`**
