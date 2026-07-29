@@ -39,6 +39,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://teachlink.app'),
   title: 'TeachLink - Offline Learning Platform',
   description: 'Learn anywhere, anytime with offline capabilities',
   manifest: '/manifest.json',
