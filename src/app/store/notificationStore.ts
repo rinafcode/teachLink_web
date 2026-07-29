@@ -2,11 +2,15 @@ import { create } from 'zustand';
 import { AppNotification } from '@/lib/notifications/types';
 import { NotificationService } from '@/lib/notifications/service';
 
-function load<T>(key: string, fallback: T): T {
+function load<T>(
+  key: string,
+  fallback: T,
+  reviver?: (key: string, value: unknown) => unknown,
+): T {
   if (typeof window === 'undefined') return fallback;
   try {
     const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    return raw ? (JSON.parse(raw, reviver) as T) : fallback;
   } catch {
     return fallback;
   }
@@ -17,6 +21,16 @@ function save<T>(key: string, value: T) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {}
+}
+
+/** Revives ISO date strings found in `timestamp` fields back to Date objects. */
+function dateReviver(key: string, value: unknown): unknown {
+  if (key === 'timestamp' && typeof value === 'string') {
+    const date = new Date(value);
+    // Only return Date if the string was a valid ISO date
+    if (!isNaN(date.getTime())) return date;
+  }
+  return value;
 }
 
 const STORAGE_KEY = 'notifications_v1';
@@ -33,7 +47,7 @@ interface NotificationState {
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
-  notifications: load<AppNotification[]>(STORAGE_KEY, []),
+  notifications: load<AppNotification[]>(STORAGE_KEY, [], dateReviver),
   addNotification: (n) => {
     const created = NotificationService.createNotification({
       message: n.message,
