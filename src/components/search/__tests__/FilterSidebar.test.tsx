@@ -12,11 +12,11 @@ const defaultFilters: FilterState = {
   sort: 'relevance',
   instructor: '',
   searchTerm: '',
-  nodeAffinity: 'auto',
+  learningFormat: [],
 };
 
-describe('FilterSidebar Component - Node Affinity', () => {
-  it('renders all Node Affinity options', () => {
+describe('FilterSidebar Component - Learning Format', () => {
+  it('renders all Learning Format options', () => {
     const onFilterChange = vi.fn();
     const onReset = vi.fn();
 
@@ -24,14 +24,14 @@ describe('FilterSidebar Component - Node Affinity', () => {
       <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
-    expect(screen.getByText('Node Affinity')).toBeInTheDocument();
-    expect(screen.getByText('Auto (Optimized)')).toBeInTheDocument();
-    expect(screen.getByText('Primary Cluster')).toBeInTheDocument();
-    expect(screen.getByText('Replica Node')).toBeInTheDocument();
-    expect(screen.getByText('Edge Cache')).toBeInTheDocument();
+    expect(screen.getByText('Learning Format')).toBeInTheDocument();
+    expect(screen.getByText('Video')).toBeInTheDocument();
+    expect(screen.getByText('Interactive')).toBeInTheDocument();
+    expect(screen.getByText('Text-Based')).toBeInTheDocument();
+    expect(screen.getByText('Mixed')).toBeInTheDocument();
   });
 
-  it('triggers onFilterChange callback when a new node affinity is selected', () => {
+  it('triggers onFilterChange callback when a learning format is selected', () => {
     const onFilterChange = vi.fn();
     const onReset = vi.fn();
 
@@ -39,11 +39,34 @@ describe('FilterSidebar Component - Node Affinity', () => {
       <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
-    // Click on Primary Cluster option
-    const primaryOption = screen.getByText('Primary Cluster');
-    fireEvent.click(primaryOption);
+    // Click on Video option
+    const videoCheckbox = screen.getByRole('checkbox', { name: '' });
+    fireEvent.click(videoCheckbox);
 
     expect(onFilterChange).toHaveBeenCalledTimes(1);
-    expect(onFilterChange).toHaveBeenCalledWith({ nodeAffinity: 'primary' });
+    expect(onFilterChange).toHaveBeenCalledWith({ learningFormat: ['video'] });
+  });
+
+  it('allows multiple learning formats to be selected', () => {
+    const onFilterChange = vi.fn();
+    const onReset = vi.fn();
+    const filtersWithVideo = {
+      ...defaultFilters,
+      learningFormat: ['video'],
+    };
+
+    render(
+      <FilterSidebar
+        filters={filtersWithVideo}
+        onFilterChange={onFilterChange}
+        onReset={onReset}
+      />,
+    );
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    // Click on Interactive (second checkbox)
+    fireEvent.click(checkboxes[1]);
+
+    expect(onFilterChange).toHaveBeenCalledWith({ learningFormat: ['video', 'interactive'] });
   });
 });
