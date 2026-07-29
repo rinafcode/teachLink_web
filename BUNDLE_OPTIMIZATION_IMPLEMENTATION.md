@@ -5,6 +5,7 @@
 Successfully implemented code-splitting for Monaco Editor, video.js, and ethers.js to reduce initial JavaScript bundle size by 200KB+ gzipped.
 
 ## Changes Made
+<!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 
 ### 1. Monaco Editor Optimization
 
