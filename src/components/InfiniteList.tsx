@@ -67,7 +67,11 @@ export function InfiniteList<T>({
       style={fixedHeight ? { height: fixedHeight } : undefined}
     >
       {fixedHeight ? (
-        listContent(fixedHeight, 0)
+        <AutoSizer disableHeight>
+          {({ width }: { width: number }) =>
+            listContent(fixedHeight, width) as React.ReactElement
+          }
+        </AutoSizer>
       ) : (
         <AutoSizer>
           {({ height, width }: { height: number; width: number }) =>
