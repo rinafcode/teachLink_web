@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React, { useEffect } from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 import { useDashboardWidgets } from '../useDashboardWidgets';
@@ -38,6 +38,7 @@ describe('useDashboardWidgets', () => {
   let root: ReturnType<typeof createRoot>;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     // @ts-expect-error - LocalStorageMock for testing
     global.localStorage = new LocalStorageMock();
     container = document.createElement('div');
@@ -59,6 +60,12 @@ describe('useDashboardWidgets', () => {
 
     // After first mount, default widgets should be set and saved
     expect(api.widgets.length).toBeGreaterThan(0);
+
+    // Advance past the 500ms debounce in saveWidgetLayout
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+
     const saved = JSON.parse(localStorage.getItem('dashboard-widgets') || '[]');
     expect(saved.length).toBe(api.widgets.length);
   });
