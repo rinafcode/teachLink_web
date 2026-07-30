@@ -21,17 +21,30 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   return {
     title: `${course.title} | TeachLink`,
     description: course.description,
+    alternates: {
+      canonical: `/courses/${courseId}`,
+    },
     openGraph: {
       title: `${course.title} | TeachLink`,
       description: course.description,
       type: 'website',
       siteName: 'TeachLink',
+      url: `/courses/${courseId}`,
+      images: course.thumbnailUrl
+        ? [
+            {
+              url: course.thumbnailUrl,
+              alt: course.title,
+            },
+          ]
+        : undefined,
     },
     twitter: {
       card: 'summary_large_image',
       site: '@teachlink',
       title: `${course.title} | TeachLink`,
       description: course.description,
+      images: course.thumbnailUrl ? [course.thumbnailUrl] : undefined,
     },
   };
 }
