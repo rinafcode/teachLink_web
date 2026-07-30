@@ -1,12 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useMessagingStore } from '@/app/store/messagingStore';
 import type { Attachment } from '@/app/store/messagingStore';
-import { useWebSocket } from '@/hooks/useWebSocket';
 
 export function useMessaging() {
   const {
@@ -38,13 +35,9 @@ export function useMessaging() {
     getTotalUnreadCount,
   } = useMessagingStore();
 
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { status } = useWebSocket('messaging', {
-    onDisconnect: () => disconnectSocket(),
-  });
-
-  // Initialize socket on mount
+  // Initialize socket on mount; clean up on unmount
   useEffect(() => {
     initializeSocket();
     return () => {
@@ -58,12 +51,10 @@ export function useMessaging() {
       setTyping(true);
     }
 
-    // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Set new timeout to stop typing after 2 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
       setTyping(false);
     }, 2000);
@@ -93,7 +84,7 @@ export function useMessaging() {
     [selectedFiles, uploadAttachments, sendMessage, handleTypingStop],
   );
 
-  // Select a conversation
+  // Select a conversation by id
   const handleSelectConversation = useCallback(
     (conversationId: string) => {
       const conversation = conversations.find((c) => c.id === conversationId);
@@ -104,18 +95,20 @@ export function useMessaging() {
     [conversations, setCurrentConversation],
   );
 
-  // Handle file selection
+  // Handle file selection with 10 MB size guard
   const handleFileSelect = useCallback(
     (files: FileList) => {
       const fileArray = Array.from(files);
-      const maxSize = 10 * 1024 * 1024; // 10MB limit
+      const maxSize = 10 * 1024 * 1024; // 10 MB
       const rejectedFiles = fileArray.filter((file) => file.size > maxSize);
+
       if (rejectedFiles.length > 0) {
         const names = rejectedFiles.map((f) => f.name).join(', ');
         toast.error(
-          `Skipped ${rejectedFiles.length} file(s): ${names}. Max file size is 10MB.`,
+          `Skipped ${rejectedFiles.length} file(s): ${names}. Max file size is 10 MB.`,
         );
       }
+
       const validFiles = fileArray.filter((file) => file.size <= maxSize);
       setSelectedFiles([...selectedFiles, ...validFiles]);
     },
@@ -131,24 +124,24 @@ export function useMessaging() {
     );
   });
 
-  // Get the other participant in a conversation
+  // Return the other participant in a one-to-one conversation
   const getOtherParticipant = useCallback(
     (conversationId: string) => {
       const conversation = conversations.find((c) => c.id === conversationId);
       if (!conversation) return null;
-      return conversation.participants.find((p) => p.id !== 'current-user') || null;
+      return conversation.participants.find((p) => p.id !== 'current-user') ?? null;
     },
     [conversations],
   );
 
-  // Get typing user names for current conversation
-  const getTypingUserNames = useCallback(() => {
+  // Build a human-readable typing indicator string for the current conversation
+  const getTypingUserNames = useCallback((): string => {
     if (!currentConversation || typingUsers.size === 0) return '';
 
     const names = Array.from(typingUsers)
       .map((userId) => {
         const participant = currentConversation.participants.find((p) => p.id === userId);
-        return participant?.name || 'Someone';
+        return participant?.name ?? 'Someone';
       })
       .join(', ');
 
@@ -162,8 +155,6 @@ export function useMessaging() {
     currentConversation,
     messages,
     isConnected,
-    isReconnecting: status.isReconnecting,
-    connectionError: status.lastError,
     isTyping,
     typingUsers,
     isLoadingMessages,
