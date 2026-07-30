@@ -67,9 +67,17 @@ export const CHART_COLOR_PALETTE = [
 ];
 
 /**
- * Format number with appropriate suffix (K, M, B)
+ * Format number with appropriate suffix (K, M, B) for compact display
+ * @deprecated Use formatNumberCompact for clarity, or i18nUtils.formatNumber for locale-aware formatting
  */
 export const formatNumber = (num: number): string => {
+  return formatNumberCompact(num);
+};
+
+/**
+ * Format number with appropriate suffix (K, M, B) for compact display
+ */
+export const formatNumberCompact = (num: number): string => {
   if (num >= 1000000000) {
     return (num / 1000000000).toFixed(1) + 'B';
   }
@@ -181,10 +189,10 @@ export const aggregateByTimePeriod = (
         aggregatedValue = values.length;
         break;
       case 'min':
-        aggregatedValue = Math.min(...values);
+        aggregatedValue = values.reduce((a, b) => (b < a ? b : a), values[0]);
         break;
       case 'max':
-        aggregatedValue = Math.max(...values);
+        aggregatedValue = values.reduce((a, b) => (b > a ? b : a), values[0]);
         break;
     }
 
@@ -214,8 +222,12 @@ export const calculateMovingAverage = (data: number[], windowSize: number): numb
  * Normalize data to 0-100 scale
  */
 export const normalizeData = (data: number[]): number[] => {
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+  let min = Infinity;
+  let max = -Infinity;
+  for (const val of data) {
+    if (val < min) min = val;
+    if (val > max) max = val;
+  }
   const range = max - min;
 
   if (range === 0) return data.map(() => 50);
@@ -327,8 +339,8 @@ export const calculateStatistics = (
     mean,
     median,
     mode,
-    min: Math.min(...data),
-    max: Math.max(...data),
+    min: sorted[0],
+    max: sorted[sorted.length - 1],
     stdDev,
   };
 };

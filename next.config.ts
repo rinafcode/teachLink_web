@@ -7,12 +7,15 @@ const nextConfig: NextConfig = {
 
   // Code-splitting optimization for heavy libraries
   experimental: {
-    optimizePackageImports: ['@monaco-editor/react', 'video.js', 'ethers'],
+    optimizePackageImports: ['@monaco-editor/react', 'video.js', 'ethers', 'recharts', 'framer-motion', 'date-fns'],
   },
 
   modularizeImports: {
     lodash: {
       transform: 'lodash/{{member}}',
+    },
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}',
     },
   },
   eslint: {

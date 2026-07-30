@@ -33,6 +33,7 @@ export class SMSQueue {
   private readonly provider: SMSProvider;
   private readonly options: QueueOptions;
   private readonly queue: QueueJob[] = [];
+  private readonly resolveQueue: Array<(result: SMSSendResult) => void> = [];
   private processing = 0;
   private requestId = '';
 
@@ -76,27 +77,30 @@ export class SMSQueue {
       });
 
       this.queue.push(job);
+      this.resolveQueue.push(resolve);
       createCounterMetric('sms.enqueued', 1, {
         provider: this.provider.type,
       });
 
-      this.process(resolve);
+      this.process();
     });
   }
 
-  private process(resolve: (result: SMSSendResult) => void): void {
-    while (this.processing < this.options.maxConcurrent && this.queue.length > 0) {
+  private process(): void {
+    while (this.processing < this.options.maxConcurrent && this.queue.length > 0 && this.resolveQueue.length > 0) {
       const nextJob = this.queue.shift();
       if (!nextJob) {
         return;
       }
 
+      const resolve = this.resolveQueue.shift();
+
       this.processing += 1;
       void this.runJob(nextJob)
-        .then((result) => resolve(result))
+        .then((result) => resolve?.(result))
         .finally(() => {
           this.processing -= 1;
-          this.process(resolve);
+          this.process();
         });
     }
   }

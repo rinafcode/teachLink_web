@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  formatNumber,
+  formatNumberCompact,
   formatPercentage,
   generateDateLabels,
   calculateMovingAverage,
@@ -15,24 +15,24 @@ import {
 } from '../visualizationUtils';
 
 describe('visualizationUtils', () => {
-  describe('formatNumber', () => {
+  describe('formatNumberCompact', () => {
     it('should format numbers with K suffix', () => {
-      expect(formatNumber(1500)).toBe('1.5K');
-      expect(formatNumber(999)).toBe('999');
+      expect(formatNumberCompact(1500)).toBe('1.5K');
+      expect(formatNumberCompact(999)).toBe('999');
     });
 
     it('should format numbers with M suffix', () => {
-      expect(formatNumber(1500000)).toBe('1.5M');
-      expect(formatNumber(2300000)).toBe('2.3M');
+      expect(formatNumberCompact(1500000)).toBe('1.5M');
+      expect(formatNumberCompact(2300000)).toBe('2.3M');
     });
 
     it('should format numbers with B suffix', () => {
-      expect(formatNumber(1500000000)).toBe('1.5B');
-      expect(formatNumber(3200000000)).toBe('3.2B');
+      expect(formatNumberCompact(1500000000)).toBe('1.5B');
+      expect(formatNumberCompact(3200000000)).toBe('3.2B');
     });
 
     it('should handle zero', () => {
-      expect(formatNumber(0)).toBe('0');
+      expect(formatNumberCompact(0)).toBe('0');
     });
   });
 

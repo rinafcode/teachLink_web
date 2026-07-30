@@ -5,6 +5,8 @@ import {
   createDefaultCourseListConfig,
 } from './types';
 
+export type { CourseEntry, CourseListConfig };
+
 let currentConfig: CourseListConfig | null = null;
 
 export function getCourseListConfig(): CourseListConfig {
