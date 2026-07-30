@@ -13,6 +13,7 @@ import {
   Bar,
   Legend,
 } from 'recharts';
+import { useTheme } from '@/hooks/useTheme';
 
 export type ChartType = 'line' | 'area' | 'bar';
 
@@ -37,6 +38,8 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
   syncId,
   className = '',
 }) => {
+  const { resolvedTheme } = useTheme();
+
   // Optimization for large datasets (10k+ points):
   // If data is very large, we can sample it or simplify it before rendering
   // But Recharts handles a few thousand points well. Let's add a simple sampling if data > 1000
@@ -45,6 +48,18 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
     const factor = Math.ceil(data.length / 1000);
     return data.filter((_, index) => index % factor === 0);
   }, [data]);
+
+  // Theme-aware tooltip styles
+  const tooltipStyle = useMemo(() => {
+    const isDark = resolvedTheme === 'dark';
+    return {
+      backgroundColor: isDark ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+      borderRadius: '8px',
+      border: isDark ? '1px solid rgba(75, 85, 99, 0.5)' : 'none',
+      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+      color: isDark ? '#f3f4f6' : '#1f2937',
+    };
+  }, [resolvedTheme]);
 
   const renderChart = () => {
     switch (type) {
@@ -55,12 +70,8 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
             <XAxis dataKey={xKey} tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '8px',
-                border: 'none',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-              }}
+              contentStyle={tooltipStyle}
+              itemStyle={tooltipItemStyle}
             />
             <Legend />
             {yKeys.map((yConfig) => (
@@ -84,12 +95,8 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
             <XAxis dataKey={xKey} tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '8px',
-                border: 'none',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-              }}
+              contentStyle={tooltipStyle}
+              itemStyle={tooltipItemStyle}
             />
             <Legend />
             {yKeys.map((yConfig) => (
@@ -111,12 +118,8 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
             <XAxis dataKey={xKey} tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '8px',
-                border: 'none',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-              }}
+              contentStyle={tooltipStyle}
+              itemStyle={tooltipItemStyle}
             />
             <Legend />
             {yKeys.map((yConfig) => (
