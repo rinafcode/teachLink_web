@@ -2,7 +2,7 @@
 
 This document describes the Discord OAuth2 integration implementation for the TeachLink authentication flow.
 
-## Overview
+##Overview
 
 The Discord OAuth integration allows users to authenticate using their Discord account, providing a seamless signup/login experience.
 
