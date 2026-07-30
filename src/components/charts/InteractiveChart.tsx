@@ -61,6 +61,13 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
     };
   }, [resolvedTheme]);
 
+  const tooltipItemStyle = useMemo(() => {
+    const isDark = resolvedTheme === 'dark';
+    return {
+      color: isDark ? '#f3f4f6' : '#1f2937',
+    };
+  }, [resolvedTheme]);
+
   const renderChart = () => {
     switch (type) {
       case 'area':
