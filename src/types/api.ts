@@ -133,3 +133,5 @@ export interface ReviewApprovalRequest {
   status: ReviewDecision;
   reviewNote?: string;
 }
+
+export type { Topic } from '@/utils/socialUtils';
