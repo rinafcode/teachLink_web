@@ -87,7 +87,9 @@ const STORAGE_KEYS = {
   certificates: 'sl_group_certificates_v1',
 };
 
-function getCertificateStatus(certificate: Pick<ForumCertificate, 'validUntil' | 'revokedAt'>) {
+function getCertificateStatus(
+  certificate: Pick<ForumCertificate, 'validUntil' | 'revokedAt'>,
+): ForumCertificateStatus {
   if (certificate.revokedAt) return 'revoked';
   return new Date(certificate.validUntil).getTime() < Date.now() ? 'expired' : 'active';
 }
@@ -263,11 +265,13 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'success',
-          message: `Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`,
+          title: 'Group Created',
+          message: `Created group “${group.name}”`,
+          timestamp: new Date().toISOString(),
           meta: { groupId: group.id },
         });
       } catch {}
-      toast.success(`Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`);
+      toast.success(`Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â `);
       return group;
     },
     [me.id, me.name, triggerSync],
@@ -292,7 +296,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'info',
+          title: 'Group Joined',
           message: `You joined "${groupName || 'group'}"`,
+          timestamp: new Date().toISOString(),
           meta: { groupId },
         });
       } catch {}
@@ -320,7 +326,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'warning',
+          title: 'Group Left',
           message: `You left "${groupName || 'group'}"`,
+          timestamp: new Date().toISOString(),
           meta: { groupId },
         });
       } catch {}
@@ -352,7 +360,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const group = groups.find((g) => g.id === groupId);
         addNotification({
           type: 'info',
+          title: 'New Message',
           message: `New message in "${group?.name || 'group'}"`,
+          timestamp: new Date().toISOString(),
           meta: { groupId, messageId: msg.id },
         });
       } catch {}
@@ -444,7 +454,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const group = groups.find((g) => g.id === groupId);
         addNotification({
           type: 'success',
+          title: 'Resource Added',
           message: `New resource "${resource.title}" added to "${group?.name || 'group'}"`,
+          timestamp: new Date().toISOString(),
           meta: { groupId, resourceId: res.id },
         });
       } catch {}
@@ -478,7 +490,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const group = groups.find((g) => g.id === groupId);
         addNotification({
           type: 'success',
+          title: 'Challenge Created',
           message: `New challenge "${challenge.title}" created in "${group?.name || 'group'}"`,
+          timestamp: new Date().toISOString(),
           meta: { groupId, challengeId: ch.id },
         });
       } catch {}
@@ -522,9 +536,11 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           const group = groups.find((g) => g.id === groupId);
           addNotification({
             type: 'info',
+            title: 'Progress Updated',
             message: `Progress updated for "${challengeTitle || 'challenge'}" in "${
               group?.name || 'group'
             }"`,
+            timestamp: new Date().toISOString(),
             meta: { challengeId, groupId },
           });
         } catch {}
