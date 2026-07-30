@@ -3,6 +3,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { useMessagingStore } from '@/app/store/messagingStore';
 import type { Attachment } from '@/app/store/messagingStore';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -108,6 +109,13 @@ export function useMessaging() {
     (files: FileList) => {
       const fileArray = Array.from(files);
       const maxSize = 10 * 1024 * 1024; // 10MB limit
+      const rejectedFiles = fileArray.filter((file) => file.size > maxSize);
+      if (rejectedFiles.length > 0) {
+        const names = rejectedFiles.map((f) => f.name).join(', ');
+        toast.error(
+          `Skipped ${rejectedFiles.length} file(s): ${names}. Max file size is 10MB.`,
+        );
+      }
       const validFiles = fileArray.filter((file) => file.size <= maxSize);
       setSelectedFiles([...selectedFiles, ...validFiles]);
     },
