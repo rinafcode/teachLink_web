@@ -13,11 +13,31 @@ export default function CourseDetailLoading() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8 lg:pb-12">
             <div className="max-w-4xl space-y-4">
               <Skeleton height={48} width="75%" className="bg-white/20" animation="wave" />
-              <Skeleton height={24} width="100%" className="bg-white/20 max-w-2xl" animation="wave" />
+              <Skeleton
+                height={24}
+                width="100%"
+                className="bg-white/20 max-w-2xl"
+                animation="wave"
+              />
               <div className="flex gap-4">
-                <Skeleton height={32} width={80} className="bg-white/10 rounded-full" animation="wave" />
-                <Skeleton height={32} width={120} className="bg-white/10 rounded-full" animation="wave" />
-                <Skeleton height={32} width={100} className="bg-white/10 rounded-full" animation="wave" />
+                <Skeleton
+                  height={32}
+                  width={80}
+                  className="bg-white/10 rounded-full"
+                  animation="wave"
+                />
+                <Skeleton
+                  height={32}
+                  width={120}
+                  className="bg-white/10 rounded-full"
+                  animation="wave"
+                />
+                <Skeleton
+                  height={32}
+                  width={100}
+                  className="bg-white/10 rounded-full"
+                  animation="wave"
+                />
               </div>
             </div>
           </div>
