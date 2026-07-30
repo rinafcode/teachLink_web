@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
@@ -141,7 +140,16 @@ export function useCollaboration(roomId: string, user: CollaborationUser, websoc
       strokesRef.current = null;
       chatRef.current = null;
     };
-  }, [roomId, user.id, user.name, user.avatar, user.color, websocketEndpoint]);
+  }, [roomId, user.id, websocketEndpoint]);
+
+  useEffect(() => {
+    const provider = providerRef.current;
+    if (!provider) return;
+    provider.awareness.setLocalStateField('user', {
+      ...user,
+      isActive: true,
+    });
+  }, [user.name, user.avatar, user.color]);
 
   const updateText = (value: string) => {
     if (!yTextRef.current) {
