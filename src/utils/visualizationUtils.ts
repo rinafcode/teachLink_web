@@ -67,9 +67,17 @@ export const CHART_COLOR_PALETTE = [
 ];
 
 /**
- * Format number with appropriate suffix (K, M, B)
+ * Format number with appropriate suffix (K, M, B) for compact display
+ * @deprecated Use formatNumberCompact for clarity, or i18nUtils.formatNumber for locale-aware formatting
  */
 export const formatNumber = (num: number): string => {
+  return formatNumberCompact(num);
+};
+
+/**
+ * Format number with appropriate suffix (K, M, B) for compact display
+ */
+export const formatNumberCompact = (num: number): string => {
   if (num >= 1000000000) {
     return (num / 1000000000).toFixed(1) + 'B';
   }
