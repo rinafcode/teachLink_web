@@ -265,7 +265,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'success',
+          title: 'Group Created',
           message: `Created group "${group.name}"`,
+          timestamp: new Date(),
           meta: { groupId: group.id },
         });
       } catch {}
@@ -296,7 +298,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           type: 'info',
           title: 'Group Joined',
           message: `You joined "${groupName || 'group'}"`,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
           meta: { groupId },
         });
       } catch {}
@@ -326,7 +328,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           type: 'warning',
           title: 'Group Left',
           message: `You left "${groupName || 'group'}"`,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
           meta: { groupId },
         });
       } catch {}
@@ -360,7 +362,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           type: 'info',
           title: 'New Message',
           message: `New message in "${group?.name || 'group'}"`,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
           meta: { groupId, messageId: msg.id },
         });
       } catch {}
@@ -454,7 +456,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           type: 'success',
           title: 'Resource Added',
           message: `New resource "${resource.title}" added to "${group?.name || 'group'}"`,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
           meta: { groupId, resourceId: res.id },
         });
       } catch {}
@@ -490,7 +492,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           type: 'success',
           title: 'Challenge Created',
           message: `New challenge "${challenge.title}" created in "${group?.name || 'group'}"`,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
           meta: { groupId, challengeId: ch.id },
         });
       } catch {}
@@ -538,7 +540,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
             message: `Progress updated for "${challengeTitle || 'challenge'}" in "${
               group?.name || 'group'
             }"`,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date(),
             meta: { challengeId, groupId },
           });
         } catch {}
