@@ -120,4 +120,132 @@ describe('useQuiz', () => {
       partialCreditEnabled: true,
     });
   });
+
+  describe('navigation bounds', () => {
+    it('goPrevious at the first question clamps to index 0', () => {
+      const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+      expect(result.current.currentQuestionIndex).toBe(0);
+
+      act(() => {
+        result.current.actions.goPrevious();
+      });
+
+      expect(result.current.currentQuestionIndex).toBe(0);
+    });
+
+    it('goNext advances and goPrevious goes back within bounds', () => {
+      const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+      act(() => {
+        result.current.actions.goNext();
+      });
+
+      expect(result.current.currentQuestionIndex).toBe(1);
+
+      act(() => {
+        result.current.actions.goPrevious();
+      });
+
+      expect(result.current.currentQuestionIndex).toBe(0);
+    });
+
+    it('goNext at the last question clamps to questions.length - 1', () => {
+      const multiQuestionFixture: Quiz = {
+        ...quizFixture,
+        questions: [
+          ...quizFixture.questions,
+          {
+            id: 'mc-2',
+            type: 'multiple-choice',
+            text: 'Third question',
+            points: 1,
+            options: [
+              { id: 'a', text: 'Wrong', isCorrect: false },
+              { id: 'b', text: 'Right', isCorrect: true },
+            ],
+          },
+        ],
+      };
+
+      const { result } = renderHook(() => useQuiz({ quiz: multiQuestionFixture, autoStart: false }));
+
+      act(() => {
+        result.current.actions.goNext();
+      });
+      act(() => {
+        result.current.actions.goNext();
+      });
+
+      expect(result.current.currentQuestionIndex).toBe(2);
+
+      act(() => {
+        result.current.actions.goNext();
+      });
+
+      expect(result.current.currentQuestionIndex).toBe(2);
+    });
+
+    it('canGoNext and canGoPrevious reflect boundary state', () => {
+      const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+      expect(result.current.canGoPrevious).toBe(false);
+      expect(result.current.canGoNext).toBe(true);
+
+      act(() => {
+        result.current.actions.goNext();
+      });
+
+      expect(result.current.canGoPrevious).toBe(true);
+      expect(result.current.canGoNext).toBe(false);
+    });
+  });
+
+  describe('review-mode guards', () => {
+    it('enterReviewMode is a no-op before the quiz is completed', () => {
+      const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+      act(() => {
+        result.current.actions.enterReviewMode();
+      });
+
+      expect(result.current.isReviewMode).toBe(false);
+    });
+
+    it('exitReviewMode is a no-op before the quiz is completed', () => {
+      const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+      act(() => {
+        result.current.actions.exitReviewMode();
+      });
+
+      expect(result.current.isReviewMode).toBe(false);
+    });
+
+    it('enterReviewMode sets isReviewMode after completion', () => {
+      const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+      act(() => {
+        result.current.actions.complete();
+      });
+
+      expect(result.current.isReviewMode).toBe(true);
+    });
+
+    it('exitReviewMode clears isReviewMode after completion', () => {
+      const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+      act(() => {
+        result.current.actions.complete();
+      });
+
+      expect(result.current.isReviewMode).toBe(true);
+
+      act(() => {
+        result.current.actions.exitReviewMode();
+      });
+
+      expect(result.current.isReviewMode).toBe(false);
+    });
+  });
 });
