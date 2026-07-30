@@ -71,6 +71,23 @@ describe('quiz grading helpers', () => {
 });
 
 describe('useQuiz', () => {
+  it('ignores a second answer to an already-answered question', () => {
+    const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
+
+    act(() => {
+      result.current.actions.answerQuestion('mc-1', 'b'); // correct
+    });
+
+    const firstAnswer = result.current.answers['mc-1'];
+
+    act(() => {
+      result.current.actions.answerQuestion('mc-1', 'a'); // attempt to change to wrong
+    });
+
+    expect(result.current.answers['mc-1']).toBe(firstAnswer);
+    expect(result.current.score).toBe(2);
+  });
+
   it('tracks partial code-credit and regular grading without regressing score updates', () => {
     const { result } = renderHook(() => useQuiz({ quiz: quizFixture, autoStart: false }));
 
