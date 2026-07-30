@@ -265,11 +265,11 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'success',
-          message: `Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`,
+          message: `Created group "${group.name}"`,
           meta: { groupId: group.id },
         });
       } catch {}
-      toast.success(`Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`);
+      toast.success(`Created group "${group.name}"`);
       return group;
     },
     [me.id, me.name, triggerSync],
@@ -326,7 +326,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           meta: { groupId },
         });
       } catch {}
-      toast('Left group', { icon: 'Ã°Å¸â€˜â€¹' });
+      toast('Left group', { icon: '👋' });
     },
     [me.id, triggerSync],
   );
