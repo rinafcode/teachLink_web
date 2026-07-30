@@ -8,21 +8,27 @@ import CourseProgress from '@/components/courses/CourseProgress';
 import VideoPreview from '@/components/courses/VideoPreview';
 import CourseReviews from '@/components/courses/CourseReviews';
 import { useInternationalization } from '@/hooks/useInternationalization';
+import type { CourseEntry } from '@/lib/course-config';
 
-export default function CoursePageContent() {
+interface CoursePageContentProps {
+  course: CourseEntry;
+}
+
+export default function CoursePageContent({ course }: CoursePageContentProps) {
   const { t } = useInternationalization();
-  const isEnrolled = true;
+  const isEnrolled = course.progress > 0;
+  const completedLessons = Math.floor((course.progress / 100) * course.totalLessons);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A]">
-      <CourseHero />
+      <CourseHero course={course} />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           <div className="lg:col-span-8 space-y-6">
             <CourseProgress
-              progress={68}
-              completedLessons={14}
-              totalLessons={20}
+              progress={course.progress}
+              completedLessons={completedLessons}
+              totalLessons={course.totalLessons}
               isEnrolled={isEnrolled}
             />
 
@@ -38,7 +44,7 @@ export default function CoursePageContent() {
             <InstructorBio />
           </div>
           <div className="lg:col-span-4">
-            <EnrollmentCTA courseId="1" courseTitle="Web3 UX Design Principles" />
+            <EnrollmentCTA courseId={course.id} courseTitle={course.title} />
           </div>
         </div>
       </div>

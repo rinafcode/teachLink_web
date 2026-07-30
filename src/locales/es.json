@@ -328,5 +328,15 @@
         }
       }
     }
+  },
+  "search": {
+    "sortSequence": "Ordenar por:",
+    "sort": {
+      "popularity": "Popularidad",
+      "newest": "Más recientes",
+      "priceAsc": "Precio: Menor a Mayor",
+      "priceDesc": "Precio: Mayor a Menor",
+      "rating": "Mejor valorados"
+    }
   }
 }
