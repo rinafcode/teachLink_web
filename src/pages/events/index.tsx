@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -21,13 +22,27 @@ export default function EventsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     apiClient
-      .get<CalendarEvent[]>('/api/events')
+      .get<CalendarEvent[]>('/api/events', { signal: abortController.signal })
       .then((data) =>
         setEvents(data.map((e) => ({ ...e, start: new Date(e.start), end: new Date(e.end) }))),
       )
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
+      .catch((err: Error) => {
+        if (err.name !== 'AbortError') {
+          setError('Failed to load events. Please try again later.');
+        }
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   const handleSelectSlot = useCallback(
@@ -80,13 +95,27 @@ export default function EventsPage() {
           </div>
 
           {loading && (
-            <div className="flex justify-center py-20">
-              <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+              <LoadingSkeleton variant="rectangular" height={400} className="w-full" />
             </div>
           )}
           {error && (
-            <div className="bg-red-900/40 border border-red-700 rounded-lg p-4 text-red-300">
-              {error}
+            <div className="bg-red-900/40 border border-red-700 rounded-lg p-6 text-red-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center">
+                  <span className="text-xl">⚠️</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Error Loading Events</h3>
+                  <p className="text-sm text-red-200">{error}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 px-4 py-2 bg-red-700 hover:bg-red-600 rounded-lg text-sm transition-colors"
+              >
+                Try Again
+              </button>
             </div>
           )}
           {!loading && !error && (
