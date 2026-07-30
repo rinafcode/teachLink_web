@@ -142,6 +142,7 @@ function uid(prefix = 'id'): string {
 }
 
 export type UseStudyGroupsApi = {
+  loading: boolean;
   groups: StudyGroup[];
   messages: GroupMessage[];
   resources: GroupResource[];
@@ -208,6 +209,12 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     load(STORAGE_KEYS.certificates, [] as ForumCertificate[]),
   );
 
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
   const me = currentUser ?? { id: 'current-user', name: 'You' };
 
   const persistAll = useCallback(
@@ -265,11 +272,11 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'success',
-          message: `Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`,
+          message: `Created group “${group.name}”`,
           meta: { groupId: group.id },
         });
       } catch {}
-      toast.success(`Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`);
+      toast.success(`Created group “${group.name}”`);
       return group;
     },
     [me.id, me.name, triggerSync],
@@ -326,7 +333,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           meta: { groupId },
         });
       } catch {}
-      toast('Left group', { icon: 'Ã°Å¸â€˜â€¹' });
+      toast('Left group', { icon: '👋' });
     },
     [me.id, triggerSync],
   );
@@ -588,6 +595,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   useMemo(() => persistAll(), [groups, messages, resources, challenges, certificates, persistAll]);
 
   return {
+    loading,
     groups,
     messages,
     resources,

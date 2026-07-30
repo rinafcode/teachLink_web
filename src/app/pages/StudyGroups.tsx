@@ -13,7 +13,7 @@ import { useStudyGroups } from '@/app/hooks/useStudyGroups';
 import NotificationBell from '@/app/components/notifications/NotificationBell';
 
 export default function StudyGroupsPage() {
-  const sg = useStudyGroups();
+  const { loading, ...sg } = useStudyGroups();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -107,7 +107,16 @@ export default function StudyGroupsPage() {
                 Groups ({filteredGroups.length})
               </h2>
             </div>
-            {filteredGroups.length === 0 ? (
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : filteredGroups.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                 <Users size={48} className="mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                 <p className="text-sm">
