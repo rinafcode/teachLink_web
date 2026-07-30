@@ -10,6 +10,11 @@ const VALID_DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const;
 const VALID_SORT_OPTIONS = ['relevance', 'newest', 'rating', 'price'] as const;
 const MAX_STRING_LENGTH = 100;
 const MAX_ARRAY_SIZE = 50;
+const MAX_ANALYTICS_ENTRIES = 100;
+
+// Debounce utility for localStorage writes
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+const DEBOUNCE_MS = 300;
 
 export const sanitizeString = (value: string): string =>
   value
@@ -145,8 +150,16 @@ export const trackSearch = (analytics: SearchAnalytics) => {
     const raw = localStorage.getItem('search_analytics');
     const history = raw ? (JSON.parse(raw) as SearchAnalytics[]) : [];
     history.unshift(analytics);
-    // Keep last 100 entries for analysis
-    localStorage.setItem('search_analytics', JSON.stringify(history.slice(0, 100)));
+    // Cap before stringifying to avoid O(n) serialization on large arrays
+    const cappedHistory = history.slice(0, MAX_ANALYTICS_ENTRIES);
+
+    // Debounce localStorage writes
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(() => {
+      localStorage.setItem('search_analytics', JSON.stringify(cappedHistory));
+    }, DEBOUNCE_MS);
   } catch (error) {
     logger.error('Failed to track search analytics', { error });
   }
