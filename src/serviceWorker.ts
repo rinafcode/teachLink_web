@@ -48,12 +48,28 @@ registerRoute(
 // Runtime caching for static assets
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.js'),
-  new StaleWhileRevalidate({ cacheName: 'static-js' }),
+  new StaleWhileRevalidate({
+    cacheName: 'static-js',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
+  }),
 );
 
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.css'),
-  new StaleWhileRevalidate({ cacheName: 'static-css' }),
+  new StaleWhileRevalidate({
+    cacheName: 'static-css',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
+  }),
 );
 
 // Runtime caching for images
