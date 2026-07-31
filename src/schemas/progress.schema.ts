@@ -21,3 +21,14 @@ export const CourseProgressSchema = z.object({
 });
 
 export type CourseProgress = z.infer<typeof CourseProgressSchema>;
+
+export const LearningProgressItemSchema = z.object({
+  courseId: z.string().min(1),
+  title: z.string().min(1),
+  progress: z.number().min(0).max(100),
+  timeRemaining: z.string().min(1),
+  totalLessons: z.number().int().nonnegative(),
+  category: z.string().min(1),
+});
+
+export type LearningProgressItem = z.infer<typeof LearningProgressItemSchema>;
