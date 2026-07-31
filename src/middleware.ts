@@ -1,3 +1,4 @@
+import { csrfMiddleware } from './lib/csrfMiddleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { checkRoutePermission } from './middleware/rbac';
@@ -28,6 +29,11 @@ export async function middleware(request: NextRequest) {
     redirectResponse.headers.set('x-trace-id', traceId);
     return redirectResponse;
   }
+
+  const csrfResult = csrfMiddleware(request);
+if (!csrfResult.valid && csrfResult.response) {
+  return withHeaders(csrfResult.response);
+}
 
   // Verify JWT from Authorization header or cookie — never trust client-supplied role cookies
   const token =
