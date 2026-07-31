@@ -1,6 +1,7 @@
 import { createLogger } from '@/lib/logging';
 const logger = createLogger('use-dashboard-widgets');
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { z } from 'zod';
 
 interface Widget {
   id: string;
@@ -11,6 +12,18 @@ interface Widget {
   isCollapsed: boolean;
   settings: Record<string, unknown>;
 }
+
+const widgetSchema = z.object({
+  id: z.string().min(1),
+  type: z.string().min(1),
+  title: z.string().min(1),
+  size: z.enum(['small', 'medium', 'large']),
+  position: z.number().int().nonnegative(),
+  isCollapsed: z.boolean(),
+  settings: z.record(z.string(), z.unknown()),
+});
+
+const widgetListSchema = z.array(widgetSchema);
 
 // Default widgets matching Figma design — single source of truth
 const DEFAULT_WIDGETS: Widget[] = [
@@ -256,12 +269,21 @@ export const useDashboardWidgets = () => {
   const importWidgetConfig = useCallback(
     (config: { widgets?: Widget[] }) => {
       try {
-        if (config.widgets && Array.isArray(config.widgets)) {
-          setWidgets(config.widgets);
-          saveWidgetLayout(config.widgets);
-          return true;
+        if (!Array.isArray(config.widgets)) {
+          return false;
         }
-        return false;
+
+        const result = widgetListSchema.safeParse(config.widgets);
+        if (!result.success) {
+          logger.error('Failed to import widget config: malformed widgets', {
+            errors: result.error.issues,
+          });
+          return false;
+        }
+
+        setWidgets(result.data);
+        saveWidgetLayout(result.data);
+        return true;
       } catch (error) {
         logger.error('Failed to import widget config', { error });
         return false;

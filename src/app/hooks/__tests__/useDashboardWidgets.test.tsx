@@ -70,6 +70,99 @@ describe('useDashboardWidgets', () => {
     expect(saved.length).toBe(api.widgets.length);
   });
 
+  it('imports a valid widget config and persists it', async () => {
+    let api: any;
+    await act(async () => {
+      root.render(
+        <TestHarness
+          onReady={(a) => {
+            api = a;
+          }}
+        />,
+      );
+    });
+
+    const config = {
+      widgets: [
+        {
+          id: 'stat-revenue',
+          type: 'progress-summary',
+          title: 'Total Revenue',
+          size: 'small',
+          position: 0,
+          isCollapsed: false,
+          settings: { statType: 'revenue' },
+        },
+      ],
+      version: '1.0.0',
+    };
+
+    let imported = false;
+    await act(async () => {
+      imported = api.importWidgetConfig(config);
+    });
+    expect(imported).toBe(true);
+    expect(api.widgets).toEqual(config.widgets);
+
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    const saved = JSON.parse(localStorage.getItem('dashboard-widgets') || '[]');
+    expect(saved).toEqual(config.widgets);
+  });
+
+  it('rejects a widget config with malformed entries', async () => {
+    let api: any;
+    await act(async () => {
+      root.render(
+        <TestHarness
+          onReady={(a) => {
+            api = a;
+          }}
+        />,
+      );
+    });
+
+    const malformed = {
+      widgets: [
+        {
+          id: 'broken',
+          type: 'progress-summary',
+          title: 'Broken',
+          // missing size and position
+          isCollapsed: false,
+          settings: {},
+        },
+      ],
+    };
+
+    let imported = true;
+    await act(async () => {
+      imported = api.importWidgetConfig(malformed);
+    });
+    expect(imported).toBe(false);
+    expect(api.widgets.some((w: any) => w.id === 'broken')).toBe(false);
+  });
+
+  it('rejects a non-array widget config', async () => {
+    let api: any;
+    await act(async () => {
+      root.render(
+        <TestHarness
+          onReady={(a) => {
+            api = a;
+          }}
+        />,
+      );
+    });
+
+    let imported = true;
+    await act(async () => {
+      imported = api.importWidgetConfig({ widgets: { id: 'not-an-array' } });
+    });
+    expect(imported).toBe(false);
+  });
+
   it('adds, reorders, updates, collapses, resizes, and removes widgets', async () => {
     let api: any;
     await act(async () => {
