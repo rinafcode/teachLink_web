@@ -46,9 +46,20 @@ export function ModalFeedbackLoop<T>({
     }
   }, [isOpen]);
 
-  const handlePrimaryClose = useCallback(() => {
-    setAwaitingFeedback(true);
-  }, []);
+  const handlePrimaryClose = useCallback(
+    (reason?: 'escape' | 'backdrop' | 'button') => {
+      // Escape and backdrop clicks are "get me out of here" gestures — the
+      // user expects them to dismiss the whole flow immediately, with no
+      // extra step. Only an explicit close (e.g. the header close button)
+      // advances to the feedback prompt.
+      if (reason === 'escape' || reason === 'backdrop') {
+        onClose();
+        return;
+      }
+      setAwaitingFeedback(true);
+    },
+    [onClose]
+  );
 
   const handleSubmitFeedback = useCallback(async () => {
     if (rating == null) return;

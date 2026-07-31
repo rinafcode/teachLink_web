@@ -39,6 +39,11 @@ html.a11y-high-contrast body {
   }
 }
 
+html.dark {
+  --background: #111827;
+  --foreground: #f9fafb;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

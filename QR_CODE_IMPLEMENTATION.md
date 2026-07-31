@@ -3,7 +3,8 @@
 ## Issue Closed
 
 **#273 QR Code Generation**
-
+<!-- 
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 ## Overview
 
 This PR implements a complete QR code generation feature for TeachLink, enabling users to easily share posts, profiles, and other resources via scannable QR codes. The implementation is production-ready, fully accessible, and includes comprehensive documentation and examples.

@@ -6,6 +6,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { validateWalletInteraction, safeWalletCall } from '@/utils/web3/walletValidation';
 import { walletCache, walletCacheKeys, CACHE_TTL } from '@/utils/web3/walletCache';
 import { walletConnectionQueue } from '@/utils/web3/walletQueue';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-web3-wallet');
 
 /**
  * Supported wallet providers
@@ -313,7 +316,7 @@ export function useWeb3Wallet() {
       walletCache.set(cacheKey, balances, CACHE_TTL.BALANCE);
       setState((prev) => ({ ...prev, balances }));
     } catch (error) {
-      console.warn('[useWeb3Wallet] Balance fetch failed:', error);
+      logger.warn('[useWeb3Wallet] Balance fetch failed', { error });
     }
   }, [state.address, state.chainId, state.provider]);
 
@@ -459,7 +462,7 @@ export function useWeb3Wallet() {
         try {
           await connect(savedProvider);
         } catch (error) {
-          console.warn('[useWeb3Wallet] Auto-connect failed:', error);
+          logger.warn('[useWeb3Wallet] Auto-connect failed', { error });
           localStorage.removeItem('wallet_connected');
         }
       }

@@ -9,6 +9,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AutoSaveManagerImpl } from '@/form-management/auto-save/auto-save-manager';
 import { FormState, SaveStatus } from '@/form-management/types/core';
 import { useNotification } from '@/hooks/use-notification';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('AutoSaveManager');
 
 interface AutoSaveManagerProps {
   formId: string;
@@ -91,7 +94,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
       try {
         await autoSaveManager.saveNow(formId, formState);
       } catch (error) {
-        console.error('Auto-save failed:', error);
+        logger.error('Auto-save failed', { error });
       } finally {
         isSavingRef.current = false;
       }
@@ -105,7 +108,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
     try {
       await autoSaveManager.saveNow(formId, formState);
     } catch (error) {
-      console.error('Manual save failed:', error);
+      logger.error('Manual save failed', { error });
     }
   };
 
@@ -114,7 +117,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
       await autoSaveManager.clearDraft(formId);
       setLastSavedTime('');
     } catch (error) {
-      console.error('Clear draft failed:', error);
+      logger.error('Clear draft failed', { error });
     }
   };
 
@@ -150,7 +153,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
 
   return (
     <div className={`auto-save-manager ${className}`}>
-      <div className={`save-status save-status-${saveStatus.status}`}>
+      <div className={`save-status save-status-${saveStatus.status}`} role="status" aria-live="polite">
         <span className="status-icon">{getStatusIcon()}</span>
         <span className="status-text">{getStatusText()}</span>
 
@@ -175,7 +178,7 @@ export const AutoSaveManager: React.FC<AutoSaveManagerProps> = ({
       </div>
 
       {saveStatus.error && (
-        <div className="save-error">
+        <div className="save-error" role="alert">
           <span className="error-icon">⚠️</span>
           <span className="error-message">{saveStatus.error.message}</span>
         </div>

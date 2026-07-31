@@ -12,6 +12,9 @@ import {
   settingsToVirtualBackgroundConfig,
   type VirtualBackgroundConfig,
 } from '@/utils/virtualBackgroundUtils';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-virtual-background');
 
 export function useVirtualBackground() {
   const settings = useSettingsStore((s) => s.settings);
@@ -48,7 +51,7 @@ export function useVirtualBackground() {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to apply virtual background';
         setError(errorMessage);
-        console.error('Virtual background error:', err);
+        logger.error('Virtual background error', { error: err });
         return stream;
       } finally {
         setIsProcessing(false);

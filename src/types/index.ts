@@ -10,6 +10,7 @@ export type {
   VideoNote,
   UserProgress,
   AnalyticsEventPayload,
+  Topic,
 } from './api';
 
 export type {

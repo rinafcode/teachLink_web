@@ -18,14 +18,7 @@ import type {
   NotesSuccessResponseDTO,
 } from '@/types/api/notes.dto';
 
-export const runtime = 'edge';
-
-const notesStore = new Map<string, VideoNote[]>();
-
-const keyFor = (userId: string | undefined, lessonId: string): string => {
-  const safeUserId = encodeURIComponent(userId ?? 'anon');
-  return `${safeUserId}::${encodeURIComponent(lessonId)}`;
-};
+import * as notesRepo from '@/lib/db/repositories/notes.repository';
 
 // ---------------------------------------------------------------------------
 // GET /api/notes
@@ -41,12 +34,23 @@ export async function GET(request: Request): Promise<NextResponse<NotesListRespo
   const result = validateQuery(NotesGetQuerySchema, searchParams);
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  return addHeaders(
-    NextResponse.json({
-      data: notesStore.get(keyFor(result.data.userId, result.data.lessonId)) ?? [],
-      success: true,
-    }),
-  );
+  try {
+    const notes = await notesRepo.findByUserAndLesson(result.data.userId, result.data.lessonId);
+    return addHeaders(
+      NextResponse.json({
+        data: notes,
+        success: true,
+      }),
+    );
+  } catch (error) {
+    edgeLog('error', '/api/notes', 'Database error in GET', { error });
+    return addHeaders(
+      NextResponse.json(
+        { data: [], success: false, message: 'Internal server error' },
+        { status: 500 },
+      ),
+    ) as NextResponse;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -75,37 +79,40 @@ export async function POST(request: Request): Promise<NextResponse<NoteResponseD
   const result = validateBody(NotesCreateBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  const now = new Date().toISOString();
+  try {
+    const noteData = {
+      id: result.data.note.id ?? `note-${Date.now()}`,
+      time: result.data.note.time,
+      text: result.data.note.text,
+    };
 
-  const persisted: VideoNote = {
-    id: result.data.note.id ?? `note-${Date.now()}`,
-    time: result.data.note.time,
-    text: result.data.note.text,
-    createdAt: now,
-    updatedAt: now,
-  };
+    const persisted = await notesRepo.create(result.data.userId, result.data.lessonId, noteData);
 
-  const key = keyFor(result.data.userId, result.data.lessonId);
-  const prev = notesStore.get(key) ?? [];
+    const response = addHeaders(
+      NextResponse.json({
+        success: true,
+        data: persisted,
+      }),
+    );
 
-  notesStore.set(key, [persisted, ...prev.filter((n) => n.id !== persisted.id)]);
+    logAuditMutation(request, {
+      action: 'create',
+      targetType: 'video-note',
+      targetId: persisted.id,
+      statusCode: response.status,
+      metadata: { lessonId: result.data.lessonId },
+    });
 
-  const response = addHeaders(
-    NextResponse.json({
-      success: true,
-      data: persisted,
-    }),
-  );
-
-  logAuditMutation(request, {
-    action: 'create',
-    targetType: 'video-note',
-    targetId: persisted.id,
-    statusCode: response.status,
-    metadata: { lessonId: result.data.lessonId },
-  });
-
-  return response;
+    return response;
+  } catch (error) {
+    edgeLog('error', '/api/notes', 'Database error in POST', { error });
+    return addHeaders(
+      NextResponse.json(
+        { success: false, message: 'Internal server error' } as unknown as NoteResponseDTO,
+        { status: 500 },
+      ),
+    ) as NextResponse;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -134,34 +141,28 @@ export async function PATCH(request: Request): Promise<NextResponse<NotesSuccess
   const result = validateBody(NotesPatchBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  const key = keyFor(result.data.userId, result.data.lessonId);
-  const prev = notesStore.get(key) ?? [];
-  const now = new Date().toISOString();
+  try {
+    await notesRepo.update(result.data.id, result.data.userId, result.data.lessonId, {
+      text: result.data.text,
+      time: result.data.time,
+    });
 
-  notesStore.set(
-    key,
-    prev.map((n) =>
-      n.id === result.data.id
-        ? {
-            ...n,
-            text: result.data.text,
-            time: result.data.time ?? n.time,
-            updatedAt: now,
-          }
-        : n,
-    ),
-  );
+    const response = addHeaders(NextResponse.json({ success: true }));
+    logAuditMutation(request, {
+      action: 'update',
+      targetType: 'video-note',
+      targetId: result.data.id,
+      statusCode: response.status,
+      metadata: { lessonId: result.data.lessonId },
+    });
 
-  const response = addHeaders(NextResponse.json({ success: true }));
-  logAuditMutation(request, {
-    action: 'update',
-    targetType: 'video-note',
-    targetId: result.data.id,
-    statusCode: response.status,
-    metadata: { lessonId: result.data.lessonId },
-  });
-
-  return response;
+    return response;
+  } catch (error) {
+    edgeLog('error', '/api/notes', 'Database error in PATCH', { error });
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 }),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -190,22 +191,23 @@ export async function DELETE(request: Request): Promise<NextResponse<NotesSucces
   const result = validateBody(NotesDeleteBodySchema, await request.json());
   if (!result.ok) return addHeaders(result.error) as NextResponse;
 
-  const key = keyFor(result.data.userId, result.data.lessonId);
-  const prev = notesStore.get(key) ?? [];
+  try {
+    await notesRepo.remove(result.data.id, result.data.userId, result.data.lessonId);
 
-  notesStore.set(
-    key,
-    prev.filter((n) => n.id !== result.data.id),
-  );
+    const response = addHeaders(NextResponse.json({ success: true }));
+    logAuditMutation(request, {
+      action: 'delete',
+      targetType: 'video-note',
+      targetId: result.data.id,
+      statusCode: response.status,
+      metadata: { lessonId: result.data.lessonId },
+    });
 
-  const response = addHeaders(NextResponse.json({ success: true }));
-  logAuditMutation(request, {
-    action: 'delete',
-    targetType: 'video-note',
-    targetId: result.data.id,
-    statusCode: response.status,
-    metadata: { lessonId: result.data.lessonId },
-  });
-
-  return response;
+    return response;
+  } catch (error) {
+    edgeLog('error', '/api/notes', 'Database error in DELETE', { error });
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 }),
+    );
+  }
 }

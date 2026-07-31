@@ -5,6 +5,9 @@
 
 import { EmailMessage } from '@/lib/email/types';
 import { ExportNotification } from './types';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('export-notification-service');
 
 export class ExportNotificationService {
   /**
@@ -15,7 +18,7 @@ export class ExportNotificationService {
 
     // In production, this would use the email queue
     // For now, we'll log it
-    console.log('Export notification:', message);
+    logger.info('Export notification', { message });
 
     // Uncomment when email service is configured:
     // const { EmailQueue } = await import('@/lib/email/queue');

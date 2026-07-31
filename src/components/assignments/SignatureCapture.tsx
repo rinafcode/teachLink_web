@@ -106,9 +106,11 @@ export const SignatureCapture = forwardRef<SignatureCaptureHandle, SignatureCapt
       if (!drawingRef.current) return;
       drawingRef.current = false;
       setHasStrokes(true);
-      const url = canvasRef.current?.toDataURL('image/png') ?? null;
-      onChange?.(url);
-    }, [onChange]);
+      if (!requireAccept) {
+        const url = canvasRef.current?.toDataURL('image/png') ?? null;
+        onChange?.(url);
+      }
+    }, [onChange, requireAccept]);
 
     const clear = useCallback(() => {
       const c = canvasRef.current;

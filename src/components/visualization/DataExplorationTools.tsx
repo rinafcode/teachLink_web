@@ -15,7 +15,7 @@ import {
   calculateStatistics,
   exportToCSV,
   exportToJSON,
-  formatNumber,
+  formatNumberCompact,
 } from '@/utils/visualizationUtils';
 import {
   Filter,
@@ -190,7 +190,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
               <span className="text-xs text-gray-600 dark:text-gray-400">Mean</span>
             </div>
             <div className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatNumber(statistics.mean)}
+              {formatNumberCompact(statistics.mean)}
             </div>
           </div>
 
@@ -200,7 +200,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
               <span className="text-xs text-gray-600 dark:text-gray-400">Median</span>
             </div>
             <div className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatNumber(statistics.median)}
+              {formatNumberCompact(statistics.median)}
             </div>
           </div>
 
@@ -210,7 +210,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
               <span className="text-xs text-gray-600 dark:text-gray-400">Mode</span>
             </div>
             <div className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatNumber(statistics.mode)}
+              {formatNumberCompact(statistics.mode)}
             </div>
           </div>
 
@@ -220,7 +220,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
               <span className="text-xs text-gray-600 dark:text-gray-400">Max</span>
             </div>
             <div className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatNumber(statistics.max)}
+              {formatNumberCompact(statistics.max)}
             </div>
           </div>
 
@@ -230,7 +230,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
               <span className="text-xs text-gray-600 dark:text-gray-400">Min</span>
             </div>
             <div className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatNumber(statistics.min)}
+              {formatNumberCompact(statistics.min)}
             </div>
           </div>
 
@@ -240,7 +240,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
               <span className="text-xs text-gray-600 dark:text-gray-400">Std Dev</span>
             </div>
             <div className="text-xl font-bold text-gray-900 dark:text-white">
-              {formatNumber(statistics.stdDev)}
+              {formatNumberCompact(statistics.stdDev)}
             </div>
           </div>
         </div>
@@ -283,7 +283,7 @@ export const DataExplorationTools: React.FC<DataExplorationToolsProps> = ({
                     key={datasetIndex}
                     className="text-right py-2 px-4 text-gray-900 dark:text-white"
                   >
-                    {formatNumber(dataset.data[index])}
+                    {formatNumberCompact(dataset.data[index])}
                   </td>
                 ))}
               </tr>

@@ -1,4 +1,7 @@
 import type { BaseNotification, NotificationEvent } from './types';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('notification-socket');
 
 export type NotificationEventType = NotificationEvent['event'];
 
@@ -162,7 +165,7 @@ export class NotificationSocketService {
             this.listeners.forEach((listener) => listener(notification));
           }
         } catch {
-          console.warn('[NotificationSocket] Failed to parse message', event.data);
+          logger.warn('[NotificationSocket] Failed to parse message', { data: event.data });
         }
       };
 
@@ -187,7 +190,7 @@ export class NotificationSocketService {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to open WebSocket';
-      console.error('[NotificationSocket] Failed to open', error);
+      logger.error('[NotificationSocket] Failed to open', { error });
       this.updateConnectionState({
         status: 'disconnected',
         reconnectAttempts: this.reconnectAttempts,

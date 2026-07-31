@@ -4,7 +4,10 @@ Summary
 
 - **Purpose:** Enable percentage-based canary rollout for the Tip Receiving feature.
 - **Mechanism:** Server-side feature flag evaluated per-request with deterministic user bucketing.
-
+<!-- 
+The production notification system stores durable notification data on a Kubernetes
+PersistentVolumeClaim so pod restarts do not discard queued or cached notification
+state. -->
 Configuration
 
 - Set the rollout percentage via environment variable `TIP_RECEIVING_CANARY_PERCENT` (0-100).

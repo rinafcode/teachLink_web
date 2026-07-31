@@ -2,8 +2,8 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { GET as verifyGET, POST as verifyPOST } from '../email-verification/verify/route';
 import { POST as resendPOST } from '../email-verification/resend/route';
 import { POST as restorePOST } from '../email-verification/restore/route';
-import { POST as signupPOST } from '../../signup/route';
-import { POST as loginPOST } from '../../login/route';
+import { POST as signupPOST } from '../signup/route';
+import { POST as loginPOST } from '../login/route';
 
 vi.mock('@/lib/ratelimit', () => ({
   withRateLimit: vi.fn(() => ({
@@ -42,6 +42,20 @@ vi.mock('@/lib/auth/email-verification', () => ({
   })),
   getVerificationTokenTtlMinutes: vi.fn(() => 15),
 }));
+
+vi.mock('bcryptjs', () => ({
+  default: {
+    compare: vi.fn().mockResolvedValue(true),
+  },
+}));
+
+vi.mock('@/lib/db/pool', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/db/pool')>();
+  return {
+    ...actual,
+    findUserByEmail: vi.fn(),
+  };
+});
 
 describe('email verification routes', () => {
   beforeEach(() => {
@@ -94,6 +108,12 @@ describe('email verification routes', () => {
 
   it('blocks login until verification is complete', async () => {
     const { getVerificationStatus } = await import('@/lib/auth/email-verification');
+    const { findUserByEmail } = await import('@/lib/db/pool');
+    vi.mocked(findUserByEmail).mockResolvedValue({
+      id: 'user-1',
+      password_hash: 'hashed-password',
+      role: 'STUDENT',
+    });
     vi.mocked(getVerificationStatus).mockResolvedValue({
       required: true,
       status: 'pending',

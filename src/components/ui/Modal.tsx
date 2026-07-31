@@ -15,9 +15,12 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
   full: 'max-w-full',
 };
 
+/** How the modal came to be closed. Optional so existing `() => void` handlers keep working. */
+export type ModalCloseReason = 'escape' | 'backdrop' | 'button';
+
 export interface ModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (reason?: ModalCloseReason) => void;
   title: string;
   children: React.ReactNode;
   /** Controls the maximum width of the modal panel */
@@ -29,6 +32,22 @@ export interface ModalProps {
 /**
  * Accessible modal dialog with focus trap, Escape-to-close, and screen reader announcements.
  * Uses the existing `useFocusTrap` hook from `useAccessibility`.
+ *
+ * `onClose` now receives an optional reason ('escape' | 'backdrop' | 'button')
+ * so consumers that need to distinguish an ambient dismiss gesture from an
+ * explicit close action can do so — see `ModalFeedbackLoop`, which uses this
+ * to make Escape/backdrop always cancel outright instead of interrupting the
+ * user with a feedback prompt. Existing `() => void` handlers are unaffected;
+ * they simply ignore the extra argument.
+ *
+ * NOTE on native `<dialog>`: this was evaluated as a follow-up (native
+ * top-layer stacking, a real `::backdrop`, built-in inertness of background
+ * content) but jsdom 26, which this repo's Vitest suite runs on, does not
+ * implement `HTMLDialogElement.showModal()`/`close()` — every test that
+ * renders a Modal (this file's suite, plus any test touching the 9 current
+ * consumers) would throw immediately. Revisit once the test environment
+ * upgrades to a jsdom version with dialog support, or the suite moves to a
+ * real-browser runner (e.g. Playwright component tests) for this component.
  */
 export function Modal({
   isOpen,
@@ -59,7 +78,7 @@ export function Modal({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onClose('escape');
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -70,7 +89,11 @@ export function Modal({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} aria-hidden="true" />
+      <div
+        className="fixed inset-0 z-40 bg-black/50"
+        onClick={() => onClose('backdrop')}
+        aria-hidden="true"
+      />
 
       {/* Dialog */}
       <div
@@ -89,7 +112,7 @@ export function Modal({
               {title}
             </h2>
             <button
-              onClick={onClose}
+              onClick={() => onClose('button')}
               aria-label="Close dialog"
               className="rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:text-gray-200"
             >

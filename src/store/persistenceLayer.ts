@@ -1,4 +1,7 @@
 import { openDB } from 'idb';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('persistence-layer');
 
 const DB_NAME = 'teachlink_state_v1';
 const STORE_NAME = 'app_state';
@@ -21,7 +24,7 @@ export const persistenceLayer = {
       const data = await db.get(STORE_NAME, name);
       return data ? JSON.stringify(data) : null;
     } catch (error) {
-      console.error('[Persistence] Error loading state:', error);
+      logger.error('[Persistence] Error loading state', { error });
       return null;
     }
   },
@@ -39,7 +42,7 @@ export const persistenceLayer = {
       });
       await db.put(STORE_NAME, JSON.parse(value), name);
     } catch (error) {
-      console.error('[Persistence] Error saving state:', error);
+      logger.error('[Persistence] Error saving state', { error });
     }
   },
 

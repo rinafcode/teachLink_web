@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
   GraduationCap,
   Calendar,
-  Check,
   Wallet,
   LogOut,
   Globe,
@@ -15,7 +14,6 @@ import {
   FileText,
   Loader2,
   BookOpen,
-  Mail,
 } from 'lucide-react';
 
 import { FormWizardController } from '@/form-management/components';
@@ -25,6 +23,8 @@ import { useNotification } from '@/hooks/use-notification';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import type { EventProperties } from '@/utils/analytics';
 import type { WizardStep, FieldDescriptor, FormState } from '@/form-management/types/core';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('OnboardingPage');
 
 // Define field configuration for onboarding
 const onboardingFields: FieldDescriptor[] = [
@@ -152,9 +152,9 @@ export default function OnboardingPage() {
   const safeTrack = useCallback(
     (name: string, properties: EventProperties = {}) => {
       try {
-        track(name as any, properties);
-      } catch (err) {
-        console.warn('[Onboarding Analytics] Failed to track event', err);
+        track(name as string, properties);
+      } catch (_err) {
+        logger.warn('[Onboarding Analytics] Failed to track event', { error: _err });
       }
     },
     [track],
@@ -223,7 +223,7 @@ export default function OnboardingPage() {
     };
   }, [hasFinishedOnboarding, safeTrack]);
 
-  const handleFieldChange = async (fieldId: string, value: any) => {
+  const handleFieldChange = async (fieldId: string, value: unknown) => {
     stateManager.updateField(fieldId, value);
 
     // Perform real-time validation
@@ -266,7 +266,7 @@ export default function OnboardingPage() {
   };
 
   // Final onboarding submission
-  const handleComplete = async (values: Record<string, any>) => {
+  const handleComplete = async (values: Record<string, unknown>) => {
     const loadingToastId = loading('Finalizing your registration profile...');
 
     try {
@@ -280,14 +280,14 @@ export default function OnboardingPage() {
         stepId: currentStep.id,
         stepIndex: currentStep.index,
         stepTitle: currentStep.title,
-        role: values.role,
+        role: values.role as string,
         walletConnected: !!values.walletAddress,
       });
 
       // Save onboarding preference state locally so other pages know user is onboarded
       if (typeof window !== 'undefined') {
         localStorage.setItem('teachlink_onboarded', 'true');
-        localStorage.setItem('teachlink_user_role', values.role);
+        localStorage.setItem('teachlink_user_role', values.role as string);
       }
 
       // Redirect to main dashboard

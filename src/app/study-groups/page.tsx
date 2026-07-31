@@ -5,6 +5,18 @@ export const metadata: Metadata = {
   title: 'Study Groups | TeachLink',
   description:
     'Create and collaborate in study groups with discussions, resources, and challenges.',
+  openGraph: {
+    title: 'Study Groups | TeachLink',
+    description: 'Create and collaborate in study groups on TeachLink.',
+    type: 'website',
+    siteName: 'TeachLink',
+  },
+  twitter: {
+    card: 'summary',
+    site: '@teachlink',
+    title: 'Study Groups | TeachLink',
+    description: 'Create and collaborate in study groups on TeachLink.',
+  },
 };
 
 export default function Page() {
