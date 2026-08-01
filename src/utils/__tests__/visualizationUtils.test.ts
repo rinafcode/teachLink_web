@@ -152,6 +152,50 @@ describe('visualizationUtils', () => {
       expect(result.direction).toBe('neutral');
       expect(result.percentage).toBe(0);
     });
+
+    it('should handle zero baseline with positive growth without Infinity', () => {
+      const data = [0, 10, 250];
+      const result = calculateTrend(data);
+
+      expect(result.direction).toBe('up');
+      expect(result.percentage).toBe(100);
+      expect(Number.isFinite(result.percentage)).toBe(true);
+    });
+
+    it('should handle zero baseline with negative movement without Infinity', () => {
+      const data = [0, 2, -5];
+      const result = calculateTrend(data);
+
+      expect(result.direction).toBe('down');
+      expect(result.percentage).toBe(100);
+      expect(Number.isFinite(result.percentage)).toBe(true);
+    });
+
+    it('should handle zero baseline with no movement without NaN', () => {
+      const data = [0, 0, 0];
+      const result = calculateTrend(data);
+
+      expect(result.direction).toBe('neutral');
+      expect(result.percentage).toBe(0);
+      expect(Number.isNaN(result.percentage)).toBe(false);
+    });
+
+    it('should handle near-zero baseline without absurd percentages', () => {
+      const data = [Number.EPSILON / 2, 3, 5];
+      const result = calculateTrend(data);
+
+      expect(result.direction).toBe('up');
+      expect(result.percentage).toBe(100);
+      expect(Number.isFinite(result.percentage)).toBe(true);
+    });
+
+    it('should treat near-zero values at both endpoints as neutral', () => {
+      const data = [Number.EPSILON / 2, 0, Number.EPSILON / 4];
+      const result = calculateTrend(data);
+
+      expect(result.direction).toBe('neutral');
+      expect(result.percentage).toBe(0);
+    });
   });
 
   describe('calculateStatistics', () => {

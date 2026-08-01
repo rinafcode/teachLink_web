@@ -247,6 +247,24 @@ export const calculateTrend = (
 
   const first = data[0];
   const last = data[data.length - 1];
+
+  // Guard against a zero/near-zero baseline before dividing, otherwise the
+  // percentage change becomes Infinity or NaN (common for new metrics whose
+  // first data point is 0) and dashboards render a nonsensical trend.
+  // A percentage change from a zero baseline is undefined, so report the
+  // direction of movement with a full 100% change as a finite, sane fallback.
+  if (Math.abs(first) < Number.EPSILON) {
+    if (Math.abs(last) < Number.EPSILON) {
+      // Both endpoints are effectively zero: nothing changed.
+      return { direction: 'neutral', percentage: 0 };
+    }
+
+    return {
+      direction: last > first ? 'up' : 'down',
+      percentage: 100,
+    };
+  }
+
   const change = ((last - first) / first) * 100;
 
   if (Math.abs(change) < 1) {
