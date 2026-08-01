@@ -17,7 +17,8 @@
     "submit": "Enviar",
     "confirm": "Confirmar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "retry": "[MISSING TRANSLATION] Retry"
   },
   "navigation": {
     "home": "Inicio",
@@ -190,7 +191,8 @@
           "neutral": "Estable"
         }
       }
-    }
+    },
+    "noCoursesInProgress": "[MISSING TRANSLATION] You have no courses in progress yet."
   },
   "profile": {
     "editProfile": "Editar Perfil",

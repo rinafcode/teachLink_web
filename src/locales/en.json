@@ -17,7 +17,8 @@
     "submit": "Submit",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "retry": "Retry"
   },
   "navigation": {
     "home": "Home",
@@ -190,7 +191,8 @@
           "neutral": "Flat"
         }
       }
-    }
+    },
+    "noCoursesInProgress": "You have no courses in progress yet."
   },
   "profile": {
     "editProfile": "Edit Profile",

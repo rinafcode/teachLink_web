@@ -17,7 +17,8 @@
     "submit": "إرسال",
     "confirm": "تأكيد",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "retry": "إعادة المحاولة"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -190,7 +191,8 @@
           "neutral": "ثابت"
         }
       }
-    }
+    },
+    "noCoursesInProgress": "لا توجد دورات قيد التقدم بعد."
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
