@@ -49,6 +49,15 @@ export async function promptPWAInstall(installEvent: any): Promise<boolean> {
  * Clears outdated caches for storage optimization on mobile
  */
 export async function clearOutdatedCaches(cachePrefix = 'teachlink-cache-'): Promise<void> {
-  if (!('caches' in window)) return;
-  // Typically executed inside the SW, but can be manually triggered if needed from client side
+  if (typeof globalThis === 'undefined' || !('caches' in globalThis)) return;
+
+  try {
+    const cacheNames = await globalThis.caches.keys();
+    const matchingCaches = cacheNames.filter((cacheName) => cacheName.startsWith(cachePrefix));
+
+    await Promise.all(matchingCaches.map((cacheName) => globalThis.caches.delete(cacheName)));
+    logger.info('Cleared outdated caches', { cachePrefix, deletedCount: matchingCaches.length });
+  } catch (error) {
+    logger.error('Failed to clear outdated caches', { error, cachePrefix });
+  }
 }

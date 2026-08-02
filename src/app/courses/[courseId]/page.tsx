@@ -1,33 +1,61 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import CoursePageContent from '../components/CoursePageContent';
+import { getCourseById } from '@/lib/course-config';
+import type { CourseEntry } from '@/lib/course-config';
 
 interface CoursePageProps {
   params: Promise<{ courseId: string }>;
 }
 
 export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
-  await params;
-  // In a real app, you would fetch course data here
+  const { courseId } = await params;
+  const course = getCourseById(courseId);
+
+  if (!course) {
+    return {
+      title: 'Course Not Found | TeachLink',
+    };
+  }
+
   return {
-    title: 'Course Details | TeachLink',
-    description:
-      'View detailed information about this course, including syllabus, instructor details, and enrollment options.',
+    title: `${course.title} | TeachLink`,
+    description: course.description,
+    alternates: {
+      canonical: `/courses/${courseId}`,
+    },
     openGraph: {
-      title: 'Course Details | TeachLink',
-      description: 'View course syllabus, instructor details, and enrollment options.',
+      title: `${course.title} | TeachLink`,
+      description: course.description,
       type: 'website',
       siteName: 'TeachLink',
+      url: `/courses/${courseId}`,
+      images: course.thumbnailUrl
+        ? [
+            {
+              url: course.thumbnailUrl,
+              alt: course.title,
+            },
+          ]
+        : undefined,
     },
     twitter: {
       card: 'summary_large_image',
       site: '@teachlink',
-      title: 'Course Details | TeachLink',
-      description: 'View course syllabus, instructor details, and enrollment options.',
+      title: `${course.title} | TeachLink`,
+      description: course.description,
+      images: course.thumbnailUrl ? [course.thumbnailUrl] : undefined,
     },
   };
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
-  await params;
-  return <CoursePageContent />;
+  const { courseId } = await params;
+  const course = getCourseById(courseId);
+
+  if (!course) {
+    notFound();
+  }
+
+  return <CoursePageContent course={course} />;
 }

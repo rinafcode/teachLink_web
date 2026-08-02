@@ -16,12 +16,19 @@ export default function SocialInteractions({ contentId, contentUrl }: SocialInte
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState('');
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   const handleShare = async () => {
     const url = contentUrl ?? window.location.href;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setCopyError(false);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 2000);
+    }
   };
 
   const handleAddComment = async (e: React.FormEvent) => {
@@ -65,7 +72,9 @@ export default function SocialInteractions({ contentId, contentUrl }: SocialInte
           className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-green-500 transition-colors"
         >
           <Share2 className="w-5 h-5" />
-          <span>{copied ? 'Copied!' : 'Share'}</span>
+          <span>
+            {copied ? 'Copied!' : copyError ? 'Failed to copy' : 'Share'}
+          </span>
         </button>
       </div>
 

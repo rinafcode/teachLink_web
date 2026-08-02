@@ -5,26 +5,61 @@
 import type { LanguageCode, CulturalPreferences } from '@/locales/types';
 import { getLocaleConfig } from '@/locales/config';
 import { format, formatDistanceToNow, type Locale } from 'date-fns';
-import { enUS, es, fr, de, ar, he, ja, zhCN, ptBR, ru, it, ko } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale/en-US';
 import { getNumberFormat } from './intlCache';
 import { createLogger } from '@/lib/logging';
+
 const logger = createLogger('i18nUtils');
 
-// Date-fns locale mapping
-const dateFnsLocales: Record<LanguageCode, Locale> = {
-  en: enUS,
-  es: es,
-  fr: fr,
-  de: de,
-  ar: ar,
-  he: he,
-  ja: ja,
-  zh: zhCN,
-  pt: ptBR,
-  ru: ru,
-  it: it,
-  ko: ko,
+const dateFnsLocaleLoaders: Record<LanguageCode, () => Promise<Locale>> = {
+  en: () => import('date-fns/locale/en-US').then((module) => module.enUS),
+  es: () => import('date-fns/locale/es').then((module) => module.es),
+  fr: () => import('date-fns/locale/fr').then((module) => module.fr),
+  de: () => import('date-fns/locale/de').then((module) => module.de),
+  ar: () => import('date-fns/locale/ar').then((module) => module.ar),
+  he: () => import('date-fns/locale/he').then((module) => module.he),
+  ja: () => import('date-fns/locale/ja').then((module) => module.ja),
+  zh: () => import('date-fns/locale/zh-CN').then((module) => module.zhCN),
+  pt: () => import('date-fns/locale/pt-BR').then((module) => module.ptBR),
+  ru: () => import('date-fns/locale/ru').then((module) => module.ru),
+  it: () => import('date-fns/locale/it').then((module) => module.it),
+  ko: () => import('date-fns/locale/ko').then((module) => module.ko),
 };
+
+const dateFnsLocaleCache: Partial<Record<LanguageCode, Locale>> = {
+  en: enUS,
+};
+
+const dateFnsLocalePromises: Partial<Record<LanguageCode, Promise<Locale>>> = {};
+
+export async function preloadDateFnsLocale(language: LanguageCode): Promise<Locale> {
+  if (dateFnsLocaleCache[language]) {
+    return dateFnsLocaleCache[language] as Locale;
+  }
+
+  if (!dateFnsLocalePromises[language]) {
+    dateFnsLocalePromises[language] = dateFnsLocaleLoaders[language]()
+      .then((locale) => {
+        dateFnsLocaleCache[language] = locale;
+        return locale;
+      })
+      .catch((error) => {
+        logger.warn('Failed to load date-fns locale', { language, error });
+        return dateFnsLocaleCache.en as Locale;
+      });
+  }
+
+  return dateFnsLocalePromises[language] as Promise<Locale>;
+}
+
+function getDateFnsLocale(language: LanguageCode): Locale {
+  if (dateFnsLocaleCache[language]) {
+    return dateFnsLocaleCache[language] as Locale;
+  }
+
+  void preloadDateFnsLocale(language);
+  return dateFnsLocaleCache.en as Locale;
+}
 
 /**
  * Get cultural preferences for a locale
@@ -82,7 +117,7 @@ export function formatDate(
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
 
   const config = getLocaleConfig(language);
-  const locale = dateFnsLocales[language] || dateFnsLocales.en;
+  const locale = getDateFnsLocale(language);
   const formatPattern = formatStr || config.dateFormat || 'PP';
 
   try {
@@ -99,7 +134,7 @@ export function formatDate(
 export function formatRelativeTime(date: Date | string | number, language: LanguageCode): string {
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
 
-  const locale = dateFnsLocales[language] || dateFnsLocales.en;
+  const locale = getDateFnsLocale(language);
 
   try {
     return formatDistanceToNow(dateObj, { addSuffix: true, locale });

@@ -9,6 +9,7 @@ import ImageUploader from '@/components/shared/ImageUploader';
 import PreferencesSection from '@/components/profile/PreferencesSection';
 import { useProfileUpdate } from '@/app/hooks/useProfileUpdate';
 import { FieldError } from '@/components/forms/FormError';
+import { ApiError } from '@/utils/error-handler';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -42,6 +43,7 @@ export default function ProfileEditForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -53,11 +55,18 @@ export default function ProfileEditForm() {
       try {
         await updateProfile(data);
         toast.success('Profile updated successfully!');
-      } catch {
-        toast.error('Failed to update profile. Please try again.');
+      } catch (error: unknown) {
+        if (error instanceof ApiError && error.errors) {
+          for (const fe of error.errors) {
+            setError(fe.field as keyof ProfileFormData, { message: fe.message });
+          }
+          toast.error('Please fix the highlighted fields.');
+        } else {
+          toast.error('Failed to update profile. Please try again.');
+        }
       }
     },
-    [updateProfile],
+    [updateProfile, setError],
   );
 
   const handleImageSelect = useCallback(() => {}, []);

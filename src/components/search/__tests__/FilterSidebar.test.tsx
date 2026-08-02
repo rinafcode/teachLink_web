@@ -39,9 +39,10 @@ describe('FilterSidebar Component - Learning Format', () => {
       <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
-    // Click on Video option
-    const videoCheckbox = screen.getByRole('checkbox', { name: '' });
-    fireEvent.click(videoCheckbox);
+    // Click on Video option - use getByLabelText to find it
+    const videoLabel = screen.getByText('Video');
+    const videoCheckbox = videoLabel.closest('label')?.querySelector('input[type="checkbox"]');
+    if (videoCheckbox) fireEvent.click(videoCheckbox);
 
     expect(onFilterChange).toHaveBeenCalledTimes(1);
     expect(onFilterChange).toHaveBeenCalledWith({ learningFormat: ['video'] });
@@ -63,9 +64,10 @@ describe('FilterSidebar Component - Learning Format', () => {
       />,
     );
 
-    const checkboxes = screen.getAllByRole('checkbox');
-    // Click on Interactive (second checkbox)
-    fireEvent.click(checkboxes[1]);
+    // Click on Interactive - find it by its label text
+    const interactiveLabel = screen.getByText('Interactive');
+    const interactiveCheckbox = interactiveLabel.closest('label')?.querySelector('input[type="checkbox"]');
+    if (interactiveCheckbox) fireEvent.click(interactiveCheckbox);
 
     expect(onFilterChange).toHaveBeenCalledWith({ learningFormat: ['video', 'interactive'] });
   });

@@ -1,6 +1,7 @@
 import { createLogger } from '@/lib/logging';
 const logger = createLogger('use-dashboard-widgets');
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { z } from 'zod';
 
 interface Widget {
   id: string;
@@ -11,6 +12,89 @@ interface Widget {
   isCollapsed: boolean;
   settings: Record<string, unknown>;
 }
+
+const widgetSchema = z.object({
+  id: z.string().min(1),
+  type: z.string().min(1),
+  title: z.string().min(1),
+  size: z.enum(['small', 'medium', 'large']),
+  position: z.number().int().nonnegative(),
+  isCollapsed: z.boolean(),
+  settings: z.record(z.string(), z.unknown()),
+});
+
+const widgetListSchema = z.array(widgetSchema);
+
+// Default widgets matching Figma design — single source of truth
+const DEFAULT_WIDGETS: Widget[] = [
+  // 4 Summary Stat Cards (small size)
+  {
+    id: 'stat-revenue',
+    type: 'progress-summary',
+    title: 'Total Revenue',
+    size: 'small',
+    position: 0,
+    isCollapsed: false,
+    settings: { statType: 'revenue' },
+  },
+  {
+    id: 'stat-students',
+    type: 'progress-summary',
+    title: 'Students',
+    size: 'small',
+    position: 1,
+    isCollapsed: false,
+    settings: { statType: 'students' },
+  },
+  {
+    id: 'stat-views',
+    type: 'progress-summary',
+    title: 'Course Views',
+    size: 'small',
+    position: 2,
+    isCollapsed: false,
+    settings: { statType: 'views' },
+  },
+  {
+    id: 'stat-courses',
+    type: 'progress-summary',
+    title: 'Active Courses',
+    size: 'small',
+    position: 3,
+    isCollapsed: false,
+    settings: { statType: 'courses' },
+  },
+  // Recent Sales (medium, left column)
+  {
+    id: 'recent-sales',
+    type: 'recent-sales',
+    title: 'Recent Sales',
+    size: 'medium',
+    position: 4,
+    isCollapsed: false,
+    settings: {},
+  },
+  // Recent Activity (medium, right column)
+  {
+    id: 'recent-activity',
+    type: 'recent-activity',
+    title: 'Recent Activity',
+    size: 'medium',
+    position: 5,
+    isCollapsed: false,
+    settings: {},
+  },
+  // Upcoming Schedule (large, full width)
+  {
+    id: 'upcoming-schedule',
+    type: 'upcoming-deadlines',
+    title: 'Upcoming Schedule',
+    size: 'large',
+    position: 6,
+    isCollapsed: false,
+    settings: {},
+  },
+];
 
 export const useDashboardWidgets = () => {
   const [widgets, setWidgets] = useState<Widget[]>([]);
@@ -70,78 +154,8 @@ export const useDashboardWidgets = () => {
     if (savedWidgets.length > 0) {
       setWidgets(savedWidgets);
     } else {
-      // Default widgets matching Figma design
-      const defaultWidgets: Widget[] = [
-        // 4 Summary Stat Cards (small size)
-        {
-          id: 'stat-revenue',
-          type: 'progress-summary',
-          title: 'Total Revenue',
-          size: 'small',
-          position: 0,
-          isCollapsed: false,
-          settings: { statType: 'revenue' },
-        },
-        {
-          id: 'stat-students',
-          type: 'progress-summary',
-          title: 'Students',
-          size: 'small',
-          position: 1,
-          isCollapsed: false,
-          settings: { statType: 'students' },
-        },
-        {
-          id: 'stat-views',
-          type: 'progress-summary',
-          title: 'Course Views',
-          size: 'small',
-          position: 2,
-          isCollapsed: false,
-          settings: { statType: 'views' },
-        },
-        {
-          id: 'stat-courses',
-          type: 'progress-summary',
-          title: 'Active Courses',
-          size: 'small',
-          position: 3,
-          isCollapsed: false,
-          settings: { statType: 'courses' },
-        },
-        // Recent Sales (medium, left column)
-        {
-          id: 'recent-sales',
-          type: 'recent-sales',
-          title: 'Recent Sales',
-          size: 'medium',
-          position: 4,
-          isCollapsed: false,
-          settings: {},
-        },
-        // Recent Activity (medium, right column)
-        {
-          id: 'recent-activity',
-          type: 'recent-activity',
-          title: 'Recent Activity',
-          size: 'medium',
-          position: 5,
-          isCollapsed: false,
-          settings: {},
-        },
-        // Upcoming Schedule (large, full width)
-        {
-          id: 'upcoming-schedule',
-          type: 'upcoming-deadlines',
-          title: 'Upcoming Schedule',
-          size: 'large',
-          position: 6,
-          isCollapsed: false,
-          settings: {},
-        },
-      ];
-      setWidgets(defaultWidgets);
-      saveWidgetLayout(defaultWidgets);
+      setWidgets(DEFAULT_WIDGETS);
+      saveWidgetLayout(DEFAULT_WIDGETS);
     }
     setIsLoading(false);
   }, [loadWidgetLayout, saveWidgetLayout]);
@@ -231,77 +245,8 @@ export const useDashboardWidgets = () => {
 
   // Reset to default layout
   const resetToDefault = useCallback(() => {
-    const defaultWidgets: Widget[] = [
-      // 4 Summary Stat Cards (small size)
-      {
-        id: 'stat-revenue',
-        type: 'progress-summary',
-        title: 'Total Revenue',
-        size: 'small',
-        position: 0,
-        isCollapsed: false,
-        settings: { statType: 'revenue' },
-      },
-      {
-        id: 'stat-students',
-        type: 'progress-summary',
-        title: 'Students',
-        size: 'small',
-        position: 1,
-        isCollapsed: false,
-        settings: { statType: 'students' },
-      },
-      {
-        id: 'stat-views',
-        type: 'progress-summary',
-        title: 'Course Views',
-        size: 'small',
-        position: 2,
-        isCollapsed: false,
-        settings: { statType: 'views' },
-      },
-      {
-        id: 'stat-courses',
-        type: 'progress-summary',
-        title: 'Active Courses',
-        size: 'small',
-        position: 3,
-        isCollapsed: false,
-        settings: { statType: 'courses' },
-      },
-      // Recent Sales (medium, left column)
-      {
-        id: 'recent-sales',
-        type: 'recent-sales',
-        title: 'Recent Sales',
-        size: 'medium',
-        position: 4,
-        isCollapsed: false,
-        settings: {},
-      },
-      // Recent Activity (medium, right column)
-      {
-        id: 'recent-activity',
-        type: 'recent-activity',
-        title: 'Recent Activity',
-        size: 'medium',
-        position: 5,
-        isCollapsed: false,
-        settings: {},
-      },
-      // Upcoming Schedule (large, full width)
-      {
-        id: 'upcoming-schedule',
-        type: 'upcoming-deadlines',
-        title: 'Upcoming Schedule',
-        size: 'large',
-        position: 6,
-        isCollapsed: false,
-        settings: {},
-      },
-    ];
-    setWidgets(defaultWidgets);
-    saveWidgetLayout(defaultWidgets);
+    setWidgets(DEFAULT_WIDGETS);
+    saveWidgetLayout(DEFAULT_WIDGETS);
   }, [saveWidgetLayout]);
 
   // Export widget configuration
@@ -324,12 +269,21 @@ export const useDashboardWidgets = () => {
   const importWidgetConfig = useCallback(
     (config: { widgets?: Widget[] }) => {
       try {
-        if (config.widgets && Array.isArray(config.widgets)) {
-          setWidgets(config.widgets);
-          saveWidgetLayout(config.widgets);
-          return true;
+        if (!Array.isArray(config.widgets)) {
+          return false;
         }
-        return false;
+
+        const result = widgetListSchema.safeParse(config.widgets);
+        if (!result.success) {
+          logger.error('Failed to import widget config: malformed widgets', {
+            errors: result.error.issues,
+          });
+          return false;
+        }
+
+        setWidgets(result.data);
+        saveWidgetLayout(result.data);
+        return true;
       } catch (error) {
         logger.error('Failed to import widget config', { error });
         return false;

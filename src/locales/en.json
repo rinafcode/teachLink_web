@@ -17,7 +17,8 @@
     "submit": "Submit",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "retry": "Retry"
   },
   "navigation": {
     "home": "Home",
@@ -190,7 +191,8 @@
           "neutral": "Flat"
         }
       }
-    }
+    },
+    "noCoursesInProgress": "You have no courses in progress yet."
   },
   "profile": {
     "editProfile": "Edit Profile",
@@ -327,6 +329,16 @@
           "detail": "Detected a constrained connection. Reduce payload sizes, lazy-load below-the-fold content, and avoid aggressive prefetching."
         }
       }
+    }
+  },
+  "search": {
+    "sortSequence": "Sort By:",
+    "sort": {
+      "popularity": "Sort by Relevance",
+      "newest": "Newest First",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "rating": "Highest Rated"
     }
   }
 }

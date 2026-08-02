@@ -38,6 +38,7 @@ export const profileUser: ProfileUser = {
   bio: 'Passionate about Web3 technologies and decentralized learning platforms.',
   learningGoal: 'Complete 1 course per month',
   dailyLearningTime: '30 minutes',
+  avatarUrl: '/avatars/default.png',
 };
 
 export const profileTabs: Array<{ id: ProfileTabId; label: string }> = [

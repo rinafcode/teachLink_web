@@ -7,11 +7,11 @@ A reusable button system with variants, sizes, keyboard navigation, and full dar
 Both components are exported from `@/components`:
 
 ```tsx
-import { Button, ButtonGroup } from '@/components';
+import {Button, ButtonGroup} from '@/components';
 import type { ButtonProps } from '@/components';
 ```
 
-## Overview
+##Overview
 
 This project uses URL-based API versioning to protect clients from breaking changes.
 
