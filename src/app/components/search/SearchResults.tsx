@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Star, Clock, User, ArrowRight, SearchX } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Star, Clock, User, ArrowRight, SearchX, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
