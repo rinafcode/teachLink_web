@@ -50,7 +50,7 @@ describe('SocialInteractions – Additional edge cases', () => {
 
     render(<SocialInteractions contentId={contentId} contentUrl={customUrl} />);
     await waitFor(() => expect(screen.getByLabelText('Copy link')).toBeInTheDocument());
-    await userEvent.setup().click(screen.getByLabelLabel('Copy link'));
+    await userEvent.setup().click(screen.getByLabelText('Copy link'));
     expect(writeText).toHaveBeenCalledWith(customUrl);
     await waitFor(() => expect(screen.getByText('Copied!')).toBeInTheDocument());
   });

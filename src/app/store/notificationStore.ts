@@ -2,11 +2,7 @@ import { create } from 'zustand';
 import { AppNotification } from '@/lib/notifications/types';
 import { NotificationService } from '@/lib/notifications/service';
 
-function load<T>(
-  key: string,
-  fallback: T,
-  reviver?: (key: string, value: unknown) => unknown,
-): T {
+function load<T>(key: string, fallback: T, reviver?: (key: string, value: unknown) => unknown): T {
   if (typeof window === 'undefined') return fallback;
   try {
     const raw = localStorage.getItem(key);

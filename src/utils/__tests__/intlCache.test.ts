@@ -145,16 +145,20 @@ describe('intlCache performance', () => {
   it('cache hit is significantly faster than cache miss (construction)', () => {
     const iterations = 10000;
     const locale = 'en-US';
+    const options = { maximumFractionDigits: 2 };
 
+    // Uncached construction: create a brand-new formatter every iteration
     const startMiss = performance.now();
     for (let i = 0; i < iterations; i++) {
-      getNumberFormat(locale, { maximumFractionDigits: 2 });
+      new Intl.NumberFormat(locale, options);
     }
     const timeMiss = performance.now() - startMiss;
 
+    // Cache hit: look up the same cached formatter every iteration
+    getNumberFormat(locale, options);
     const startHit = performance.now();
     for (let i = 0; i < iterations; i++) {
-      getNumberFormat(locale, { maximumFractionDigits: 2 });
+      getNumberFormat(locale, options);
     }
     const timeHit = performance.now() - startHit;
 
