@@ -7,7 +7,8 @@ export interface ProfileUser {
   bio: string;
   learningGoal: string;
   dailyLearningTime: string;
-  avatarUrl: string;
+  /** Optional URL used for Open Graph / social sharing images. */
+  avatarUrl?: string;
 }
 
 export interface SelectOption {
