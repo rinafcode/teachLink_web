@@ -1,5 +1,5 @@
 # GraphQL Subscriptions - Real-Time Updates
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 ## Overview
 
 This implementation provides production-ready GraphQL subscriptions for TeachLink, enabling real-time data updates without polling. The system uses WebSocket (graphql-ws) for efficient bidirectional communication and includes automatic reconnection, error recovery, and fallback mechanisms.

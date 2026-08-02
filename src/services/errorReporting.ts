@@ -4,6 +4,9 @@
  */
 
 import { formatErrorForLogging } from '@/utils/errorUtils';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('error-reporting');
 
 export interface ErrorReport {
   id: string;
@@ -95,7 +98,7 @@ class ErrorReportingService {
 
     // Log to console in development
     if (!this.isProduction) {
-      console.error('Error Report:', report);
+      logger.error('Error Report', { error: report });
     }
 
     // Send to error tracking service (e.g., Sentry, LogRocket)
@@ -142,10 +145,10 @@ class ErrorReportingService {
       });
 
       if (!response.ok) {
-        console.error('Failed to send error report:', response.statusText);
+        logger.error('Failed to send error report', { status: response.statusText });
       }
     } catch (err) {
-      console.error('Error sending error report:', err);
+      logger.error('Error sending error report', { error: err });
     }
   }
 

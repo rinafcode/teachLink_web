@@ -19,6 +19,7 @@ interface ExportButtonProps {
   sort?: ExportSort[];
   columns?: string[];
   onComplete?: (result: ExportButtonResult) => void;
+  onError?: (error: Error) => void;
 }
 
 export function ExportButton({
@@ -29,13 +30,20 @@ export function ExportButton({
   sort,
   columns,
   onComplete,
+  onError,
 }: ExportButtonProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState<ExportProgressState | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+
+  const isDisabled = isRunning || !templateId || templateId.trim() === '';
 
   const handleClick = async () => {
+    if (isDisabled) return;
+
     setIsRunning(true);
+    setIsError(false);
     setMessage(null);
     setProgress({
       stage: 'preparing',
@@ -54,6 +62,10 @@ export function ExportButton({
         },
       );
 
+      if (!response?.result?.success) {
+        throw new Error('Export failed');
+      }
+
       const finalProgress = response.result.progress?.[response.result.progress.length - 1] ?? {
         stage: 'completed' as const,
         percent: 100,
@@ -61,6 +73,7 @@ export function ExportButton({
       };
 
       setProgress(finalProgress);
+      setIsError(false);
       setMessage(
         `${response.result.fileName} ready (${response.result.rowCount} rows, ${(
           response.result.fileSize / 1024
@@ -68,26 +81,35 @@ export function ExportButton({
       );
       onComplete?.(response.result);
     } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error) || 'Export failed');
       setProgress({
-        stage: 'completed',
+        stage: 'failed',
         percent: 100,
-        message: 'Export failed',
+        message: err.message,
       });
-      setMessage(error instanceof Error ? error.message : 'Export failed');
+      setIsError(true);
+      setMessage(err.message);
+      onError?.(err);
     } finally {
       setIsRunning(false);
     }
   };
 
+  const isFailedStage = progress?.stage === 'failed' || isError;
+
   return (
     <div className="space-y-2">
-      <button type="button" onClick={handleClick} disabled={isRunning} className={className}>
+      <button type="button" onClick={handleClick} disabled={isDisabled} className={className}>
         {isRunning ? 'Exporting...' : label}
       </button>
 
       {progress && (
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div
+            className={`flex items-center justify-between text-xs ${
+              isFailedStage ? 'text-red-600 font-medium' : 'text-gray-500'
+            }`}
+          >
             <span>{progress.message}</span>
             <span>{progress.percent}%</span>
           </div>
@@ -97,14 +119,20 @@ export function ExportButton({
             aria-valuenow={progress.percent}
           >
             <div
-              className="h-2 rounded-full bg-blue-600 transition-all"
+              className={`h-2 rounded-full transition-all ${
+                isFailedStage ? 'bg-red-600' : 'bg-blue-600'
+              }`}
               style={{ width: `${progress.percent}%` }}
             />
           </div>
         </div>
       )}
 
-      {message && <p className="text-xs text-gray-600">{message}</p>}
+      {message && (
+        <p className={`text-xs ${isFailedStage ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }

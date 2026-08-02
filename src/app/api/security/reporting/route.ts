@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-security-reporting');
 
 interface SecurityReportEnvelope {
   type?: string;
@@ -18,9 +21,11 @@ export async function POST(request: NextRequest) {
   const reports = normalizeReportBody(payload);
 
   if (reports.length > 0) {
-    console.warn('[security-reporting] received violation reports', {
-      count: reports.length,
-      reports,
+    logger.warn('Received violation reports', {
+      context: {
+        count: reports.length,
+        reports,
+      },
     });
   }
 

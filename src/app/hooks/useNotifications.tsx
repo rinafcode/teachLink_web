@@ -21,6 +21,9 @@ import {
   NotificationService,
   generateRecommendations,
 } from '@/lib/notifications';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-notifications');
 
 interface UseNotificationsOptions {
   userId?: string;
@@ -224,7 +227,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
           localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(defaultPrefs));
         }
       } catch (error) {
-        console.error('Failed to load notification preferences:', error);
+        logger.error('Failed to load notification preferences', { error });
         const defaultPrefs = NotificationService.createDefaultPreferences(userId);
         setPreferences(defaultPrefs);
       } finally {
@@ -400,7 +403,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         setPreferences(parsed);
       }
     } catch (error) {
-      console.error('Failed to load preferences:', error);
+      logger.error('Failed to load preferences', { error });
     }
   }, []);
 
@@ -420,7 +423,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       try {
         localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(updated));
       } catch (error) {
-        console.error('Failed to save preferences:', error);
+        logger.error('Failed to save preferences', { error });
         throw error;
       }
     },
@@ -467,7 +470,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         const results = await NotificationService.deliverToChannels(notification, [channel]);
         return results[0]?.success ?? false;
       } catch (error) {
-        console.error(`Failed to deliver notification ${notification.id} via ${channel}:`, error);
+        logger.error(`Failed to deliver notification ${notification.id} via ${channel}`, { error });
         return false;
       }
     },
@@ -493,7 +496,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
         return successMap;
       } catch (error) {
-        console.error('Failed to deliver notification to channels:', error);
+        logger.error('Failed to deliver notification to channels', { error });
         const errorMap: Record<NotificationChannel, boolean> = {} as Record<
           NotificationChannel,
           boolean

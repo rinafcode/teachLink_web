@@ -26,6 +26,11 @@ describe('slidingWindowRateLimit', () => {
     vi.useFakeTimers();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+
   it('allows requests within the limit', () => {
     const config = { limit: 3, windowMs: 60_000 };
     const id = `test-read-${Date.now()}`;

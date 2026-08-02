@@ -11,6 +11,9 @@ import {
   Subscription,
   DraftData,
 } from '../types';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('auto-save-manager');
 
 interface SaveQueueItem {
   formId: string;
@@ -174,14 +177,14 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
 
       // Validate data integrity
       if (!this.validateDraftIntegrity(draftData)) {
-        console.warn(`Draft data integrity check failed for form ${formId}`);
+        logger.warn(`Draft data integrity check failed for form ${formId}`);
         return null;
       }
 
       this.lastKnownUpdatedAt.set(formId, new Date(draftData.updatedAt));
       return draftData.data;
     } catch (error) {
-      console.error('Error loading draft:', error);
+      logger.error('Error loading draft', { error });
       return null;
     }
   }
@@ -196,7 +199,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
       this.disableAutoSave(formId);
       this.saveStatus.delete(formId);
     } catch (error) {
-      console.error('Error clearing draft:', error);
+      logger.error('Error clearing draft', { error });
       throw error;
     }
   }
@@ -261,7 +264,7 @@ export class AutoSaveManagerImpl implements AutoSaveManager {
 
     for (const item of queue) {
       if (item.retryCount >= this.maxRetries) {
-        console.warn(`Max retries reached for form ${item.formId}`);
+        logger.warn(`Max retries reached for form ${item.formId}`);
         continue;
       }
 

@@ -30,7 +30,10 @@ const QuizContainer = React.memo(({ quiz }: QuizContainerProps) => {
   const totalQuestions = quiz.questions.length;
 
   const handleRestart = useCallback(() => actions.restart(), [actions]);
-  const handleReviewAnswers = useCallback(() => actions.setCurrentQuestionIndex(0), [actions]);
+  const handleReviewAnswers = useCallback(() => {
+    actions.enterReviewMode();
+    actions.setCurrentQuestionIndex(0);
+  }, [actions]);
   const handleGoPrevious = useCallback(() => actions.goPrevious(), [actions]);
   const handleGoNext = useCallback(() => actions.goNext(), [actions]);
   const handleComplete = useCallback(() => actions.complete(), [actions]);
@@ -49,7 +52,7 @@ const QuizContainer = React.memo(({ quiz }: QuizContainerProps) => {
         isReviewMode={isReviewMode}
       />
 
-      {isCompleted ? (
+      {isCompleted && !isReviewMode ? (
         <QuizCompletionCard
           score={score}
           maxScore={maxScore}
@@ -58,17 +61,21 @@ const QuizContainer = React.memo(({ quiz }: QuizContainerProps) => {
         />
       ) : null}
 
-      <QuestionCard question={currentQuestion} quizState={quizState} />
+      {(!isCompleted || isReviewMode) && (
+        <>
+          <QuestionCard question={currentQuestion} quizState={quizState} />
 
-      <QuizNavigation
-        onPrevious={handleGoPrevious}
-        onNext={handleGoNext}
-        onComplete={handleComplete}
-        canGoPrevious={quizState.canGoPrevious}
-        canGoNext={quizState.canGoNext}
-        isLastQuestion={currentQuestionIndex === totalQuestions - 1}
-        isCompleted={isCompleted}
-      />
+          <QuizNavigation
+            onPrevious={handleGoPrevious}
+            onNext={handleGoNext}
+            onComplete={handleComplete}
+            canGoPrevious={quizState.canGoPrevious}
+            canGoNext={quizState.canGoNext}
+            isLastQuestion={currentQuestionIndex === totalQuestions - 1}
+            isCompleted={isCompleted}
+          />
+        </>
+      )}
     </div>
   );
 });

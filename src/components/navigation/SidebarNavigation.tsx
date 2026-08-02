@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Home, BookOpen, Users, Settings } from 'lucide-react';
 
 interface NavItem {
@@ -18,7 +19,7 @@ const navItems: NavItem[] = [
 ];
 
 export const SidebarNavigation: React.FC = () => {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const pathname = usePathname();
   return (
     <aside className="w-full lg:w-72 shrink-0 space-y-8 pr-2">
       <div className="glass-panel p-5 rounded-xl">

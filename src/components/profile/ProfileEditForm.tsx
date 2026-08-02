@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -62,7 +62,12 @@ export default function ProfileEditForm() {
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
   } = methods;
+
+  useEffect(() => {
+    reset(defaultValues);
+  }, [defaultValues, reset]);
 
   const onSubmit = useCallback(
     async (data: ProfileFormData) => {
@@ -87,8 +92,8 @@ export default function ProfileEditForm() {
   );
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Profile</h2>
+    <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-200">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Edit Profile</h2>
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -126,15 +131,15 @@ export default function ProfileEditForm() {
             </div>
           </div>
 
-          <hr className="border-gray-200" />
+          <hr className="border-gray-200 dark:border-gray-700" />
 
           {/* Section 2: Preferences */}
           <PreferencesSection />
 
-          <div className="flex justify-end pt-4 border-t border-gray-100">
+          <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
             <button
               type="button"
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium mr-4 hover:bg-gray-50 transition-colors"
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-medium mr-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               disabled={isLoading}
             >
               Cancel

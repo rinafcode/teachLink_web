@@ -4,7 +4,7 @@ import {
   sendTransaction,
   getBalance,
 } from '@/services/serviceAccount';
-import { ethers } from 'ethers';
+import { getEthers } from '../ethersService';
 
 describe('Service Account utilities', () => {
   beforeAll(() => {
@@ -13,8 +13,10 @@ describe('Service Account utilities', () => {
       '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
   });
 
-  test('getServiceAddress returns address from env', () => {
-    expect(getServiceAddress()).toBe(process.env.SERVICE_ACCOUNT_ADDRESS);
+  test('getServiceAddress returns address from wallet', async () => {
+    const address = await getServiceAddress();
+    expect(typeof address).toBe('string');
+    expect(address).toMatch(/^0x[0-9a-fA-F]{40}$/);
   });
 
   test('signMessage returns a signature string', async () => {
@@ -24,6 +26,7 @@ describe('Service Account utilities', () => {
   });
 
   test('sendTransaction without provider returns signed tx hex', async () => {
+    const ethers = await getEthers();
     const tx = {
       to: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
       value: ethers.parseEther('0.01'),
@@ -34,6 +37,7 @@ describe('Service Account utilities', () => {
   });
 
   test('getBalance returns ETH balance string', async () => {
+    const ethers = await getEthers();
     const provider = new ethers.InfuraProvider('goerli');
     const balance = await getBalance(provider);
     expect(typeof balance).toBe('string');

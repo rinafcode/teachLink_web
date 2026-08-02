@@ -1,11 +1,15 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { User, UserRole, Permission } from '@/types/api';
+
+/**
+ * Minimal object required by many auth checks: only the role is required.
+ * This allows callers that only have a partial user (AuthUser) to pass through.
+ */
+type RoleHolder = { role: UserRole };
 
 /**
  * Mapping of roles to their granted permissions.
  */
-export const ROLES_PERMISSIONS = {
+export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
   ADMIN: Object.values(Permission),
   INSTRUCTOR: [
     Permission.COURSE_VIEW,
@@ -15,19 +19,18 @@ export const ROLES_PERMISSIONS = {
     Permission.COURSE_DOWNLOAD,
     Permission.CONTENT_ACCESS,
     Permission.CONTENT_UPLOAD,
-    Permission.ANALYTICS_VIEW,
   ],
   STUDENT: [Permission.COURSE_VIEW, Permission.COURSE_DOWNLOAD, Permission.CONTENT_ACCESS],
   GUEST: [Permission.COURSE_VIEW],
-} satisfies Record<UserRole, Permission[]>;
+};
 
 /**
- * Check if a user has a specific permission based on their role.
+ * Check if a user (or any object that contains a role) has a specific permission.
  */
-export function hasPermission(user: User | null | undefined, permission: Permission): boolean {
+export function hasPermission(user: RoleHolder | null | undefined, permission: Permission): boolean {
   if (!user) return false;
 
-  const permissions = ROLES_PERMISSIONS[user.role] || [];
+  const permissions = ROLES_PERMISSIONS[user.role] ?? [];
   return permissions.includes(permission);
 }
 
@@ -35,7 +38,7 @@ export function hasPermission(user: User | null | undefined, permission: Permiss
  * Check if a user has any of the provided permissions.
  */
 export function hasAnyPermission(
-  user: User | null | undefined,
+  user: RoleHolder | null | undefined,
   permissions: Permission[],
 ): boolean {
   if (!user) return false;
@@ -47,7 +50,7 @@ export function hasAnyPermission(
  * Check if a user has all of the provided permissions.
  */
 export function hasAllPermissions(
-  user: User | null | undefined,
+  user: RoleHolder | null | undefined,
   permissions: Permission[],
 ): boolean {
   if (!user) return false;
@@ -59,7 +62,7 @@ export function hasAllPermissions(
  * Check if a user has at least the minimum required role.
  * Roles are hierarchical: ADMIN > INSTRUCTOR > STUDENT > GUEST
  */
-export function isAtLeast(user: User | null | undefined, role: UserRole): boolean {
+export function isAtLeast(user: RoleHolder | null | undefined, role: UserRole): boolean {
   if (!user) return false;
 
   return isAtLeastRole(user.role, role);

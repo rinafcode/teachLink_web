@@ -37,6 +37,8 @@ export class SMSQueue {
   private readonly provider: SMSProvider;
   private readonly options: QueueOptions;
   private readonly queue: InternalQueueJob[] = [];
+  private readonly queue: QueueJob[] = [];
+  private readonly resolveQueue: Array<(result: SMSSendResult) => void> = [];
   private processing = 0;
   private requestId = '';
 
@@ -86,6 +88,7 @@ export class SMSQueue {
       });
 
       this.queue.push(job);
+      this.resolveQueue.push(resolve);
       createCounterMetric('sms.enqueued', 1, {
         provider: this.provider.type,
       });
@@ -97,16 +100,30 @@ export class SMSQueue {
   /** Drain the queue up to maxConcurrent limit. Each job carries its own resolve. */
   private processQueue(): void {
     while (this.processing < this.options.maxConcurrent && this.queue.length > 0) {
+      this.process();
+    });
+  }
+
+  private process(): void {
+    while (this.processing < this.options.maxConcurrent && this.queue.length > 0 && this.resolveQueue.length > 0) {
       const nextJob = this.queue.shift();
       if (!nextJob) {
         return;
       }
+
+      const resolve = this.resolveQueue.shift();
 
       this.processing += 1;
       void this.runJob(nextJob).finally(() => {
         this.processing -= 1;
         this.processQueue();
       });
+      void this.runJob(nextJob)
+        .then((result) => resolve?.(result))
+        .finally(() => {
+          this.processing -= 1;
+          this.process();
+        });
     }
   }
 

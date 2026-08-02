@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
 import { walletCache, walletCacheKeys, CACHE_TTL } from '@/utils/web3/walletCache';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('NFTGallery');
 
 interface NFT {
   id: string;
@@ -147,7 +149,7 @@ export const NFTGallery: React.FC<NFTGalleryProps> = ({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch NFTs';
       setError(message);
-      console.error('[NFTGallery] Error fetching NFTs:', err);
+      logger.error('[NFTGallery] Error fetching NFTs', { error: err });
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AuditAction, AuditLogEntry } from '@/lib/audit';
 import AdminThemeToggle from '@/components/admin/AdminThemeToggle';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('admin-audit');
 
 type AuditApiResponse = {
   entries: AuditLogEntry[];
@@ -35,7 +38,7 @@ export default function AdminAuditPage() {
       setEntries(data.entries);
       setTotal(data.total);
     } catch (error) {
-      console.error(error);
+      logger.error('Failed to load audit logs', { error });
       setEntries([]);
       setTotal(0);
     } finally {
@@ -53,6 +56,7 @@ export default function AdminAuditPage() {
       create: 0,
       update: 0,
       delete: 0,
+      read: 0,
     };
 
     entries.forEach((entry) => {
@@ -70,14 +74,14 @@ export default function AdminAuditPage() {
             <div>
               <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Audit Trail</h1>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-                Search and review create, update, and delete activity across tracked resources.
+                Search and review create, update, delete, and read activity across tracked resources.
               </p>
             </div>
             <div className="flex items-center gap-3">
               <AdminThemeToggle />
             </div>
           </div>
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/20 p-3 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30">
               <span className="text-xs uppercase tracking-widest font-semibold">Create</span>
               <p className="text-xl font-bold mt-1">{summary.create}</p>
@@ -89,6 +93,10 @@ export default function AdminAuditPage() {
             <div className="rounded-xl bg-rose-50 dark:bg-rose-950/20 p-3 text-rose-800 dark:text-rose-350 border border-rose-100 dark:border-rose-900/30">
               <span className="text-xs uppercase tracking-widest font-semibold">Delete</span>
               <p className="text-xl font-bold mt-1">{summary.delete}</p>
+            </div>
+            <div className="rounded-xl bg-indigo-50 dark:bg-indigo-950/20 p-3 text-indigo-800 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/30">
+              <span className="text-xs uppercase tracking-widest font-semibold">Read</span>
+              <p className="text-xl font-bold mt-1">{summary.read}</p>
             </div>
           </div>
         </header>
@@ -110,6 +118,7 @@ export default function AdminAuditPage() {
               <option value="create">Create</option>
               <option value="update">Update</option>
               <option value="delete">Delete</option>
+              <option value="read">Read</option>
             </select>
             <button
               type="button"
@@ -156,6 +165,8 @@ export default function AdminAuditPage() {
                             ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-900/20'
                             : entry.action === 'update'
                             ? 'bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/20'
+                            : entry.action === 'read'
+                            ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/20'
                             : 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/20'
                         }`}
                       >

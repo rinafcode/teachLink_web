@@ -16,6 +16,7 @@ import {
   getCulturalPreferences,
   formatDate as formatDateUtil,
   formatRelativeTime,
+  preloadDateFnsLocale,
   formatNumber as formatNumberUtil,
   formatCurrency as formatCurrencyUtil,
   formatPercentage,
@@ -26,6 +27,9 @@ import {
   formatDuration,
 } from '@/utils/i18nUtils';
 import i18n, { loadLocale } from '@/lib/i18n/config';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-internationalization');
 
 interface I18nContextValue {
   language: LanguageCode;
@@ -73,6 +77,10 @@ export function I18nProvider({
     }
   }, [language]);
 
+  useEffect(() => {
+    void preloadDateFnsLocale(language);
+  }, [language]);
+
   // Load translations when language changes
   useEffect(() => {
     let cancelled = false;
@@ -95,9 +103,9 @@ export function I18nProvider({
               if (missing.length > 0) {
                 // Limit output to first 50 keys to avoid flooding logs
                 const sample = missing.slice(0, 50);
-                console.warn(
+                logger.warn(
                   `Translations for '${language}' missing ${missing.length} keys. Sample:`,
-                  sample,
+                  { sample },
                 );
               }
             }

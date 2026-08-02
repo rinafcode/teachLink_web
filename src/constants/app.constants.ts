@@ -42,3 +42,17 @@ export const STORAGE_KEYS = {
   PERF_TRENDS: 'teachlink:perf:trends',
   AUTH_TOKEN: 'token',
 };
+
+/**
+ * Domains permitted in sanitized HTML links and sanitizeUrl().
+ * Subdomains are automatically permitted (e.g. www.youtube.com matches youtube.com).
+ * Add entries here to extend the allowlist — one bare hostname per entry, no leading dot.
+ */
+export const ALLOWED_LINK_DOMAINS = [
+  'teachlink.com',
+  'youtube.com',
+  'youtube-nocookie.com',
+  'vimeo.com',
+  'github.com',
+  'loom.com',
+];

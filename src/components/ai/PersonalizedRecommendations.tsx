@@ -30,11 +30,21 @@ export default function PersonalizedRecommendations() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     apiClient
       .get<{ items: Recommendation[] }>('/api/ai/recommendations')
-      .then((r) => setItems(r.items))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .then((r) => {
+        if (!cancelled) setItems(r.items);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

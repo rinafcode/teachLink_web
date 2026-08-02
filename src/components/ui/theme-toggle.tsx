@@ -5,6 +5,8 @@ import { useTheme } from '@/lib/theme-provider';
 import { useSettingsStore } from '@/lib/settings/store';
 import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('ThemeToggle');
 
 function ThemeToggleFallback() {
   return (
@@ -50,7 +52,7 @@ function ThemeToggleControl() {
       setTheme(next);
       patchSettings({ theme: next });
     } catch (err) {
-      console.error('ThemeToggle error:', err);
+      logger.error('ThemeToggle error', { error: err });
     }
   };
 

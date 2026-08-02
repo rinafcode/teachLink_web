@@ -47,8 +47,10 @@ const ProfileTabButton = memo(function ProfileTabButton({
       aria-controls={`${tab.id}-panel`}
       tabIndex={isActive ? 0 : -1}
       onClick={handleClick}
-      className={`rounded-lg px-4 py-2 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-        isActive ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+      className={`rounded-lg px-4 py-2 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+        isActive
+          ? 'bg-blue-500 text-white'
+          : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
       }`}
     >
       {tab.label}

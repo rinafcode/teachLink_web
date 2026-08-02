@@ -24,7 +24,7 @@ export interface StructuredDataFilterGroup {
  * Uses schema.org ItemList to represent filterable options
  */
 export function generateFilterStructuredData(filterGroups: StructuredDataFilterGroup[]): string {
-  const itemListElement = filterGroups.map((group, groupIndex) => ({
+  const itemListElement = filterGroups.map((group, _groupIndex) => ({
     '@type': 'ItemList',
     name: group.name,
     description: group.description,
@@ -110,12 +110,19 @@ export function validateStructuredData(jsonLd: string): { valid: boolean; errors
       errors.push('Missing @type field');
     }
 
-    if (data['@context'] && !data['@context'].includes('schema.org')) {
+    const context = data['@context'];
+    const hasSchemaOrgContext =
+      typeof context === 'string'
+        ? context.includes('schema.org')
+        : Array.isArray(context) &&
+          context.some((entry) => typeof entry === 'string' && entry.includes('schema.org'));
+
+    if (context && !hasSchemaOrgContext) {
       errors.push('@context must include schema.org');
     }
 
     return { valid: errors.length === 0, errors };
-  } catch (error) {
+  } catch (_error) {
     return { valid: false, errors: ['Invalid JSON format'] };
   }
 }

@@ -73,7 +73,7 @@ export const QRCodeComponent = forwardRef<HTMLCanvasElement, QRCodeComponentProp
       if (onRender && canvas) {
         onRender(canvas);
       }
-    }, [assignForwardedRef, onRender, value, size, level, includeMargin, bgColor, fgColor]);
+    }, [assignForwardedRef, onRender, !!value]);
 
     if (!value) {
       return (
@@ -87,7 +87,7 @@ export const QRCodeComponent = forwardRef<HTMLCanvasElement, QRCodeComponentProp
     }
 
     return (
-      <div ref={containerRef} className={`qr-code-container ${className}`}>
+      <div ref={containerRef} className={`qr-code-container ${className}`} style={{ width: size, height: size }}>
         <QRCodeCanvas
           value={value}
           size={size}

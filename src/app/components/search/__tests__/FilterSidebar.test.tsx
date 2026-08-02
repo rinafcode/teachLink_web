@@ -12,11 +12,11 @@ const defaultFilters: FilterState = {
   sort: 'relevance',
   instructor: '',
   searchTerm: '',
-  nodeAffinity: 'auto',
+  learningFormat: [],
 };
 
-describe('FilterSidebar (App) Component - Node Affinity', () => {
-  it('renders all Node Affinity options', () => {
+describe('FilterSidebar (App) Component - Learning Format', () => {
+  it('renders all Learning Format options', () => {
     const onFilterChange = vi.fn();
     const onReset = vi.fn();
 
@@ -24,14 +24,14 @@ describe('FilterSidebar (App) Component - Node Affinity', () => {
       <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
-    expect(screen.getByText('Node Affinity')).toBeInTheDocument();
-    expect(screen.getByText('Auto (Optimized)')).toBeInTheDocument();
-    expect(screen.getByText('Primary Cluster')).toBeInTheDocument();
-    expect(screen.getByText('Replica Node')).toBeInTheDocument();
-    expect(screen.getByText('Edge Cache')).toBeInTheDocument();
+    expect(screen.getByText('Learning Format')).toBeInTheDocument();
+    expect(screen.getByText('Video')).toBeInTheDocument();
+    expect(screen.getByText('Interactive')).toBeInTheDocument();
+    expect(screen.getByText('Text-Based')).toBeInTheDocument();
+    expect(screen.getByText('Mixed')).toBeInTheDocument();
   });
 
-  it('triggers onFilterChange callback when a new node affinity is selected', () => {
+  it('triggers onFilterChange callback when a learning format is selected', () => {
     const onFilterChange = vi.fn();
     const onReset = vi.fn();
 
@@ -39,11 +39,11 @@ describe('FilterSidebar (App) Component - Node Affinity', () => {
       <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
-    // Click on Replica Node option
-    const replicaOption = screen.getByText('Replica Node');
-    fireEvent.click(replicaOption);
+    // Click on Interactive option
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[1]);
 
     expect(onFilterChange).toHaveBeenCalledTimes(1);
-    expect(onFilterChange).toHaveBeenCalledWith({ nodeAffinity: 'replica' });
+    expect(onFilterChange).toHaveBeenCalledWith({ learningFormat: ['interactive'] });
   });
 });

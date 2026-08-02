@@ -5,8 +5,21 @@
  */
 
 import { SMSQueue } from '@/lib/sms/queue';
-import { TwilioProvider } from '@/lib/sms/provider';
 import { SMSMessage } from '@/lib/sms/types';
+
+// Mock the TwilioProvider to return success immediately (no credentials in test env)
+const mockSend = vi.fn().mockResolvedValue({ success: true, provider: 'twilio', messageId: 'mock-id' });
+vi.mock('@/lib/sms/provider', () => {
+  function MockTwilioProvider() {
+    this.type = 'twilio';
+    this.send = mockSend;
+  }
+  return {
+    TwilioProvider: MockTwilioProvider as unknown as typeof import('@/lib/sms/provider').TwilioProvider,
+  };
+});
+
+import { TwilioProvider } from '@/lib/sms/provider';
 
 describe('SMSQueue', () => {
   let queue: SMSQueue;
@@ -255,6 +268,10 @@ describe('SMSQueue', () => {
       expect(logs.length).toBeGreaterThan(0);
       // Logs are returned newest-last; check the most recent entry
       expect(logs[logs.length - 1].metadata).toBeDefined();
+      // Check the most recent log (last in the array) has metadata
+      const lastLog = logs[logs.length - 1];
+      expect(lastLog.metadata).toBeDefined();
+      expect(lastLog.metadata?.userId).toBe('user123');
     });
   });
 });
