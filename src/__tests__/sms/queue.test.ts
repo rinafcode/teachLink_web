@@ -26,6 +26,7 @@ describe('SMSQueue', () => {
   let provider: TwilioProvider;
 
   beforeEach(() => {
+    SMSQueue.clearAllDeliveryLogs();
     provider = new TwilioProvider();
     queue = new SMSQueue(provider, {
       maxRetries: 3,
@@ -265,6 +266,8 @@ describe('SMSQueue', () => {
       const logs = queue.getDeliveryLogs();
 
       expect(logs.length).toBeGreaterThan(0);
+      // Logs are returned newest-last; check the most recent entry
+      expect(logs[logs.length - 1].metadata).toBeDefined();
       // Check the most recent log (last in the array) has metadata
       const lastLog = logs[logs.length - 1];
       expect(lastLog.metadata).toBeDefined();

@@ -3,11 +3,11 @@ import type { Volunteer, VolunteerSMSPreferences } from '@/types/volunteer';
 
 const STORAGE_KEY = 'volunteers_v1';
 
-function load<T>(key: string, fallback: T): T {
+function load<T>(key: string, fallback: T, reviver?: (key: string, value: unknown) => unknown): T {
   if (typeof window === 'undefined') return fallback;
   try {
     const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    return raw ? (JSON.parse(raw, reviver) as T) : fallback;
   } catch {
     return fallback;
   }

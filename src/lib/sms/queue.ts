@@ -29,11 +29,14 @@ function createJobId(): string {
 // In-memory delivery log store for aggregation
 const deliveryLogs: Map<string, SMSDeliveryLog> = new Map();
 
+interface InternalQueueJob extends QueueJob {
+  resolve: (result: SMSSendResult) => void;
+}
+
 export class SMSQueue {
   private readonly provider: SMSProvider;
   private readonly options: QueueOptions;
-  private readonly queue: QueueJob[] = [];
-  private readonly resolveQueue: Array<(result: SMSSendResult) => void> = [];
+  private readonly queue: InternalQueueJob[] = [];
   private processing = 0;
   private requestId = '';
 
@@ -54,16 +57,22 @@ export class SMSQueue {
     });
   }
 
+  /** Clear all shared delivery logs (useful for testing). */
+  static clearAllDeliveryLogs(): void {
+    deliveryLogs.clear();
+  }
+
   enqueue(message: SMSMessage): Promise<SMSSendResult> {
     return new Promise((resolve) => {
       const jobId = createJobId();
       this.requestId = `${jobId}_parent`;
 
-      const job: QueueJob = {
+      const job: InternalQueueJob = {
         id: jobId,
         message,
         attempts: 0,
         createdAt: Date.now(),
+        resolve,
       };
 
       logger.info('SMS message enqueued', {
@@ -77,35 +86,31 @@ export class SMSQueue {
       });
 
       this.queue.push(job);
-      this.resolveQueue.push(resolve);
       createCounterMetric('sms.enqueued', 1, {
         provider: this.provider.type,
       });
 
-      this.process();
+      this.processQueue();
     });
   }
 
-  private process(): void {
-    while (this.processing < this.options.maxConcurrent && this.queue.length > 0 && this.resolveQueue.length > 0) {
+  /** Drain the queue up to maxConcurrent limit. Each job carries its own resolve. */
+  private processQueue(): void {
+    while (this.processing < this.options.maxConcurrent && this.queue.length > 0) {
       const nextJob = this.queue.shift();
       if (!nextJob) {
         return;
       }
 
-      const resolve = this.resolveQueue.shift();
-
       this.processing += 1;
-      void this.runJob(nextJob)
-        .then((result) => resolve?.(result))
-        .finally(() => {
-          this.processing -= 1;
-          this.process();
-        });
+      void this.runJob(nextJob).finally(() => {
+        this.processing -= 1;
+        this.processQueue();
+      });
     }
   }
 
-  private async runJob(job: QueueJob): Promise<SMSSendResult> {
+  private async runJob(job: InternalQueueJob): Promise<void> {
     let result: SMSSendResult = {
       success: false,
       provider: this.provider.type,
@@ -158,7 +163,8 @@ export class SMSQueue {
           provider: this.provider.type,
         });
 
-        return result;
+        job.resolve(result);
+        return;
       }
 
       if (job.attempts < this.options.maxRetries) {
@@ -199,10 +205,11 @@ export class SMSQueue {
       provider: this.provider.type,
     });
 
-    return {
+    const finalResult: SMSSendResult = {
       ...result,
       error: `Queue failed after ${job.attempts} attempts: ${result.error ?? 'Unknown error'}`,
     };
+    job.resolve(finalResult);
   }
 
   private logDeliveryAttempt(
