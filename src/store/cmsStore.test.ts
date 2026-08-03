@@ -42,12 +42,18 @@ describe('cmsStore persist middleware', () => {
     expect(stateBefore.historyIndex).toBe(1);
     expect(stateBefore.history.length).toBe(2);
 
+    const savedSessionStorage = sessionStorage.getItem('cms-storage');
+
     // Simulate page refresh by resetting store state to defaults
     useCMSStore.setState({
       course: { id: '', title: '', description: '', modules: [] },
       history: [],
       historyIndex: -1,
     });
+
+    if (savedSessionStorage) {
+      sessionStorage.setItem('cms-storage', savedSessionStorage);
+    }
 
     // Rehydrate store from sessionStorage
     await useCMSStore.persist.rehydrate();

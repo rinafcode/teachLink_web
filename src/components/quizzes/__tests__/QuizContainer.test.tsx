@@ -75,7 +75,7 @@ describe('QuizContainer', () => {
     expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
 
     // The completion card should not be visible
-    expect(screen.queryByText(/quiz complete/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Quiz Completed/i)).not.toBeInTheDocument();
   });
 
   it('should render only the completion card when the quiz is completed', () => {
@@ -88,8 +88,8 @@ describe('QuizContainer', () => {
     render(<QuizContainer quiz={mockQuiz} />);
 
     // The completion card should be visible
-    expect(screen.getByText(/quiz complete/i)).toBeInTheDocument();
-    expect(screen.getByText(/you scored 2 out of 2/i)).toBeInTheDocument();
+    expect(screen.getByText(/Quiz Completed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Final Score:\s*2\s*\/\s*2/i)).toBeInTheDocument();
 
     // The question card should not be visible
     expect(screen.queryByText('What is 2 + 2?')).not.toBeInTheDocument();

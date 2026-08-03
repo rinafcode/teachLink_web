@@ -11,6 +11,8 @@ describe('Data Validation', () => {
         name: 'John Doe',
         email: 'john@example.com',
         role: 'STUDENT',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       const result = UserSchema.parse(validUser);
@@ -84,6 +86,8 @@ describe('Data Validation', () => {
         name: 'John Doe',
         email: 'john@example.com',
         role: 'STUDENT',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       const result = validateData(UserSchema, validUser);
