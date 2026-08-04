@@ -3,7 +3,7 @@
 ## Overview
 
 This document provides a complete summary of the Privacy Policy redirect management implementation for TeachLink. The solution handles legacy URL redirects, query parameter preservation, locale-aware routing, and comprehensive testing.
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 **Completion Status**: ✅ **COMPLETE**
 
 ---

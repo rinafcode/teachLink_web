@@ -2,9 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   getNumberFormat,
   getDateTimeFormat,
+  getRelativeTimeFormat,
   clearIntlCache,
   getNumberFormatCacheSize,
   getDateTimeFormatCacheSize,
+  getRelativeTimeFormatCacheSize,
 } from '../intlCache';
 
 describe('intlCache', () => {
@@ -58,6 +60,26 @@ describe('intlCache', () => {
     });
   });
 
+  describe('getRelativeTimeFormat', () => {
+    it('returns a valid Intl.RelativeTimeFormat instance', () => {
+      const formatter = getRelativeTimeFormat('en-US', { numeric: 'auto' });
+      expect(formatter).toBeInstanceOf(Intl.RelativeTimeFormat);
+      expect(formatter.format(-1, 'day')).toBe('yesterday');
+    });
+
+    it('caches formatters by locale and options', () => {
+      const formatter1 = getRelativeTimeFormat('en-US', { numeric: 'auto' });
+      const formatter2 = getRelativeTimeFormat('en-US', { numeric: 'auto' });
+      expect(formatter1).toBe(formatter2);
+    });
+
+    it('creates separate formatters for different locales', () => {
+      const formatterEN = getRelativeTimeFormat('en-US', { numeric: 'auto' });
+      const formatterFR = getRelativeTimeFormat('fr-FR', { numeric: 'auto' });
+      expect(formatterEN).not.toBe(formatterFR);
+    });
+  });
+
   describe('cache sizes', () => {
     it('returns correct number format cache size', () => {
       expect(getNumberFormatCacheSize()).toBe(0);
@@ -72,14 +94,23 @@ describe('intlCache', () => {
       expect(getDateTimeFormatCacheSize()).toBe(1);
     });
 
-    it('clearIntlCache clears both caches', () => {
+    it('returns correct relative time format cache size', () => {
+      expect(getRelativeTimeFormatCacheSize()).toBe(0);
+      getRelativeTimeFormat('en-US');
+      expect(getRelativeTimeFormatCacheSize()).toBe(1);
+    });
+
+    it('clearIntlCache clears all caches', () => {
       getNumberFormat('en-US');
       getDateTimeFormat('en-US');
+      getRelativeTimeFormat('en-US');
       expect(getNumberFormatCacheSize()).toBe(1);
       expect(getDateTimeFormatCacheSize()).toBe(1);
+      expect(getRelativeTimeFormatCacheSize()).toBe(1);
       clearIntlCache();
       expect(getNumberFormatCacheSize()).toBe(0);
       expect(getDateTimeFormatCacheSize()).toBe(0);
+      expect(getRelativeTimeFormatCacheSize()).toBe(0);
     });
   });
 });
@@ -114,16 +145,20 @@ describe('intlCache performance', () => {
   it('cache hit is significantly faster than cache miss (construction)', () => {
     const iterations = 10000;
     const locale = 'en-US';
+    const options = { maximumFractionDigits: 2 };
 
+    // Uncached construction: create a brand-new formatter every iteration
     const startMiss = performance.now();
     for (let i = 0; i < iterations; i++) {
-      getNumberFormat(locale, { maximumFractionDigits: 2 });
+      new Intl.NumberFormat(locale, options);
     }
     const timeMiss = performance.now() - startMiss;
 
+    // Cache hit: look up the same cached formatter every iteration
+    getNumberFormat(locale, options);
     const startHit = performance.now();
     for (let i = 0; i < iterations; i++) {
-      getNumberFormat(locale, { maximumFractionDigits: 2 });
+      getNumberFormat(locale, options);
     }
     const timeHit = performance.now() - startHit;
 

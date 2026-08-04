@@ -3,7 +3,7 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { BellOff } from 'lucide-react';
+import { BellOff, Info, CheckCircle, AlertTriangle, XCircle, Message, Book, Settings, Bell, X } from 'lucide-react';
 import { Notification, NotificationType, useNotifications } from '@/providers/Notificationprovider';
 import { EmptyState } from '@/components';
 import { getDateTimeFormat } from '@/utils/intlCache';
@@ -12,14 +12,14 @@ import { getDateTimeFormat } from '@/utils/intlCache';
 // Icon helpers
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-const TYPE_ICON: Record<NotificationType, string> = {
-  info: 'Ã¢â€žÂ¹Ã¯Â¸Â',
-  success: 'Ã¢Å“â€¦',
-  warning: 'Ã¢Å¡Â Ã¯Â¸Â',
-  error: 'Ã¢ÂÅ’',
-  message: 'Ã°Å¸â€™Â¬',
-  course: 'Ã°Å¸â€œÅ¡',
-  system: 'Ã°Å¸â€â€',
+const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
+  info: <Info className="h-5 w-5" />,
+  success: <CheckCircle className='h-5 w-5' />,
+  warning: <AlertTriangle className='h-5 w-5' />,
+  error: <XCircle className='h-5 w-5' />,
+  message: <Message className='h-5 w-5' />,
+  course: <Book className='h-5 w-5' />,
+  system: <Settings className='h-5 w-5' />,
 };
 
 function timeAgo(date: Date): string {
@@ -84,7 +84,7 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
             className="notification-item__avatar"
           />
         ) : (
-          <span aria-hidden="true">{TYPE_ICON[type]}</span>
+          {TYPE_ICON[type]}
         )}
       </div>
       <div className="notification-item__body">
@@ -103,7 +103,7 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
         }}
         aria-label="Dismiss notification"
       >
-        Ãƒâ€”
+        <X className='h-4 w-4' />
       </button>
     </div>
   );
@@ -125,9 +125,7 @@ export function NotificationBadge({ count, onClick }: NotificationBadgeProps) {
       onClick={onClick}
       aria-label={`Notifications${count > 0 ? `, ${count} unread` : ''}`}
     >
-      <span className="notification-bell" aria-hidden="true">
-        Ã°Å¸â€â€
-      </span>
+      <Bell className='h-5 w-5' aria-hidden='true' />
       {count > 0 && <span className="notification-count">{count > 99 ? '99+' : count}</span>}
     </button>
   );

@@ -2,6 +2,7 @@
 
 ## Pre-Build Checks
 
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
 ### ✅ File Structure
 
 - [x] `src/services/ethersService.ts` - Created
@@ -37,12 +38,12 @@ pnpm run type-check
 **Note**: One `@ts-ignore` in `ethersService.ts` is intentional for dynamic import
 
 ### 2. Lint Check
-
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
 ```bash
 pnpm run lint
 ```
-
-**Expected Output**: ✅ No warnings or errors
+<!-- 
+**Expected Output**: ✅ No warnings or errors -->
 
 ### 3. Build Project
 

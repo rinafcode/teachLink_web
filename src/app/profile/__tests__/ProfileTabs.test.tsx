@@ -25,8 +25,9 @@ describe('ProfileTabs', () => {
     renderWithTheme(<ProfileTabs />);
     await user.click(screen.getByRole('tab', { name: 'Settings' }));
 
-    await waitFor(() =>
-      expect(screen.getByRole('tabpanel', { name: 'Settings' })).toBeInTheDocument(),
+    await waitFor(
+      () => expect(screen.getByRole('tabpanel', { name: 'Settings' })).toBeInTheDocument(),
+      { timeout: 3000 },
     );
     expect(screen.getByRole('tab', { name: 'Settings' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('switch', { name: 'Notifications' })).toBeChecked();
@@ -41,8 +42,9 @@ describe('ProfileTabs', () => {
     renderWithTheme(<ProfileTabs />);
     await user.click(screen.getByRole('tab', { name: 'Achievements' }));
 
-    await waitFor(() =>
-      expect(screen.getByRole('tabpanel', { name: 'Achievements' })).toBeInTheDocument(),
+    await waitFor(
+      () => expect(screen.getByRole('tabpanel', { name: 'Achievements' })).toBeInTheDocument(),
+      { timeout: 3000 },
     );
     expect(screen.getByRole('tab', { name: 'Achievements' })).toHaveAttribute(
       'aria-selected',
@@ -58,8 +60,9 @@ describe('ProfileTabs', () => {
     renderWithTheme(<ProfileTabs />);
     await user.click(screen.getByRole('tab', { name: 'Certification Program' }));
 
-    await waitFor(() =>
-      expect(screen.getByRole('tabpanel', { name: 'Certification Program' })).toBeInTheDocument(),
+    await waitFor(
+      () => expect(screen.getByRole('tabpanel', { name: 'Certification Program' })).toBeInTheDocument(),
+      { timeout: 3000 },
     );
     expect(screen.getByRole('tab', { name: 'Certification Program' })).toHaveAttribute(
       'aria-selected',

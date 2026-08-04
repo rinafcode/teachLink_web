@@ -3,7 +3,7 @@
  * Pass an explicit locale to override; omit it to use the browser/system locale.
  */
 
-import { getDateTimeFormat } from './intlCache';
+import { getDateTimeFormat, getRelativeTimeFormat } from './intlCache';
 
 export function formatDate(
   date: Date | string | number,
@@ -23,7 +23,7 @@ export function formatTime(date: Date | string | number, locale?: string): strin
 
 export function formatRelative(date: Date | string | number, locale?: string): string {
   const diff = Math.round((new Date(date).getTime() - Date.now()) / 1000);
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  const rtf = getRelativeTimeFormat(locale, { numeric: 'auto' });
 
   if (Math.abs(diff) < 60) return rtf.format(diff, 'second');
   if (Math.abs(diff) < 3600) return rtf.format(Math.round(diff / 60), 'minute');

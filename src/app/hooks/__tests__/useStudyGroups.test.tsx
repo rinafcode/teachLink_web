@@ -103,7 +103,7 @@ describe('useStudyGroups', () => {
         subjectName: 'Learner One',
         fingerprint: 'aa:'.repeat(31) + 'aa',
         validFrom: '2026-05-28T00:00:00.000Z',
-        validUntil: '2026-06-28T00:00:00.000Z',
+        validUntil: '2099-06-28T00:00:00.000Z',
       }).id;
     });
 
@@ -134,7 +134,7 @@ describe('useStudyGroups', () => {
         subjectName: 'Learner One',
         fingerprint: 'not-a-fingerprint',
         validFrom: '2026-05-28T00:00:00.000Z',
-        validUntil: '2026-06-28T00:00:00.000Z',
+        validUntil: '2099-06-28T00:00:00.000Z',
       }),
     ).toThrow(/64-character SHA-256/);
   });

@@ -70,6 +70,13 @@ interface MessagingState {
   removeTypingUser: (userId: string) => void;
   initializeSocket: () => void;
   disconnectSocket: () => void;
+  loadMoreMessages: () => void;
+  setSearchQuery: (query: string) => void;
+  setSelectedFiles: (files: File[]) => void;
+  removeSelectedFile: (index: number) => void;
+  uploadAttachments: (files: File[]) => Promise<Attachment[]>;
+  createConversation: (participantId: string) => Promise<Conversation | null>;
+  getTotalUnreadCount: () => number;
 }
 
 export const useMessagingStore = create<MessagingState>((set, get) => ({
@@ -206,4 +213,70 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     wsManager.disconnect('messaging');
     set({ socket: null, isConnected: false });
   },
+
+  loadMoreMessages: () => {
+    const state = get();
+    if (!state.hasMoreMessages || state.isLoadingMessages) return;
+    set({ isLoadingMessages: true, currentPage: state.currentPage + 1 });
+    // Actual pagination logic would fetch messages for currentPage from the server.
+    // Stub: mark loading done after a tick until a real fetch layer exists.
+    setTimeout(() => set({ isLoadingMessages: false }), 0);
+  },
+
+  setSearchQuery: (query) => set({ searchQuery: query }),
+
+  setSelectedFiles: (files) => set({ selectedFiles: files }),
+
+  removeSelectedFile: (index) => {
+    set((state) => ({
+      selectedFiles: state.selectedFiles.filter((_, i) => i !== index),
+    }));
+  },
+
+  uploadAttachments: async (files) => {
+    set({ uploadingFiles: true });
+    try {
+      // Upload each file and build Attachment records.
+      // Real implementation would POST to a media endpoint; this stub creates
+      // local object-URL-based records so the types are fully satisfied.
+      const attachments: Attachment[] = files.map((file) => ({
+        id: `${Date.now()}-${file.name}`,
+        name: file.name,
+        url: URL.createObjectURL(file),
+        type: file.type,
+        size: file.size,
+      }));
+      return attachments;
+    } finally {
+      set({ uploadingFiles: false });
+    }
+  },
+
+  createConversation: async (participantId) => {
+    const existing = get().conversations.find((c) =>
+      c.participants.some((p) => p.id === participantId),
+    );
+    if (existing) {
+      get().setCurrentConversation(existing);
+      return existing;
+    }
+
+    const newConversation: Conversation = {
+      id: `conv-${Date.now()}`,
+      participants: [
+        { id: 'current-user', name: 'You', avatar: '', role: 'student', online: true },
+        { id: participantId, name: participantId, avatar: '', role: 'student', online: false },
+      ],
+      unreadCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    set((state) => ({ conversations: [...state.conversations, newConversation] }));
+    get().setCurrentConversation(newConversation);
+    return newConversation;
+  },
+
+  getTotalUnreadCount: () =>
+    get().conversations.reduce((total, conv) => total + conv.unreadCount, 0),
 }));

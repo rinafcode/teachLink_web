@@ -30,18 +30,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { id, question, options, course_id, created_by } = body;
 
-    // Create table if it doesn't exist
-    await query(
-      'CREATE TABLE IF NOT EXISTS polls (' +
-        'id VARCHAR(255) PRIMARY KEY, ' +
-        'question TEXT NOT NULL, ' +
-        'options JSONB NOT NULL, ' +
-        'course_id VARCHAR(255), ' +
-        'created_by VARCHAR(255), ' +
-        'created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP' +
-        ')',
-    );
-
     const result = await query(
       'INSERT INTO polls (id, question, options, course_id, created_by) ' +
         'VALUES ($1, $2, $3, $4, $5) ' +

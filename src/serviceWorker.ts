@@ -3,7 +3,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, NetworkFirst, CacheFirst } from 'workbox-strategies';
+import { StaleWhileRevalidate, NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
 import { BackgroundSyncPlugin } from 'workbox-background-sync';
 
 declare const self: ServiceWorkerGlobalScope;
@@ -48,12 +48,28 @@ registerRoute(
 // Runtime caching for static assets
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.js'),
-  new StaleWhileRevalidate({ cacheName: 'static-js' }),
+  new StaleWhileRevalidate({
+    cacheName: 'static-js',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
+  }),
 );
 
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.css'),
-  new StaleWhileRevalidate({ cacheName: 'static-css' }),
+  new StaleWhileRevalidate({
+    cacheName: 'static-css',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
+  }),
 );
 
 // Runtime caching for images
@@ -91,7 +107,89 @@ registerRoute(
   }),
 );
 
-// API requests with NetworkFirst
+// ─────────────────────────────────────────────────────────────────────────────
+// Background Sync for offline mutations
+// Must be registered BEFORE the generic /api/ NetworkFirst route below so that
+// mutations are routed through the BackgroundSyncPlugin, which queues failed
+// requests in IndexedDB and replays them automatically when the sync event fires.
+// ─────────────────────────────────────────────────────────────────────────────
+const bgSyncPlugin = new BackgroundSyncPlugin('teachLinkSyncQueue', {
+  maxRetentionTime: 24 * 60, // 24 hours in minutes
+});
+
+// Lesson progress – PATCH /api/lessons/[id]/progress
+registerRoute(
+  ({ url }) => url.pathname.match(/^\/api\/lessons\/[\w-]+\/progress$/),
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'PATCH',
+);
+
+// Notes – POST /api/notes
+registerRoute(
+  ({ url }) => url.pathname === '/api/notes',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'POST',
+);
+
+// Notes – PATCH /api/notes
+registerRoute(
+  ({ url }) => url.pathname === '/api/notes',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'PATCH',
+);
+
+// Notes – DELETE /api/notes
+registerRoute(
+  ({ url }) => url.pathname === '/api/notes',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'DELETE',
+);
+
+// Bookmarks – POST /api/bookmarks
+registerRoute(
+  ({ url }) => url.pathname === '/api/bookmarks',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'POST',
+);
+
+// Bookmarks – PATCH /api/bookmarks
+registerRoute(
+  ({ url }) => url.pathname === '/api/bookmarks',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'PATCH',
+);
+
+// Bookmarks – DELETE /api/bookmarks
+registerRoute(
+  ({ url }) => url.pathname === '/api/bookmarks',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'DELETE',
+);
+
+// User progress – POST /api/user/progress
+registerRoute(
+  ({ url }) => url.pathname === '/api/user/progress',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'POST',
+);
+
+// Quiz results – POST /api/quiz-results
+registerRoute(
+  ({ url }) => url.pathname === '/api/quiz-results',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'POST',
+);
+
+// Course progress – POST /api/course-progress
+registerRoute(
+  ({ url }) => url.pathname === '/api/course-progress',
+  new NetworkOnly({ plugins: [bgSyncPlugin] }),
+  'POST',
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Generic API cache (read requests that don't need background sync)
+// ─────────────────────────────────────────────────────────────────────────────
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/'),
   new NetworkFirst({
@@ -118,24 +216,6 @@ registerRoute(
     ],
   }),
 );
-
-// Background Sync for offline actions
-const bgSyncPlugin = new BackgroundSyncPlugin('teachLinkSyncQueue', {
-  maxRetentionTime: 24 * 60,
-});
-
-registerRoute(
-  ({ url }) => url.pathname.match(/^\/api\/lessons\/[\w-]+\/progress$/),
-  new NetworkFirst({ plugins: [bgSyncPlugin] }),
-  'PATCH',
-);
-
-// Handle sync events
-self.addEventListener('sync', (event: SyncEvent) => {
-  if (event.tag === 'teachLinkSyncQueue') {
-    event.waitUntil(Promise.resolve());
-  }
-});
 
 // Skip waiting and claim clients
 self.addEventListener('message', (event) => {
