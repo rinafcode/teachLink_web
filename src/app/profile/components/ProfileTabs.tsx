@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { memo, useCallback, useState } from 'react';
-import type { ProfileTabId } from '../profile-data';
+import type { ProfileTabId, ProfileUser } from '../profile-data';
 import { profileTabs } from '../profile-data';
 import ProfileInfoPanel from './ProfileInfoPanel';
 import ProfilePanelSkeleton from './ProfilePanelSkeleton';
@@ -58,7 +58,11 @@ const ProfileTabButton = memo(function ProfileTabButton({
   );
 });
 
-export default function ProfileTabs() {
+interface ProfileTabsProps {
+  initialUser?: ProfileUser;
+}
+
+export default function ProfileTabs({ initialUser }: ProfileTabsProps = {}) {
   const [activeTab, setActiveTab] = useState<ProfileTabId>('profile');
 
   const handleTabChange = useCallback((tabId: ProfileTabId) => {
@@ -78,7 +82,7 @@ export default function ProfileTabs() {
         ))}
       </div>
 
-      {activeTab === 'profile' && <ProfileInfoPanel />}
+      {activeTab === 'profile' && <ProfileInfoPanel initialUser={initialUser} />}
       {activeTab === 'settings' && <SettingsPanel />}
       {activeTab === 'achievements' && <AchievementsPanel />}
       {activeTab === 'support' && <CustomerSupportPanel />}

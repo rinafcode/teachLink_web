@@ -1,8 +1,24 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { ThemeProvider } from '@/lib/theme-provider';
 import ProfileTabs from '../components/ProfileTabs';
+
+beforeEach(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+});
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(<ThemeProvider defaultTheme="light">{ui}</ThemeProvider>);
@@ -17,6 +33,23 @@ describe('ProfileTabs', () => {
     expect(screen.getByLabelText('Full Name')).toHaveValue('John Doe');
     expect(screen.queryByText('Dark Mode')).not.toBeInTheDocument();
     expect(screen.queryByText('First Course')).not.toBeInTheDocument();
+  });
+
+  it('renders custom authenticated user if passed via initialUser prop', () => {
+    const authUser = {
+      initials: 'AS',
+      name: 'Alice Smith',
+      email: 'alice@example.com',
+      bio: 'Instructing Web3',
+      learningGoal: 'web3-development',
+      dailyLearningTime: '1-hour',
+      avatarUrl: '/avatars/alice.png',
+    };
+
+    renderWithTheme(<ProfileTabs initialUser={authUser} />);
+
+    expect(screen.getByLabelText('Full Name')).toHaveValue('Alice Smith');
+    expect(screen.getByLabelText('Email')).toHaveValue('alice@example.com');
   });
 
   it('loads settings only when the settings tab is selected', async () => {
