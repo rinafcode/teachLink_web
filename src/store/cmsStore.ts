@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { CMSCourse, MediaUploadTask, ContentTemplate } from '../types/cms';
 
+type CMSHistoryEntry = CMSCourse & { historyId: string };
+
 interface CMSState {
   course: CMSCourse;
-  history: CMSCourse[];
+  history: CMSHistoryEntry[];
   historyIndex: number;
   mediaQueue: MediaUploadTask[];
   templates: ContentTemplate[];
@@ -30,6 +32,11 @@ interface CMSState {
   setTemplates: (templates: ContentTemplate[]) => void;
 }
 
+const createHistoryEntry = (course: CMSCourse): CMSHistoryEntry => ({
+  ...course,
+  historyId: `history-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+});
+
 export const useCMSStore = create<CMSState>()(
   persist(
     (set) => ({
@@ -48,7 +55,7 @@ export const useCMSStore = create<CMSState>()(
       setCourse: (course) => {
         set((state) => {
           let newHistory = state.history.slice(0, state.historyIndex + 1);
-          newHistory.push(course);
+          newHistory.push(createHistoryEntry(course));
 
           if (newHistory.length > 20) {
             newHistory = newHistory.slice(newHistory.length - 20);
@@ -67,7 +74,7 @@ export const useCMSStore = create<CMSState>()(
           const updatedCourse = { ...state.course, ...updates };
           let newHistory = state.history.slice(0, state.historyIndex + 1);
 
-          newHistory.push(updatedCourse);
+          newHistory.push(createHistoryEntry(updatedCourse));
 
           if (newHistory.length > 20) {
             newHistory = newHistory.slice(newHistory.length - 20);
