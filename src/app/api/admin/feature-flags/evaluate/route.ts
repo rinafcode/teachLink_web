@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { flagStore, evaluateFlag } from '@/lib/feature-flags/store';
+import { getFlagById, evaluateFlag } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
 import { edgeLog } from '@/../infra/edge-config';
 
@@ -22,17 +22,24 @@ export async function GET(req: NextRequest) {
     return addHeaders(NextResponse.json({ message: 'id param required' }, { status: 400 }));
   }
 
-  const flag = flagStore.get(id);
-  if (!flag) {
-    return addHeaders(NextResponse.json({ message: 'Not found' }, { status: 404 }));
+  try {
+    const flag = await getFlagById(id);
+    if (!flag) {
+      return addHeaders(NextResponse.json({ message: 'Not found' }, { status: 404 }));
+    }
+
+    // Build context from remaining search params
+    const context: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (key !== 'id') context[key] = value;
+    });
+
+    const isEnabled = evaluateFlag(flag, context);
+    return addHeaders(NextResponse.json({ flag, isEnabled, context }));
+  } catch (error) {
+    edgeLog('error', '/api/admin/feature-flags/evaluate', 'Failed to evaluate flag', { error });
+    return addHeaders(
+      NextResponse.json({ message: 'Failed to evaluate feature flag' }, { status: 500 }),
+    );
   }
-
-  // Build context from remaining search params
-  const context: Record<string, string> = {};
-  searchParams.forEach((value, key) => {
-    if (key !== 'id') context[key] = value;
-  });
-
-  const isEnabled = evaluateFlag(flag, context);
-  return addHeaders(NextResponse.json({ flag, isEnabled, context }));
 }

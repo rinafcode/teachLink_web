@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auditLog } from '@/lib/feature-flags/store';
+import { getAuditLog } from '@/lib/feature-flags/store';
 import { withRateLimit } from '@/lib/ratelimit';
 import { edgeLog } from '@/../infra/edge-config';
 
 export const runtime = 'edge';
 
 /**
- * GET /api/admin/feature-flags/audit?flagId=<id>&limit=50&offset=0
+ * GET /api/admin/feature-flags/audit?flagId=<id>&limit=50
  */
 export async function GET(req: NextRequest) {
   edgeLog('info', '/api/admin/feature-flags/audit', 'GET request received');
@@ -14,12 +14,16 @@ export async function GET(req: NextRequest) {
   if (rateLimitResponse) return rateLimitResponse;
 
   const { searchParams } = new URL(req.url);
-  const flagId = searchParams.get('flagId');
-  const limit = Math.min(200, Math.max(1, parseInt(searchParams.get('limit') ?? '50', 10)));
-  const offset = Math.max(0, parseInt(searchParams.get('offset') ?? '0', 10));
+  const flagId = searchParams.get('flagId') ?? undefined;
+  const limit = Math.min(500, Math.max(1, parseInt(searchParams.get('limit') ?? '50', 10)));
 
-  const filtered = flagId ? auditLog.filter((e) => e.flagId === flagId) : auditLog;
-  const page = filtered.slice(offset, offset + limit);
-
-  return addHeaders(NextResponse.json({ entries: page, total: filtered.length }));
+  try {
+    const entries = await getAuditLog(flagId, limit);
+    return addHeaders(NextResponse.json({ entries, total: entries.length }));
+  } catch (error) {
+    edgeLog('error', '/api/admin/feature-flags/audit', 'Failed to fetch audit log', { error });
+    return addHeaders(
+      NextResponse.json({ message: 'Failed to fetch audit log' }, { status: 500 }),
+    );
+  }
 }

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     switch (action) {
       case 'metrics': {
         const timeRangeMs = parseInt(searchParams.get('timeRangeMs') || '86400000');
-        const metrics = SMSLogAggregator.getMetrics(timeRangeMs);
+        const metrics = await SMSLogAggregator.getMetrics(timeRangeMs);
 
         logger.info('SMS metrics retrieved', {
           context: {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
       case 'failed': {
         const limit = parseInt(searchParams.get('limit') || '100');
-        const failed = SMSLogAggregator.getFailedMessages(limit);
+        const failed = await SMSLogAggregator.getFailedMessages(limit);
 
         logger.info('Failed messages retrieved', {
           context: {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       }
 
       case 'anomalies': {
-        const anomalies = SMSLogAggregator.getAnomalies();
+        const anomalies = await SMSLogAggregator.getAnomalies();
 
         logger.info('Anomalies retrieved', {
           context: {
@@ -86,7 +86,9 @@ export async function GET(request: NextRequest) {
 
       case 'export': {
         const format = (searchParams.get('format') as 'json' | 'csv') || 'json';
-        const exportData = SMSLogAggregator.exportLogs(format);
+        const since = searchParams.get('since') ? parseInt(searchParams.get('since')!) : undefined;
+        const limit = parseInt(searchParams.get('limit') || '10000');
+        const exportData = await SMSLogAggregator.exportLogs(format, { since, limit });
 
         logger.info('SMS logs exported', {
           context: {
@@ -117,7 +119,7 @@ export async function GET(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '100');
         const offset = parseInt(searchParams.get('offset') || '0');
 
-        const logs = SMSLogAggregator.queryLogs({
+        const logs = await SMSLogAggregator.queryLogs({
           level: level.length > 0 ? level : undefined,
           provider,
           eventType,
@@ -178,7 +180,7 @@ export async function POST(request: NextRequest) {
         const olderThanMs = parseInt(
           (await request.json()).olderThanMs || '2592000000', // 30 days
         );
-        const deletedCount = SMSLogAggregator.clearOldLogs(olderThanMs);
+        const deletedCount = await SMSLogAggregator.clearOldLogs(olderThanMs);
 
         logger.info('Old SMS logs cleared', {
           context: {

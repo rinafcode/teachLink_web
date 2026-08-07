@@ -1,50 +1,24 @@
 /**
- * Feature Flag types and in-process store.
- *
- * Persistence: flags are kept in a module-level Map so they survive
- * across API requests within the same Node.js process (dev / single
- * instance prod). Replace `flagStore` / `auditStore` with a database
- * client for multi-instance deployments.
+ * Feature Flag evaluation and utilities.
+ * 
+ * Database persistence: All feature flags are now stored in PostgreSQL.
+ * See ./db.ts for CRUD operations.
  */
 
-// ─── Core types ───────────────────────────────────────────────────────────────
+import type { FeatureFlag, AuditEntry, TargetingRule, RolloutStrategy } from './types';
 
-export type RolloutStrategy = 'all' | 'percentage' | 'targeting';
-
-export interface TargetingRule {
-  /** e.g. "userId", "email", "country", "plan" */
-  attribute: string;
-  operator: 'equals' | 'contains' | 'startsWith' | 'in';
-  /** string or comma-separated list for 'in' */
-  value: string;
-}
-
-export interface FeatureFlag {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  strategy: RolloutStrategy;
-  /** 0–100, used when strategy === 'percentage' */
-  percentage: number;
-  /** used when strategy === 'targeting' */
-  rules: TargetingRule[];
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-}
-
-export interface AuditEntry {
-  id: string;
-  flagId: string;
-  flagName: string;
-  action: 'created' | 'updated' | 'deleted' | 'toggled';
-  actor: string;
-  before: Partial<FeatureFlag> | null;
-  after: Partial<FeatureFlag> | null;
-  timestamp: string;
-}
+// Re-export types and database functions
+export type { FeatureFlag, AuditEntry, TargetingRule, RolloutStrategy } from './types';
+export {
+  getFlagById,
+  getAllFlags,
+  createFlag,
+  updateFlag,
+  deleteFlag,
+  createAuditEntry,
+  getAuditLog,
+  generateId,
+} from './db';
 
 // ─── In-process stores ────────────────────────────────────────────────────────
 
@@ -101,34 +75,7 @@ for (const f of SEED_FLAGS) {
   flagStore.set(f.id, f);
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-export function generateId(prefix = ''): string {
-  const uuid = crypto.randomUUID();
-  return prefix ? `${prefix}_${uuid}` : uuid;
-}
-
-export function createAuditEntry(
-  action: AuditEntry['action'],
-  actor: string,
-  before: FeatureFlag | null,
-  after: FeatureFlag | null,
-): AuditEntry {
-  const entry: AuditEntry = {
-    id: generateId('audit'),
-    flagId: (after ?? before)!.id,
-    flagName: (after ?? before)!.name,
-    action,
-    actor,
-    before: before ? { ...before } : null,
-    after: after ? { ...after } : null,
-    timestamp: new Date().toISOString(),
-  };
-  // Keep last 500 audit entries
-  auditLog.unshift(entry);
-  if (auditLog.length > 500) auditLog.length = 500;
-  return entry;
-}
+// ─── Evaluation Logic ─────────────────────────────────────────────────────────
 
 /**
  * Evaluate whether a flag is active for a given user context.
