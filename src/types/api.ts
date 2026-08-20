@@ -21,6 +21,13 @@ import {
 // Envelope types
 // ---------------------------------------------------------------------------
 
+/**
+ * Canonical application-level API response envelope.
+ * 
+ * Endpoints should consistently return this structure.
+ * When using the `useApiResource` hook, this envelope is automatically unwrapped,
+ * exposing the generic type `T` through the hook's `data` property.
+ */
 export interface ApiResponse<T> {
   data: T;
   success: boolean;

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
 import { Search, UserCircle } from 'lucide-react';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
-import { apiClient } from '@/lib/api';
+import { useApiResource } from '@/hooks/useApiResource';
 import type { SocialUser } from './SocialProfile';
 
 interface FollowingSystemProps {
@@ -53,10 +53,11 @@ function UserRow({ user }: { user: SocialUser }) {
 
 export default function FollowingSystem({ userId }: FollowingSystemProps) {
   const [tab, setTab] = useState<ListTab>('followers');
-  const [users, setUsers] = useState<SocialUser[]>([]);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  const { data, loading } = useApiResource<SocialUser[]>(`/api/social/${tab}/${userId}`);
+  const users = data || [];
 
   // Debounce the search input query by 300ms
   useEffect(() => {
@@ -66,15 +67,6 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
 
     return () => clearTimeout(timer);
   }, [query]);
-
-  useEffect(() => {
-    setLoading(true);
-    apiClient
-      .get<SocialUser[]>(`/api/social/${tab}/${userId}`)
-      .then(setUsers)
-      .catch(() => setUsers([]))
-      .finally(() => setLoading(false));
-  }, [tab, userId]);
 
   // Memoize the filtered user results based on the debounced query
   const filtered = useMemo(() => {

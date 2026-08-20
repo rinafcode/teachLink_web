@@ -8,11 +8,12 @@
  *   DELETE /api/ai/reminders/:id    → ApiResponse<null>
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useNotification } from '@/hooks/use-notification';
+import { useApiResource } from '@/hooks/useApiResource';
 import type { ApiResponse } from '@/types/api';
 
 interface Reminder {
@@ -22,33 +23,14 @@ interface Reminder {
 }
 
 export default function SmartNotifications() {
-  const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: reminders = [], setData: setReminders, loading, error: fetchError } = useApiResource<Reminder[]>('/api/ai/reminders');
+  const error = fetchError ? 'Could not load reminders.' : null;
   const { success, error: notifyError } = useNotification();
-
-  useEffect(() => {
-    let cancelled = false;
-    apiClient
-      .get<ApiResponse<Reminder[]>>('/api/ai/reminders')
-      .then((res) => {
-        if (!cancelled) setReminders(res.data);
-      })
-      .catch(() => {
-        if (!cancelled) setError('Could not load reminders.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const dismiss = async (id: string) => {
     try {
       await apiClient.delete<ApiResponse<null>>(`/api/ai/reminders/${id}`);
-      setReminders((prev) => prev.filter((r) => r.id !== id));
+      setReminders((prev: any) => (prev || []).filter((r: any) => r.id !== id));
       success('Reminder dismissed.');
     } catch {
       notifyError('Failed to dismiss reminder.');

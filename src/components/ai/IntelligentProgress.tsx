@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { TrendingUp } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import type { ApiResponse } from '@/types/api';
+import { useApiResource } from '@/hooks/useApiResource';
 
 // GET /api/ai/progress → ApiResponse<ProgressData>
 
@@ -33,17 +31,7 @@ function ProgressBar({ percent }: { percent: number }) {
 }
 
 export default function IntelligentProgress() {
-  const [data, setData] = useState<ProgressData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    apiClient
-      .get<ProgressData>('/api/ai/progress')
-      .then(setData)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, loading, error } = useApiResource<ProgressData>('/api/ai/progress');
 
   const completion =
     data && data.totalCourses > 0

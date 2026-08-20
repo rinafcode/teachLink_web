@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { ExternalLink, Sparkles } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import type { ApiResponse } from '@/types/api';
+import { useApiResource } from '@/hooks/useApiResource';
 
 // GET /api/ai/recommendations → ApiResponse<Recommendation[]>
 
@@ -25,27 +23,8 @@ function SkeletonCard() {
 }
 
 export default function PersonalizedRecommendations() {
-  const [items, setItems] = useState<Recommendation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    apiClient
-      .get<{ items: Recommendation[] }>('/api/ai/recommendations')
-      .then((r) => {
-        if (!cancelled) setItems(r.items);
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data, loading, error } = useApiResource<{ items: Recommendation[] }>('/api/ai/recommendations');
+  const items = data?.items || [];
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">

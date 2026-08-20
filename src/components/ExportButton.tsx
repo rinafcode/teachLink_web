@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { apiClient } from '@/lib/api';
+import { useApiResource } from '@/hooks/useApiResource';
 import { ExportFilter, ExportProgressState, ExportSort } from '@/lib/export';
 
 interface ExportButtonResult {
@@ -39,6 +39,8 @@ export function ExportButton({
 
   const isDisabled = isRunning || !templateId || templateId.trim() === '';
 
+  const { refetch } = useApiResource<{ result: ExportButtonResult }>('/api/exports/execute', { method: 'POST', manual: true });
+
   const handleClick = async () => {
     if (isDisabled) return;
 
@@ -52,15 +54,14 @@ export function ExportButton({
     });
 
     try {
-      const response = await apiClient.post<{ result: ExportButtonResult }>(
-        '/api/exports/execute',
-        {
+      const response = await refetch({
+        body: {
           templateId,
           filters,
           sort,
           columns,
-        },
-      );
+        }
+      });
 
       if (!response?.result?.success) {
         throw new Error('Export failed');
