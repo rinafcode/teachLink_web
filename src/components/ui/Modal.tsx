@@ -2,7 +2,8 @@
 
 import { useEffect, useId } from 'react';
 import { X } from 'lucide-react';
-import { useFocusTrap, useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
+import { useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -30,8 +31,8 @@ export interface ModalProps {
 }
 
 /**
- * Accessible modal dialog with focus trap, Escape-to-close, and screen reader announcements.
- * Uses the existing `useFocusTrap` hook from `useAccessibility`.
+ * Accessible modal dialog with keyboard focus containment, focus restoration,
+ * Escape-to-close, and screen reader announcements.
  *
  * `onClose` now receives an optional reason ('escape' | 'backdrop' | 'button')
  * so consumers that need to distinguish an ambient dismiss gesture from an
@@ -40,14 +41,6 @@ export interface ModalProps {
  * user with a feedback prompt. Existing `() => void` handlers are unaffected;
  * they simply ignore the extra argument.
  *
- * NOTE on native `<dialog>`: this was evaluated as a follow-up (native
- * top-layer stacking, a real `::backdrop`, built-in inertness of background
- * content) but jsdom 26, which this repo's Vitest suite runs on, does not
- * implement `HTMLDialogElement.showModal()`/`close()` — every test that
- * renders a Modal (this file's suite, plus any test touching the 9 current
- * consumers) would throw immediately. Revisit once the test environment
- * upgrades to a jsdom version with dialog support, or the suite moves to a
- * real-browser runner (e.g. Playwright component tests) for this component.
  */
 export function Modal({
   isOpen,
@@ -58,7 +51,7 @@ export function Modal({
   className = '',
 }: ModalProps) {
   const titleId = useId();
-  const containerRef = useFocusTrap(isOpen);
+  const containerRef = useFocusTrap<HTMLDivElement>(isOpen);
   const announce = useScreenReaderAnnouncement();
 
   // Announce open/close and lock body scroll
@@ -97,7 +90,7 @@ export function Modal({
 
       {/* Dialog */}
       <div
-        ref={containerRef as React.RefObject<HTMLDivElement>}
+        ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

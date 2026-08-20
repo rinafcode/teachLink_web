@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { ConflictRecord, ResolutionStrategy } from '@/lib/conflict/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, ArrowRight, Save, History, Check } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ConflictResolverProps {
   conflict: ConflictRecord<any>;
@@ -18,6 +19,16 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 }) => {
   const [selectedStrategy, setSelectedStrategy] = useState<ResolutionStrategy>('manual');
   const [showHistory, setShowHistory] = useState(false);
+  const dialogRef = useFocusTrap<HTMLDivElement>(true);
+  const titleId = useId();
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   const localItems = Object.entries(conflict.localData).filter(
     ([key]) => !['updatedAt', 'version', 'id'].includes(key),
@@ -31,6 +42,10 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -43,7 +58,9 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                 <AlertTriangle size={24} />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Conflict Detected</h3>
+                <h3 id={titleId} className="text-xl font-bold text-white">
+                  Conflict Detected
+                </h3>
                 <p className="text-sm text-gray-400">
                   Resolution required for {conflict.entityType}
                 </p>
@@ -51,6 +68,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
             </div>
             <button
               onClick={onClose}
+              aria-label="Close conflict resolver"
               className="p-2 hover:bg-white/5 rounded-lg text-gray-400 transition-colors"
             >
               <X size={20} />

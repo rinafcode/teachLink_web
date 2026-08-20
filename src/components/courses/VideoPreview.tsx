@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface VideoPreviewProps {
   videoUrl?: string;
@@ -13,8 +14,26 @@ export default function VideoPreview({
   videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   thumbnailUrl = 'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
   duration = '5:30',
+  onClose,
 }: VideoPreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen, { initialFocusRef: closeButtonRef });
+  const titleId = useId();
+
+  const closePreview = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closePreview();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   return (
     <>
@@ -38,12 +57,22 @@ export default function VideoPreview({
 
       {isOpen && (
         <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setIsOpen(false)}
+          onClick={closePreview}
         >
           <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            <h2 id={titleId} className="sr-only">
+              Video preview
+            </h2>
             <button
-              onClick={() => setIsOpen(false)}
+              ref={closeButtonRef}
+              type="button"
+              onClick={closePreview}
+              aria-label="Close video preview"
               className="absolute -top-12 right-0 text-white hover:text-[#00C2FF] transition-colors"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,6 +86,7 @@ export default function VideoPreview({
             </button>
             <iframe
               src={videoUrl}
+              title="Video preview"
               className="w-full aspect-video rounded-xl"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

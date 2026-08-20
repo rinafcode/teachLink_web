@@ -1,12 +1,24 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import Image from 'next/image';
-import { BellOff, Info, CheckCircle, AlertTriangle, XCircle, Message, Book, Settings, Bell, X } from 'lucide-react';
+import {
+  BellOff,
+  Info,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  Message,
+  Book,
+  Settings,
+  Bell,
+  X,
+} from 'lucide-react';
 import { Notification, NotificationType, useNotifications } from '@/providers/Notificationprovider';
 import { EmptyState } from '@/components';
 import { getDateTimeFormat } from '@/utils/intlCache';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Icon helpers
@@ -14,12 +26,12 @@ import { getDateTimeFormat } from '@/utils/intlCache';
 
 const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
   info: <Info className="h-5 w-5" />,
-  success: <CheckCircle className='h-5 w-5' />,
-  warning: <AlertTriangle className='h-5 w-5' />,
-  error: <XCircle className='h-5 w-5' />,
-  message: <Message className='h-5 w-5' />,
-  course: <Book className='h-5 w-5' />,
-  system: <Settings className='h-5 w-5' />,
+  success: <CheckCircle className="h-5 w-5" />,
+  warning: <AlertTriangle className="h-5 w-5" />,
+  error: <XCircle className="h-5 w-5" />,
+  message: <Message className="h-5 w-5" />,
+  course: <Book className="h-5 w-5" />,
+  system: <Settings className="h-5 w-5" />,
 };
 
 function timeAgo(date: Date): string {
@@ -84,7 +96,7 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
             className="notification-item__avatar"
           />
         ) : (
-          {TYPE_ICON[type]}
+          TYPE_ICON[type]
         )}
       </div>
       <div className="notification-item__body">
@@ -103,7 +115,7 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
         }}
         aria-label="Dismiss notification"
       >
-        <X className='h-4 w-4' />
+        <X className="h-4 w-4" />
       </button>
     </div>
   );
@@ -116,16 +128,20 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
 interface NotificationBadgeProps {
   count: number;
   onClick: () => void;
+  expanded: boolean;
+  controls: string;
 }
 
-export function NotificationBadge({ count, onClick }: NotificationBadgeProps) {
+export function NotificationBadge({ count, onClick, expanded, controls }: NotificationBadgeProps) {
   return (
     <button
       className="notification-badge-btn"
       onClick={onClick}
       aria-label={`Notifications${count > 0 ? `, ${count} unread` : ''}`}
+      aria-expanded={expanded}
+      aria-controls={controls}
     >
-      <Bell className='h-5 w-5' aria-hidden='true' />
+      <Bell className="h-5 w-5" aria-hidden="true" />
       {count > 0 && <span className="notification-count">{count > 99 ? '99+' : count}</span>}
     </button>
   );
@@ -140,12 +156,15 @@ export function NotificationCenter() {
     useNotifications();
 
   const [open, setOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useFocusTrap<HTMLDivElement>(open);
+  const titleId = useId();
+  const panelId = useId();
 
   // Close on outside click
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
@@ -160,14 +179,35 @@ export function NotificationCenter() {
     return () => clearTimeout(timer);
   }, [open, markAllAsRead]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open]);
+
   return (
-    <div className="notification-center" ref={panelRef}>
-      <NotificationBadge count={unreadCount} onClick={() => setOpen((v) => !v)} />
+    <div className="notification-center" ref={containerRef}>
+      <NotificationBadge
+        count={unreadCount}
+        onClick={() => setOpen((v) => !v)}
+        expanded={open}
+        controls={panelId}
+      />
 
       {open && (
-        <div className="notification-panel" role="dialog" aria-label="Notifications">
+        <div
+          ref={panelRef}
+          id={panelId}
+          className="notification-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+        >
           <div className="notification-panel__header">
-            <h2>Notifications</h2>
+            <h2 id={titleId}>Notifications</h2>
             <div className="notification-panel__actions">
               {unreadCount > 0 && (
                 <button onClick={markAllAsRead} className="btn-link">
