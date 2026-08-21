@@ -10,6 +10,27 @@ export const RECONNECT_DELAY_MS = 1000;
 export const MAX_TREND_POINTS = 200;
 export const MAX_RETRIES = 3;
 
+// Offline sync (deterministic, idempotent, resumable)
+export const SYNC_BATCH_SIZE = 20;
+/** Max delivery attempts per offline operation before it is dead-lettered. */
+export const SYNC_MAX_RETRY_ATTEMPTS = 3;
+/** Base delay (ms) for exponential backoff between retries. */
+export const SYNC_BACKOFF_BASE_MS = 500;
+/** Cap (ms) for exponential backoff so retries never spin forever. */
+export const SYNC_BACKOFF_CAP_MS = 10000;
+/** Retention window (ms) for acknowledged operations before GC (7 days). */
+export const SYNC_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+/** Retention window (ms) for dead-lettered operations before GC (30 days). */
+export const DEAD_LETTER_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+/** Background sync tag used by the service worker to trigger a drain. */
+export const SYNC_BACKGROUND_TAG = 'teachlink-offline-sync';
+
+export const SYNC_CONFLICT_STATES = {
+  PENDING: 'pending',
+  CONFLICTED: 'conflicted',
+  RESOLVED: 'resolved',
+} as const;
+
 // API Timeouts
 export const API_TIMEOUT_DEFAULT = 10000;
 export const API_TIMEOUT_UPLOAD = 60000;

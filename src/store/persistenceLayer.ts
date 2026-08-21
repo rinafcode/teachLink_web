@@ -54,4 +54,24 @@ export const persistenceLayer = {
     const db = await openDB(DB_NAME, 1);
     await db.delete(STORE_NAME, name);
   },
+
+  /**
+   * Loads a JSON value stored under `name` (returns null when absent).
+   */
+  async getJSON<T>(name: string): Promise<T | null> {
+    const raw = await this.getItem(name);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Persists a JSON value under `name`.
+   */
+  async setJSON<T>(name: string, value: T): Promise<void> {
+    await this.setItem(name, JSON.stringify(value));
+  },
 };

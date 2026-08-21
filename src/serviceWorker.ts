@@ -117,6 +117,25 @@ const bgSyncPlugin = new BackgroundSyncPlugin('teachLinkSyncQueue', {
   maxRetentionTime: 24 * 60, // 24 hours in minutes
 });
 
+// Drains the deterministic offline queue (IndexedDB `teachlink-offline`) when
+// connectivity returns. The client listens for OFFLINE_SYNC_REQUESTED and runs
+// its transactional, cursor-based drain.
+async function notifyClientsToDrain(): Promise<void> {
+  const clients = await self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+  for (const client of clients) {
+    client.postMessage({ type: 'OFFLINE_SYNC_REQUESTED' });
+  }
+}
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'teachlink-offline-sync') {
+    event.waitUntil(notifyClientsToDrain());
+  }
+});
+
 // Lesson progress – PATCH /api/lessons/[id]/progress
 registerRoute(
   ({ url }) => url.pathname.match(/^\/api\/lessons\/[\w-]+\/progress$/),

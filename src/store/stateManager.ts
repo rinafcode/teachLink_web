@@ -16,10 +16,14 @@ interface UserState {
   };
 }
 
+/** UI-facing offline sync status reconciled after each drain. */
+export type SyncStatusState = 'idle' | 'syncing' | 'pending' | 'conflicted' | 'resolved';
+
 interface AppState {
   isSidebarOpen: boolean;
   offlineMode: boolean;
   lastSynced: number | null;
+  syncStatus: SyncStatusState;
 }
 
 interface StoreState {
@@ -59,6 +63,7 @@ export const useStore = create<StoreState>()(
           isSidebarOpen: true,
           offlineMode: false,
           lastSynced: null,
+          syncStatus: 'idle' as SyncStatusState,
         },
 
         setUser: (user: Partial<UserState>) =>
