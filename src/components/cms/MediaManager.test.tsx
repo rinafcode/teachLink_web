@@ -270,4 +270,57 @@ describe('MediaManager', () => {
       expect(preventDefaultSpy).toHaveBeenCalled();
     });
   });
+
+  describe('Pagination', () => {
+    function makeQueue(count: number) {
+      return Array.from({ length: count }, (_, i) => ({
+        id: `task-${i}`,
+        fileName: `file-${i}.txt`,
+        fileSize: 1024,
+        progress: 100,
+        status: 'completed' as const,
+      }));
+    }
+
+    it('only renders the first page of a large upload queue', () => {
+      vi.mocked(useCMSModule.useCMS).mockReturnValue({
+        mediaQueue: makeQueue(25),
+        addToQueue: mockAddToQueue,
+        updateUploadProgress: mockUpdateUploadProgress,
+        setUploadStatus: mockSetUploadStatus,
+      } as any);
+
+      render(<MediaManager />);
+
+      expect(screen.getAllByText(/^file-\d+\.txt$/)).toHaveLength(10);
+      expect(screen.getByText('Load more')).toBeDefined();
+    });
+
+    it('reveals more items (without hiding earlier ones) when "Load more" is clicked', () => {
+      vi.mocked(useCMSModule.useCMS).mockReturnValue({
+        mediaQueue: makeQueue(25),
+        addToQueue: mockAddToQueue,
+        updateUploadProgress: mockUpdateUploadProgress,
+        setUploadStatus: mockSetUploadStatus,
+      } as any);
+
+      render(<MediaManager />);
+      fireEvent.click(screen.getByText('Load more'));
+
+      expect(screen.getAllByText(/^file-\d+\.txt$/)).toHaveLength(20);
+    });
+
+    it('does not show "Load more" when the queue fits on one page', () => {
+      vi.mocked(useCMSModule.useCMS).mockReturnValue({
+        mediaQueue: makeQueue(3),
+        addToQueue: mockAddToQueue,
+        updateUploadProgress: mockUpdateUploadProgress,
+        setUploadStatus: mockSetUploadStatus,
+      } as any);
+
+      render(<MediaManager />);
+
+      expect(screen.queryByText('Load more')).toBeNull();
+    });
+  });
 });

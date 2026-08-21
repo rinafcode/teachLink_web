@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
 import { ApprovalStatus, ReviewDecision } from '@/types/approvals';
 import { PermissionGate } from '@/app/components/auth/PermissionGate';
 import { Permission, User } from '@/types/api';
 import type { ApprovalItem } from '@/types/api';
+import { usePagination } from '@/hooks/usePagination';
 
 interface ApprovalQueueProps {
   user: User | null | undefined;
@@ -41,11 +42,80 @@ function StatusBadge({ status }: { status: ApprovalStatus }) {
 
 type ApiFieldError = { field: string; message: string };
 
+const APPROVALS_PAGE_SIZE = 10;
+
+interface ApprovalItemRowProps {
+  item: ApprovalItem;
+  submitting: boolean;
+  onApprove: (id: string, note: string) => void;
+  onReject: (id: string, note: string) => void;
+}
+
+const ApprovalItemRow = memo(function ApprovalItemRow({
+  item,
+  submitting,
+  onApprove,
+  onReject,
+}: ApprovalItemRowProps) {
+  // Kept local so typing a note in one row never re-renders any other row.
+  const [note, setNote] = useState('');
+
+  return (
+    <li className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="font-medium text-gray-900 dark:text-white">{item.title}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            {item.contentType} · submitted by{' '}
+            <span className="font-medium">{item.submittedBy}</span> ·{' '}
+            {new Date(item.submittedAt).toLocaleDateString()}
+          </p>
+        </div>
+        <StatusBadge status={item.status} />
+      </div>
+
+      {item.status === ApprovalStatus.PENDING && (
+        <div className="space-y-2">
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Optional review note…"
+            rows={2}
+            maxLength={500}
+            className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={() => onApprove(item.id, note)}
+              disabled={submitting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Approve
+            </button>
+            <button
+              onClick={() => onReject(item.id, note)}
+              disabled={submitting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              <XCircle className="w-4 h-4" />
+              Reject
+            </button>
+          </div>
+        </div>
+      )}
+
+      {item.reviewNote && (
+        <p className="text-xs text-gray-600 dark:text-gray-400 italic">Note: {item.reviewNote}</p>
+      )}
+    </li>
+  );
+});
+
 export function ApprovalQueue({ user }: ApprovalQueueProps) {
   const [items, setItems] = useState<ApprovalItem[]>([]);
   const [filter, setFilter] = useState<ApprovalStatus | 'ALL'>(ApprovalStatus.PENDING);
   const [loading, setLoading] = useState(false);
-  const [reviewNote, setReviewNote] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<ApiFieldError[]>([]);
@@ -78,38 +148,61 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
     fetchItems();
   }, [fetchItems]);
 
-  const review = async (id: string, status: ReviewDecision) => {
-    if (!user) return;
-    setSubmitting(id);
-    setError(null);
-    try {
-      const res = await fetch('/api/approvals', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id,
-          status,
-          reviewedBy: user.id,
-          reviewNote: reviewNote[id] ?? '',
-        }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        setItems((prev) => prev.map((item) => (item.id === id ? json.data : item)));
-      } else {
-        const apiErrors = json.errors as ApiFieldError[] | undefined;
-        if (apiErrors && apiErrors.length > 0) {
-          setError(apiErrors.map((e) => `${e.field}: ${e.message}`).join('; '));
+  const review = useCallback(
+    async (id: string, status: ReviewDecision, note: string) => {
+      if (!user) return;
+      setSubmitting(id);
+      setError(null);
+      try {
+        const res = await fetch('/api/approvals', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id,
+            status,
+            reviewedBy: user.id,
+            reviewNote: note,
+          }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          setItems((prev) => prev.map((item) => (item.id === id ? json.data : item)));
         } else {
-          setError(json.message ?? 'Review failed already');
+          const apiErrors = json.errors as ApiFieldError[] | undefined;
+          if (apiErrors && apiErrors.length > 0) {
+            setError(apiErrors.map((e) => `${e.field}: ${e.message}`).join('; '));
+          } else {
+            setError(json.message ?? 'Review failed already');
+          }
         }
+      } catch {
+        setError('Network error');
+      } finally {
+        setSubmitting(null);
       }
-    } catch {
-      setError('Network error');
-    } finally {
-      setSubmitting(null);
-    }
-  };
+    },
+    [user],
+  );
+
+  const handleApprove = useCallback(
+    (id: string, note: string) => review(id, ReviewDecision.APPROVED, note),
+    [review],
+  );
+  const handleReject = useCallback(
+    (id: string, note: string) => review(id, ReviewDecision.REJECTED, note),
+    [review],
+  );
+
+  const { pageItems, page, pageCount, nextPage, previousPage, hasNextPage, hasPreviousPage, resetPage } =
+    usePagination(items, APPROVALS_PAGE_SIZE);
+
+  const handleFilterChange = useCallback(
+    (value: ApprovalStatus | 'ALL') => {
+      setFilter(value);
+      resetPage();
+    },
+    [resetPage],
+  );
 
   return (
     <PermissionGate
@@ -140,7 +233,7 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
           {STATUS_FILTER_OPTIONS.map(({ label, value }) => (
             <button
               key={value}
-              onClick={() => setFilter(value)}
+              onClick={() => handleFilterChange(value)}
               aria-pressed={filter === value}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                 filter === value
@@ -175,65 +268,43 @@ export function ApprovalQueue({ user }: ApprovalQueueProps) {
         ) : items.length === 0 ? (
           <p className="text-sm text-gray-500 dark:text-gray-400">No submissions found.</p>
         ) : (
-          <ul className="space-y-3" aria-label="Approval submissions">
-            {items.map((item) => (
-              <li
-                key={item.id}
-                className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{item.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {item.contentType} · submitted by{' '}
-                      <span className="font-medium">{item.submittedBy}</span> ·{' '}
-                      {new Date(item.submittedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <StatusBadge status={item.status} />
-                </div>
+          <>
+            <ul className="space-y-3" aria-label="Approval submissions">
+              {pageItems.map((item) => (
+                <ApprovalItemRow
+                  key={item.id}
+                  item={item}
+                  submitting={submitting === item.id}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                />
+              ))}
+            </ul>
 
-                {item.status === ApprovalStatus.PENDING && (
-                  <div className="space-y-2">
-                    <textarea
-                      value={reviewNote[item.id] ?? ''}
-                      onChange={(e) =>
-                        setReviewNote((prev) => ({ ...prev, [item.id]: e.target.value }))
-                      }
-                      placeholder="Optional review note…"
-                      rows={2}
-                      maxLength={500}
-                      className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => review(item.id, ReviewDecision.APPROVED)}
-                        disabled={submitting === item.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Approve It
-                      </button>
-                      <button
-                        onClick={() => review(item.id, ReviewDecision.REJECTED)}
-                        disabled={submitting === item.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
-                      >
-                        <XCircle className="w-4 h-4" />
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {item.reviewNote && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 italic">
-                    Note: {item.reviewNote}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
+            {pageCount > 1 && (
+              <div className="flex items-center justify-between pt-1 text-sm text-gray-600 dark:text-gray-300">
+                <button
+                  type="button"
+                  onClick={previousPage}
+                  disabled={!hasPreviousPage}
+                  className="px-3 py-1 rounded-full font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {page + 1} of {pageCount}
+                </span>
+                <button
+                  type="button"
+                  onClick={nextPage}
+                  disabled={!hasNextPage}
+                  className="px-3 py-1 rounded-full font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </PermissionGate>
