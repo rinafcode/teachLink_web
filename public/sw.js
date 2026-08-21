@@ -136,3 +136,12 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+// Realtime transports degraded to offline mode — broadcast to all open clients
+// so the app can switch to offline mode.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'REALTIME_OFFLINE') {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      clients.forEach((client) => client.postMessage({ type: 'REALTIME_OFFLINE' }));
+    });
+  }
+});

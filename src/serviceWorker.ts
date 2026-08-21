@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { clientsClaim } from 'workbox-core';
+import { REALTIME_OFFLINE_EVENT } from '@/constants/app.constants';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
@@ -221,6 +222,14 @@ registerRoute(
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+
+  // Realtime transports degraded to offline mode (max reconnect attempts exceeded) —
+  // broadcast to every open client so the app can switch to offline mode.
+  if (event.data && event.data.type === REALTIME_OFFLINE_EVENT) {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      clients.forEach((client) => client.postMessage({ type: REALTIME_OFFLINE_EVENT }));
+    });
   }
 });
 

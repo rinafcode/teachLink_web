@@ -1,6 +1,12 @@
 'use client';
 
 import { io, Socket } from 'socket.io-client';
+import {
+  BaseRealtimeTransport,
+  ConnectionSupervisor,
+  type ConnectionStatus,
+  registerSupervisor,
+} from '@/lib/realtime/connectionSupervisor';
 
 export interface WebSocketConfig {
   url: string;
@@ -11,21 +17,77 @@ export interface WebSocketConfig {
   timeout?: number;
 }
 
-export interface ConnectionStatus {
-  isConnected: boolean;
-  isReconnecting: boolean;
-  reconnectAttempts: number;
-  lastConnected?: Date;
-  lastError?: string;
+export type { ConnectionStatus };
+
+/**
+ * socket.io transport adapter. Reconnection is disabled at the socket.io level
+ * (`reconnection: false`) so the ConnectionSupervisor owns the reconnect loop,
+ * heartbeat and outbound queue; this adapter only maps socket.io events onto
+ * the transport lifecycle hooks.
+ */
+class SocketIoTransport extends BaseRealtimeTransport {
+  readonly name = 'socket.io';
+  private socket: Socket | null = null;
+
+  constructor(private readonly config: WebSocketConfig) {
+    super();
+  }
+
+  getSocket(): Socket | null {
+    return this.socket;
+  }
+
+  connect(): void {
+    if (this.socket?.connected) {
+      return;
+    }
+    this.socket?.removeAllListeners();
+    this.socket?.disconnect();
+
+    const socket = io(this.config.url + (this.config.namespace || ''), {
+      reconnection: false,
+      timeout: this.config.timeout || 20000,
+      forceNew: true,
+    });
+    this.socket = socket;
+
+    socket.on('connect', () => this.events.emitOpen());
+    socket.on('disconnect', (reason: string) => this.events.emitClose(reason));
+    socket.on('connect_error', (error: Error) => this.events.emitError(error));
+    socket.on('pong', () => this.events.emitPong());
+
+    socket.connect();
+  }
+
+  disconnect(): void {
+    this.socket?.removeAllListeners();
+    this.socket?.disconnect();
+    this.socket = null;
+  }
+
+  close(): void {
+    this.socket?.disconnect();
+  }
+
+  isOpen(): boolean {
+    return this.socket?.connected ?? false;
+  }
+
+  send(payload: unknown): void {
+    const { event, payload: data } = payload as { event: string; payload?: unknown };
+    this.socket?.emit(event, data);
+  }
+
+  sendPing(): void {
+    this.socket?.emit('ping');
+  }
 }
 
 export class WebSocketManager {
   private static instance: WebSocketManager;
-  private connections: Map<string, Socket> = new Map();
+  private supervisors: Map<string, ConnectionSupervisor> = new Map();
+  private transports: Map<string, SocketIoTransport> = new Map();
   private configs: Map<string, WebSocketConfig> = new Map();
-  private statuses: Map<string, ConnectionStatus> = new Map();
-  private heartbeatIntervals: Map<string, NodeJS.Timeout> = new Map();
-  private reconnectTimeouts: Map<string, NodeJS.Timeout> = new Map();
 
   private constructor() {}
 
@@ -37,167 +99,90 @@ export class WebSocketManager {
   }
 
   connect(key: string, config: WebSocketConfig): Socket {
-    if (this.connections.has(key)) {
-      return this.connections.get(key)!;
+    const existing = this.supervisors.get(key);
+    if (existing) {
+      return this.transports.get(key)!.getSocket()!;
     }
 
-    const socket = io(config.url + (config.namespace || ''), {
-      reconnection: false,
-      timeout: config.timeout || 20000,
-      forceNew: true,
+    const transport = new SocketIoTransport(config);
+    const supervisor = new ConnectionSupervisor(transport, {
+      initialReconnectDelayMs: config.reconnectionDelay ?? 1000,
+      maxReconnectAttempts: config.reconnectionAttempts ?? 5,
+      maxReconnectDelayMs: (config.reconnectionDelay ?? 1000) * 32,
+      heartbeatIntervalMs: config.heartbeatInterval ?? 30000,
     });
 
-    this.connections.set(key, socket);
+    this.supervisors.set(key, supervisor);
+    this.transports.set(key, transport);
     this.configs.set(key, config);
-    this.setupSocketListeners(key, socket, config);
-    this.startHeartbeat(key, config);
+    registerSupervisor(`websocket:${key}`, supervisor);
 
-    socket.connect();
-    return socket;
+    supervisor.connect();
+    return transport.getSocket()!;
+  }
+
+  /**
+   * Send an event through the supervisor's bounded outbound queue. Messages sent
+   * while disconnected are buffered (FIFO) and flushed on reconnect; overflow
+   * follows the supervisor's drop-oldest policy.
+   */
+  send(key: string, event: string, payload?: unknown): void {
+    const supervisor = this.supervisors.get(key);
+    if (!supervisor) {
+      return;
+    }
+    supervisor.send({ event, payload });
+  }
+
+  /** Join a socket.io room and automatically re-join it after every reconnect. */
+  joinRoom(key: string, room: string): () => void {
+    const supervisor = this.supervisors.get(key);
+    const socket = this.getSocket(key);
+    if (!supervisor || !socket) {
+      return () => undefined;
+    }
+    socket.emit('join', { room });
+    return supervisor.registerResubscribe(`room:${room}`, () => {
+      this.getSocket(key)?.emit('join', { room });
+    });
   }
 
   disconnect(key: string): void {
-    const socket = this.connections.get(key);
-    if (socket) {
-      socket.disconnect();
-      this.connections.delete(key);
+    const supervisor = this.supervisors.get(key);
+    if (supervisor) {
+      supervisor.disconnect();
+      this.supervisors.delete(key);
     }
-    this.cleanup(key);
+    this.transports.delete(key);
+    this.configs.delete(key);
   }
 
   getStatus(key: string): ConnectionStatus {
     return (
-      this.statuses.get(key) || {
+      this.supervisors.get(key)?.getStatus() || {
+        phase: 'idle',
         isConnected: false,
         isReconnecting: false,
         reconnectAttempts: 0,
+        queuedCount: 0,
       }
     );
   }
 
   getSocket(key: string): Socket | null {
-    return this.connections.get(key) || null;
+    return this.transports.get(key)?.getSocket() || null;
   }
 
   getAllStatuses(): Record<string, ConnectionStatus> {
     const result: Record<string, ConnectionStatus> = {};
-    this.statuses.forEach((status, key) => {
-      result[key] = status;
+    this.supervisors.forEach((supervisor, key) => {
+      result[key] = supervisor.getStatus();
     });
     return result;
   }
 
-  private setupSocketListeners(key: string, socket: Socket, config: WebSocketConfig): void {
-    socket.on('connect', () => {
-      this.updateStatus(key, {
-        isConnected: true,
-        isReconnecting: false,
-        reconnectAttempts: 0,
-        lastConnected: new Date(),
-        lastError: undefined,
-      });
-    });
-
-    socket.on('disconnect', (reason) => {
-      this.updateStatus(key, {
-        isConnected: false,
-        isReconnecting: false,
-        reconnectAttempts: this.getStatus(key).reconnectAttempts,
-        lastError: `Disconnected: ${reason}`,
-      });
-
-      if (reason !== 'io client disconnect') {
-        this.scheduleReconnect(key, config);
-      }
-    });
-
-    socket.on('connect_error', (error) => {
-      this.updateStatus(key, {
-        isConnected: false,
-        isReconnecting: false,
-        reconnectAttempts: this.getStatus(key).reconnectAttempts,
-        lastError: error.message,
-      });
-
-      this.scheduleReconnect(key, config);
-    });
-
-    socket.on('pong', () => {
-      const currentStatus = this.getStatus(key);
-      if (currentStatus.lastError) {
-        this.updateStatus(key, { ...currentStatus, lastError: undefined });
-      }
-    });
-  }
-
-  private updateStatus(key: string, updates: Partial<ConnectionStatus>): void {
-    const currentStatus = this.getStatus(key);
-    this.statuses.set(key, { ...currentStatus, ...updates });
-  }
-
-  private scheduleReconnect(key: string, config: WebSocketConfig): void {
-    const status = this.getStatus(key);
-    const maxAttempts = config.reconnectionAttempts || 5;
-
-    if (status.reconnectAttempts >= maxAttempts) {
-      this.updateStatus(key, {
-        isReconnecting: false,
-        lastError: `Max reconnection attempts (${maxAttempts}) reached`,
-      });
-      return;
-    }
-
-    this.updateStatus(key, {
-      isReconnecting: true,
-      reconnectAttempts: status.reconnectAttempts + 1,
-    });
-
-    const delay = (config.reconnectionDelay || 1000) * Math.pow(2, status.reconnectAttempts);
-    const timeout = setTimeout(() => {
-      this.attemptReconnect(key);
-    }, delay);
-
-    this.reconnectTimeouts.set(key, timeout);
-  }
-
-  private attemptReconnect(key: string): void {
-    const socket = this.connections.get(key);
-    if (socket && !socket.connected) {
-      socket.connect();
-    }
-  }
-
-  private startHeartbeat(key: string, config: WebSocketConfig): void {
-    const interval = config.heartbeatInterval || 30000;
-    const heartbeat = setInterval(() => {
-      const socket = this.connections.get(key);
-      if (socket && socket.connected) {
-        socket.emit('ping');
-      }
-    }, interval);
-
-    this.heartbeatIntervals.set(key, heartbeat);
-  }
-
-  private cleanup(key: string): void {
-    const heartbeat = this.heartbeatIntervals.get(key);
-    if (heartbeat) {
-      clearInterval(heartbeat);
-      this.heartbeatIntervals.delete(key);
-    }
-
-    const timeout = this.reconnectTimeouts.get(key);
-    if (timeout) {
-      clearTimeout(timeout);
-      this.reconnectTimeouts.delete(key);
-    }
-
-    this.configs.delete(key);
-    this.statuses.delete(key);
-  }
-
   disconnectAll(): void {
-    this.connections.forEach((_, key) => {
+    this.supervisors.forEach((_, key) => {
       this.disconnect(key);
     });
   }

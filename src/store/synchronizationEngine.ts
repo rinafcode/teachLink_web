@@ -1,5 +1,6 @@
 import { useStore } from './stateManager';
 import { createLogger } from '@/lib/logging';
+import { onAnyReconnect } from '@/lib/realtime/connectionSupervisor';
 
 const logger = createLogger('synchronization-engine');
 
@@ -23,11 +24,20 @@ const SYNC_KEYS = ['user', 'preferences', 'offlineMode', 'lastSynced'] as const;
 export class SynchronizationEngine {
   private channel: BroadcastChannel | null = null;
   private isProcessingSync = false;
+  private unsubscribeReconnect: (() => void) | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       this.channel = new BroadcastChannel(CHANNEL_NAME);
       this.setupListeners();
+
+      // Catch-up: after any realtime transport reconnects, re-broadcast the
+      // current state so other tabs converge on updates that may have been
+      // missed while the transport was down (reconnect gap recovery).
+      this.unsubscribeReconnect = onAnyReconnect(() => {
+        logger.debug('[SyncEngine] Realtime reconnected — broadcasting state for catch-up');
+        this.broadcastState(useStore.getState());
+      });
     }
   }
 
@@ -74,6 +84,8 @@ export class SynchronizationEngine {
   }
 
   public disconnect() {
+    this.unsubscribeReconnect?.();
+    this.unsubscribeReconnect = null;
     if (this.channel) {
       this.channel.close();
       this.channel = null;
