@@ -278,3 +278,20 @@ export const PRESENCE_SUBSCRIPTION = gql`
     }
   }
 `;
+
+/**
+ * Catch-up query used to backfill events missed while the realtime connection was
+ * down. Consumed by the connection supervisor's inbound sequence-gap handler after
+ * a reconnect (`since` = last seen sequence number).
+ */
+export const REALTIME_CATCHUP_QUERY = gql`
+  query RealtimeCatchUp($since: ID!) {
+    realtimeEvents(since: $since) {
+      id
+      sequence
+      type
+      payload
+      createdAt
+    }
+  }
+`;

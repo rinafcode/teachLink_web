@@ -57,6 +57,21 @@ export function checkAlerts(metrics: Metric[]): Alert[] {
         severity: 'low',
       });
     }
+
+    // Realtime transport reliability alerts (see src/lib/realtime/connectionSupervisor.ts)
+    if (m.name === 'realtime_offline' && m.value > 0) {
+      alerts.push({
+        message: 'Realtime connection failed repeatedly — degraded to offline mode',
+        severity: 'high',
+      });
+    }
+
+    if (m.name === 'heartbeat_timeout' && m.value > 0) {
+      alerts.push({
+        message: 'Realtime heartbeat timeout detected',
+        severity: 'low',
+      });
+    }
   });
 
   return alerts;

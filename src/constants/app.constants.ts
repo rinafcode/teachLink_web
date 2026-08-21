@@ -41,6 +41,19 @@ export const API_CACHE_TTL_DEFAULT = 300000; // 5 minutes
 // API URLs & Endpoints
 export const DEFAULT_SOCKET_URL = 'http://localhost:3001';
 
+// Realtime connection supervisor (see src/lib/realtime/connectionSupervisor.ts)
+export const REALTIME_RECONNECT_BASE_DELAY_MS = 1000;
+export const REALTIME_RECONNECT_MAX_DELAY_MS = 30000;
+export const REALTIME_RECONNECT_MAX_ATTEMPTS = 5;
+/** Jitter factor for reconnect backoff. 1 = full jitter (random 0..2x), 0 = deterministic. */
+export const REALTIME_RECONNECT_JITTER = 1;
+export const REALTIME_HEARTBEAT_INTERVAL_MS = 30000;
+export const REALTIME_HEARTBEAT_TIMEOUT_MS = 10000;
+export const REALTIME_OUTBOUND_QUEUE_LIMIT = 100;
+export const REALTIME_QUEUE_POLICY = 'drop-oldest' as const;
+/** Message type used to signal clients (via the service worker) that realtime gave up. */
+export const REALTIME_OFFLINE_EVENT = 'REALTIME_OFFLINE';
+
 // Web3 Config
 export const DEFAULT_STARKNET_NETWORK = 'goerli-alpha';
 export const STARKNET_NETWORKS = {

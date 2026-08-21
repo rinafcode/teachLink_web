@@ -127,9 +127,9 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
 
     get().addMessage(message);
 
-    if (state.socket) {
-      state.socket.emit('message', message);
-    }
+    // Route through the supervisor so messages sent while disconnected are queued
+    // (bounded, ordered) and flushed on reconnect instead of being silently dropped.
+    wsManager.send('messaging', 'message', message);
 
     get().setTyping(false);
   },
@@ -139,7 +139,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
       messages: state.messages.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg)),
     }));
 
-    get().socket?.emit('read', { messageId });
+    wsManager.send('messaging', 'read', { messageId });
   },
 
   markConversationAsRead: (conversationId) => {
@@ -156,8 +156,8 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
     const socket = get().socket;
     const conversation = get().currentConversation;
 
-    if (socket && conversation) {
-      socket.emit('typing', {
+    if (conversation) {
+      wsManager.send('messaging', 'typing', {
         conversationId: conversation.id,
         isTyping,
       });

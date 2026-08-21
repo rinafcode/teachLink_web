@@ -2,7 +2,9 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ── Mock heavy Apollo/graphql-ws deps before importing the module under test ──
 vi.mock('@apollo/client/link/subscriptions', () => ({
-  GraphQLWsLink: vi.fn().mockImplementation(() => ({ request: vi.fn() })),
+  GraphQLWsLink: vi.fn().mockImplementation(function () {
+    return { request: vi.fn() };
+  }),
 }));
 
 vi.mock('graphql-ws', () => ({
@@ -10,11 +12,17 @@ vi.mock('graphql-ws', () => ({
 }));
 
 vi.mock('@apollo/client', () => {
-  const HttpLink = vi.fn().mockImplementation(() => ({ request: vi.fn() }));
+  const HttpLink = vi.fn().mockImplementation(function () {
+    return { request: vi.fn() };
+  });
   const ApolloLink = { from: vi.fn((links) => links[0]) };
   const split = vi.fn((test, ws, http) => ({ _ws: ws, _http: http, _split: true }));
-  const ApolloClient = vi.fn().mockImplementation((opts) => ({ link: opts.link }));
-  const InMemoryCache = vi.fn().mockImplementation(() => ({}));
+  const ApolloClient = vi.fn().mockImplementation(function (opts: { link: unknown }) {
+    return { link: opts.link };
+  });
+  const InMemoryCache = vi.fn().mockImplementation(function () {
+    return {};
+  });
   return { HttpLink, ApolloLink, split, ApolloClient, InMemoryCache };
 });
 
