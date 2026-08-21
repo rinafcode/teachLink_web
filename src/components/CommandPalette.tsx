@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { PollCreationModal, type PollDraft } from '@/components/polls/PollCreationModal';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useToast } from '@/context/ToastContext';
@@ -12,6 +12,7 @@ import {
   useKeyboardShortcuts,
 } from '@/hooks/useKeyboardShortcuts';
 import { createLogger } from '@/lib/logging';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 const logger = createLogger('CommandPalette');
 
 function navigateTo(path: string): void {
@@ -92,6 +93,13 @@ export function CommandPalette() {
   const [query, setQuery] = useState('');
   const { theme, setTheme } = useTheme();
   const [pollModalOpen, setPollModalOpen] = useState(false);
+  const commandInputRef = useRef<HTMLInputElement>(null);
+  const commandPaletteRef = useFocusTrap<HTMLDivElement>(open && !showHelp, {
+    initialFocusRef: commandInputRef,
+  });
+  const shortcutHelpRef = useFocusTrap<HTMLDivElement>(showHelp);
+  const commandPaletteTitleId = useId();
+  const shortcutHelpTitleId = useId();
 
   const settings = useSettingsStore((s) => s.settings);
   const { info: toastInfo } = useToast();
@@ -179,6 +187,20 @@ export function CommandPalette() {
     );
   }, [commands, query]);
 
+  useEffect(() => {
+    if (!open && !showHelp) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      if (showHelp) setShowHelp(false);
+      else setOpen(false);
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open, showHelp]);
+
   return (
     <>
       {open ? (
@@ -189,12 +211,15 @@ export function CommandPalette() {
             aria-hidden="true"
           />
           <div
+            ref={commandPaletteRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Command palette"
+            aria-labelledby={commandPaletteTitleId}
+            aria-hidden={showHelp || undefined}
             className="fixed left-1/2 top-20 z-[12001] w-[min(100vw-2rem,44rem)] -translate-x-1/2 rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-gray-700 dark:bg-gray-900"
           >
             <input
+              ref={commandInputRef}
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -204,6 +229,9 @@ export function CommandPalette() {
               placeholder="Type a command..."
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
             />
+            <h2 id={commandPaletteTitleId} className="sr-only">
+              Command palette
+            </h2>
 
             <div className="mt-3 max-h-80 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
               {filtered.map((command) => {
@@ -258,13 +286,17 @@ export function CommandPalette() {
             aria-hidden="true"
           />
           <div
+            ref={shortcutHelpRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Keyboard shortcuts help"
+            aria-labelledby={shortcutHelpTitleId}
             className="fixed left-1/2 top-1/2 z-[12011] max-h-[80vh] w-[min(100vw-2rem,54rem)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-700 dark:bg-gray-900"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h2
+                id={shortcutHelpTitleId}
+                className="text-lg font-semibold text-gray-900 dark:text-gray-100"
+              >
                 Keyboard shortcuts
               </h2>
               <button
