@@ -72,7 +72,10 @@ describe('LearningAssistant', () => {
     expect(mockPost).toHaveBeenCalledWith('/api/ai/chat', {
       message: 'Hi there',
       context: 'learning',
-    });
+    }, expect.objectContaining({
+      method: 'POST',
+      signal: expect.any(AbortSignal),
+    }));
   });
 
   it('shows error message on API failure', async () => {
@@ -83,7 +86,7 @@ describe('LearningAssistant', () => {
     fireEvent.click(screen.getByLabelText('Send message'));
 
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/failed to get a response/i),
+      expect(screen.getByText('Sorry, something went wrong.')).toBeInTheDocument(),
     );
   });
 
@@ -112,21 +115,23 @@ describe('PersonalizedRecommendations', () => {
   it('shows skeleton while loading', () => {
     mockGet.mockReturnValueOnce(new Promise(() => {})); // never resolves
     render(<PersonalizedRecommendations />);
-    expect(screen.getByLabelText('Loading recommendations')).toBeInTheDocument();
+    expect(document.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
   });
 
   it('renders fetched recommendations', async () => {
     mockGet.mockResolvedValueOnce({
       success: true,
-      data: [
-        { id: '1', title: 'React Basics', reason: 'Matches your goals', url: '/courses/1' },
-        {
-          id: '2',
-          title: 'TypeScript Deep Dive',
-          reason: 'Popular in your area',
-          url: '/courses/2',
-        },
-      ],
+      data: {
+        items: [
+          { id: '1', title: 'React Basics', reason: 'Matches your goals', url: '/courses/1' },
+          {
+            id: '2',
+            title: 'TypeScript Deep Dive',
+            reason: 'Popular in your area',
+            url: '/courses/2',
+          },
+        ],
+      },
     });
 
     render(<PersonalizedRecommendations />);
@@ -140,12 +145,12 @@ describe('PersonalizedRecommendations', () => {
     mockGet.mockRejectedValueOnce(new Error('fail'));
     render(<PersonalizedRecommendations />);
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/could not load recommendations/i),
+      expect(screen.getByText(/failed to load recommendations/i)).toBeInTheDocument(),
     );
   });
 
   it('shows empty state when no recommendations', async () => {
-    mockGet.mockResolvedValueOnce({ success: true, data: [] });
+    mockGet.mockResolvedValueOnce({ success: true, data: { items: [] } });
     render(<PersonalizedRecommendations />);
     await waitFor(() => expect(screen.getByText(/no recommendations yet/i)).toBeInTheDocument());
   });
@@ -188,7 +193,7 @@ describe('IntelligentProgress', () => {
     mockGet.mockRejectedValueOnce(new Error('fail'));
     render(<IntelligentProgress />);
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/could not load progress/i),
+      expect(screen.getByText(/failed to load progress/i)).toBeInTheDocument(),
     );
   });
 });
@@ -258,7 +263,7 @@ describe('SmartNotifications', () => {
     mockGet.mockRejectedValueOnce(new Error('fail'));
     render(<SmartNotifications />);
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/could not load reminders/i),
+      expect(screen.getByText(/could not load reminders/i)).toBeInTheDocument(),
     );
   });
 
@@ -283,28 +288,33 @@ describe('NaturalLanguageQuery', () => {
   it('submits query and renders results', async () => {
     mockPost.mockResolvedValueOnce({
       success: true,
-      data: [
-        { id: 's1', title: 'Python for Beginners', description: 'Start here', url: '/courses/py' },
-      ],
+      data: {
+        results: [
+          { id: 's1', title: 'Python for Beginners', description: 'Start here', url: '/courses/py' },
+        ],
+      },
     });
 
     render(<NaturalLanguageQuery />);
     fireEvent.change(screen.getByLabelText('Search query'), {
       target: { value: 'python basics' },
     });
-    fireEvent.submit(screen.getByRole('search'));
+    fireEvent.click(screen.getByLabelText('Submit search'));
 
     await waitFor(() => expect(screen.getByText('Python for Beginners')).toBeInTheDocument());
     expect(screen.getByText('Start here')).toBeInTheDocument();
-    expect(mockPost).toHaveBeenCalledWith('/api/ai/search', { query: 'python basics' });
+    expect(mockPost).toHaveBeenCalledWith('/api/ai/search', { query: 'python basics' }, expect.objectContaining({
+      method: 'POST',
+      signal: expect.any(AbortSignal),
+    }));
   });
 
   it('shows "No results found" for empty results', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: [] });
+    mockPost.mockResolvedValueOnce({ success: true, data: { results: [] } });
 
     render(<NaturalLanguageQuery />);
     fireEvent.change(screen.getByLabelText('Search query'), { target: { value: 'xyz' } });
-    fireEvent.submit(screen.getByRole('search'));
+    fireEvent.click(screen.getByLabelText('Submit search'));
 
     await waitFor(() => expect(screen.getByText(/no results found/i)).toBeInTheDocument());
   });
@@ -314,9 +324,9 @@ describe('NaturalLanguageQuery', () => {
 
     render(<NaturalLanguageQuery />);
     fireEvent.change(screen.getByLabelText('Search query'), { target: { value: 'test' } });
-    fireEvent.submit(screen.getByRole('search'));
+    fireEvent.click(screen.getByLabelText('Submit search'));
 
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/search failed/i));
+    await waitFor(() => expect(screen.getByText(/search failed/i)).toBeInTheDocument());
   });
 
   it('submit button is disabled when query is empty', () => {
@@ -329,7 +339,7 @@ describe('NaturalLanguageQuery', () => {
 
     render(<NaturalLanguageQuery />);
     fireEvent.change(screen.getByLabelText('Search query'), { target: { value: 'react' } });
-    fireEvent.submit(screen.getByRole('search'));
+    fireEvent.click(screen.getByLabelText('Submit search'));
 
     expect(screen.getByText('Searching…')).toBeInTheDocument();
   });

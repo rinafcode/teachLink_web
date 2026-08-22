@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import type { ApiResponse } from '@/types/api';
+import { useApiResource } from '@/hooks/useApiResource';
 
 // POST /api/ai/chat — { message: string; context?: string } → { reply: string }
 
@@ -20,9 +19,9 @@ interface LearningAssistantProps {
 export default function LearningAssistant({ context = 'learning' }: LearningAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { loading, refetch } = useApiResource<{ reply: string }>('/api/ai/chat', { method: 'POST', manual: true });
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,32 +33,31 @@ export default function LearningAssistant({ context = 'learning' }: LearningAssi
 
     const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text };
     setMessages((prev) => [...prev, userMsg]);
-    setError(null);
     setInput('');
-    setLoading(true);
-    setError(false);
 
     try {
-      const { reply } = await apiClient.post<{ reply: string }>('/api/ai/chat', {
-        message: text,
-        context,
+      const result = await refetch({
+        body: { message: text, context },
       });
-      setMessages((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), role: 'assistant', content: reply },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), role: 'assistant', content: 'Sorry, something went wrong.' },
-      ]);
+      if (result?.reply) {
+        setMessages((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), role: 'assistant', content: result.reply },
+        ]);
+      }
+    } catch (err: any) {
+      if (err.name !== 'AbortError' && !err.message?.includes('aborted')) {
+        setMessages((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), role: 'assistant', content: 'Sorry, something went wrong.' },
+        ]);
+      }
     } finally {
-      setLoading(false);
       inputRef.current?.focus();
     }
-  }, [input, loading, context]);
+  }, [input, loading, context, refetch]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       send();

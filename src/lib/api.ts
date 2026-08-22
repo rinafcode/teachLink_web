@@ -151,10 +151,28 @@ class ApiClientImpl {
       }
     }
 
-    const controller = new AbortController();
+    const timeoutController = new AbortController();
     const timeout = config.timeout || this.config.timeout;
 
-    const timer = setTimeout(() => controller.abort(), timeout);
+    const timer = setTimeout(() => timeoutController.abort(new Error('Timeout')), timeout);
+
+    const signals: AbortSignal[] = [timeoutController.signal];
+    if (config.signal) {
+      signals.push(config.signal);
+    }
+
+    let signal: AbortSignal;
+    // Use AbortSignal.any if available (modern browsers/Node.js)
+    if (typeof AbortSignal.any === 'function') {
+      signal = AbortSignal.any(signals);
+    } else {
+      const combinedController = new AbortController();
+      signals.forEach(s => {
+        if (s.aborted) combinedController.abort(s.reason);
+        else s.addEventListener('abort', () => combinedController.abort(s.reason), { once: true });
+      });
+      signal = combinedController.signal;
+    }
 
     const contextStore = logContextStorage.getStore();
     const headers: HeadersInit = {
@@ -169,7 +187,7 @@ class ApiClientImpl {
       const response = await fetch(url, {
         ...config,
         headers,
-        signal: controller.signal,
+        signal,
       });
 
       clearTimeout(timer);

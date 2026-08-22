@@ -1,0 +1,667 @@
+From 52952ae0b39e26e2e8024ad916e898f626775415 Mon Sep 17 00:00:00 2001
+From: mrmoney10010-design <mrmoney10010@gmail.com>
+Date: Wed, 19 Aug 2026 23:04:26 -0500
+Subject: [PATCH] refactor(api): standardize resource fetching and cancellation
+
+---
+ src/components/ExportButton.tsx               |  13 +-
+ src/components/ai/IntelligentProgress.tsx     |  16 +--
+ src/components/ai/LearningAssistant.tsx       |  38 +++---
+ src/components/ai/NaturalLanguageQuery.tsx    |  29 ++---
+ .../ai/PersonalizedRecommendations.tsx        |  27 +----
+ src/components/ai/SmartNotifications.tsx      |  28 +----
+ src/components/social/FollowingSystem.tsx     |  16 +--
+ src/hooks/__tests__/useApiResource.test.tsx   | 113 ++++++++++++++++++
+ src/hooks/useApiResource.ts                   |  87 ++++++++++++++
+ src/lib/api.ts                                |  24 +++-
+ src/react-shim.d.ts                           |  10 ++
+ src/tsconfig.json                             |   1 -
+ src/types/api.ts                              |   7 ++
+ 13 files changed, 287 insertions(+), 122 deletions(-)
+ create mode 100644 src/hooks/__tests__/useApiResource.test.tsx
+ create mode 100644 src/hooks/useApiResource.ts
+ create mode 100644 src/react-shim.d.ts
+
+diff --git a/src/components/ExportButton.tsx b/src/components/ExportButton.tsx
+index 1709140..4516cd7 100644
+--- a/src/components/ExportButton.tsx
++++ b/src/components/ExportButton.tsx
+@@ -1,5 +1,5 @@
+ import React, { useState } from 'react';
+-import { apiClient } from '@/lib/api';
++import { useApiResource } from '@/hooks/useApiResource';
+ import { ExportFilter, ExportProgressState, ExportSort } from '@/lib/export';
+ 
+ interface ExportButtonResult {
+@@ -39,6 +39,8 @@ export function ExportButton({
+ 
+   const isDisabled = isRunning || !templateId || templateId.trim() === '';
+ 
++  const { refetch } = useApiResource<{ result: ExportButtonResult }>('/api/exports/execute', { method: 'POST', manual: true });
++
+   const handleClick = async () => {
+     if (isDisabled) return;
+ 
+@@ -52,15 +54,14 @@ export function ExportButton({
+     });
+ 
+     try {
+-      const response = await apiClient.post<{ result: ExportButtonResult }>(
+-        '/api/exports/execute',
+-        {
++      const response = await refetch({
++        body: {
+           templateId,
+           filters,
+           sort,
+           columns,
+-        },
+-      );
++        }
++      });
+ 
+       if (!response?.result?.success) {
+         throw new Error('Export failed');
+diff --git a/src/components/ai/IntelligentProgress.tsx b/src/components/ai/IntelligentProgress.tsx
+index e4d6c81..a5263dd 100644
+--- a/src/components/ai/IntelligentProgress.tsx
++++ b/src/components/ai/IntelligentProgress.tsx
+@@ -1,9 +1,7 @@
+ 'use client';
+ 
+-import { useState, useEffect } from 'react';
+ import { TrendingUp } from 'lucide-react';
+-import { apiClient } from '@/lib/api';
+-import type { ApiResponse } from '@/types/api';
++import { useApiResource } from '@/hooks/useApiResource';
+ 
+ // GET /api/ai/progress → ApiResponse<ProgressData>
+ 
+@@ -33,17 +31,7 @@ function ProgressBar({ percent }: { percent: number }) {
+ }
+ 
+ export default function IntelligentProgress() {
+-  const [data, setData] = useState<ProgressData | null>(null);
+-  const [loading, setLoading] = useState(true);
+-  const [error, setError] = useState(false);
+-
+-  useEffect(() => {
+-    apiClient
+-      .get<ProgressData>('/api/ai/progress')
+-      .then(setData)
+-      .catch(() => setError(true))
+-      .finally(() => setLoading(false));
+-  }, []);
++  const { data, loading, error } = useApiResource<ProgressData>('/api/ai/progress');
+ 
+   const completion =
+     data && data.totalCourses > 0
+diff --git a/src/components/ai/LearningAssistant.tsx b/src/components/ai/LearningAssistant.tsx
+index ab00dfb..eaa9fb4 100644
+--- a/src/components/ai/LearningAssistant.tsx
++++ b/src/components/ai/LearningAssistant.tsx
+@@ -2,8 +2,7 @@
+ 
+ import { useState, useRef, useEffect, useCallback } from 'react';
+ import { Send, Bot, User } from 'lucide-react';
+-import { apiClient } from '@/lib/api';
+-import type { ApiResponse } from '@/types/api';
++import { useApiResource } from '@/hooks/useApiResource';
+ 
+ // POST /api/ai/chat — { message: string; context?: string } → { reply: string }
+ 
+@@ -20,7 +19,7 @@ interface LearningAssistantProps {
+ export default function LearningAssistant({ context = 'learning' }: LearningAssistantProps) {
+   const [messages, setMessages] = useState<Message[]>([]);
+   const [input, setInput] = useState('');
+-  const [loading, setLoading] = useState(false);
++  const { loading, refetch } = useApiResource<{ reply: string }>('/api/ai/chat', { method: 'POST', manual: true });
+   const bottomRef = useRef<HTMLDivElement>(null);
+   const inputRef = useRef<HTMLInputElement>(null);
+ 
+@@ -34,30 +33,29 @@ export default function LearningAssistant({ context = 'learning' }: LearningAssi
+ 
+     const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text };
+     setMessages((prev) => [...prev, userMsg]);
+-    setError(null);
+     setInput('');
+-    setLoading(true);
+-    setError(false);
+ 
+     try {
+-      const { reply } = await apiClient.post<{ reply: string }>('/api/ai/chat', {
+-        message: text,
+-        context,
++      const result = await refetch({
++        body: { message: text, context },
+       });
+-      setMessages((prev) => [
+-        ...prev,
+-        { id: crypto.randomUUID(), role: 'assistant', content: reply },
+-      ]);
+-    } catch {
+-      setMessages((prev) => [
+-        ...prev,
+-        { id: crypto.randomUUID(), role: 'assistant', content: 'Sorry, something went wrong.' },
+-      ]);
++      if (result?.reply) {
++        setMessages((prev) => [
++          ...prev,
++          { id: crypto.randomUUID(), role: 'assistant', content: result.reply },
++        ]);
++      }
++    } catch (err: any) {
++      if (err.name !== 'AbortError' && !err.message?.includes('aborted')) {
++        setMessages((prev) => [
++          ...prev,
++          { id: crypto.randomUUID(), role: 'assistant', content: 'Sorry, something went wrong.' },
++        ]);
++      }
+     } finally {
+-      setLoading(false);
+       inputRef.current?.focus();
+     }
+-  }, [input, loading, context]);
++  }, [input, loading, context, refetch]);
+ 
+   const handleKeyDown = (e: React.KeyboardEvent) => {
+     if (e.key === 'Enter' && !e.shiftKey) {
+diff --git a/src/components/ai/NaturalLanguageQuery.tsx b/src/components/ai/NaturalLanguageQuery.tsx
+index f9dc37c..e7368c5 100644
+--- a/src/components/ai/NaturalLanguageQuery.tsx
++++ b/src/components/ai/NaturalLanguageQuery.tsx
+@@ -2,8 +2,7 @@
+ 
+ import { useState, useCallback } from 'react';
+ import { Search, ExternalLink } from 'lucide-react';
+-import { apiClient } from '@/lib/api';
+-import type { ApiResponse } from '@/types/api';
++import { useApiResource } from '@/hooks/useApiResource';
+ 
+ // POST /api/ai/search — { query: string } → ApiResponse<SearchResult[]>
+ 
+@@ -16,27 +15,19 @@ interface SearchResult {
+ 
+ export default function NaturalLanguageQuery() {
+   const [query, setQuery] = useState('');
+-  const [results, setResults] = useState<SearchResult[] | null>(null);
+-  const [loading, setLoading] = useState(false);
+-  const [error, setError] = useState(false);
++  const { data, setData, loading, error, refetch } = useApiResource<{ results: SearchResult[] }>('/api/ai/search', { 
++    method: 'POST', 
++    manual: true 
++  });
++  
++  const results = data ? data.results : null;
+ 
+   const search = useCallback(async () => {
+     const q = query.trim();
+     if (!q || loading) return;
+-    setLoading(true);
+-    setError(false);
+-    try {
+-      const { results: res } = await apiClient.post<{ results: SearchResult[] }>('/api/ai/search', {
+-        query: q,
+-      });
+-      setResults(res);
+-    } catch {
+-      setError(true);
+-      setResults(null);
+-    } finally {
+-      setLoading(false);
+-    }
+-  }, [query, loading]);
++    setData(null);
++    await refetch({ body: { query: q } });
++  }, [query, loading, refetch, setData]);
+ 
+   const handleKeyDown = (e: React.KeyboardEvent) => {
+     if (e.key === 'Enter') search();
+diff --git a/src/components/ai/PersonalizedRecommendations.tsx b/src/components/ai/PersonalizedRecommendations.tsx
+index 476f64a..e112a86 100644
+--- a/src/components/ai/PersonalizedRecommendations.tsx
++++ b/src/components/ai/PersonalizedRecommendations.tsx
+@@ -1,9 +1,7 @@
+ 'use client';
+ 
+-import { useState, useEffect } from 'react';
+ import { ExternalLink, Sparkles } from 'lucide-react';
+-import { apiClient } from '@/lib/api';
+-import type { ApiResponse } from '@/types/api';
++import { useApiResource } from '@/hooks/useApiResource';
+ 
+ // GET /api/ai/recommendations → ApiResponse<Recommendation[]>
+ 
+@@ -25,27 +23,8 @@ function SkeletonCard() {
+ }
+ 
+ export default function PersonalizedRecommendations() {
+-  const [items, setItems] = useState<Recommendation[]>([]);
+-  const [loading, setLoading] = useState(true);
+-  const [error, setError] = useState(false);
+-
+-  useEffect(() => {
+-    let cancelled = false;
+-    apiClient
+-      .get<{ items: Recommendation[] }>('/api/ai/recommendations')
+-      .then((r) => {
+-        if (!cancelled) setItems(r.items);
+-      })
+-      .catch(() => {
+-        if (!cancelled) setError(true);
+-      })
+-      .finally(() => {
+-        if (!cancelled) setLoading(false);
+-      });
+-    return () => {
+-      cancelled = true;
+-    };
+-  }, []);
++  const { data, loading, error } = useApiResource<{ items: Recommendation[] }>('/api/ai/recommendations');
++  const items = data?.items || [];
+ 
+   return (
+     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+diff --git a/src/components/ai/SmartNotifications.tsx b/src/components/ai/SmartNotifications.tsx
+index f5b01a6..654630b 100644
+--- a/src/components/ai/SmartNotifications.tsx
++++ b/src/components/ai/SmartNotifications.tsx
+@@ -8,11 +8,12 @@
+  *   DELETE /api/ai/reminders/:id    → ApiResponse<null>
+  */
+ 
+-import React, { useEffect, useState } from 'react';
++import React, { useState } from 'react';
+ import { Bell, X } from 'lucide-react';
+ import { apiClient } from '@/lib/api';
+ import { Skeleton } from '@/components/ui/Skeleton';
+ import { useNotification } from '@/hooks/use-notification';
++import { useApiResource } from '@/hooks/useApiResource';
+ import type { ApiResponse } from '@/types/api';
+ 
+ interface Reminder {
+@@ -22,33 +23,14 @@ interface Reminder {
+ }
+ 
+ export default function SmartNotifications() {
+-  const [reminders, setReminders] = useState<Reminder[]>([]);
+-  const [loading, setLoading] = useState(true);
+-  const [error, setError] = useState<string | null>(null);
++  const { data: reminders = [], setData: setReminders, loading, error: fetchError } = useApiResource<Reminder[]>('/api/ai/reminders');
++  const error = fetchError ? 'Could not load reminders.' : null;
+   const { success, error: notifyError } = useNotification();
+ 
+-  useEffect(() => {
+-    let cancelled = false;
+-    apiClient
+-      .get<ApiResponse<Reminder[]>>('/api/ai/reminders')
+-      .then((res) => {
+-        if (!cancelled) setReminders(res.data);
+-      })
+-      .catch(() => {
+-        if (!cancelled) setError('Could not load reminders.');
+-      })
+-      .finally(() => {
+-        if (!cancelled) setLoading(false);
+-      });
+-    return () => {
+-      cancelled = true;
+-    };
+-  }, []);
+-
+   const dismiss = async (id: string) => {
+     try {
+       await apiClient.delete<ApiResponse<null>>(`/api/ai/reminders/${id}`);
+-      setReminders((prev) => prev.filter((r) => r.id !== id));
++      setReminders((prev: any) => (prev || []).filter((r: any) => r.id !== id));
+       success('Reminder dismissed.');
+     } catch {
+       notifyError('Failed to dismiss reminder.');
+diff --git a/src/components/social/FollowingSystem.tsx b/src/components/social/FollowingSystem.tsx
+index 7bb4a74..e633887 100644
+--- a/src/components/social/FollowingSystem.tsx
++++ b/src/components/social/FollowingSystem.tsx
+@@ -3,7 +3,7 @@ import Image from 'next/image';
+ import { useState, useEffect, useMemo } from 'react';
+ import { Search, UserCircle } from 'lucide-react';
+ import { useFollowUser } from '@/hooks/useSocialFeatures';
+-import { apiClient } from '@/lib/api';
++import { useApiResource } from '@/hooks/useApiResource';
+ import type { SocialUser } from './SocialProfile';
+ 
+ interface FollowingSystemProps {
+@@ -53,10 +53,11 @@ function UserRow({ user }: { user: SocialUser }) {
+ 
+ export default function FollowingSystem({ userId }: FollowingSystemProps) {
+   const [tab, setTab] = useState<ListTab>('followers');
+-  const [users, setUsers] = useState<SocialUser[]>([]);
+   const [query, setQuery] = useState('');
+   const [debouncedQuery, setDebouncedQuery] = useState('');
+-  const [loading, setLoading] = useState(false);
++
++  const { data, loading } = useApiResource<SocialUser[]>(`/api/social/${tab}/${userId}`);
++  const users = data || [];
+ 
+   // Debounce the search input query by 300ms
+   useEffect(() => {
+@@ -67,15 +68,6 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
+     return () => clearTimeout(timer);
+   }, [query]);
+ 
+-  useEffect(() => {
+-    setLoading(true);
+-    apiClient
+-      .get<SocialUser[]>(`/api/social/${tab}/${userId}`)
+-      .then(setUsers)
+-      .catch(() => setUsers([]))
+-      .finally(() => setLoading(false));
+-  }, [tab, userId]);
+-
+   // Memoize the filtered user results based on the debounced query
+   const filtered = useMemo(() => {
+     const lowercaseQuery = debouncedQuery.toLowerCase();
+diff --git a/src/hooks/__tests__/useApiResource.test.tsx b/src/hooks/__tests__/useApiResource.test.tsx
+new file mode 100644
+index 0000000..3b5e636
+--- /dev/null
++++ b/src/hooks/__tests__/useApiResource.test.tsx
+@@ -0,0 +1,113 @@
++import { renderHook, waitFor, act } from '@testing-library/react';
++import { describe, it, expect, vi, beforeEach } from 'vitest';
++import { useApiResource } from '../useApiResource';
++import { apiClient } from '@/lib/api';
++
++vi.mock('@/lib/api', () => ({
++  apiClient: {
++    get: vi.fn(),
++    post: vi.fn(),
++    put: vi.fn(),
++    patch: vi.fn(),
++    delete: vi.fn(),
++  },
++}));
++
++describe('useApiResource', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('sets initial loading state', () => {
++    (apiClient.get as any).mockReturnValue(new Promise(() => {}));
++    const { result } = renderHook(() => useApiResource('/api/test'));
++    expect(result.current.loading).toBe(true);
++    expect(result.current.data).toBeNull();
++    expect(result.current.error).toBeNull();
++  });
++
++  it('handles successful request and unwraps data', async () => {
++    (apiClient.get as any).mockResolvedValue({ success: true, data: { foo: 'bar' } });
++    const { result } = renderHook(() => useApiResource('/api/test'));
++
++    await waitFor(() => {
++      expect(result.current.loading).toBe(false);
++    });
++
++    expect(result.current.data).toEqual({ foo: 'bar' });
++    expect(result.current.error).toBeNull();
++  });
++
++  it('handles API error', async () => {
++    const error = new Error('Network Error');
++    (apiClient.get as any).mockRejectedValue(error);
++    const { result } = renderHook(() => useApiResource('/api/test'));
++
++    await waitFor(() => {
++      expect(result.current.loading).toBe(false);
++    });
++
++    expect(result.current.error).toEqual(error);
++    expect(result.current.data).toBeNull();
++  });
++
++  it('refetches data correctly', async () => {
++    (apiClient.get as any)
++      .mockResolvedValueOnce({ success: true, data: { attempt: 1 } })
++      .mockResolvedValueOnce({ success: true, data: { attempt: 2 } });
++
++    const { result } = renderHook(() => useApiResource('/api/test'));
++
++    await waitFor(() => {
++      expect(result.current.data).toEqual({ attempt: 1 });
++    });
++
++    act(() => {
++      result.current.refetch();
++    });
++
++    await waitFor(() => {
++      expect(result.current.data).toEqual({ attempt: 2 });
++    });
++  });
++
++  it('aborts request on unmount', async () => {
++    let abortSignal: AbortSignal | undefined;
++    (apiClient.get as any).mockImplementation((url: string, options: any) => {
++      abortSignal = options.signal;
++      return new Promise(() => {}); // Never resolves
++    });
++
++    const { unmount } = renderHook(() => useApiResource('/api/test'));
++    
++    expect(abortSignal).toBeDefined();
++    expect(abortSignal?.aborted).toBe(false);
++
++    unmount();
++
++    expect(abortSignal?.aborted).toBe(true);
++  });
++
++  it('cancels previous request on dependency change (refetch)', async () => {
++    let abortSignal: AbortSignal | undefined;
++    (apiClient.get as any).mockImplementation((url: string, options: any) => {
++      abortSignal = options.signal;
++      return new Promise(() => {}); // Never resolves
++    });
++
++    const { result } = renderHook(() => useApiResource('/api/test'));
++    
++    expect(abortSignal).toBeDefined();
++    expect(abortSignal?.aborted).toBe(false);
++
++    const firstSignal = abortSignal;
++
++    act(() => {
++      result.current.refetch();
++    });
++
++    expect(firstSignal?.aborted).toBe(true);
++    expect(abortSignal).not.toBe(firstSignal);
++    expect(abortSignal?.aborted).toBe(false);
++  });
++});
+diff --git a/src/hooks/useApiResource.ts b/src/hooks/useApiResource.ts
+new file mode 100644
+index 0000000..f2e1f07
+--- /dev/null
++++ b/src/hooks/useApiResource.ts
+@@ -0,0 +1,87 @@
++import { useState, useEffect, useCallback, useRef } from 'react';
++import { apiClient } from '@/lib/api';
++import { useAbortController } from '@/hooks/useAbortController';
++import type { RequestConfig } from '@/lib/api';
++import type { ApiResponse } from '@/types/api';
++
++export interface UseApiResourceOptions<T> extends Omit<RequestConfig, 'url' | 'method' | 'body'> {
++  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
++  body?: unknown;
++  /**
++   * If true, the request will not be automatically fetched on mount/dependency change.
++   */
++  manual?: boolean;
++}
++
++export function useApiResource<T>(url: string, options: UseApiResourceOptions<T> = {}) {
++  const [data, setData] = useState<T | null>(null);
++  const [loading, setLoading] = useState(!options.manual);
++  const [error, setError] = useState<Error | null>(null);
++
++  const { getSignal } = useAbortController();
++  
++  // Ref to prevent stale closures and infinite loops if options are passed inline
++  const optionsRef = useRef(options);
++  useEffect(() => {
++    optionsRef.current = options;
++  }, [options]);
++
++  const fetchResource = useCallback(async (overrideOptions?: Partial<UseApiResourceOptions<T>>) => {
++    const currentOptions = { ...optionsRef.current, ...overrideOptions };
++    const method = currentOptions.method || 'GET';
++    const signal = getSignal();
++
++    setLoading(true);
++    setError(null);
++
++    try {
++      const { body, manual, ...restOptions } = currentOptions;
++      const requestOptions = { ...restOptions, signal } as Omit<RequestConfig, 'url' | 'method'>;
++      
++      let response: ApiResponse<T>;
++      if (method === 'GET') {
++        response = await apiClient.get<ApiResponse<T>>(url, requestOptions);
++      } else if (method === 'POST') {
++        response = await apiClient.post<ApiResponse<T>>(url, body, requestOptions);
++      } else if (method === 'PUT') {
++        response = await apiClient.put<ApiResponse<T>>(url, body, requestOptions);
++      } else if (method === 'PATCH') {
++        response = await apiClient.patch<ApiResponse<T>>(url, body, requestOptions);
++      } else if (method === 'DELETE') {
++        response = await apiClient.delete<ApiResponse<T>>(url, requestOptions);
++      } else {
++        throw new Error(`Unsupported method: ${method}`);
++      }
++
++      // Unwrap the canonical ApiResponse envelope
++      if (!signal.aborted) {
++        // If the backend returned a wrapped ApiResponse, unwrap it.
++        // Some mock/legacy endpoints might return the data directly, we handle that gracefully.
++        const payload = (response && typeof response === 'object' && 'data' in response) 
++          ? response.data 
++          : (response as unknown as T);
++        
++        setData(payload);
++        setLoading(false);
++        return payload;
++      }
++    } catch (err: any) {
++      if (err.name === 'AbortError' || err.message?.includes('aborted')) {
++        return; // Ignore abort errors
++      }
++      if (!signal.aborted) {
++        setError(err instanceof Error ? err : new Error(String(err)));
++        setLoading(false);
++      }
++      throw err;
++    }
++  }, [url, getSignal]);
++
++  useEffect(() => {
++    if (!options.manual) {
++      fetchResource();
++    }
++  }, [fetchResource, options.manual]);
++
++  return { data, setData, loading, error, refetch: fetchResource };
++}
+diff --git a/src/lib/api.ts b/src/lib/api.ts
+index a20a6db..f783b1b 100644
+--- a/src/lib/api.ts
++++ b/src/lib/api.ts
+@@ -151,10 +151,28 @@ class ApiClientImpl {
+       }
+     }
+ 
+-    const controller = new AbortController();
++    const timeoutController = new AbortController();
+     const timeout = config.timeout || this.config.timeout;
+ 
+-    const timer = setTimeout(() => controller.abort(), timeout);
++    const timer = setTimeout(() => timeoutController.abort(new Error('Timeout')), timeout);
++
++    const signals: AbortSignal[] = [timeoutController.signal];
++    if (config.signal) {
++      signals.push(config.signal);
++    }
++
++    let signal: AbortSignal;
++    // Use AbortSignal.any if available (modern browsers/Node.js)
++    if (typeof AbortSignal.any === 'function') {
++      signal = AbortSignal.any(signals);
++    } else {
++      const combinedController = new AbortController();
++      signals.forEach(s => {
++        if (s.aborted) combinedController.abort(s.reason);
++        else s.addEventListener('abort', () => combinedController.abort(s.reason), { once: true });
++      });
++      signal = combinedController.signal;
++    }
+ 
+     const contextStore = logContextStorage.getStore();
+     const headers: HeadersInit = {
+@@ -169,7 +187,7 @@ class ApiClientImpl {
+       const response = await fetch(url, {
+         ...config,
+         headers,
+-        signal: controller.signal,
++        signal,
+       });
+ 
+       clearTimeout(timer);
+diff --git a/src/react-shim.d.ts b/src/react-shim.d.ts
+new file mode 100644
+index 0000000..e97050f
+--- /dev/null
++++ b/src/react-shim.d.ts
+@@ -0,0 +1,10 @@
++declare module 'react' {
++  export function useState<T>(initialState: T | (() => T)): [T, (newState: T | ((prevState: T) => T)) => void];
++  export function useState<T = undefined>(): [T | undefined, (newState: T | undefined | ((prevState: T | undefined) => T | undefined)) => void];
++  export function useEffect(effect: () => void | (() => void), deps?: readonly any[]): void;
++  export function useCallback<T extends (...args: any[]) => any>(callback: T, deps: readonly any[]): T;
++  export function useRef<T>(initialValue: T): { current: T };
++  export function useRef<T = undefined>(): { current: T | undefined };
++  export const React: any;
++  export default React;
++}
+diff --git a/src/tsconfig.json b/src/tsconfig.json
+index 451de78..056e58b 100644
+--- a/src/tsconfig.json
++++ b/src/tsconfig.json
+@@ -14,7 +14,6 @@
+     "jsx": "preserve",
+     "incremental": true,
+     "baseUrl": ".",
+-    "types": ["vitest/globals", "@testing-library/jest-dom"],
+     "plugins": [
+       {
+         "name": "next"
+diff --git a/src/types/api.ts b/src/types/api.ts
+index 6140b4e..34694b1 100644
+--- a/src/types/api.ts
++++ b/src/types/api.ts
+@@ -21,6 +21,13 @@ import {
+ // Envelope types
+ // ---------------------------------------------------------------------------
+ 
++/**
++ * Canonical application-level API response envelope.
++ * 
++ * Endpoints should consistently return this structure.
++ * When using the `useApiResource` hook, this envelope is automatically unwrapped,
++ * exposing the generic type `T` through the hook's `data` property.
++ */
+ export interface ApiResponse<T> {
+   data: T;
+   success: boolean;
+-- 
+2.53.0
+

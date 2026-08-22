@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search, ExternalLink } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import type { ApiResponse } from '@/types/api';
+import { useApiResource } from '@/hooks/useApiResource';
 
 // POST /api/ai/search — { query: string } → ApiResponse<SearchResult[]>
 
@@ -16,27 +15,19 @@ interface SearchResult {
 
 export default function NaturalLanguageQuery() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const { data, setData, loading, error, refetch } = useApiResource<{ results: SearchResult[] }>('/api/ai/search', { 
+    method: 'POST', 
+    manual: true 
+  });
+  
+  const results = data ? data.results : null;
 
   const search = useCallback(async () => {
     const q = query.trim();
     if (!q || loading) return;
-    setLoading(true);
-    setError(false);
-    try {
-      const { results: res } = await apiClient.post<{ results: SearchResult[] }>('/api/ai/search', {
-        query: q,
-      });
-      setResults(res);
-    } catch {
-      setError(true);
-      setResults(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, loading]);
+    setData(null);
+    await refetch({ body: { query: q } });
+  }, [query, loading, refetch, setData]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') search();
@@ -60,7 +51,7 @@ export default function NaturalLanguageQuery() {
               id="search-query"
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask anything, e.g. 'intro to machine learning'…"
               aria-label="Search query"
