@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 'use client';
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect, useId, memo } from 'react';
 import Image from 'next/image';
 import {
   BellOff,
@@ -19,6 +19,7 @@ import { Notification, NotificationType, useNotifications } from '@/providers/No
 import { EmptyState } from '@/components';
 import { getDateTimeFormat } from '@/utils/intlCache';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { usePagination } from '@/hooks/usePagination';
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Icon helpers
@@ -63,7 +64,11 @@ interface NotificationItemProps {
   onClear: (id: string) => void;
 }
 
-function NotificationItem({ notification, onRead, onClear }: NotificationItemProps) {
+const NotificationItem = memo(function NotificationItem({
+  notification,
+  onRead,
+  onClear,
+}: NotificationItemProps) {
   const { id, type, title, body, timestamp, read, actionUrl, avatarUrl } = notification;
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -119,7 +124,7 @@ function NotificationItem({ notification, onRead, onClear }: NotificationItemPro
       </button>
     </div>
   );
-}
+});
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // NotificationBadge
@@ -151,6 +156,8 @@ export function NotificationBadge({ count, onClick, expanded, controls }: Notifi
 // NotificationCenter (dropdown panel)
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
+const NOTIFICATIONS_PAGE_SIZE = 20;
+
 export function NotificationCenter() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification, clearAll } =
     useNotifications();
@@ -160,6 +167,18 @@ export function NotificationCenter() {
   const panelRef = useFocusTrap<HTMLDivElement>(open);
   const titleId = useId();
   const panelId = useId();
+  const { page, hasNextPage, nextPage, resetPage } = usePagination(
+    notifications,
+    NOTIFICATIONS_PAGE_SIZE,
+  );
+  // "Load more" accumulates pages rather than replacing them, so previously
+  // revealed notifications never disappear from view.
+  const visibleNotifications = notifications.slice(0, (page + 1) * NOTIFICATIONS_PAGE_SIZE);
+
+  // Reset to the first page whenever the panel is reopened
+  useEffect(() => {
+    if (open) resetPage();
+  }, [open, resetPage]);
 
   // Close on outside click
   useEffect(() => {
@@ -230,14 +249,21 @@ export function NotificationCenter() {
                 description="No new notifications."
               />
             ) : (
-              notifications.map((n) => (
-                <NotificationItem
-                  key={n.id}
-                  notification={n}
-                  onRead={markAsRead}
-                  onClear={clearNotification}
-                />
-              ))
+              <>
+                {visibleNotifications.map((n) => (
+                  <NotificationItem
+                    key={n.id}
+                    notification={n}
+                    onRead={markAsRead}
+                    onClear={clearNotification}
+                  />
+                ))}
+                {hasNextPage && (
+                  <button onClick={nextPage} className="btn-link notification-panel__load-more">
+                    Load more
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

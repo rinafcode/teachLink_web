@@ -17,7 +17,7 @@ interface DashboardPanelCardProps {
   onClearDrillDown: (id: string) => void;
 }
 
-export const DashboardPanelCard: React.FC<DashboardPanelCardProps> = ({
+export const DashboardPanelCard = React.memo<DashboardPanelCardProps>(({
   panel,
   index,
   onExport,
@@ -69,4 +69,6 @@ export const DashboardPanelCard: React.FC<DashboardPanelCardProps> = ({
       )}
     </motion.div>
   );
-};
+});
+
+DashboardPanelCard.displayName = 'DashboardPanelCard';

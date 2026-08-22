@@ -1,9 +1,10 @@
 'use client';
 import Image from 'next/image';
-import { useState, useEffect, useMemo } from 'react';
-import { Search, UserCircle } from 'lucide-react';
+import { useState, useEffect, useMemo, memo } from 'react';
+import { Search, UserCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
 import { apiClient } from '@/lib/api';
+import { usePagination } from '@/hooks/usePagination';
 import type { SocialUser } from './SocialProfile';
 
 interface FollowingSystemProps {
@@ -12,7 +13,9 @@ interface FollowingSystemProps {
 
 type ListTab = 'followers' | 'following';
 
-function UserRow({ user }: { user: SocialUser }) {
+const FOLLOWING_LIST_PAGE_SIZE = 15;
+
+const UserRow = memo(function UserRow({ user }: { user: SocialUser }) {
   const { isFollowing, follow, unfollow, loading } = useFollowUser(user.id);
   return (
     <div className="flex items-center justify-between py-3">
@@ -49,7 +52,7 @@ function UserRow({ user }: { user: SocialUser }) {
       </button>
     </div>
   );
-}
+});
 
 export default function FollowingSystem({ userId }: FollowingSystemProps) {
   const [tab, setTab] = useState<ListTab>('followers');
@@ -81,6 +84,14 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
     const lowercaseQuery = debouncedQuery.toLowerCase();
     return users.filter((u) => u.name.toLowerCase().includes(lowercaseQuery));
   }, [users, debouncedQuery]);
+
+  const { pageItems, page, pageCount, nextPage, previousPage, hasNextPage, hasPreviousPage, resetPage } =
+    usePagination(filtered, FOLLOWING_LIST_PAGE_SIZE);
+
+  // Reset to page 1 whenever the tab or the (debounced) search term changes
+  useEffect(() => {
+    resetPage();
+  }, [tab, debouncedQuery, resetPage]);
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -126,8 +137,34 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
             No users found.
           </p>
         )}
-        {!loading && filtered.map((u) => <UserRow key={u.id} user={u} />)}
+        {!loading && pageItems.map((u) => <UserRow key={u.id} user={u} />)}
       </div>
+
+      {!loading && pageCount > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300">
+          <button
+            type="button"
+            onClick={previousPage}
+            disabled={!hasPreviousPage}
+            aria-label="Previous page"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span>
+            Page {page + 1} of {pageCount}
+          </span>
+          <button
+            type="button"
+            onClick={nextPage}
+            disabled={!hasNextPage}
+            aria-label="Next page"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
