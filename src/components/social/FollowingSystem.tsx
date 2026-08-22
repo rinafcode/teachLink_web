@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, UserCircle } from 'lucide-react';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
 import { useApiResource } from '@/hooks/useApiResource';
@@ -100,7 +100,7 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
             type="text"
             placeholder="Search…"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
           />
         </div>
@@ -118,7 +118,7 @@ export default function FollowingSystem({ userId }: FollowingSystemProps) {
             No users found.
           </p>
         )}
-        {!loading && filtered.map((u) => <UserRow key={u.id} user={u} />)}
+        {!loading && filtered.map((u: SocialUser) => <UserRow key={u.id} user={u} />)}
       </div>
     </div>
   );

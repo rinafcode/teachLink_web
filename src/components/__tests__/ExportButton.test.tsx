@@ -45,7 +45,7 @@ describe('ExportButton Component', () => {
       expect(screen.getAllByText('Server Error: Failed to execute export').length).toBeGreaterThan(0);
     });
 
-    const errorMessage = screen.getAllByText('Server Error: Failed to execute export')[0];
+    const errorMessage = screen.getAllByText('Server Error: Failed to execute export')[1];
     expect(errorMessage).toHaveClass('text-red-600');
     expect(onError).toHaveBeenCalledWith(expect.any(Error));
   });

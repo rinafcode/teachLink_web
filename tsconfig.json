@@ -19,8 +19,6 @@
   "exclude": [
     "node_modules",
     ".next",
-    "**/*.test.ts",
-    "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "src/app/api/auth/**/*",
@@ -94,7 +92,6 @@
     "src/app/api/courses",
     "src/app/components/courses/CourseReviews.tsx",
     "src/app/web3-demo/page.tsx",
-    "src/components/ai/LearningAssistant.tsx",
     "src/components/layout/HeaderComponent.tsx",
     "src/components/mobile/MobileNavigation.tsx",
     "src/components/shared/ImageUploader.tsx",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search, ExternalLink } from 'lucide-react';
 import { useApiResource } from '@/hooks/useApiResource';
 
@@ -51,7 +51,7 @@ export default function NaturalLanguageQuery() {
               id="search-query"
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask anything, e.g. 'intro to machine learning'…"
               aria-label="Search query"

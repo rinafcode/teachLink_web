@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { useApiResource } from '@/hooks/useApiResource';
 

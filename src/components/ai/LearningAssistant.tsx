@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User } from 'lucide-react';
 import { useApiResource } from '@/hooks/useApiResource';
 
@@ -20,8 +20,8 @@ export default function LearningAssistant({ context = 'learning' }: LearningAssi
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const { loading, refetch } = useApiResource<{ reply: string }>('/api/ai/chat', { method: 'POST', manual: true });
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,7 +57,7 @@ export default function LearningAssistant({ context = 'learning' }: LearningAssi
     }
   }, [input, loading, context, refetch]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       send();

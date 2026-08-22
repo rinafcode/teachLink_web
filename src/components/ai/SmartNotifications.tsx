@@ -23,7 +23,8 @@ interface Reminder {
 }
 
 export default function SmartNotifications() {
-  const { data: reminders = [], setData: setReminders, loading, error: fetchError } = useApiResource<Reminder[]>('/api/ai/reminders');
+  const { data, setData: setReminders, loading, error: fetchError } = useApiResource<Reminder[]>('/api/ai/reminders');
+  const reminders = data || [];
   const error = fetchError ? 'Could not load reminders.' : null;
   const { success, error: notifyError } = useNotification();
 
