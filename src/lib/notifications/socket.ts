@@ -6,6 +6,7 @@ import {
   type ConnectionStatus,
   registerSupervisor,
 } from '@/lib/realtime/connectionSupervisor';
+import { tokenManager } from '@/lib/auth/tokenManager';
 
 const logger = createLogger('notification-socket');
 
@@ -62,6 +63,17 @@ export class NotificationSocketService {
     status: 'idle',
     reconnectAttempts: 0,
   };
+  private readonly authUnsubscribers: Array<() => void> = [];
+  private readonly handleTokenRotated = ({ accessToken }: { accessToken: string }) => {
+    // Re-authenticate through the supervisor's queue so a rotated token keeps
+    // the connection valid (flushed immediately when connected, queued if not).
+    this.supervisor.send({ event: 'authenticate', payload: { token: accessToken } });
+  };
+  private readonly handleTokenRevoked = () => {
+    // The session was revoked — tear the socket down so it cannot keep
+    // receiving notifications under a dead credential.
+    this.disconnect();
+  };
   private readonly handleOnline = () => {
     if (!this.intentionallyClosed) {
       this.supervisor.reconnectNow();
@@ -91,12 +103,14 @@ export class NotificationSocketService {
   connect(): void {
     this.intentionallyClosed = false;
     this.registerNetworkListeners();
+    this.registerAuthListeners();
     this.supervisor.connect();
   }
 
   disconnect(): void {
     this.intentionallyClosed = true;
     this.unregisterNetworkListeners();
+    this.unregisterAuthListeners();
     this.supervisor.disconnect();
   }
 
@@ -169,6 +183,21 @@ export class NotificationSocketService {
       reconnectAttempts: updates.reconnectAttempts ?? this.connectionState.reconnectAttempts,
     };
     this.connectionListeners.forEach((listener) => listener(this.connectionState));
+  }
+
+  private registerAuthListeners(): void {
+    if (this.authUnsubscribers.length > 0) {
+      return;
+    }
+    this.authUnsubscribers.push(
+      tokenManager.on('token:rotated', this.handleTokenRotated),
+      tokenManager.on('token:revoked', this.handleTokenRevoked),
+    );
+  }
+
+  private unregisterAuthListeners(): void {
+    this.authUnsubscribers.forEach((off) => off());
+    this.authUnsubscribers.length = 0;
   }
 
   private registerNetworkListeners(): void {

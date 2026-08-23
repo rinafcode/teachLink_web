@@ -75,7 +75,18 @@ export const STARKNET_NETWORKS = {
 export const STORAGE_KEYS = {
   PERF_TRENDS: 'teachlink:perf:trends',
   AUTH_TOKEN: 'token',
+  REFRESH_TOKEN: 'refresh_token',
 };
+
+/**
+ * How long before an access token's `exp` the token manager treats it as due
+ * for a silent refresh. A generous skew keeps long-lived sockets and queued
+ * offline operations from ever carrying a token that lapses mid-flight.
+ */
+export const AUTH_REFRESH_SKEW_MS = 60_000;
+
+/** Default endpoint used to exchange a refresh token for a new access token. */
+export const AUTH_REFRESH_ENDPOINT = '/api/auth/refresh';
 
 /**
  * Domains permitted in sanitized HTML links and sanitizeUrl().

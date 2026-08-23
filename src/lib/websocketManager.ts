@@ -7,6 +7,7 @@ import {
   type ConnectionStatus,
   registerSupervisor,
 } from '@/lib/realtime/connectionSupervisor';
+import { tokenManager } from '@/lib/auth/tokenManager';
 
 export interface WebSocketConfig {
   url: string;
@@ -89,7 +90,26 @@ export class WebSocketManager {
   private transports: Map<string, SocketIoTransport> = new Map();
   private configs: Map<string, WebSocketConfig> = new Map();
 
-  private constructor() {}
+  private constructor() {
+    // React to the shared token lifecycle: re-authenticate live sockets when the
+    // access token rotates, and drop every connection when the session is
+    // revoked so a stale/expired credential can never keep receiving data.
+    tokenManager.on('token:rotated', ({ accessToken }) => {
+      this.reauthenticateAll(accessToken);
+    });
+    tokenManager.on('token:revoked', () => {
+      this.disconnectAll();
+    });
+  }
+
+  private reauthenticateAll(accessToken: string): void {
+    this.transports.forEach((transport) => {
+      const socket = transport.getSocket();
+      if (socket?.connected) {
+        socket.emit('authenticate', { token: accessToken });
+      }
+    });
+  }
 
   static getInstance(): WebSocketManager {
     if (!WebSocketManager.instance) {

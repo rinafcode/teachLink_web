@@ -1,5 +1,18 @@
 import { apiClient } from '@/lib/api';
 import { VersionVector } from '@/lib/conflict/types';
+import { tokenManager } from '@/lib/auth/tokenManager';
+
+/**
+ * Thrown when an offline operation is replayed without an authenticated
+ * session, so the caller can dead-letter it instead of retrying against a dead
+ * credential.
+ */
+export class OfflineAuthRequiredError extends Error {
+  constructor() {
+    super('Offline replay requires an authenticated session');
+    this.name = 'OfflineAuthRequiredError';
+  }
+}
 
 export interface OfflineProgressPayload {
   courseId: string;
@@ -36,6 +49,13 @@ export const offlineApi = {
   syncLessonProgress: async (
     progress: OfflineProgressPayload,
   ): Promise<OfflineProgressSyncResponse> => {
+    // Ensure a valid, non-expired token before replaying (silent refresh via the
+    // shared token manager); refuse when logged out so the sync layer can
+    // dead-letter rather than retry endlessly.
+    const token = await tokenManager.getValidAccessToken();
+    if (!token) {
+      throw new OfflineAuthRequiredError();
+    }
     return apiClient.patch<OfflineProgressSyncResponse>(
       `/api/lessons/${encodeURIComponent(progress.moduleId)}/progress`,
       progress,
