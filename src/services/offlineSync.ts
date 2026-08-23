@@ -19,6 +19,7 @@ import {
   DEAD_LETTER_RETENTION_MS,
 } from '@/constants/app.constants';
 import { offlineApi } from './offlineApi';
+import { tokenManager } from '@/lib/auth/tokenManager';
 
 export type SyncItemType = 'course_progress';
 
@@ -739,6 +740,21 @@ export class OfflineSyncService {
   async syncData(options: SyncOptions = {}): Promise<SyncResult> {
     if (this.isSyncing && !options.forceSync) {
       throw new Error('Sync already in progress');
+    }
+
+    // Gate the drain on a valid session. The token manager silently refreshes an
+    // about-to-expire token; if the user is logged out it returns null and we
+    // skip draining entirely, leaving the queue intact to replay once the user
+    // re-authenticates rather than burning retries against a dead credential.
+    const accessToken = await tokenManager.getValidAccessToken();
+    if (!accessToken) {
+      return {
+        success: false,
+        syncedItems: 0,
+        conflicts: [],
+        errors: ['Skipped: no authenticated session'],
+        lastSyncTime: new Date().toISOString(),
+      };
     }
 
     this.isSyncing = true;

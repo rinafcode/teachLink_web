@@ -17,6 +17,28 @@ export function recordRealtimeMetric(
   createCounterMetric(name, value, tags);
 }
 
+/**
+ * Authentication lifecycle events emitted by the token manager. Kept as a union
+ * so dashboards and alerts can query a stable, documented set of metric names.
+ */
+export type AuthMetricName =
+  | 'auth.refresh_success'
+  | 'auth.refresh_failure'
+  | 'auth.token_rotated'
+  | 'auth.forced_logout';
+
+/**
+ * Record an auth lifecycle metric as a counter. Used by the token manager so
+ * refresh success/failure, rotation and forced logout are observable in the
+ * same monitoring pipeline as the rest of the app.
+ */
+export function recordAuthMetric(
+  name: AuthMetricName,
+  tags?: Record<string, string | number | boolean>,
+): void {
+  createCounterMetric(name, 1, tags);
+}
+
 export function useMetrics() {
   const [metrics, setMetrics] = useState<Metric[]>([]);
 
