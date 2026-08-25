@@ -117,14 +117,17 @@ function usePerformanceMonitoringState(
     toastDedupeRef.current.clear();
   }, []);
 
-  return {
-    metrics,
-    alerts,
-    suggestions,
-    trend,
-    clearAlerts,
-    refreshTrendFromStorage,
-  };
+  return useMemo(
+    () => ({
+      metrics,
+      alerts,
+      suggestions,
+      trend,
+      clearAlerts,
+      refreshTrendFromStorage,
+    }),
+    [metrics, alerts, suggestions, trend, clearAlerts, refreshTrendFromStorage],
+  );
 }
 
 const providerEnableToasts =
