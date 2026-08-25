@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { markdownToHtml } from './MarkdownRenderer';
+import { markdownToHtml, clusterMarkdownLines } from './MarkdownRenderer';
 
 // Tests cover the pure markdownToHtml function (no DOM/React needed).
 
@@ -193,5 +193,119 @@ describe('markdownToHtml', () => {
     const html = markdownToHtml(md);
     expect(html).toContain('<th>A</th>');
     expect(html).toContain('<td>1</td>');
+  });
+});
+
+// ── Clustering algorithm ───────────────────────────────────────────────────
+//
+// markdownToHtml partitions the source into typed line clusters (heading,
+// list, table, code, paragraph, ...) before any inline formatting is
+// applied. These tests exercise the clustering step directly, plus the
+// cluster-isolation bug it fixes: a whole-document regex chain lets rules
+// meant for prose (bold/italic/inline-code/links) leak into fenced code
+// blocks that happen to contain the same characters.
+
+describe('clusterMarkdownLines', () => {
+  it('groups consecutive unordered list lines into a single cluster', () => {
+    const clusters = clusterMarkdownLines('- Alpha\n- Beta\n- Gamma');
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0]).toMatchObject({
+      type: 'unordered-list',
+      lines: ['- Alpha', '- Beta', '- Gamma'],
+    });
+  });
+
+  it('splits a heading, a list, and a paragraph into separate clusters', () => {
+    const clusters = clusterMarkdownLines('# Title\n- item one\n- item two\n\nSome text');
+    expect(clusters.map((c) => c.type)).toEqual(['heading', 'unordered-list', 'blank', 'paragraph']);
+  });
+
+  it('keeps a fenced code block as a single cluster distinct from surrounding paragraphs', () => {
+    const md = 'before\n\n```js\nconst x = 1;\n```\n\nafter';
+    const clusters = clusterMarkdownLines(md);
+    const codeCluster = clusters.find((c) => c.type === 'code');
+    expect(codeCluster).toBeDefined();
+    expect(codeCluster!.lines).toEqual(['```js', 'const x = 1;', '```']);
+  });
+
+  it('classifies task list lines separately from plain unordered list lines', () => {
+    const clusters = clusterMarkdownLines('- [ ] task\n- plain item');
+    expect(clusters.map((c) => c.type)).toEqual(['task-list', 'unordered-list']);
+  });
+
+  it('treats a single pipe-containing line without a separator row as a paragraph, not a table', () => {
+    const clusters = clusterMarkdownLines('Cost is $5 | discount available');
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0].type).toBe('paragraph');
+  });
+
+  it('merges a stray pipe line back into a surrounding paragraph run', () => {
+    // "Second" ends up briefly mis-classified as a failed table candidate;
+    // it must still end up in the same paragraph as its neighbors so the
+    // rendered output matches a single run of text with no blank line breaks.
+    const clusters = clusterMarkdownLines('First line\nSecond | line\nThird line');
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0]).toMatchObject({
+      type: 'paragraph',
+      lines: ['First line', 'Second | line', 'Third line'],
+    });
+  });
+
+  it('recognizes a valid GFM table as one cluster', () => {
+    const md = '| Name | Age |\n| --- | --- |\n| Alice | 30 |';
+    const clusters = clusterMarkdownLines(md);
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0].type).toBe('table');
+  });
+});
+
+describe('markdownToHtml — cluster isolation regression tests', () => {
+  it('does not apply inline code formatting to backticks inside a fenced code block', () => {
+    const md = '```\nUse `x` here\n```';
+    const html = markdownToHtml(md);
+    expect(html).toBe('<pre><code>Use `x` here</code></pre>');
+    expect(html).not.toContain('<code>x</code>');
+  });
+
+  it('does not apply bold/italic formatting inside a fenced code block', () => {
+    const md = '```\nconst bold = **not bold**;\nconst em = _not em_;\n```';
+    const html = markdownToHtml(md);
+    expect(html).toContain('**not bold**');
+    expect(html).toContain('_not em_');
+    expect(html).not.toContain('<strong>');
+    expect(html).not.toContain('<em>');
+  });
+
+  it('does not turn link syntax inside a fenced code block into an anchor tag', () => {
+    const md = '```md\n[label](https://example.com)\n```';
+    const html = markdownToHtml(md);
+    expect(html).not.toContain('<a href=');
+    expect(html).toContain('[label](https://example.com)');
+  });
+
+  it('still applies inline formatting to a paragraph following a code block', () => {
+    const md = '```\ncode\n```\n\nThis is **bold** after code.';
+    const html = markdownToHtml(md);
+    expect(html).toContain('<strong>bold</strong>');
+  });
+
+  it('renders a heading immediately followed by a list without losing either', () => {
+    const md = '## Section\n- one\n- two';
+    const html = markdownToHtml(md);
+    expect(html).toContain('<h2>Section</h2>');
+    expect(html).toContain('<ul><li>one</li><li>two</li></ul>');
+  });
+
+  it('applies inline formatting inside table cells', () => {
+    const md = '| Name |\n| --- |\n| **Alice** |';
+    const html = markdownToHtml(md);
+    expect(html).toContain('<td><strong>Alice</strong></td>');
+  });
+
+  it('handles an unterminated fenced code block by escaping its content instead of leaving it unprocessed', () => {
+    const md = '```\n<script>evil()</script>';
+    const html = markdownToHtml(md);
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;');
   });
 });
