@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from 'react';
 import {
@@ -134,19 +135,26 @@ export function NotificationProvider({
     serviceRef.current?.send('notification_clear', { all: true });
   }, []);
 
-  return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        connectionState,
-        markAsRead,
-        markAllAsRead,
-        clearNotification,
-        clearAll,
-      }}
-    >
-      {children}
-    </NotificationContext.Provider>
+  const value = useMemo(
+    () => ({
+      notifications,
+      unreadCount,
+      connectionState,
+      markAsRead,
+      markAllAsRead,
+      clearNotification,
+      clearAll,
+    }),
+    [
+      notifications,
+      unreadCount,
+      connectionState,
+      markAsRead,
+      markAllAsRead,
+      clearNotification,
+      clearAll,
+    ],
   );
+
+  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 }
