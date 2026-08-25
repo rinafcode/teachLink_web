@@ -36,7 +36,7 @@ export const ContentTemplateLibrary: React.FC<ContentTemplateLibraryProps> = ({ 
         id={headingId}
         className="font-semibold text-sm text-gray-500 uppercase mb-4 tracking-wider"
       >
-        Templates
+        Content Templates
       </h3>
       <div className="space-y-2">
         {TEMPLATES.map((template) => (
