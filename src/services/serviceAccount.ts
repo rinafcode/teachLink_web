@@ -7,17 +7,19 @@ import { createWallet, formatEther, formatUnits, createContract } from './ethers
  * Ethers.js is lazy-loaded to reduce initial bundle size.
  */
 
-const PRIVATE_KEY = process.env.SERVICE_PRIVATE_KEY;
-
-if (!PRIVATE_KEY) {
-  throw new Error('SERVICE_PRIVATE_KEY is not set in environment');
-}
-
 let walletInstance: Awaited<ReturnType<typeof createWallet>> | null = null;
+
+const getPrivateKey = (): string => {
+  const privateKey = process.env.SERVICE_PRIVATE_KEY;
+  if (!privateKey) {
+    throw new Error('SERVICE_PRIVATE_KEY is not set in environment');
+  }
+  return privateKey;
+};
 
 const getWallet = async () => {
   if (!walletInstance) {
-    walletInstance = await createWallet(PRIVATE_KEY);
+    walletInstance = await createWallet(getPrivateKey());
   }
   return walletInstance;
 };
