@@ -189,6 +189,12 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
         heartbeatInterval: 30000,
       });
 
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('message');
+      socket.off('typing');
+      socket.off('read');
+
       socket.on('connect', () => set({ isConnected: true }));
       socket.on('disconnect', () => set({ isConnected: false }));
       socket.on('message', (message: Message) => get().addMessage(message));
@@ -210,6 +216,14 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   },
 
   disconnectSocket: () => {
+    const socket = get().socket;
+    if (socket) {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('message');
+      socket.off('typing');
+      socket.off('read');
+    }
     wsManager.disconnect('messaging');
     set({ socket: null, isConnected: false });
   },
