@@ -70,10 +70,14 @@ export const useContentEditor = ({
   ); // Added dependency array
 
   const addImage = useCallback(
-    (url: string) => {
+    (url: string, alt?: string) => {
       const safeUrl = sanitizeUrl(url);
       if (safeUrl && editor) {
-        editor.chain().focus().setImage({ src: safeUrl }).run();
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: safeUrl, alt: alt?.trim() || undefined })
+          .run();
       }
     },
     [editor],

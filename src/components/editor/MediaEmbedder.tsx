@@ -4,23 +4,29 @@ import { sanitizeUrl } from '@/utils/sanitize';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface MediaEmbedderProps {
-  onAddImage: (url: string) => void;
+  onAddImage: (url: string, alt?: string) => void;
   onAddYoutube: (url: string) => void;
 }
 
 export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddYoutube }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState('');
+  const [altText, setAltText] = useState('');
   const [type, setType] = useState<'image' | 'youtube'>('image');
   const [urlError, setUrlError] = useState('');
   const id = useId();
   const dialogTitleId = `${id}-title`;
   const errorId = `${id}-error`;
   const inputId = `${id}-url`;
+  const altInputId = `${id}-alt`;
   const urlInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useFocusTrap<HTMLDivElement>(isOpen, { initialFocusRef: urlInputRef });
 
   const closeDialog = () => setIsOpen(false);
+
+  useEffect(() => {
+    if (!isOpen) setAltText('');
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -40,11 +46,12 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
     }
     setUrlError('');
     if (type === 'image') {
-      onAddImage(safeUrl);
+      onAddImage(safeUrl, altText);
     } else {
       onAddYoutube(safeUrl);
     }
     setUrl('');
+    setAltText('');
     closeDialog();
   };
 
@@ -114,6 +121,21 @@ export const MediaEmbedder: React.FC<MediaEmbedderProps> = ({ onAddImage, onAddY
               >
                 {urlError}
               </p>
+              {type === 'image' ? (
+                <>
+                  <label htmlFor={altInputId} className="text-sm text-gray-600 dark:text-gray-300">
+                    Alt text (for screen readers)
+                  </label>
+                  <input
+                    id={altInputId}
+                    type="text"
+                    value={altText}
+                    onChange={(e) => setAltText(e.target.value)}
+                    placeholder="Describe the image..."
+                    className="w-full p-2 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                </>
+              ) : null}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
