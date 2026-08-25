@@ -30,6 +30,8 @@ export interface BreadcrumbItem {
   current?: boolean;
   /** Optional click handler (for custom navigation) */
   onClick?: (e: React.MouseEvent) => void;
+  /** Additional CSS classes for the breadcrumb item */
+  className?: string;
 }
 
 export interface BreadcrumbsProps {
@@ -80,6 +82,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
         href: undefined,
         current: i === 2,
         isSkeleton: true,
+        className: '',
       }));
     }
 
@@ -115,6 +118,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                 <span
                   className={`
                     inline-flex items-center gap-1.5 px-2 py-1 rounded-md
+                    ${item.className ?? ''}
                   `}
                 >
                   <span className={`${skeletonPulse} h-4 w-16`}></span>
@@ -130,6 +134,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                     transition-colors duration-200
                     ${isCollapsed ? 'cursor-default pointer-events-none' : ''}
+                    ${item.className ?? ''}
                   `}
                   aria-current={item.current ? 'page' : undefined}
                   onClick={item.onClick}
@@ -147,6 +152,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                         ? 'text-gray-900 dark:text-gray-100 font-semibold'
                         : 'text-gray-600 dark:text-gray-400'
                     }
+                    ${item.className ?? ''}
                   `}
                   aria-current={item.current ? 'page' : undefined}
                 >
