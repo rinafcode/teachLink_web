@@ -176,7 +176,6 @@ export interface MarkdownRendererProps {
 export function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
   const sanitizedHtml = useMemo(() => {
     const raw = markdownToHtml(content);
-    if (typeof window === 'undefined') return raw;
     return DOMPurify.sanitize(raw, {
       ALLOWED_TAGS: [
         'h1',
