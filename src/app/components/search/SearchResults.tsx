@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Star, Clock, User, ArrowRight, SearchX } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Star, Clock, User, ArrowRight, SearchX, ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { EmptyState } from '@/components';
@@ -26,6 +27,10 @@ interface SearchResultsProps {
   isLoading?: boolean;
   sortBy?: string;
   onSortChange?: (sort: string) => void;
+  /** Number of cards per page. Defaults to 12. */
+  pageSize?: number;
+  /** Initial page number. Defaults to 1. */
+  initialPage?: number;
 }
 
 export const SearchResults: React.FC<SearchResultsProps> = ({
@@ -33,7 +38,28 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   isLoading = false,
   sortBy = 'relevance',
   onSortChange,
+  pageSize = 12,
+  initialPage = 1,
 }) => {
+  const [currentPage, setCurrentPage] = useState(initialPage);
+
+  // Reset to page 1 whenever the result set changes (new search / filter)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [results]);
+
+  const totalPages = Math.max(1, Math.ceil(results.length / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, results.length);
+  const visibleResults = results.slice(startIndex, endIndex);
+
+  const goToPrev = useCallback(() => setCurrentPage((p) => Math.max(1, p - 1)), []);
+  const goToNext = useCallback(
+    () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
+    [totalPages],
+  );
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -91,9 +117,17 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
   return (
     <div>
-      {/* Sort Controls */}
+      {/* Sort Controls / Result Count */}
       <div className="mb-6 flex justify-between items-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">{results.length} results found</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Showing{' '}
+          <span className="font-medium text-gray-900 dark:text-gray-100">
+            {results.length === 0 ? 0 : startIndex + 1}–{endIndex}
+          </span>{' '}
+          of{' '}
+          <span className="font-medium text-gray-900 dark:text-gray-100">{results.length}</span>{' '}
+          results
+        </p>
         {onSortChange && (
           <select
             value={sortBy}
@@ -109,9 +143,12 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         )}
       </div>
 
-      {/* Results Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {results.map((course) => (
+      {/* Results Grid — only the current page's slice */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        aria-label={`Search results page ${safeCurrentPage} of ${totalPages}`}
+      >
+        {visibleResults.map((course) => (
           <Link
             key={course.id}
             href={`/courses/${course.id}`}
@@ -119,14 +156,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           >
             {/* Course Image */}
             <div className="relative h-40 bg-linear-to-br from-gray-200 dark:from-gray-700 to-gray-300 dark:to-gray-800 overflow-hidden">
-              <picture>
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-              </picture>
+              <Image
+                src={course.image}
+                alt={course.title}
+                fill
+                sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
               {course.tag && (
                 <span className="absolute top-3 right-3 bg-yellow-400 dark:bg-yellow-500 text-gray-900 dark:text-gray-800 px-3 py-1 rounded-full text-xs font-bold">
                   {course.tag}
@@ -190,6 +227,55 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           </Link>
         ))}
       </div>
+
+      {/* Pagination Bar */}
+      {totalPages > 1 && (
+        <nav
+          className="mt-8 flex items-center justify-center gap-3"
+          aria-label="Search results pagination"
+        >
+          <button
+            id="search-results-prev-page"
+            type="button"
+            onClick={goToPrev}
+            disabled={safeCurrentPage === 1}
+            className={clsx(
+              'flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200',
+              safeCurrentPage === 1
+                ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed bg-transparent'
+                : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500',
+            )}
+            aria-label="Previous page"
+          >
+            <ChevronLeft size={16} />
+            Previous
+          </button>
+
+          <span className="text-sm text-gray-600 dark:text-gray-400 select-none px-2">
+            Page{' '}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{safeCurrentPage}</span>{' '}
+            of{' '}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{totalPages}</span>
+          </span>
+
+          <button
+            id="search-results-next-page"
+            type="button"
+            onClick={goToNext}
+            disabled={safeCurrentPage === totalPages}
+            className={clsx(
+              'flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200',
+              safeCurrentPage === totalPages
+                ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed bg-transparent'
+                : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500',
+            )}
+            aria-label="Next page"
+          >
+            Next
+            <ChevronRight size={16} />
+          </button>
+        </nav>
+      )}
     </div>
   );
 };

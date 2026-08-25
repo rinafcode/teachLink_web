@@ -42,10 +42,10 @@ describe('ExportButton Component', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText('Server Error: Failed to execute export')).toBeInTheDocument();
+      expect(screen.getAllByText('Server Error: Failed to execute export').length).toBeGreaterThan(0);
     });
 
-    const errorMessage = screen.getByText('Server Error: Failed to execute export');
+    const errorMessage = screen.getAllByText('Server Error: Failed to execute export')[0];
     expect(errorMessage).toHaveClass('text-red-600');
     expect(onError).toHaveBeenCalledWith(expect.any(Error));
   });

@@ -47,8 +47,7 @@ if (typeof window !== 'undefined' && !_hookRegistered) {
         // Invalid URL – not allowed
       }
       if (!allowed) {
-        node.removeAttribute('src');
-        node.removeAttribute('allowfullscreen');
+        node.remove();
         return;
       }
       // Preserve allowfullscreen if present on allowed iframe

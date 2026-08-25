@@ -1,8 +1,43 @@
-// @ts-nocheck
 import { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { Awareness } from 'y-protocols/awareness';
+import {
+  BaseRealtimeTransport,
+  ConnectionSupervisor,
+  registerSupervisor,
+} from '@/lib/realtime/connectionSupervisor';
+import { useRealtimeConnection } from './useRealtimeConnection';
+
+/**
+ * Bridges the y-websocket provider's lifecycle into the shared connection
+ * supervisor. y-websocket owns the actual transport and reconnection, so the
+ * supervisor runs with `manageReconnect: false` and only mirrors the unified
+ * status for consumers.
+ */
+class CollaborationTransport extends BaseRealtimeTransport {
+  readonly name = 'collaboration';
+
+  constructor(private readonly provider: WebsocketProvider) {
+    super();
+  }
+
+  connect(): void {
+    // y-websocket owns the socket; nothing to do here.
+  }
+
+  isOpen(): boolean {
+    return this.provider.ws?.readyState === WebSocket.OPEN;
+  }
+
+  bridgeConnected(): void {
+    this.events.emitOpen();
+  }
+
+  bridgeDisconnected(): void {
+    this.events.emitClose();
+  }
+}
 
 type CursorPosition = {
   line: number;
@@ -52,12 +87,16 @@ export function useCollaboration(roomId: string, user: CollaborationUser, websoc
   const [whiteboardStrokes, setWhiteboardStrokes] = useState<WhiteboardStroke[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const connectionName = `collaboration:${roomId}`;
+  const connection = useRealtimeConnection(connectionName);
+
   const docRef = useRef<Y.Doc | null>(null);
   const providerRef = useRef<WebsocketProvider | null>(null);
   const awarenessRef = useRef<Awareness | null>(null);
   const yTextRef = useRef<Y.Text | null>(null);
   const strokesRef = useRef<Y.Array<WhiteboardStroke> | null>(null);
   const chatRef = useRef<Y.Array<CollaborationMessage> | null>(null);
+  const supervisorRef = useRef<ConnectionSupervisor | null>(null);
 
   const websocketEndpoint =
     websocketUrl ||
@@ -78,6 +117,12 @@ export function useCollaboration(roomId: string, user: CollaborationUser, websoc
     });
     providerRef.current = provider;
     awarenessRef.current = provider.awareness;
+
+    // Register the unified connection status for this collaboration room.
+    const transport = new CollaborationTransport(provider);
+    const supervisor = new ConnectionSupervisor(transport, { manageReconnect: false });
+    supervisorRef.current = supervisor;
+    const unregisterSupervisor = registerSupervisor(connectionName, supervisor);
 
     const updatePresence = () => {
       const states = Array.from(awarenessRef.current?.getStates().values() ?? []);
@@ -122,6 +167,11 @@ export function useCollaboration(roomId: string, user: CollaborationUser, websoc
     provider.on('status', ({ status: providerStatus }) => {
       setConnected(providerStatus === 'connected');
       setStatus(providerStatus === 'connected' ? 'connected' : 'disconnected');
+      if (providerStatus === 'connected') {
+        transport.bridgeConnected();
+      } else {
+        transport.bridgeDisconnected();
+      }
     });
 
     provider.on('sync', () => {
@@ -132,6 +182,9 @@ export function useCollaboration(roomId: string, user: CollaborationUser, websoc
 
     return () => {
       awarenessRef.current?.off('change', updatePresence);
+      unregisterSupervisor();
+      supervisor.disconnect();
+      supervisorRef.current = null;
       provider.disconnect();
       doc.destroy();
       docRef.current = null;
@@ -141,7 +194,16 @@ export function useCollaboration(roomId: string, user: CollaborationUser, websoc
       strokesRef.current = null;
       chatRef.current = null;
     };
-  }, [roomId, user.id, user.name, user.avatar, user.color, websocketEndpoint]);
+  }, [connectionName, roomId, user.id, websocketEndpoint]);
+
+  useEffect(() => {
+    const provider = providerRef.current;
+    if (!provider) return;
+    provider.awareness.setLocalStateField('user', {
+      ...user,
+      isActive: true,
+    });
+  }, [user.name, user.avatar, user.color]);
 
   const updateText = (value: string) => {
     if (!yTextRef.current) {
@@ -206,6 +268,7 @@ export function useCollaboration(roomId: string, user: CollaborationUser, websoc
   return {
     connected,
     status,
+    connection,
     editorText,
     users,
     messages,

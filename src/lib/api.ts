@@ -13,6 +13,7 @@ import {
   API_CACHE_TTL_DEFAULT,
 } from '@/constants/app.constants';
 import { logContextStorage } from './logging/context';
+import { tokenManager } from '@/lib/auth/tokenManager';
 
 export type { ErrorInfo };
 
@@ -45,6 +46,7 @@ export interface RequestConfig extends RequestInit {
   schema?: z.ZodSchema;
   useCache?: boolean;
   _bypassCacheRead?: boolean;
+  _authRetried?: boolean;
   ttl?: number;
 }
 
@@ -109,6 +111,12 @@ class ApiClientImpl {
   }
 
   private getToken(): string | null {
+    // The token manager is the single source of truth; it hydrates from
+    // localStorage under STORAGE_KEYS.AUTH_TOKEN, so the value is identical to
+    // the previous direct read but is now shared with sockets and the offline
+    // queue and kept fresh by silent refresh.
+    const managed = tokenManager.getAccessTokenSync();
+    if (managed) return managed;
     if (typeof window === 'undefined') return null;
     return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
   }
@@ -131,7 +139,9 @@ class ApiClientImpl {
   }
 
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
-    const token = this.getToken();
+    // Proactively ensure a non-expired access token before sending. Concurrent
+    // requests share a single refresh; falls back to the cached token.
+    const token = (await tokenManager.getValidAccessToken()) ?? this.getToken();
 
     const baseURL = this.config.baseURL.replace(/\/+$/, '');
     const resolvedUrl = getVersionedApiPath(config.url);
@@ -175,6 +185,18 @@ class ApiClientImpl {
       clearTimeout(timer);
 
       if (!response.ok) {
+        // A 401 triggers one coordinated refresh + replay. The single-flight
+        // refresh in the token manager collapses concurrent 401s into a single
+        // network round-trip; `_authRetried` prevents an infinite loop.
+        if (response.status === 401 && !config._authRetried) {
+          try {
+            await tokenManager.refresh();
+            return this.requestWithRetry<T>({ ...config, _authRetried: true }, 1);
+          } catch {
+            // Refresh failed — fall through to the normal 401 error path below.
+          }
+        }
+
         if (shouldRetry(response.status, attempt, this.config.maxRetries)) {
           await new Promise((r) => setTimeout(r, getRetryDelay(attempt, this.config.retryDelay)));
           return this.requestWithRetry<T>(config, attempt + 1);

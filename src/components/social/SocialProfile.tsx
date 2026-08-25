@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { UserCircle } from 'lucide-react';
 import { useFollowUser } from '@/hooks/useSocialFeatures';
 import { formatFollowerCount } from '@/utils/socialUtils';
@@ -21,7 +21,7 @@ interface SocialProfileProps {
 
 type Tab = 'posts' | 'activity' | 'analytics';
 
-export default function SocialProfile({ user, isOwnProfile = false }: SocialProfileProps) {
+function SocialProfile({ user, isOwnProfile = false }: SocialProfileProps) {
   const [activeTab, setActiveTab] = useState<Tab>('posts');
   const { isFollowing, follow, unfollow, loading } = useFollowUser(user.id);
 
@@ -110,3 +110,6 @@ export default function SocialProfile({ user, isOwnProfile = false }: SocialProf
     </div>
   );
 }
+
+const MemoizedSocialProfile = memo(SocialProfile);
+export default MemoizedSocialProfile;

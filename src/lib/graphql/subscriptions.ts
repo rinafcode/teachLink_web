@@ -1,17 +1,31 @@
 /**
  * GraphQL Subscriptions Configuration
  * Provides WebSocket-based real-time data updates using Apollo Client and graphql-ws
+ *
+ * The graphql-ws socket lifecycle (reconnect, heartbeat, queueing) is delegated to
+ * the shared `ConnectionSupervisor` (src/lib/realtime/connectionSupervisor.ts):
+ * graphql-ws only opens the socket lazily, the supervisor schedules reconnects and
+ * the transport re-subscribes every registered subscription after a reconnect.
  */
 
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { createClient as createWSClient } from 'graphql-ws';
+import { createClient as createWSClient, type Client } from 'graphql-ws';
 import { ApolloClient, InMemoryCache, ApolloLink, split, HttpLink } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { DocumentNode } from 'graphql';
+import { DocumentNode, print } from 'graphql';
 import { flagStore, evaluateFlag } from '@/lib/feature-flags';
 import { createLogger } from '@/lib/logging';
+import {
+  BaseRealtimeTransport,
+  ConnectionSupervisor,
+  getSupervisor,
+  registerSupervisor,
+} from '@/lib/realtime/connectionSupervisor';
 
 const logger = createLogger('graphql-subscriptions');
+
+/** Name under which the GraphQL subscription supervisor is registered. */
+export const GRAPHQL_SUBSCRIPTIONS_CONNECTION = 'graphql-subscriptions';
 
 /**
  * WebSocket subscription configuration options
@@ -205,6 +219,132 @@ export function isFeatureEnabled(flagId: string, context: Record<string, string>
   return evaluateFlag(flag, context);
 }
 
+interface SubscriptionEntry {
+  query: DocumentNode;
+  variables?: Record<string, unknown>;
+  handler: (payload: any) => void;
+}
+
+/**
+ * graphql-ws transport adapter. The socket opens lazily (only when there is at
+ * least one active subscription); the ConnectionSupervisor drives reconnects and
+ * this adapter re-subscribes every registered entry after each reconnect.
+ */
+class GraphQLWsTransport extends BaseRealtimeTransport {
+  readonly name = 'graphql';
+  private client: Client | null = null;
+  private connected = false;
+  private readonly subscriptions = new Map<string, SubscriptionEntry>();
+  private readonly unsubscribes = new Map<string, () => void>();
+
+  constructor(private readonly config: SubscriptionConfig) {
+    super();
+  }
+
+  getClient(): Client | null {
+    return this.client;
+  }
+
+  connect(): void {
+    if (!this.client) {
+      const { reconnect } = { ...DEFAULT_SUBSCRIPTION_CONFIG, ...this.config };
+      this.client = createWSClient({
+        url: this.config.subscriptionUrl,
+        connectionParams: () => ({
+          authorization: this.config.headers?.authorization ?? '',
+        }),
+        // Reconnection is owned by the ConnectionSupervisor.
+        shouldRetry: () => false,
+        retryAttempts: 0,
+        lazy: true,
+        keepAlive: 10_000,
+        on: {
+          connected: () => {
+            this.connected = true;
+            this.events.emitOpen();
+          },
+          error: (error) => {
+            this.events.emitError(error);
+          },
+          closed: () => {
+            this.connected = false;
+            this.events.emitClose();
+          },
+          connecting: () => {
+            // Status is driven by the supervisor's own 'connecting' phase.
+          },
+        },
+        connectionAckWaitTimeout: this.config.connectionTimeoutMs ?? 5000,
+      });
+    }
+    // Restore every subscription — opening the socket lazily if needed.
+    this.resubscribeAll();
+  }
+
+  disconnect(): void {
+    this.close();
+  }
+
+  close(): void {
+    this.connected = false;
+    this.unsubscribes.forEach((unsubscribe) => unsubscribe());
+    this.unsubscribes.clear();
+    this.client?.terminate();
+    this.client = null;
+  }
+
+  isOpen(): boolean {
+    return this.connected;
+  }
+
+  send(): void {
+    // Subscriptions are the only outbound channel; nothing to queue here.
+  }
+
+  sendPing(): void {
+    // graphql-ws handles protocol-level keep-alive via `keepAlive`.
+  }
+
+  /**
+   * Register a subscription. It is (re-)established immediately and again after
+   * every reconnect driven by the supervisor.
+   */
+  subscribe(id: string, entry: SubscriptionEntry): () => void {
+    this.subscriptions.set(id, entry);
+    this.resubscribe(id);
+    return () => {
+      this.unsubscribes.get(id)?.();
+      this.unsubscribes.delete(id);
+      this.subscriptions.delete(id);
+    };
+  }
+
+  private resubscribeAll(): void {
+    this.subscriptions.forEach((_, id) => this.resubscribe(id));
+  }
+
+  private resubscribe(id: string): void {
+    const entry = this.subscriptions.get(id);
+    const client = this.client;
+    if (!entry || !client) {
+      return;
+    }
+    this.unsubscribes.get(id)?.();
+    const unsubscribe = client.subscribe(
+      {
+        query: print(entry.query),
+        variables: entry.variables ?? {},
+      },
+      {
+        next: (result) => entry.handler(result.data),
+        error: (error) => this.events.emitError(error),
+        complete: () => undefined,
+      },
+    );
+    this.unsubscribes.set(id, unsubscribe);
+  }
+}
+
 /**
  * Creates a GraphQL subscriptions-enabled Apollo Client
  */
@@ -226,37 +366,36 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
   // Only build the WebSocket link when the feature is enabled
   const link: ApolloLink = subscriptionsEnabled
     ? (() => {
-        const wsClient = createWSClient({
-          url: config.subscriptionUrl,
-          connectionParams: () => ({
-            authorization: config.headers?.authorization ?? '',
-          }),
-          shouldRetry: (code) => {
-            return code !== 1000 && code !== 1001 && code !== 4000;
-          },
-          retryAttempts: config.reconnect?.maxRetries ?? 5,
-          on: {
-            connected: () => {
-              manager.setState(ConnectionState.CONNECTED);
-              manager.resetRetryCount();
-            },
-            error: (error) => {
-              const normalizedError =
-                error instanceof Error
-                  ? error
-                  : new Error(typeof error === 'string' ? error : 'Unknown error');
-              manager.setState(ConnectionState.ERROR, normalizedError);
-            },
-            closed: () => {
-              manager.setState(ConnectionState.DISCONNECTED);
-            },
-            connecting: () => {
-              manager.setState(ConnectionState.CONNECTING);
-            },
-          },
-          connectionAckWaitTimeout: config.connectionTimeoutMs ?? 5000,
+        const transport = new GraphQLWsTransport(config);
+        const { reconnect } = { ...DEFAULT_SUBSCRIPTION_CONFIG, ...config };
+        const supervisor = new ConnectionSupervisor(transport, {
+          initialReconnectDelayMs: reconnect?.initialDelayMs ?? 1000,
+          maxReconnectDelayMs: reconnect?.maxDelayMs ?? 30000,
+          maxReconnectAttempts: reconnect?.maxRetries ?? 5,
         });
 
+        // Mirror the supervisor status into the legacy connection manager so
+        // existing `getConnectionManager()` consumers keep working.
+        supervisor.onStatusChange((status) => {
+          if (status.isConnected) {
+            manager.setState(ConnectionState.CONNECTED);
+            manager.resetRetryCount();
+          } else if (status.phase === 'connecting' || status.phase === 'reconnecting') {
+            manager.setState(ConnectionState.CONNECTING);
+          } else if (status.phase === 'offline') {
+            manager.setState(
+              ConnectionState.ERROR,
+              new Error(status.lastError ?? 'Realtime connection unavailable'),
+            );
+          } else {
+            manager.setState(ConnectionState.DISCONNECTED);
+          }
+        });
+
+        registerSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION, supervisor);
+        supervisor.connect();
+
+        const wsClient = transport.getClient()!;
         const wsLink = new GraphQLWsLink(wsClient);
 
         return split(
@@ -287,6 +426,27 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
   });
 
   return client;
+}
+
+/**
+ * Subscribe to a realtime event through the GraphQL supervisor. The subscription
+ * is automatically restored after every reconnect (resubscribe registry).
+ *
+ * @returns unsubscribe function
+ */
+export function subscribeRealtime(
+  id: string,
+  query: DocumentNode,
+  variables: Record<string, unknown>,
+  handler: (payload: any) => void,
+): () => void {
+  const supervisor = getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION);
+  const transport = supervisor?.getTransport() as GraphQLWsTransport | undefined;
+  if (!supervisor || !transport) {
+    logger.warn('[GraphQLSubscriptions] No active subscription supervisor; subscription dropped');
+    return () => undefined;
+  }
+  return transport.subscribe(id, { query, variables, handler });
 }
 
 /**

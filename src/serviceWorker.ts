@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { clientsClaim } from 'workbox-core';
+import { REALTIME_OFFLINE_EVENT } from '@/constants/app.constants';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
@@ -48,12 +49,28 @@ registerRoute(
 // Runtime caching for static assets
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.js'),
-  new StaleWhileRevalidate({ cacheName: 'static-js' }),
+  new StaleWhileRevalidate({
+    cacheName: 'static-js',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
+  }),
 );
 
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.css'),
-  new StaleWhileRevalidate({ cacheName: 'static-css' }),
+  new StaleWhileRevalidate({
+    cacheName: 'static-css',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
+  }),
 );
 
 // Runtime caching for images
@@ -99,6 +116,25 @@ registerRoute(
 // ─────────────────────────────────────────────────────────────────────────────
 const bgSyncPlugin = new BackgroundSyncPlugin('teachLinkSyncQueue', {
   maxRetentionTime: 24 * 60, // 24 hours in minutes
+});
+
+// Drains the deterministic offline queue (IndexedDB `teachlink-offline`) when
+// connectivity returns. The client listens for OFFLINE_SYNC_REQUESTED and runs
+// its transactional, cursor-based drain.
+async function notifyClientsToDrain(): Promise<void> {
+  const clients = await self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+  for (const client of clients) {
+    client.postMessage({ type: 'OFFLINE_SYNC_REQUESTED' });
+  }
+}
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'teachlink-offline-sync') {
+    event.waitUntil(notifyClientsToDrain());
+  }
 });
 
 // Lesson progress – PATCH /api/lessons/[id]/progress
@@ -205,6 +241,14 @@ registerRoute(
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+
+  // Realtime transports degraded to offline mode (max reconnect attempts exceeded) —
+  // broadcast to every open client so the app can switch to offline mode.
+  if (event.data && event.data.type === REALTIME_OFFLINE_EVENT) {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      clients.forEach((client) => client.postMessage({ type: REALTIME_OFFLINE_EVENT }));
+    });
   }
 });
 

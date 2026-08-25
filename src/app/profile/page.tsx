@@ -10,14 +10,16 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: `${profileUser.name} | TeachLink`,
       description: `View the profile of ${profileUser.name} on TeachLink.`,
-      images: [
-        {
-          url: profileUser.avatarUrl,
-          width: 800,
-          height: 800,
-          alt: profileUser.name,
-        },
-      ],
+      images: profileUser.avatarUrl
+        ? [
+            {
+              url: profileUser.avatarUrl,
+              width: 800,
+              height: 800,
+              alt: profileUser.name,
+            },
+          ]
+        : [],
     },
   };
 }
