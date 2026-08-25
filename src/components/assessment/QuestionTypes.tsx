@@ -43,6 +43,7 @@ export interface CodeChallengeAssessmentQuestion extends AssessmentQuestionBase 
   codeTemplate: string;
   language: string;
   testCases: AssessmentTestCase[];
+  partialCredit: boolean;
 }
 
 export interface EssayAssessmentQuestion extends AssessmentQuestionBase {
@@ -97,6 +98,7 @@ export function createQuestionTemplate(type: AssessmentQuestionType): Assessment
   return input;
 }`,
         testCases: [{ id: createId(), input: '2', expectedOutput: '4' }],
+        partialCredit: false,
       };
     case 'essay':
       return {
@@ -374,6 +376,15 @@ export function QuestionEditor({ question, onUpdate, onRemove }: QuestionEditorP
                 />
               </label>
             </div>
+            <label className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-200 mt-2">
+              <input
+                type="checkbox"
+                checked={!!question.partialCredit}
+                onChange={(event) => onUpdate({ ...question, partialCredit: event.target.checked })}
+                className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:ring-offset-slate-950"
+              />
+              Allow partial credit for passing some test cases
+            </label>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
               Starter template
               <textarea
