@@ -79,6 +79,12 @@ interface MessagingState {
   getTotalUnreadCount: () => number;
 }
 
+/**
+ * Subscribe to a focused slice of messaging state instead of the entire store.
+ */
+export const useMessagingStoreSelector = <T>(selector: (state: MessagingState) => T): T =>
+  useMessagingStore(selector);
+
 export const useMessagingStore = create<MessagingState>((set, get) => ({
   conversations: [],
   currentConversation: null,
