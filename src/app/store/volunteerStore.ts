@@ -28,6 +28,12 @@ interface VolunteerState {
   updateSMSPreferences: (id: string, sms: Partial<VolunteerSMSPreferences>) => void;
 }
 
+/**
+ * Subscribe to a focused slice of volunteer state instead of the entire store.
+ */
+export const useVolunteerStoreSelector = <T>(selector: (state: VolunteerState) => T): T =>
+  useVolunteerStore(selector);
+
 export const useVolunteerStore = create<VolunteerState>((set, get) => ({
   volunteers: load<Volunteer[]>(STORAGE_KEY, []),
 

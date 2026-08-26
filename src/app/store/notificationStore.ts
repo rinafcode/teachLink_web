@@ -42,6 +42,12 @@ interface NotificationState {
   clearRead: () => void;
 }
 
+/**
+ * Subscribe to a focused slice of notification state instead of the entire store.
+ */
+export const useNotificationStoreSelector = <T>(selector: (state: NotificationState) => T): T =>
+  useNotificationStore(selector);
+
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: load<AppNotification[]>(STORAGE_KEY, [], dateReviver),
   addNotification: (n) => {
