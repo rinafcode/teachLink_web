@@ -192,8 +192,7 @@ export const useSearchState = () => {
     if (patch.sortBy && patch.sortBy !== query.sortBy)
       updateSort(patch.sortBy as SearchQuery['sortBy']);
     if (patch.filters) updateFilters(patch.filters as Partial<SearchFilters>);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [query, searchParams, updateFilters, updateSearchText, updateSort]);
 
   // -------------------------------------------------------------------------
   // Share helper — returns the current canonical URL for sharing
