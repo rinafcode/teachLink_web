@@ -334,4 +334,63 @@ describe('ApprovalQueue component', () => {
       expect(body.status).toBe(ReviewDecision.APPROVED);
     });
   });
+
+  describe('pagination', () => {
+    const manyItems = Array.from({ length: 15 }, (_, i) => ({
+      id: `a-${i}`,
+      contentId: `c-${i}`,
+      contentType: 'COURSE',
+      title: `Course ${i}`,
+      submittedBy: 'instructor-1',
+      submittedAt: new Date().toISOString(),
+      status: ApprovalStatus.PENDING,
+    }));
+
+    beforeEach(() => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({ json: async () => ({ success: true, data: manyItems }) }),
+      );
+    });
+
+    it('only shows the first page of pending items', async () => {
+      render(<ApprovalQueue user={makeUser(UserRole.ADMIN)} />);
+      await waitFor(() => expect(screen.getByText('Course 0')).toBeInTheDocument());
+
+      expect(screen.getAllByText(/^Course \d+$/)).toHaveLength(10);
+      expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+      expect(screen.queryByText('Course 10')).not.toBeInTheDocument();
+    });
+
+    it('advances to the next page', async () => {
+      const { user } = render(<ApprovalQueue user={makeUser(UserRole.ADMIN)} />);
+      await waitFor(() => expect(screen.getByText('Course 0')).toBeInTheDocument());
+
+      await user.click(screen.getByRole('button', { name: 'Next' }));
+
+      expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
+      expect(screen.getByText('Course 10')).toBeInTheDocument();
+      expect(screen.queryByText('Course 0')).not.toBeInTheDocument();
+    });
+  });
+
+  it('keeps each item review note isolated (typing in one does not affect another)', async () => {
+    const items = [
+      { ...pendingItems[0], id: 'a-1', title: 'Course A' },
+      { ...pendingItems[0], id: 'a-2', title: 'Course B' },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ json: async () => ({ success: true, data: items }) }),
+    );
+
+    const { user } = render(<ApprovalQueue user={makeUser(UserRole.ADMIN)} />);
+    await waitFor(() => expect(screen.getByText('Course A')).toBeInTheDocument());
+
+    const textareas = screen.getAllByPlaceholderText('Optional review note…');
+    await user.type(textareas[0], 'looks good');
+
+    expect(textareas[0]).toHaveValue('looks good');
+    expect(textareas[1]).toHaveValue('');
+  });
 });

@@ -2,7 +2,11 @@ import { User as ZodUser, UserRole as ZodUserRole } from '@/schemas/user.schema'
 import { Course as ZodCourse } from '@/schemas/course.schema';
 import { AuthResponse as ZodAuthResponse } from '@/schemas/auth.schema';
 import { AnalyticsEventPayload as ZodAnalyticsEventPayload } from '@/schemas/analytics.schema';
-import { UserProgress as ZodUserProgress, CourseProgress as ZodCourseProgress } from '@/schemas/progress.schema';
+import {
+  UserProgress as ZodUserProgress,
+  CourseProgress as ZodCourseProgress,
+  LearningProgressItem as ZodLearningProgressItem,
+} from '@/schemas/progress.schema';
 import {
   VideoBookmark as ZodVideoBookmark,
   VideoNote as ZodVideoNote,
@@ -95,6 +99,7 @@ export type VideoNote = ZodVideoNote;
 
 export type UserProgress = ZodUserProgress;
 export type CourseProgress = ZodCourseProgress;
+export type LearningProgressItem = ZodLearningProgressItem;
 
 // ---------------------------------------------------------------------------
 // Video analytics
@@ -133,3 +138,9 @@ export interface ReviewApprovalRequest {
   status: ReviewDecision;
   reviewNote?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Topics
+// ---------------------------------------------------------------------------
+
+export type { Topic } from '@/utils/socialUtils';

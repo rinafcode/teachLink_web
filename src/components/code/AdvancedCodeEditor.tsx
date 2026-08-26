@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { loader } from '@monaco-editor/react';
+import type { EditorProps } from '@monaco-editor/react';
 import {
   Play,
   RotateCcw,
@@ -23,18 +23,23 @@ import { AutoCompletion } from './AutoCompletion';
 import { CollaborativeEditing } from './CollaborativeEditing';
 import type { CompletionSuggestion } from '@/utils/codeUtils';
 
-// Configure Monaco Web Worker to use CDN to prevent main-thread blocking
-loader.config({
-  paths: {
-    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
-  },
-});
-
 // Lazy-load Monaco using Next.js dynamic to avoid SSR issues and improve initial render
-const MonacoEditor = dynamic(() => import('@monaco-editor/react').then((mod) => mod.default), {
-  ssr: false,
-  loading: () => <EditorSkeleton />,
-});
+const MonacoEditor = dynamic(
+  () =>
+    import('@monaco-editor/react').then((mod) => {
+      // Configure Monaco Web Worker to use CDN to prevent main-thread blocking
+      mod.loader.config({
+        paths: {
+          vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs',
+        },
+      });
+      return mod.default;
+    }),
+  {
+    ssr: false,
+    loading: () => <EditorSkeleton />,
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Props
@@ -124,6 +129,30 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
   };
 
   const isDark = theme === 'vs-dark';
+  const editorOptions = useMemo<NonNullable<EditorProps['options']>>(
+    () => ({
+      fontSize,
+      minimap: { enabled: true },
+      wordWrap: 'on',
+      lineNumbers: 'on',
+      renderLineHighlight: 'all',
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+      padding: { top: 12, bottom: 12 },
+      suggestOnTriggerCharacters: autoCompleteEnabled,
+      quickSuggestions: autoCompleteEnabled,
+      tabSize: languageConfig.id === 'python' ? 4 : 2,
+      detectIndentation: false,
+      formatOnPaste: true,
+      smoothScrolling: true,
+      cursorBlinking: 'expand',
+      cursorSmoothCaretAnimation: 'on',
+      bracketPairColorization: { enabled: true },
+      fontFamily: '"Fira Code", "Cascadia Code", "Consolas", monospace',
+      fontLigatures: true,
+    }),
+    [autoCompleteEnabled, fontSize, languageConfig.id],
+  );
 
   return (
     <div
@@ -278,27 +307,7 @@ export const AdvancedCodeEditor: React.FC<AdvancedCodeEditorProps> = ({
           value={code}
           onChange={(val) => setCode(val ?? '')}
           onMount={handleEditorMount}
-          options={{
-            fontSize,
-            minimap: { enabled: true },
-            wordWrap: 'on',
-            lineNumbers: 'on',
-            renderLineHighlight: 'all',
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            padding: { top: 12, bottom: 12 },
-            suggestOnTriggerCharacters: autoCompleteEnabled,
-            quickSuggestions: autoCompleteEnabled,
-            tabSize: languageConfig.id === 'python' ? 4 : 2,
-            detectIndentation: false,
-            formatOnPaste: true,
-            smoothScrolling: true,
-            cursorBlinking: 'expand',
-            cursorSmoothCaretAnimation: 'on',
-            bracketPairColorization: { enabled: true },
-            fontFamily: '"Fira Code", "Cascadia Code", "Consolas", monospace',
-            fontLigatures: true,
-          }}
+          options={editorOptions}
           height="100%"
           width="100%"
         />

@@ -24,6 +24,22 @@ import {
 import { slidingWindowRateLimit } from '@/lib/ratelimit';
 import { appendAuditLog, queryAuditLogs } from '@/lib/audit';
 
+// Mock the DB pool so generateCertificate's completion check passes
+vi.mock('@/lib/db/pool', () => ({
+  query: vi.fn().mockResolvedValue({
+    rows: [
+      {
+        user_id: 'user-123',
+        course_id: 'course-123',
+        progress: 100,
+        completed_lessons: [],
+        last_accessed_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+      },
+    ],
+  }),
+}));
+
 describe('Certificate Security', () => {
   const mockUserId = 'user-123';
   const mockCourseId = 'course-123';

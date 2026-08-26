@@ -11,7 +11,7 @@ export interface FilterState {
   sort: string;
   instructor: string;
   searchTerm: string;
-  nodeAffinity?: string;
+  learningFormat: string[];
 }
 
 export const useSearchFilters = () => {
@@ -28,7 +28,7 @@ export const useSearchFilters = () => {
     sort: searchParams?.get('sort') || 'relevance',
     instructor: searchParams?.get('instructor') || '',
     searchTerm: searchParams?.get('q') || '',
-    nodeAffinity: searchParams?.get('affinity') || 'auto',
+    learningFormat: searchParams?.get('format')?.split(',').filter(Boolean) || [],
   });
 
   // Sync URL with state changes
@@ -56,8 +56,8 @@ export const useSearchFilters = () => {
     if (filters.searchTerm) {
       params.set('q', filters.searchTerm);
     }
-    if (filters.nodeAffinity && filters.nodeAffinity !== 'auto') {
-      params.set('affinity', filters.nodeAffinity);
+    if (filters.learningFormat && filters.learningFormat.length > 0) {
+      params.set('format', filters.learningFormat.join(','));
     }
 
     const newUrl = params.toString() ? `${pathname ?? ''}?${params.toString()}` : pathname ?? '/';
@@ -82,7 +82,7 @@ export const useSearchFilters = () => {
       sort: 'relevance',
       instructor: '',
       searchTerm: '',
-      nodeAffinity: 'auto',
+      learningFormat: [],
     });
   }, []);
 

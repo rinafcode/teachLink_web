@@ -1,8 +1,17 @@
 # Contributing to TeachLink Frontend
 
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
+
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
+
 Thanks for contributing to TeachLink.
 
+<!--
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
+
 ## Branching & workflow
+
+<!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 
 - **Do not push directly** to protected branches (`main`, `develop`).
 - Create a feature branch from `develop` (preferred) or `main`:
@@ -34,9 +43,11 @@ Your PR will be blocked from merging unless it meets the following:
 
    - All review conversations must be resolved before merge.
 
-5. **Issue must be referenced**
-   - PR description must reference a GitHub issue and include one of:
-     - `Close #<issue-number>` / `Closes #<issue-number>` / `Fixes #<issue-number>`
+5. 5. **Issue must be referenced**
+   - PR description must reference a GitHub issue and include one of the standard closing keywords:
+     - **Close variants:** `Close #<issue-number>`, `Closes #<issue-number>`, `Closed #<issue-number>`
+     - **Fix variants:** `Fix #<issue-number>`, `Fixes #<issue-number>`, `Fixed #<issue-number>`
+     - **Resolve variants:** `Resolve #<issue-number>`, `Resolves #<issue-number>`, `Resolved #<issue-number>`
 
 ## Local checks (run before pushing)
 

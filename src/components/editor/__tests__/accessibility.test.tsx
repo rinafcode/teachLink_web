@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { CollaborativeEditingTools } from '../CollaborativeEditingTools';
 import { MediaEmbedder } from '../MediaEmbedder';
 import { ContentTemplateLibrary } from '../ContentTemplateLibrary';
+import { MaterialEditorWrapper } from '../MaterialEditorWrapper';
 
 // ─── CollaborativeEditingTools ────────────────────────────────────────────────
 
@@ -79,6 +80,32 @@ describe('MediaEmbedder accessibility', () => {
     const errorEl = screen.getByRole('alert');
     expect(input).toHaveAttribute('aria-describedby', errorEl.id);
   });
+
+  it('offers an alt-text field for images and passes it to onAddImage', () => {
+    const onAddImage = vi.fn();
+    render(<MediaEmbedder onAddImage={onAddImage} onAddYoutube={noop} />);
+    fireEvent.click(screen.getByRole('button', { name: /add image/i }));
+
+    fireEvent.change(screen.getByLabelText(/image url/i), {
+      target: { value: 'https://example.com/photo.png' },
+    });
+    fireEvent.change(screen.getByLabelText(/alt text/i), {
+      target: { value: 'A screenshot of the dashboard' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /embed/i }));
+
+    expect(onAddImage).toHaveBeenCalledWith(
+      'https://example.com/photo.png',
+      'A screenshot of the dashboard',
+    );
+  });
+
+  it('does not show an alt-text field for YouTube embeds', () => {
+    render(<MediaEmbedder onAddImage={noop} onAddYoutube={noop} />);
+    fireEvent.click(screen.getByRole('button', { name: /add youtube video/i }));
+
+    expect(screen.queryByLabelText(/alt text/i)).not.toBeInTheDocument();
+  });
 });
 
 // ─── ContentTemplateLibrary ───────────────────────────────────────────────────
@@ -109,5 +136,38 @@ describe('ContentTemplateLibrary accessibility', () => {
     // Icon wrappers should carry aria-hidden="true"
     const hiddenEls = document.querySelectorAll('[aria-hidden="true"]');
     expect(hiddenEls.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── MaterialEditorWrapper ─────────────────────────────────────────────────────
+
+describe('MaterialEditorWrapper accessibility', () => {
+  it('marks the submit button aria-busy and announces status while submitting', async () => {
+    let resolveSubmit: () => void = () => {};
+    const onSubmit = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSubmit = resolve;
+        }),
+    );
+
+    render(
+      <MaterialEditorWrapper title="Post Editor" onSubmit={onSubmit}>
+        <div>content</div>
+      </MaterialEditorWrapper>,
+    );
+
+    const publishButton = screen.getByRole('button', { name: /publish/i });
+    expect(publishButton).toHaveAttribute('aria-busy', 'false');
+
+    fireEvent.click(publishButton);
+
+    expect(publishButton).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('status')).toHaveTextContent(/publish, please wait/i);
+
+    resolveSubmit();
+    await waitFor(() => {
+      expect(publishButton).toHaveAttribute('aria-busy', 'false');
+    });
   });
 });

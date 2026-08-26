@@ -1,5 +1,12 @@
 import type { BaseNotification, NotificationEvent } from './types';
 import { createLogger } from '@/lib/logging';
+import {
+  ConnectionSupervisor,
+  RawWebSocketTransport,
+  type ConnectionStatus,
+  registerSupervisor,
+} from '@/lib/realtime/connectionSupervisor';
+import { tokenManager } from '@/lib/auth/tokenManager';
 
 const logger = createLogger('notification-socket');
 
@@ -39,27 +46,37 @@ const DEFAULT_MAX_RECONNECT_DELAY = 30_000;
 const DEFAULT_MAX_RECONNECT_ATTEMPTS = 0;
 const DEFAULT_RECONNECT_JITTER = 0.2;
 
+/**
+ * Notification WebSocket service. The raw socket I/O lives in
+ * `RawWebSocketTransport`; the connect/reconnect/heartbeat/queue lifecycle is
+ * delegated to a `ConnectionSupervisor` so notifications share the same unified
+ * status shape, jittered backoff and bounded outbound queue as every other
+ * realtime transport in the app.
+ */
 export class NotificationSocketService {
-  private ws: WebSocket | null = null;
+  private readonly transport: RawWebSocketTransport;
+  private readonly supervisor: ConnectionSupervisor;
   private readonly listeners = new Set<NotificationListener>();
   private readonly connectionListeners = new Set<ConnectionStateListener>();
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private reconnectDelay: number;
-  private readonly initialReconnectDelay: number;
-  private readonly maxReconnectDelay: number;
-  private readonly maxReconnectAttempts: number;
-  private readonly reconnectJitter: number;
   private intentionallyClosed = false;
-  private reconnectAttempts = 0;
   private connectionState: NotificationSocketConnectionState = {
     status: 'idle',
     reconnectAttempts: 0,
   };
-  private readonly outboundQueue: OutboundMessage[] = [];
+  private readonly authUnsubscribers: Array<() => void> = [];
+  private readonly handleTokenRotated = ({ accessToken }: { accessToken: string }) => {
+    // Re-authenticate through the supervisor's queue so a rotated token keeps
+    // the connection valid (flushed immediately when connected, queued if not).
+    this.supervisor.send({ event: 'authenticate', payload: { token: accessToken } });
+  };
+  private readonly handleTokenRevoked = () => {
+    // The session was revoked — tear the socket down so it cannot keep
+    // receiving notifications under a dead credential.
+    this.disconnect();
+  };
   private readonly handleOnline = () => {
-    if (!this.intentionallyClosed && !this.isOpen()) {
-      this.clearReconnectTimer();
-      this.open();
+    if (!this.intentionallyClosed) {
+      this.supervisor.reconnectNow();
     }
   };
   private readonly handleVisibilityChange = () => {
@@ -68,32 +85,33 @@ export class NotificationSocketService {
     }
   };
 
-  constructor(private readonly url: string, options: NotificationSocketOptions = {}) {
-    this.initialReconnectDelay = options.initialReconnectDelay ?? DEFAULT_INITIAL_RECONNECT_DELAY;
-    this.maxReconnectDelay = options.maxReconnectDelay ?? DEFAULT_MAX_RECONNECT_DELAY;
-    this.maxReconnectAttempts = options.maxReconnectAttempts ?? DEFAULT_MAX_RECONNECT_ATTEMPTS;
-    this.reconnectJitter = options.reconnectJitter ?? DEFAULT_RECONNECT_JITTER;
-    this.reconnectDelay = this.initialReconnectDelay;
+  constructor(url: string, options: NotificationSocketOptions = {}) {
+    this.transport = new RawWebSocketTransport(url);
+    this.supervisor = new ConnectionSupervisor(this.transport, {
+      initialReconnectDelayMs: options.initialReconnectDelay ?? DEFAULT_INITIAL_RECONNECT_DELAY,
+      maxReconnectDelayMs: options.maxReconnectDelay ?? DEFAULT_MAX_RECONNECT_DELAY,
+      maxReconnectAttempts: options.maxReconnectAttempts ?? DEFAULT_MAX_RECONNECT_ATTEMPTS,
+      reconnectJitter: options.reconnectJitter ?? DEFAULT_RECONNECT_JITTER,
+    });
+    this.transport.onMessage((payload) => this.handleIncoming(payload));
+    this.supervisor.onStatusChange((status) => {
+      this.updateConnectionState(this.mapSupervisorStatus(status));
+    });
+    registerSupervisor('notifications', this.supervisor);
   }
 
   connect(): void {
     this.intentionallyClosed = false;
     this.registerNetworkListeners();
-    this.open();
+    this.registerAuthListeners();
+    this.supervisor.connect();
   }
 
   disconnect(): void {
     this.intentionallyClosed = true;
     this.unregisterNetworkListeners();
-    this.clearReconnectTimer();
-    this.ws?.close();
-    this.ws = null;
-    this.outboundQueue.length = 0;
-    this.updateConnectionState({
-      status: 'disconnected',
-      reconnectAttempts: 0,
-      lastError: undefined,
-    });
+    this.unregisterAuthListeners();
+    this.supervisor.disconnect();
   }
 
   subscribe(listener: NotificationListener): () => void {
@@ -111,147 +129,51 @@ export class NotificationSocketService {
     return this.connectionState;
   }
 
+  /** Send an outbound message through the supervisor's bounded, ordered queue. */
   send(event: NotificationEventType, payload: unknown): void {
     const message: OutboundMessage = { event, payload };
-
-    if (this.isOpen()) {
-      this.ws?.send(JSON.stringify({ event, payload }));
-      return;
-    }
-
-    this.outboundQueue.push(message);
+    this.supervisor.send(message);
   }
 
-  private open(): void {
-    if (this.ws || this.intentionallyClosed) {
-      return;
-    }
-
-    if (this.hasReachedMaxAttempts()) {
-      this.updateConnectionState({
-        status: 'disconnected',
-        reconnectAttempts: this.reconnectAttempts,
-        lastError: `Max reconnection attempts (${this.maxReconnectAttempts}) reached`,
-      });
-      return;
-    }
-
+  private handleIncoming(payload: unknown): void {
     try {
-      this.updateConnectionState({
-        status: this.reconnectAttempts > 0 ? 'reconnecting' : 'connecting',
-        reconnectAttempts: this.reconnectAttempts,
-      });
+      const data = JSON.parse(payload as string) as NotificationEvent;
+      if (data.event === 'notification') {
+        const notification = data.payload as BaseNotification;
+        notification.timestamp = new Date(notification.timestamp);
+        this.listeners.forEach((listener) => listener(notification));
+      }
+    } catch {
+      logger.warn('[NotificationSocket] Failed to parse message', { data: payload });
+    }
+  }
 
-      this.ws = new WebSocket(this.url);
-
-      this.ws.onopen = () => {
-        this.reconnectDelay = this.initialReconnectDelay;
-        this.reconnectAttempts = 0;
-        this.updateConnectionState({
+  private mapSupervisorStatus(status: ConnectionStatus): NotificationSocketConnectionState {
+    switch (status.phase) {
+      case 'idle':
+        return { status: 'idle', reconnectAttempts: status.reconnectAttempts };
+      case 'connecting':
+        return {
+          status: status.reconnectAttempts > 0 ? 'reconnecting' : 'connecting',
+          reconnectAttempts: status.reconnectAttempts,
+        };
+      case 'reconnecting':
+        return { status: 'reconnecting', reconnectAttempts: status.reconnectAttempts };
+      case 'connected':
+        return {
           status: 'connected',
           reconnectAttempts: 0,
-          lastConnectedAt: new Date(),
+          lastConnectedAt: status.lastConnectedAt,
           lastError: undefined,
-        });
-        this.flushOutboundQueue();
-      };
-
-      this.ws.onmessage = (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data as string) as NotificationEvent;
-          if (data.event === 'notification') {
-            const notification = data.payload as BaseNotification;
-            notification.timestamp = new Date(notification.timestamp);
-            this.listeners.forEach((listener) => listener(notification));
-          }
-        } catch {
-          logger.warn('[NotificationSocket] Failed to parse message', { data: event.data });
-        }
-      };
-
-      this.ws.onclose = () => {
-        this.ws = null;
-        if (!this.intentionallyClosed) {
-          this.updateConnectionState({
-            status: 'disconnected',
-            reconnectAttempts: this.reconnectAttempts,
-          });
-          this.scheduleReconnect();
-        }
-      };
-
-      this.ws.onerror = () => {
-        this.updateConnectionState({
+        };
+      case 'disconnected':
+      case 'offline':
+        return {
           status: 'disconnected',
-          reconnectAttempts: this.reconnectAttempts,
-          lastError: 'WebSocket connection error',
-        });
-        this.ws?.close();
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to open WebSocket';
-      logger.error('[NotificationSocket] Failed to open', { error });
-      this.updateConnectionState({
-        status: 'disconnected',
-        reconnectAttempts: this.reconnectAttempts,
-        lastError: message,
-      });
-      this.scheduleReconnect();
+          reconnectAttempts: status.reconnectAttempts,
+          lastError: status.lastError,
+        };
     }
-  }
-
-  private scheduleReconnect(): void {
-    if (this.intentionallyClosed || this.reconnectTimer || this.hasReachedMaxAttempts()) {
-      return;
-    }
-
-    this.reconnectAttempts += 1;
-    const delay = this.getReconnectDelay();
-
-    this.updateConnectionState({
-      status: 'reconnecting',
-      reconnectAttempts: this.reconnectAttempts,
-    });
-
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      this.open();
-      this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
-    }, delay);
-  }
-
-  private getReconnectDelay(): number {
-    const jitterRange = this.reconnectDelay * this.reconnectJitter;
-    const jitter = (Math.random() * 2 - 1) * jitterRange;
-    return Math.max(0, Math.round(this.reconnectDelay + jitter));
-  }
-
-  private clearReconnectTimer(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-  }
-
-  private flushOutboundQueue(): void {
-    if (!this.isOpen() || this.outboundQueue.length === 0) {
-      return;
-    }
-
-    const queuedMessages = [...this.outboundQueue];
-    this.outboundQueue.length = 0;
-
-    queuedMessages.forEach(({ event, payload }) => {
-      this.ws?.send(JSON.stringify({ event, payload }));
-    });
-  }
-
-  private isOpen(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN;
-  }
-
-  private hasReachedMaxAttempts(): boolean {
-    return this.maxReconnectAttempts > 0 && this.reconnectAttempts >= this.maxReconnectAttempts;
   }
 
   private updateConnectionState(updates: Partial<NotificationSocketConnectionState>): void {
@@ -261,6 +183,21 @@ export class NotificationSocketService {
       reconnectAttempts: updates.reconnectAttempts ?? this.connectionState.reconnectAttempts,
     };
     this.connectionListeners.forEach((listener) => listener(this.connectionState));
+  }
+
+  private registerAuthListeners(): void {
+    if (this.authUnsubscribers.length > 0) {
+      return;
+    }
+    this.authUnsubscribers.push(
+      tokenManager.on('token:rotated', this.handleTokenRotated),
+      tokenManager.on('token:revoked', this.handleTokenRevoked),
+    );
+  }
+
+  private unregisterAuthListeners(): void {
+    this.authUnsubscribers.forEach((off) => off());
+    this.authUnsubscribers.length = 0;
   }
 
   private registerNetworkListeners(): void {

@@ -170,11 +170,15 @@ All components automatically support dark mode through Tailwind CSS.
 ### Format Numbers
 
 ```tsx
-import { formatNumber, formatPercentage } from '@/utils/visualizationUtils';
+import { formatNumberCompact, formatPercentage } from '@/utils/visualizationUtils';
 
-formatNumber(1500); // "1.5K"
-formatNumber(1500000); // "1.5M"
+formatNumberCompact(1500); // "1.5K"
+formatNumberCompact(1500000); // "1.5M"
 formatPercentage(45.67); // "45.7%"
+
+// For locale-aware formatting, use i18nUtils.formatNumber
+import { formatNumber } from '@/utils/i18nUtils';
+formatNumber(1500, 'en-US'); // "1,500"
 ```
 
 ### Calculate Statistics

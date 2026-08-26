@@ -59,7 +59,7 @@ describe('TipForm', () => {
     const { user } = render(<TipForm recipient={recipient} />);
     await user.type(screen.getByTestId('tip-amount-input'), '0.05');
     await user.click(screen.getByTestId('tip-submit'));
-    await waitFor(() => expect(screen.getByTestId('success-msg')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Tip sent successfully!/i)).toBeInTheDocument());
   });
 
   it('shows error message when tip transaction fails', async () => {

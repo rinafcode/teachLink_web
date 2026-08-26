@@ -1,7 +1,10 @@
 # Zoom Integration Performance Monitoring
 
 This document details the Zoom Integration Performance Monitoring feature implemented in the TeachLink platform.
-
+<!-- 
+The production notification system stores durable notification data on a Kubernetes
+PersistentVolumeClaim so pod restarts do not discard queued or cached notification
+state. -->
 ## Overview
 
 The Zoom Integration Performance Monitoring tracks real-time performance metrics of the Zoom Web Client SDK and REST API. This system allows administrators to proactively identify connection degradation, API outages, and SDK load issues that affect live online classes.

@@ -50,6 +50,17 @@ describe('tipService', () => {
     );
   });
 
+  it('uses the fallback message when the API error payload is not a string', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: { detail: 'Bad request' } }),
+    });
+
+    await expect(sendTip({ recipientId: 'user-99', amount: 0.05 })).rejects.toThrow(
+      'Unable to send tip.',
+    );
+  });
+
   it('throws when the API returns an error', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,

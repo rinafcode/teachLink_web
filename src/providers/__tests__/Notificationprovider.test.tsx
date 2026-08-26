@@ -99,7 +99,7 @@ describe('NotificationProvider', () => {
     expect(result.current.connectionState.status).toBe('reconnecting');
 
     act(() => {
-      vi.advanceTimersByTime(1_000);
+      vi.advanceTimersByTime(2_000);
     });
 
     expect(result.current.connectionState.status).toBe('reconnecting');

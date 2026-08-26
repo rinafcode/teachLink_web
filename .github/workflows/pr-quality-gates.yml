@@ -18,9 +18,9 @@ jobs:
         with:
           script: |
             const body = context.payload.pull_request?.body || '';
-            // Accept common keywords: close/closes/closed/fix/fixes/fixed/resolve/resolves/resolved
-            // Require a github issue reference like: "Closes #123"
-            const re = /(close[sd]?|fix(e[sd])?|resolve[sd]?)\s+#\d+/i;
+            // Accept common keywords: close, closes, closed, fix, fixes, fixed, resolve, resolves, resolved
+            // Require a GitHub issue reference like: "Closes #123"
+            const re = /(close[sd]?|fix(ed|es)?|resolve[sd]?)\s+#\d+/i;
             if (!re.test(body)) {
               core.setFailed('PR description must reference an issue using e.g. "Closes #123".');
             }

@@ -16,6 +16,7 @@ import {
   getCulturalPreferences,
   formatDate as formatDateUtil,
   formatRelativeTime,
+  preloadDateFnsLocale,
   formatNumber as formatNumberUtil,
   formatCurrency as formatCurrencyUtil,
   formatPercentage,
@@ -74,6 +75,10 @@ export function I18nProvider({
         void i18n.changeLanguage(language);
       });
     }
+  }, [language]);
+
+  useEffect(() => {
+    void preloadDateFnsLocale(language);
   }, [language]);
 
   // Load translations when language changes

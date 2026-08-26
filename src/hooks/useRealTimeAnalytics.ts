@@ -1,4 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import {
+  ConnectionSupervisor,
+  LocalRealtimeTransport,
+  registerSupervisor,
+} from '@/lib/realtime/connectionSupervisor';
+import { useRealtimeConnection } from './useRealtimeConnection';
 
 export interface AnalyticsDataPoint {
   timestamp: string;
@@ -6,15 +12,20 @@ export interface AnalyticsDataPoint {
   category?: string;
 }
 
+const ANALYTICS_CONNECTION = 'real-time-analytics';
+
 export const useRealTimeAnalytics = (initialData: AnalyticsDataPoint[] = []) => {
   const [data, setData] = useState<AnalyticsDataPoint[]>(initialData);
-  const [isConnected, setIsConnected] = useState(false);
+  const connection = useRealtimeConnection(ANALYTICS_CONNECTION);
 
-  // In a real application, this would connect to a real WebSocket endpoint
-  // For the sake of this frontend implementation, we simulate the WebSocket stream
+  // The analytics stream is simulated client-side; the supervisor is registered
+  // with a locally-open transport so consumers observe the same unified
+  // connection status shape as every other realtime hook.
   useEffect(() => {
-    // Simulate WebSocket connection
-    setIsConnected(true);
+    const transport = new LocalRealtimeTransport();
+    const supervisor = new ConnectionSupervisor(transport, { manageReconnect: false });
+    const unregister = registerSupervisor(ANALYTICS_CONNECTION, supervisor);
+    supervisor.connect();
 
     const interval = setInterval(() => {
       setData((prevData) => {
@@ -32,7 +43,8 @@ export const useRealTimeAnalytics = (initialData: AnalyticsDataPoint[] = []) => 
 
     return () => {
       clearInterval(interval);
-      setIsConnected(false);
+      unregister();
+      supervisor.disconnect();
     };
   }, []);
 
@@ -40,5 +52,5 @@ export const useRealTimeAnalytics = (initialData: AnalyticsDataPoint[] = []) => 
     setData((prev) => [...prev, point]);
   }, []);
 
-  return { data, isConnected, addDataPoint };
+  return { data, isConnected: connection.isConnected, connection, addDataPoint };
 };

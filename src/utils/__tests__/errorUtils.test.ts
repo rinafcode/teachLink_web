@@ -234,24 +234,22 @@ describe('retryWithBackoff', () => {
 
   it('adds jitter to retry delays', async () => {
     const delays: number[] = [];
-    const fn = vi
-      .fn()
-      .mockImplementation(() => {
-        const start = Date.now();
-        return new Promise((_, reject) => {
-          setTimeout(() => reject({ status: 500 }), 0);
-        }).then(() => {
-          delays.push(Date.now() - start);
-          throw new Error('should not reach here');
-        });
+    const fn = vi.fn().mockImplementation(() => {
+      const start = Date.now();
+      return new Promise((_, reject) => {
+        setTimeout(() => reject({ status: 500 }), 0);
+      }).then(() => {
+        delays.push(Date.now() - start);
+        throw new Error('should not reach here');
       });
+    });
 
     const retryPromise = retryWithBackoff(fn, {
       maxAttempts: 3,
       initialDelayMs: 100,
       jitterMs: 50,
     });
-    
+
     // Attach error handler immediately to avoid Unhandled Rejection warning
     const caughtPromise = retryPromise.catch((e) => e);
     await vi.runAllTimersAsync();
@@ -261,7 +259,7 @@ describe('retryWithBackoff', () => {
     // The base delay is 100ms, with up to 50ms jitter
     // So delays should be in range [100, 150] for first retry
     expect(delays.length).toBeGreaterThan(0);
-    delays.forEach(delay => {
+    delays.forEach((delay) => {
       expect(delay).toBeGreaterThanOrEqual(100);
       expect(delay).toBeLessThanOrEqual(150);
     });
@@ -269,32 +267,30 @@ describe('retryWithBackoff', () => {
 
   it('consecutive retry calls produce different delays with jitter', async () => {
     const callDelays: number[][] = [];
-    
+
     // Simulate multiple concurrent retry calls
     const promises = Array.from({ length: 10 }, async () => {
       const delays: number[] = [];
-      const fn = vi
-        .fn()
-        .mockImplementation(() => {
-          const start = Date.now();
-          return new Promise((_, reject) => {
-            setTimeout(() => reject({ status: 500 }), 0);
-          }).then(() => {
-            delays.push(Date.now() - start);
-            throw new Error('should not reach here');
-          });
+      const fn = vi.fn().mockImplementation(() => {
+        const start = Date.now();
+        return new Promise((_, reject) => {
+          setTimeout(() => reject({ status: 500 }), 0);
+        }).then(() => {
+          delays.push(Date.now() - start);
+          throw new Error('should not reach here');
         });
+      });
 
       const retryPromise = retryWithBackoff(fn, {
         maxAttempts: 2,
         initialDelayMs: 100,
         jitterMs: 50,
       });
-      
+
       const caughtPromise = retryPromise.catch((e) => e);
       await vi.runAllTimersAsync();
       await caughtPromise;
-      
+
       return delays;
     });
 
@@ -302,8 +298,8 @@ describe('retryWithBackoff', () => {
     callDelays.push(...allDelays);
 
     // Extract first retry delay from each call
-    const firstRetryDelays = callDelays.map(d => d[0]).filter(d => d !== undefined);
-    
+    const firstRetryDelays = callDelays.map((d) => d[0]).filter((d) => d !== undefined);
+
     // With jitter, not all delays should be identical
     // At least some should differ
     const uniqueDelays = new Set(firstRetryDelays);
@@ -323,7 +319,7 @@ describe('retryWithBackoff', () => {
       maxDelayMs: 150,
       jitterMs: 1000, // Large jitter to test maxDelay constraint
     });
-    
+
     await vi.runAllTimersAsync();
     expect(await promise).toBe('success');
     expect(fn).toHaveBeenCalledTimes(3);
@@ -331,13 +327,13 @@ describe('retryWithBackoff', () => {
 
   it('jitterMs is configurable with default of 500ms', async () => {
     const fn = vi.fn().mockResolvedValue('ok');
-    
+
     // Test with default jitter
     await retryWithBackoff(fn, { maxAttempts: 1 });
-    
+
     // Test with custom jitter
     await retryWithBackoff(fn, { maxAttempts: 1, jitterMs: 200 });
-    
+
     expect(fn).toHaveBeenCalledTimes(2);
   });
 });

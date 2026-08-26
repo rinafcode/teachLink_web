@@ -4,7 +4,6 @@ import { vi } from 'vitest';
 import { Modal, ModalSize } from '../Modal';
 
 vi.mock('@/hooks/useAccessibility', () => ({
-  useFocusTrap: () => ({ current: null }),
   useScreenReaderAnnouncement: () => vi.fn(),
 }));
 
@@ -32,25 +31,28 @@ describe('Modal', () => {
     expect(screen.getByText('Content')).toBeInTheDocument();
   });
 
-  it('calls onClose when backdrop is clicked', () => {
+  it('calls onClose("backdrop") when backdrop is clicked', () => {
     const onClose = vi.fn();
     render(<Modal {...defaultProps} onClose={onClose} />);
     fireEvent.click(screen.getByRole('dialog').previousElementSibling!);
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledWith('backdrop');
   });
 
-  it('calls onClose when Escape is pressed', () => {
+  it('calls onClose("escape") when Escape is pressed', () => {
     const onClose = vi.fn();
     render(<Modal {...defaultProps} onClose={onClose} />);
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledWith('escape');
   });
 
-  it('calls onClose when close button is clicked', () => {
+  it('calls onClose("button") when close button is clicked', () => {
     const onClose = vi.fn();
     render(<Modal {...defaultProps} onClose={onClose} />);
     fireEvent.click(screen.getByLabelText('Close dialog'));
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledWith('button');
   });
 
   describe('size classes', () => {
@@ -78,5 +80,42 @@ describe('Modal', () => {
     const panel = getPanel();
     expect(panel).toHaveClass('max-w-lg');
     expect(panel).toHaveClass('my-custom-class');
+  });
+});
+
+describe('Modal – focus behaviours', () => {
+  it('keeps focus inside the dialog and returns it to the trigger on close', () => {
+    const Wrapper = () => {
+      const [open, setOpen] = React.useState(false);
+      return (
+        <>
+          <button id="trigger" onClick={() => setOpen(true)}>
+            Open
+          </button>
+          <Modal isOpen={open} onClose={() => setOpen(false)} title="Focus test">
+            <button type="button">Last dialog action</button>
+          </Modal>
+        </>
+      );
+    };
+
+    render(<Wrapper />);
+    const trigger = screen.getByText('Open');
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const closeButton = screen.getByLabelText('Close dialog');
+    const lastAction = screen.getByRole('button', { name: 'Last dialog action' });
+    expect(document.activeElement).toBe(closeButton);
+
+    lastAction.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(closeButton);
+
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(lastAction);
+
+    fireEvent.click(closeButton);
+    expect(document.activeElement).toBe(trigger);
   });
 });

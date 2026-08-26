@@ -38,6 +38,7 @@ export function parseApiError(error: unknown): ErrorInfo {
       timestamp: now,
       retryable: error.statusCode ? error.statusCode >= 500 : true,
       userMessage: error.userMessage,
+      details: error.errors ? { validationErrors: error.errors } : undefined,
     };
   }
 
@@ -51,12 +52,18 @@ export function parseApiError(error: unknown): ErrorInfo {
   };
 }
 
+export type ApiFieldError = {
+  field: string;
+  message: string;
+};
+
 export class ApiError extends Error {
   constructor(
     public readonly type: ErrorType,
     message: string,
     public readonly userMessage: string,
     public readonly statusCode?: number,
+    public readonly errors?: ApiFieldError[],
   ) {
     super(message);
     this.name = 'ApiError';

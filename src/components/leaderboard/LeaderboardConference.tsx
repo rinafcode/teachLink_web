@@ -246,9 +246,7 @@ export function LeaderboardConference({
                 </span>
                 <button
                   type="button"
-                  onClick={() =>
-                    setActiveConference(activeConference?.id === conf.id ? null : conf)
-                  }
+                  onClick={() => handleJoinConference(conf)}
                   className={`rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${
                     activeConference?.id === conf.id
                       ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400'

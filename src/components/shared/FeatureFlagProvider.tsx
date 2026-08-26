@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useCallback, useMemo, useState } from 'react';
 import { getAllFlags, type FeatureFlag } from '@/lib/featureFlags';
 import { Settings, X } from 'lucide-react';
 
@@ -14,10 +14,12 @@ const FeatureFlagContext = createContext<{
 export function FeatureFlagProvider({ children }: { children: React.ReactNode }) {
   const [flags, setFlags] = useState<FlagState>(getAllFlags);
 
-  const toggle = (flag: FeatureFlag) => setFlags((prev) => ({ ...prev, [flag]: !prev[flag] }));
+  const toggle = useCallback((flag: FeatureFlag) => setFlags((prev) => ({ ...prev, [flag]: !prev[flag] })), []);
+
+  const value = useMemo(() => ({ flags, toggle }), [flags, toggle]);
 
   return (
-    <FeatureFlagContext.Provider value={{ flags, toggle }}>
+    <FeatureFlagContext.Provider value={value}>
       {children}
       {process.env.NODE_ENV === 'development' && (
         <FeatureFlagAdminPanel flags={flags} toggle={toggle} />
