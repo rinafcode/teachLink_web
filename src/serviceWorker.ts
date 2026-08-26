@@ -6,6 +6,7 @@ import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
 import { BackgroundSyncPlugin } from 'workbox-background-sync';
+import { isObsoleteCacheName, versionedCacheName } from '@/utils/swCacheVersion';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -33,12 +34,12 @@ registerRoute(
     try {
       const response = await fetch(offlineFallbackPage);
       if (response) {
-        const cache = await caches.open('offline-fallback');
+        const cache = await caches.open(versionedCacheName('offline-fallback'));
         await cache.put(offlineFallbackPage, response.clone());
         return response;
       }
     } catch {
-      const cache = await caches.open('offline-fallback');
+      const cache = await caches.open(versionedCacheName('offline-fallback'));
       const cachedResponse = await cache.match(offlineFallbackPage);
       if (cachedResponse) return cachedResponse;
     }
@@ -50,7 +51,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.js'),
   new StaleWhileRevalidate({
-    cacheName: 'static-js',
+    cacheName: versionedCacheName('static-js'),
     plugins: [
       new ExpirationPlugin({
         maxEntries: 50,
@@ -63,7 +64,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.css'),
   new StaleWhileRevalidate({
-    cacheName: 'static-css',
+    cacheName: versionedCacheName('static-css'),
     plugins: [
       new ExpirationPlugin({
         maxEntries: 50,
@@ -77,7 +78,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.png'),
   new CacheFirst({
-    cacheName: 'images',
+    cacheName: versionedCacheName('images'),
     plugins: [new ExpirationPlugin({ maxEntries: 50 })],
   }),
 );
@@ -86,7 +87,7 @@ registerRoute(
   ({ url }) =>
     url.origin === self.location.origin && url.pathname.match(/\.(jpg|jpeg|svg|gif|webp)$/),
   new CacheFirst({
-    cacheName: 'images-ext',
+    cacheName: versionedCacheName('images-ext'),
     plugins: [new ExpirationPlugin({ maxEntries: 100 })],
   }),
 );
@@ -98,7 +99,7 @@ registerRoute(
     url.hostname === 'thumbs.dreamstime.com' ||
     url.hostname === 'static.vecteezy.com',
   new StaleWhileRevalidate({
-    cacheName: 'external-images',
+    cacheName: versionedCacheName('external-images'),
     plugins: [
       new ExpirationPlugin({
         maxEntries: 100,
@@ -213,7 +214,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/'),
   new NetworkFirst({
-    cacheName: 'api-responses',
+    cacheName: versionedCacheName('api-responses'),
     plugins: [
       new ExpirationPlugin({
         maxEntries: 50,
@@ -227,7 +228,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.pathname.match(/\.(woff2?|ttf|otf|eot)$/),
   new CacheFirst({
-    cacheName: 'fonts',
+    cacheName: versionedCacheName('fonts'),
     plugins: [
       new ExpirationPlugin({
         maxEntries: 20,
@@ -254,8 +255,17 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    Promise.resolve().then(() => {
-      clientsClaim();
-    }),
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => isObsoleteCacheName(key))
+            .map((key) => caches.delete(key)),
+        ),
+      )
+      .then(() => {
+        clientsClaim();
+      }),
   );
 });
