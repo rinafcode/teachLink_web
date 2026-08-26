@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AccessibleLoading } from '@/app/components/accessibility/ScreenReaderOptimizer'; // reuse existing loading component
+import { AudioWaveform } from './AudioWaveform';
 
 export interface AudioPlayerProps {
   /** URL of the audio source */
@@ -9,6 +10,8 @@ export interface AudioPlayerProps {
   autoPlay?: boolean;
   /** Show native controls */
   controls?: boolean;
+  /** Show a live frequency-bar waveform above the native controls */
+  showWaveform?: boolean;
   /** Additional class names for wrapper */
   className?: string;
 }
@@ -23,11 +26,13 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   src,
   autoPlay = false,
   controls = true,
+  showWaveform = true,
   className = '',
 }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   // Reset state when source changes
   useEffect(() => {
@@ -57,6 +62,23 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('stalled', handleStalled);
       audio.removeEventListener('error', handleError);
+    };
+  }, [src]);
+
+  // Track play/pause state so the waveform animation only runs while audible.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handlePlay = () => setIsPlaying(true);
+    const handlePauseOrEnd = () => setIsPlaying(false);
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePauseOrEnd);
+    audio.addEventListener('ended', handlePauseOrEnd);
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePauseOrEnd);
+      audio.removeEventListener('ended', handlePauseOrEnd);
     };
   }, [src]);
 
@@ -117,6 +139,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {showWaveform && !hasError && (
+        <AudioWaveform audioRef={audioRef} isPlaying={isPlaying} className="mb-1" />
+      )}
 
       {/* Native audio element – always present but hidden behind the loader */}
       <audio
