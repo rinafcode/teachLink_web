@@ -35,6 +35,22 @@ export interface ChunkSecurityMetadata {
   trustLevel: TrustLevel;
 }
 
+export interface SecurityRule {
+  id: string;
+  weight: number;
+  evaluate: (
+    chunk: BundleChunk,
+    metadata: ChunkSecurityMetadata,
+    policy: ChunkSecurityPolicy,
+  ) => string | undefined;
+}
+
+export interface ScoredSecurityAudit {
+  score: number;
+  violations: string[];
+  matchedRules: string[];
+}
+
 const DEFAULT_POLICY: ChunkSecurityPolicy = {
   requiredIntegrity: true,
   maxSize: 500, // KB
@@ -50,6 +66,51 @@ const TRUST_RANK: Record<TrustLevel, number> = {
   verified: 1,
   untrusted: 2,
 };
+
+const SECURITY_RULES: SecurityRule[] = [
+  {
+    id: 'integrity',
+    weight: 30,
+    evaluate: (chunk, metadata, policy) =>
+      policy.requiredIntegrity && !(metadata.integrity?.trim() ?? '')
+        ? `Chunk "${chunk.name}" is missing SRI integrity attribute.`
+        : undefined,
+  },
+  {
+    id: 'origin',
+    weight: 25,
+    evaluate: (chunk, metadata, policy) => {
+      if (!policy.allowedOrigins || policy.allowedOrigins.length === 0) return undefined;
+      const origin = metadata.origin?.trim() ?? '';
+      if (!origin) return `Chunk "${chunk.name}" has no declared origin.`;
+      if (!policy.allowedOrigins.some((pattern) => {
+        pattern.lastIndex = 0;
+        return pattern.test(origin);
+      })) {
+        return `Chunk "${chunk.name}" origin "${origin}" is not in the allow-list.`;
+      }
+      return undefined;
+    },
+  },
+  {
+    id: 'size',
+    weight: 20,
+    evaluate: (chunk, _metadata, policy) =>
+      typeof policy.maxSize === 'number' &&
+      typeof chunk.size === 'number' &&
+      chunk.size > policy.maxSize
+        ? `Chunk "${chunk.name}" size ${chunk.size}KB exceeds maximum ${policy.maxSize}KB.`
+        : undefined,
+  },
+  {
+    id: 'trust',
+    weight: 40,
+    evaluate: (chunk, metadata, policy) =>
+      TRUST_RANK[metadata.trustLevel] > TRUST_RANK[policy.trustLevel]
+        ? `Chunk "${chunk.name}" declared trust level "${metadata.trustLevel}" is below required "${policy.trustLevel}".`
+        : undefined,
+  },
+];
 
 /**
  * Holds the effective security policy for every registered chunk and
@@ -105,41 +166,34 @@ export class BundleSecurityContext {
    * Returns a list of human-readable violations (empty = compliant).
    */
   audit(chunk: BundleChunk): string[] {
+    return this.auditScored(chunk).violations;
+  }
+
+  auditScored(chunk: BundleChunk): ScoredSecurityAudit {
     const policy = this.getEffectivePolicy(chunk.id);
-    const meta = this.metadata.get(chunk.id) ?? { trustLevel: 'untrusted' as const };
+    const metadata = this.metadata.get(chunk.id) ?? { trustLevel: 'untrusted' as const };
     const violations: string[] = [];
+    const matchedRules: string[] = [];
 
-    if (policy.requiredIntegrity) {
-      const integrity = meta.integrity?.trim() ?? '';
-      if (integrity.length === 0) {
-        violations.push(`Chunk "${chunk.name}" is missing SRI integrity attribute.`);
+    for (const rule of SECURITY_RULES) {
+      const violation = rule.evaluate(chunk, metadata, policy);
+      if (violation) {
+        violations.push(violation);
+        matchedRules.push(rule.id);
       }
     }
 
-    if (policy.allowedOrigins && policy.allowedOrigins.length > 0) {
-      const origin = meta.origin?.trim() ?? '';
-      if (origin.length === 0) {
-        violations.push(`Chunk "${chunk.name}" has no declared origin.`);
-      } else if (!policy.allowedOrigins.some((re) => re.test(origin))) {
-        violations.push(`Chunk "${chunk.name}" origin "${origin}" is not in the allow-list.`);
-      }
-    }
-
-    if (typeof policy.maxSize === 'number' && typeof chunk.size === 'number') {
-      if (chunk.size > policy.maxSize) {
-        violations.push(
-          `Chunk "${chunk.name}" size ${chunk.size}KB exceeds maximum ${policy.maxSize}KB.`,
-        );
-      }
-    }
-
-    if (TRUST_RANK[meta.trustLevel] > TRUST_RANK[policy.trustLevel]) {
-      violations.push(
-        `Chunk "${chunk.name}" declared trust level "${meta.trustLevel}" is below required "${policy.trustLevel}".`,
-      );
-    }
-
-    return violations;
+    return {
+      violations,
+      matchedRules,
+      score: Math.min(
+        100,
+        matchedRules.reduce(
+          (total, ruleId) => total + (SECURITY_RULES.find((rule) => rule.id === ruleId)?.weight ?? 0),
+          0,
+        ),
+      ),
+    };
   }
 
   /**
