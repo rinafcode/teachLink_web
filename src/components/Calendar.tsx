@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, SlotInfo, Views } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addWeeks, addDays } from 'date-fns';
+import { format, parse, startOfWeek, getDay, addWeeks, addDays, addMonths } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import type { CalendarEvent } from '@/types/event';
@@ -16,7 +16,7 @@ const localizer = dateFnsLocalizer({
 });
 
 /** Expand a recurring event into instances within a 6-month window */
-function expandRecurring(event: CalendarEvent): CalendarEvent[] {
+export function expandRecurring(event: CalendarEvent): CalendarEvent[] {
   if (!event.recurring || !event.recurrenceRule) return [event];
 
   const instances: CalendarEvent[] = [event];
@@ -27,9 +27,14 @@ function expandRecurring(event: CalendarEvent): CalendarEvent[] {
   const freq = freqMatch?.[1] ?? 'WEEKLY';
 
   let current = event.start;
-  for (let i = 1; i < 52; i++) {
+  let i = 1;
+  while (true) {
     current =
-      freq === 'DAILY' ? addDays(current, 1) : addWeeks(current, freq === 'MONTHLY' ? 4 : 1);
+      freq === 'DAILY'
+        ? addDays(current, 1)
+        : freq === 'MONTHLY'
+          ? addMonths(current, 1)
+          : addWeeks(current, 1);
     if (current > windowEnd) break;
     instances.push({
       ...event,
@@ -37,6 +42,7 @@ function expandRecurring(event: CalendarEvent): CalendarEvent[] {
       start: current,
       end: new Date(current.getTime() + duration),
     });
+    i++;
   }
   return instances;
 }
