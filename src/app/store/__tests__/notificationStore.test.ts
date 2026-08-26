@@ -69,6 +69,30 @@ describe('notificationStore', () => {
     expect(stored[0].message).toBe('saved');
   });
 
+  it('rehydrates saved notifications from localStorage', async () => {
+    const saved = [
+      {
+        id: 'stored-1',
+        type: 'info',
+        title: 'Saved',
+        message: 'hydrated',
+        createdAt: '2024-01-02T03:04:05.000Z',
+        timestamp: '2024-01-02T03:04:05.000Z',
+        read: false,
+        meta: { source: 'storage' },
+      },
+    ];
+
+    localStorageMock.setItem('notifications_v1', JSON.stringify(saved));
+    useNotificationStore.setState({ notifications: [] });
+
+    await useNotificationStore.persist.rehydrate();
+
+    expect(useNotificationStore.getState().notifications).toHaveLength(1);
+    expect(useNotificationStore.getState().notifications[0].message).toBe('hydrated');
+    expect(useNotificationStore.getState().notifications[0].timestamp).toBeInstanceOf(Date);
+  });
+
   // ── markAsRead ─────────────────────────────────────────────────────────────
 
   it('marks a single notification as read', () => {
@@ -127,7 +151,39 @@ describe('notificationStore', () => {
     removeNotification(n.id);
 
     const stored = JSON.parse(localStorageMock.getItem('notifications_v1') ?? '[]');
-    expect(stored).toHaveLength(0);
+    expect(stored.state.notifications).toHaveLength(0);
+  });
+
+  it('rehydrates persisted notifications from localStorage', () => {
+    const timestamp = new Date('2024-01-01T00:00:00.000Z').toISOString();
+    const stored = {
+      state: {
+        notifications: [
+          {
+            id: 'stored-1',
+            type: 'info',
+            title: 'Stored',
+            message: 'Loaded from storage',
+            body: 'Body',
+            timestamp,
+            read: false,
+            createdAt: timestamp,
+            meta: {},
+          },
+        ],
+      },
+      version: 0,
+    };
+
+    localStorageMock.setItem('notifications_v1', JSON.stringify(stored));
+    useNotificationStore.setState({ notifications: [] });
+
+    useNotificationStore.persist.rehydrate();
+
+    const restored = useNotificationStore.getState().notifications;
+    expect(restored).toHaveLength(1);
+    expect(restored[0].timestamp).toBeInstanceOf(Date);
+    expect(restored[0].message).toBe('Loaded from storage');
   });
 
   it('is a no-op when id does not exist', () => {

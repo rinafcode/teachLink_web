@@ -42,6 +42,29 @@ interface NotificationState {
   clearRead: () => void;
 }
 
+function readStoredNotifications(): AppNotification[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw, dateReviver) as
+      | AppNotification[]
+      | { state?: { notifications?: AppNotification[] }; version?: number };
+
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && Array.isArray(parsed.state?.notifications)) return parsed.state.notifications;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export function hydrateNotifications() {
+  useNotificationStore.setState({ notifications: readStoredNotifications() });
+}
+
 /**
  * Subscribe to a focused slice of notification state instead of the entire store.
  */
@@ -49,7 +72,7 @@ export const useNotificationStoreSelector = <T>(selector: (state: NotificationSt
   useNotificationStore(selector);
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
-  notifications: load<AppNotification[]>(STORAGE_KEY, [], dateReviver),
+  notifications: [],
   addNotification: (n) => {
     const created = NotificationService.createNotification({
       message: n.message,
@@ -96,3 +119,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     save(STORAGE_KEY, next);
   },
 }));
+
+if (typeof window !== 'undefined') {
+  queueMicrotask(() => {
+    hydrateNotifications();
+  });
+}
