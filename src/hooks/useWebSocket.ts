@@ -50,26 +50,38 @@ export const useWebSocket = <TMessage>({
   const transportRef = useRef<RawWebSocketTransport | null>(null);
   const channelRef = useRef<BroadcastChannel | null>(null);
 
+  // Stabilize parse/serialize callbacks to prevent reconnect thrashing
+  const parseRef = useRef(parse);
+  const serializeRef = useRef(serialize);
+
+  useEffect(() => {
+    parseRef.current = parse;
+  }, [parse]);
+
+  useEffect(() => {
+    serializeRef.current = serialize;
+  }, [serialize]);
+
   const canUseWindow = typeof window !== 'undefined';
 
   const safeParse = useCallback(
     (raw: string): TMessage => {
-      if (parse) {
-        return parse(raw);
+      if (parseRef.current) {
+        return parseRef.current(raw);
       }
       return JSON.parse(raw) as TMessage;
     },
-    [parse],
+    [],
   );
 
   const safeSerialize = useCallback(
     (message: TMessage): string => {
-      if (serialize) {
-        return serialize(message);
+      if (serializeRef.current) {
+        return serializeRef.current(message);
       }
       return JSON.stringify(message);
     },
-    [serialize],
+    [],
   );
 
   const cleanup = useCallback(() => {
@@ -132,7 +144,7 @@ export const useWebSocket = <TMessage>({
     return () => {
       cleanup();
     };
-  }, [canUseWindow, cleanup, connectionName, enabled, localChannelKey, reconnectDelayMs, roomId, safeParse, url]);
+  }, [canUseWindow, cleanup, connectionName, enabled, localChannelKey, reconnectDelayMs, roomId, url]);
 
   const status: ConnectionStatus = parseFailed
     ? 'error'
