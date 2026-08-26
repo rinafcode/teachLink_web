@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const STORAGE_KEY = 'teachlink-keyboard-shortcuts-v1';
 
@@ -176,6 +176,10 @@ export function useKeyboardShortcuts(
     return new Map(commands.map((command) => [command.id, command.run]));
   }, [commands]);
 
+  // Keep a stable ref of shortcuts and command handlers to prevent listener re-subscription
+  const shortcutsRef = useRef<ShortcutDefinition[]>([]);
+  const commandMapRef = useRef(commandMap);
+
   const shortcuts = useMemo<ShortcutDefinition[]>(() => {
     return DEFAULT_SHORTCUTS.map((item) => ({
       ...item,
@@ -183,12 +187,18 @@ export function useKeyboardShortcuts(
     }));
   }, [customBindings]);
 
+  // Keep refs synchronized on every render
+  useEffect(() => {
+    shortcutsRef.current = shortcuts;
+    commandMapRef.current = commandMap;
+  }, [shortcuts, commandMap]);
+
   const runShortcutAction = useCallback(
     (id: ShortcutActionId) => {
-      const handler = commandMap.get(id);
+      const handler = commandMapRef.current.get(id);
       if (handler) handler();
     },
-    [commandMap],
+    [],
   );
 
   useEffect(() => {
@@ -198,7 +208,7 @@ export function useKeyboardShortcuts(
       if (isInputLike(event.target)) return;
       const pressed = eventToBinding(event);
 
-      const targetShortcut = shortcuts.find((shortcut) => {
+      const targetShortcut = shortcutsRef.current.find((shortcut: ShortcutDefinition) => {
         const candidates = resolveModBinding(shortcut.binding);
         return candidates.includes(pressed);
       });
@@ -206,17 +216,18 @@ export function useKeyboardShortcuts(
       if (!targetShortcut) return;
 
       event.preventDefault();
-      runShortcutAction(targetShortcut.id);
+      const handler = commandMapRef.current.get(targetShortcut.id);
+      if (handler) handler();
     };
 
     document.addEventListener('keydown', listener);
     return () => document.removeEventListener('keydown', listener);
-  }, [enabled, runShortcutAction, shortcuts]);
+  }, [enabled]);
 
   const setShortcutBinding = useCallback((id: ShortcutActionId, binding: string) => {
     const normalized = normalizeBinding(binding);
     if (!normalized) return;
-    setCustomBindings((prev) => {
+    setCustomBindings((prev: Partial<Record<ShortcutActionId, string>>) => {
       const next = { ...prev, [id]: normalized };
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -226,7 +237,7 @@ export function useKeyboardShortcuts(
   }, []);
 
   const resetShortcutBinding = useCallback((id: ShortcutActionId) => {
-    setCustomBindings((prev) => {
+    setCustomBindings((prev: Partial<Record<ShortcutActionId, string>>) => {
       const next = { ...prev };
       delete next[id];
       if (typeof window !== 'undefined') {
