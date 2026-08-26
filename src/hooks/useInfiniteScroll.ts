@@ -38,8 +38,17 @@ export function useInfiniteScroll({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
+  // Keep a ref in sync with the loading state so the observer callback can
+  // read the latest value without being listed as an effect dependency.
+  // This prevents the IntersectionObserver from being torn down and recreated
+  // on every loading transition.
+  const loadingRef = useRef(loading);
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+
   const runLoadMore = useCallback(async () => {
-    if (loading || !hasNextPage) return;
+    if (loadingRef.current || !hasNextPage) return;
 
     setLoading(true);
     setError(null);
@@ -51,7 +60,15 @@ export function useInfiniteScroll({
     } finally {
       setLoading(false);
     }
-  }, [loading, hasNextPage, onLoadMore]);
+  }, [hasNextPage, onLoadMore]);
+
+  // Keep a stable ref to runLoadMore so the observer effect does not need to
+  // list it as a dependency. The ref is updated on every render, meaning the
+  // callback inside the observer always calls the latest version.
+  const runLoadMoreRef = useRef(runLoadMore);
+  useEffect(() => {
+    runLoadMoreRef.current = runLoadMore;
+  });
 
   const loadMore = useCallback(() => {
     void runLoadMore();
@@ -64,8 +81,10 @@ export function useInfiniteScroll({
     const observer = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
-        if (first?.isIntersecting && !loading) {
-          void runLoadMore();
+        // Read loading from the ref — no need to list it as a dep, so the
+        // observer is never recreated just because loading flipped.
+        if (first?.isIntersecting && !loadingRef.current) {
+          void runLoadMoreRef.current();
         }
       },
       { threshold, rootMargin },
@@ -74,7 +93,8 @@ export function useInfiniteScroll({
     observer.observe(sentinel);
 
     return () => observer.disconnect();
-  }, [hasNextPage, loading, rootMargin, runLoadMore, threshold]);
+    // loading and runLoadMore intentionally omitted — accessed via refs above.
+  }, [hasNextPage, rootMargin, threshold]);
 
   return { sentinelRef, loading, error, loadMore };
 }
