@@ -10,6 +10,28 @@ import {
 } from '@/lib/graphql/subscriptions';
 import { createLogger } from '@/lib/logging';
 
+/**
+ * Deep equality comparison for variables to prevent unnecessary re-subscriptions
+ */
+function deepEqual(a: any, b: any): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (typeof a !== typeof b) return false;
+  if (typeof a !== 'object') return false;
+  
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  
+  if (keysA.length !== keysB.length) return false;
+  
+  for (const key of keysA) {
+    if (!keysB.includes(key)) return false;
+    if (!deepEqual(a[key], b[key])) return false;
+  }
+  
+  return true;
+}
+
 const logger = createLogger('use-subscription');
 
 export { ConnectionState, getConnectionManager, isConnectionError, formatSubscriptionError };
@@ -90,12 +112,42 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
 ): UseSubscriptionResult<TData> {
   const {
     skip = false,
-    onConnect,
-    onDisconnect,
-    onError,
-    onData,
     shouldResubscribe = true,
   } = options;
+
+  // Stabilize callbacks using refs to prevent unnecessary re-subscriptions
+  const onConnectRef = useRef(options.onConnect);
+  const onDisconnectRef = useRef(options.onDisconnect);
+  const onErrorRef = useRef(options.onError);
+  const onDataRef = useRef(options.onData);
+  
+  // Update refs when callbacks change
+  useEffect(() => {
+    onConnectRef.current = options.onConnect;
+  }, [options.onConnect]);
+  
+  useEffect(() => {
+    onDisconnectRef.current = options.onDisconnect;
+  }, [options.onDisconnect]);
+  
+  useEffect(() => {
+    onErrorRef.current = options.onError;
+  }, [options.onError]);
+  
+  useEffect(() => {
+    onDataRef.current = options.onData;
+  }, [options.onData]);
+
+  // Stabilize variables using ref and deep comparison
+  const variablesRef = useRef(options.variables);
+  const [variablesChanged, setVariablesChanged] = useState(false);
+  
+  useEffect(() => {
+    if (!deepEqual(variablesRef.current, options.variables)) {
+      variablesRef.current = options.variables;
+      setVariablesChanged(prev => !prev);
+    }
+  }, [options.variables]);
 
   const [data, setData] = useState<TData | undefined>();
   const [loading, setLoading] = useState(!skip);
@@ -114,12 +166,12 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
       setConnectionState(event.state);
 
       if (event.state === ConnectionState.CONNECTED) {
-        onConnect?.();
+        onConnectRef.current?.();
       } else if (event.state === ConnectionState.DISCONNECTED) {
-        onDisconnect?.();
+        onDisconnectRef.current?.();
       }
     },
-    [onConnect, onDisconnect],
+    [], // No dependencies since we use refs
   );
 
   /**
@@ -136,7 +188,7 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
 
       subscriptionRef.current = client.subscribe({
         query: subscription,
-        variables: options.variables,
+        variables: variablesRef.current,
       });
 
       unsubscribeRef.current = subscriptionRef.current.subscribe({
@@ -147,7 +199,7 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
           // Extract data from response
           const resultData = response.data;
           setData(resultData);
-          onData?.(resultData);
+          onDataRef.current?.(resultData);
         },
         error: (err: any) => {
           setLoading(false);
@@ -168,7 +220,7 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
             }
           }
 
-          onError?.(apolloError);
+          onErrorRef.current?.(apolloError);
         },
         complete: () => {
           setLoading(false);
@@ -183,9 +235,9 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
 
       setError(wrappedError);
       setLoading(false);
-      onError?.(wrappedError as any);
+      onErrorRef.current?.(wrappedError as any);
     }
-  }, [client, skip, subscription, options.variables, onData, onError, shouldResubscribe]);
+  }, [client, skip, subscription, shouldResubscribe]); // Remove unstable dependencies
 
   /**
    * Cleanup function
@@ -231,6 +283,14 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
     // Cleanup on unmount or when dependencies change
     return cleanup;
   }, [client, skip, executeSubscription, cleanup, handleConnectionStateChange]);
+
+  // Re-execute subscription when variables change
+  useEffect(() => {
+    if (!skip && client && variablesChanged) {
+      cleanup();
+      executeSubscription();
+    }
+  }, [variablesChanged, client, skip, cleanup, executeSubscription]);
 
   /**
    * Resubscribe to the subscription
