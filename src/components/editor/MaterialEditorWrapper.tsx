@@ -100,6 +100,7 @@ export const MaterialEditorWrapper = forwardRef<HTMLDivElement, MaterialEditorWr
             <button
               type="button"
               disabled={submitting}
+              aria-busy={submitting}
               onClick={handleSubmit}
               className="mde-button mde-button--filled relative overflow-hidden rounded-full bg-blue-600 px-5 py-2 text-sm font-medium uppercase tracking-wider text-white shadow transition hover:bg-blue-700 disabled:opacity-60"
             >
@@ -121,6 +122,9 @@ export const MaterialEditorWrapper = forwardRef<HTMLDivElement, MaterialEditorWr
             </button>
           ) : null}
         </footer>
+        <p role="status" aria-live="polite" className="sr-only">
+          {submitting ? `${submitLabel}, please wait…` : ''}
+        </p>
       </div>
     );
   },
