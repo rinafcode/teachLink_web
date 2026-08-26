@@ -13,8 +13,12 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": ".",
-    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "types": [
+      "react",
+      "react-dom",
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
     "plugins": [
       {
         "name": "next"
