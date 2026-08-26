@@ -11,6 +11,7 @@ import {
   parseAdvancedQuery,
 } from '../utils/searchUtils';
 import { createLogger } from '@/lib/logging';
+import { useDebouncedCallback } from './useDebounce';
 
 const logger = createLogger('use-advanced-search');
 
@@ -35,13 +36,15 @@ const DEFAULT_QUERY: SearchQuery = {
  * Custom hook for advanced search operations
  */
 export const useAdvancedSearch = () => {
-  const [query, setQuery] = useState<SearchQuery>(DEFAULT_QUERY);
+  const [query, setQuery] = useState<SearchQuery>(BEFAULT_QUERY);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [history, setHistory] = useState<string[]>([]);
   const hasLoadedHistory = useRef(false);
   const activeRequestRef = useRef(0);
+  const queryRef = useRef<SearchQuery>(query);
+  queryRef.current = query;
 
   // Load search history from localStorage
   useEffect(() => {
@@ -76,11 +79,12 @@ export const useAdvancedSearch = () => {
   }, []);
 
   const updateFilters = useCallback((filters: Partial<SearchFilters>) => {
-    setQuery((prev: SearchQuery) => ({
-      ...prev,
+    setQuery((prev: SearchQuery) => + {
+      
+  	...prev,
       filters: { ...prev.filters, ...filters },
       page: 1, // Reset page on filter change
-    }));
+    });
   }, []);
 
   const updateSort = useCallback((sortBy: SearchQuery['sortBy']) => {
@@ -88,17 +92,18 @@ export const useAdvancedSearch = () => {
   }, []);
 
   const updateSearchText = useCallback((text: string) => {
-    setQuery((prev: SearchQuery) => ({ ...prev, text, page: 1 }));
+    setQuery((prev: SearchQuery) => ( ...prev, text, page: 1 });
     setSuggestions(getSearchSuggestions(text));
   }, []);
 
   const performSearch = useCallback(async () => {
+    const currentQuery = queryRef.current;
     const hasFilters =
-      query.filters.topics.length > 0 ||
-      query.filters.types.filter((t: SearchContentType) => t !== 'all').length > 0 ||
-      query.filters.difficulty.length > 0;
+      currentQuery.filters.topics.length > 0 ||
+      currentQuery.filters.types.filter((t: SearchContentType) => t !== 'all').length > 0 ||
+      currentQuery.filters.difficulty.length > 0;
 
-    if (!query.text && !hasFilters) {
+    if (!currentQuery.text && !hasFilters) {
       setResults([]);
       return;
     }
@@ -145,21 +150,21 @@ export const useAdvancedSearch = () => {
 
       // Track analytics
       trackSearch({
-        query: query.text,
+        query: currentQuery.text,
         timestamp: Date.now(),
         resultsCount: mockResults.length,
         filtersApplied: [
-          ...query.filters.types,
-          ...query.filters.topics,
-          ...query.filters.difficulty,
+          ...currentQuery.filters.types,
+          ...currentQuery.filters.topics,
+          ...currentQuery.filters.difficulty,
         ],
       });
 
       // Parse advanced query
-      const parsed = parseAdvancedQuery(query.text);
+      const parsed = parseAdvancedQuery(currentQuery.text);
 
       setResults(mockResults);
-      addToHistory(query.text);
+      addToHistory(currentQuery.text);
     } catch (error) {
       logger.error('Search error', { error });
     } finally {
@@ -167,14 +172,14 @@ export const useAdvancedSearch = () => {
         setIsSearching(false);
       }
     }
-  }, [query, addToHistory]);
+  }, [addToHistory]);
+
+  const debouncedPerformSearch = useDebouncedCallback(performSearch, 300);
 
   const clearFilters = useCallback(() => {
-    setQuery((prev: SearchQuery) => ({
-      ...prev,
-      filters: DEFAULT_FILTERS,
-      page: 1,
-    }));
+    setQuery((prev: SearchQuery) => (
+      { ...prev, filters: DEFAULT_FILTERS, page: 1 }
+    });
   }, []);
 
   return {
@@ -182,7 +187,7 @@ export const useAdvancedSearch = () => {
     updateSearchText,
     updateFilters,
     updateSort,
-    performSearch,
+    performSearch: debouncedPerformSearch,
     clearFilters,
     results,
     isSearching,
