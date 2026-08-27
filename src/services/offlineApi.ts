@@ -45,7 +45,19 @@ export interface OfflineProgressSyncResponse {
   deduplicated?: boolean;
 }
 
+export interface LearningProgressUpdateResponse {
+  success: boolean;
+  message?: string;
+  data: OfflineProgressPayload;
+}
+
 export const offlineApi = {
+  updateLearningProgress: async (
+    progress: Pick<OfflineProgressPayload, 'courseId' | 'moduleId' | 'progress' | 'completed'>,
+  ): Promise<LearningProgressUpdateResponse> => {
+    return apiClient.post<LearningProgressUpdateResponse>('/api/user/progress', progress);
+  },
+
   syncLessonProgress: async (
     progress: OfflineProgressPayload,
   ): Promise<OfflineProgressSyncResponse> => {
