@@ -388,6 +388,45 @@ describe('ConnectionSupervisor', () => {
       expect(transport.sent).toEqual(['live']);
       expect(supervisor.getStatus().queuedCount).toBe(0);
     });
+
+    it('buffers messages across disconnects and flushes them on the next connect', () => {
+      const transport = new FakeTransport();
+      const supervisor = new ConnectionSupervisor(transport, {
+        reconnectJitter: 0,
+        queueLimit: 10,
+      });
+
+      supervisor.send('a');
+      supervisor.connect();
+      transport.simulateOpen();
+      expect(transport.sent).toEqual(['a']);
+
+      transport.simulateClose();
+      supervisor.send('b');
+      supervisor.send('c');
+      expect(supervisor.getStatus().queuedCount).toBe(2);
+
+      supervisor.connect();
+      transport.simulateOpen();
+      expect(transport.sent).toEqual(['a', 'b', 'c']);
+      expect(supervisor.getStatus().queuedCount).toBe(0);
+    });
+
+    it('drops incoming messages when the queue limit is zero', () => {
+      const transport = new FakeTransport();
+      const supervisor = new ConnectionSupervisor(transport, {
+        reconnectJitter: 0,
+        queueLimit: 0,
+      });
+
+      supervisor.send('a');
+      expect(supervisor.getStatus().queuedCount).toBe(0);
+      expect(hasMetric('queue_dropped')).toBe(true);
+
+      supervisor.connect();
+      transport.simulateOpen();
+      expect(transport.sent).toEqual([]);
+    });
   });
 
   describe('inbound sequence tracking and catch-up', () => {
