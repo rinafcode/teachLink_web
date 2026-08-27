@@ -28,6 +28,9 @@ export interface UseInfiniteScrollReturn {
   loadMore: () => void;
 }
 
+// Minimum interval between page loads to prevent duplicate requests.
+const THROTTLE_MS = 500;
+
 export function useInfiniteScroll({
   onLoadMore,
   hasNextPage,
@@ -35,21 +38,17 @@ export function useInfiniteScroll({
   rootMargin = '0px 0px 200px 0px',
 }: UseInfiniteScrollOptions): UseInfiniteScrollReturn {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingRef = useRef(false);
+  const lastLoadTimeRef = useRef(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
-  // Keep a ref in sync with the loading state so the observer callback can
-  // read the latest value without being listed as an effect dependency.
-  // This prevents the IntersectionObserver from being torn down and recreated
-  // on every loading transition.
-  const loadingRef = useRef(loading);
-  useEffect(() => {
-    loadingRef.current = loading;
-  }, [loading]);
-
   const runLoadMore = useCallback(async () => {
-    if (loadingRef.current || !hasNextPage) return;
+    const now = Date.now();
+    if (loadingRef.current || !hasNextPage || now - lastLoadTimeRef.current < THROTTLE_MS) return;
 
+    loadingRef.current = true;
+    lastLoadTimeRef.current = now;
     setLoading(true);
     setError(null);
 
@@ -58,17 +57,15 @@ export function useInfiniteScroll({
     } catch (err) {
       setError(err);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   }, [hasNextPage, onLoadMore]);
 
-  // Keep a stable ref to runLoadMore so the observer effect does not need to
-  // list it as a dependency. The ref is updated on every render, meaning the
-  // callback inside the observer always calls the latest version.
+  // Keep a ref in sync with the latest runLoadMore so the observer callback can
+  // always call the current version without being a dependency.
   const runLoadMoreRef = useRef(runLoadMore);
-  useEffect(() => {
-    runLoadMoreRef.current = runLoadMore;
-  });
+  useEffect(() { runLoadMoreRef.current = runLoadMore; });
 
   const loadMore = useCallback(() => {
     void runLoadMore();
@@ -81,8 +78,6 @@ export function useInfiniteScroll({
     const observer = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
-        // Read loading from the ref — no need to list it as a dep, so the
-        // observer is never recreated just because loading flipped.
         if (first?.isIntersecting && !loadingRef.current) {
           void runLoadMoreRef.current();
         }
@@ -93,7 +88,6 @@ export function useInfiniteScroll({
     observer.observe(sentinel);
 
     return () => observer.disconnect();
-    // loading and runLoadMore intentionally omitted — accessed via refs above.
   }, [hasNextPage, rootMargin, threshold]);
 
   return { sentinelRef, loading, error, loadMore };
