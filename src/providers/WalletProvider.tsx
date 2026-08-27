@@ -3,6 +3,7 @@
 import React, {
   createContext,
   useContext,
+  useMemo,
   useState,
   useCallback,
   useEffect,
@@ -155,12 +156,15 @@ export function WalletProvider({ children }: WalletProviderProps) {
     }
   }, [state.isConnected]);
 
-  const value: WalletContextType = {
-    ...state,
-    connect,
-    disconnect,
-    clearError,
-  };
+  const value = useMemo<WalletContextType>(
+    () => ({
+      ...state,
+      connect,
+      disconnect,
+      clearError,
+    }),
+    [state, connect, disconnect, clearError],
+  );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
