@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useRef, useState } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFocusTrap } from '../useFocusTrap';
 
 function FocusTrapHarness() {
@@ -27,6 +28,18 @@ function FocusTrapHarness() {
 }
 
 describe('useFocusTrap', () => {
+  let addEventListenerSpy: ReturnType<typeof vi.spyOn>;
+  let removeEventListenerSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    addEventListenerSpy = vi.spyOn(document, 'addEventListener');
+    removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('focuses the requested element, wraps Tab navigation, and restores the opener', () => {
     render(<FocusTrapHarness />);
 
@@ -47,5 +60,27 @@ describe('useFocusTrap', () => {
 
     fireEvent.click(closeButton);
     expect(document.activeElement).toBe(opener);
+  });
+
+  it('removes focus trap listeners when the dialog closes', () => {
+    render(<FocusTrapHarness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open dialog' }));
+
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      'keydown',
+      expect.any(Function),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      'focusin',
+      expect.any(Function),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('focusin', expect.any(Function));
   });
 });
