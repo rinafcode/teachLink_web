@@ -204,6 +204,8 @@ export function useKeyboardShortcuts(
   useEffect(() => {
     if (!enabled) return;
 
+    const listenerController = new AbortController();
+
     const listener = (event: KeyboardEvent) => {
       if (isInputLike(event.target)) return;
       const pressed = eventToBinding(event);
@@ -220,8 +222,11 @@ export function useKeyboardShortcuts(
       if (handler) handler();
     };
 
-    document.addEventListener('keydown', listener);
-    return () => document.removeEventListener('keydown', listener);
+    document.addEventListener('keydown', listener, { signal: listenerController.signal });
+    return () => {
+      document.removeEventListener('keydown', listener);
+      listenerController.abort();
+    };
   }, [enabled]);
 
   const setShortcutBinding = useCallback((id: ShortcutActionId, binding: string) => {
