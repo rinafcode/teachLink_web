@@ -1,59 +1,40 @@
 import DOMPurify from 'dompurify';
 import { ALLOWED_LINK_DOMAINS } from '@/constants/app.constants';
 
-const SAFE_URL_SCHEMES = ['http:', 'https:'];
+const SAFE_URL_SCHEMES = new Set(['http:', 'https:']);
 
-/**
- * Returns true when the hostname belongs to (or is a subdomain of) an allowlisted domain.
- * e.g. "www.youtube.com" matches "youtube.com".
- */
 const isAllowedDomain = (hostname: string): boolean =>
   ALLOWED_LINK_DOMAINS.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
 
-// Register the DOMPurify hook once at module load time.
-// It strips `href` attributes whose absolute URLs don't pass domain validation.
-// Relative URLs (e.g. "/about", "#section") are left untouched — they resolve to the same origin.
-let _hookRegistered = false;
-if (typeof window !== 'undefined' && !_hookRegistered) {
-  _hookRegistered = true;
+const isSafeUrl = (value: string): boolean => {
+  const scheme = value.match(/^([a-z][a-z\d+.-]*):/i)?.[1]?.toLowerCase();
+  if (scheme && !SAFE_URL_SCHEMES.has(`${scheme}:`)) return false;
+
+  try {
+    const parsed = new URL(value);
+    return SAFE_URL_SCHEMES.has(parsed.protocol) && isAllowedDomain(parsed.hostname);
+  } catch {
+    return true;
+  }
+};
+
+let hookRegistered = false;
+if (typeof window !== 'undefined' && !hookRegistered) {
+  hookRegistered = true;
   DOMPurify.addHook('afterSanitizeAttributes', (node) => {
     const href = node.getAttribute('href');
-    if (href === null) return;
-    try {
-      const parsed = new URL(href);
-      if (!SAFE_URL_SCHEMES.includes(parsed.protocol) || !isAllowedDomain(parsed.hostname)) {
-        node.removeAttribute('href');
-      }
-    } catch {
-      // new URL() throws for relative URLs — allow them (they stay on the same origin)
-    }
-  });
+    if (href !== null && !isSafeUrl(href)) node.removeAttribute('href');
 
-  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
     if (node.tagName === 'IFRAME') {
       const src = node.getAttribute('src');
-      if (src === null) return;
       let allowed = false;
       try {
-        const parsed = new URL(src);
-        // Only allow YouTube nocookie domain
-        if (
-          SAFE_URL_SCHEMES.includes(parsed.protocol) &&
-          parsed.hostname.endsWith('youtube-nocookie.com')
-        ) {
-          allowed = true;
-        }
+        const parsed = new URL(src ?? '');
+        allowed = SAFE_URL_SCHEMES.has(parsed.protocol) && parsed.hostname.endsWith('youtube-nocookie.com');
       } catch {
-        // Invalid URL – not allowed
+        // Invalid iframe source.
       }
-      if (!allowed) {
-        node.remove();
-        return;
-      }
-      // Preserve allowfullscreen if present on allowed iframe
-      if (node.hasAttribute('allowfullscreen')) {
-        node.setAttribute('allowfullscreen', '');
-      }
+      if (!allowed) node.remove();
     }
   });
 }
@@ -68,12 +49,12 @@ export const sanitizeHtml = (html: string): string => {
 
 export const sanitizeUrl = (url: string): string | null => {
   const trimmed = url.trim();
-  if (!trimmed) return null;
+  if (!trimmed || !isSafeUrl(trimmed)) return null;
   try {
     const parsed = new URL(trimmed);
-    if (!SAFE_URL_SCHEMES.includes(parsed.protocol)) return null;
-    if (!isAllowedDomain(parsed.hostname)) return null;
-    return parsed.toString();
+    return SAFE_URL_SCHEMES.has(parsed.protocol) && isAllowedDomain(parsed.hostname)
+      ? parsed.toString()
+      : null;
   } catch {
     return null;
   }

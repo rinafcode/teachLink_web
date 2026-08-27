@@ -1,45 +1,15 @@
-export interface Topic {
-  slug: string;
-  name: string;
-  description?: string;
-  postCount: number;
-  followerCount: number;
-  isFollowing?: boolean;
-}
+import { getDateTimeFormat } from './intlCache';
 
-export interface TopicPost {
-  id: string;
-  authorId: string;
-  authorName: string;
-  authorAvatar?: string;
-  title: string;
-  body: string;
-  topicSlug: string;
-  likes: number;
-  commentCount: number;
-  createdAt: Date;
-  tags?: string[];
-}
+export interface Topic { slug: string; name: string; description?: string; postCount: number; followerCount: number; isFollowing?: boolean; }
+export interface TopicPost { id: string; authorId: string; authorName: string; authorAvatar?: string; title: string; body: string; topicSlug: string; likes: number; commentCount: number; createdAt: Date; tags?: string[]; }
+export interface Activity { id: string; actorId: string; actorName: string; actorAvatar?: string; action: string; targetId?: string; targetTitle?: string; createdAt: Date; }
 
-export interface Activity {
-  id: string;
-  actorId: string;
-  actorName: string;
-  actorAvatar?: string;
-  action: string;
-  targetId?: string;
-  targetTitle?: string;
-  createdAt: Date;
-}
-
-/** Format large numbers: 1200 → "1.2K", 1_500_000 → "1.5M" */
 export function formatFollowerCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
   return String(n);
 }
 
-/** Returns a human-readable relative time string: "2 hours ago", "just now", etc. */
 export function getRelativeTime(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   if (seconds < 60) return 'just now';
@@ -57,18 +27,16 @@ export function getRelativeTime(date: Date): string {
   return `${years} year${years === 1 ? '' : 's'} ago`;
 }
 
-/** Groups activities by calendar date label ("Today", "Yesterday", or "MMM D, YYYY"). */
 export function groupActivitiesByDate(activities: Activity[]): Record<string, Activity[]> {
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-
-  const label = (d: Date): string => {
-    if (d.toDateString() === today.toDateString()) return 'Today';
-    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateFormatter = getDateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const label = (date: Date): string => {
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return dateFormatter.format(date);
   };
-
   return activities.reduce<Record<string, Activity[]>>((acc, activity) => {
     const key = label(new Date(activity.createdAt));
     (acc[key] ??= []).push(activity);
