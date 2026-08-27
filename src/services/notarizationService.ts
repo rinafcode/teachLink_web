@@ -1,3 +1,6 @@
+import { timingSafeEqual } from 'crypto';
+import { buildNotarizationHash } from '@/lib/notarization';
+
 export interface TipNotarizationRequest {
   txHash: string;
   recipientId: string;
@@ -12,6 +15,12 @@ export interface TipNotarizationResponse {
   proof: string;
   recordedAt: string;
   payload: TipNotarizationRequest;
+}
+
+function verifyNotarizationProof(response: TipNotarizationResponse): boolean {
+  const expected = Buffer.from(buildNotarizationHash(response.payload), 'hex');
+  const actual = Buffer.from(response.proof, 'hex');
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
 export async function notarizeTip(
@@ -30,5 +39,10 @@ export async function notarizeTip(
     throw new Error(errorBody?.message || 'Unable to notarize tip transaction');
   }
 
-  return response.json();
+  const result = (await response.json()) as TipNotarizationResponse;
+  if (!verifyNotarizationProof(result)) {
+    throw new Error('Invalid notarization signature');
+  }
+
+  return result;
 }
