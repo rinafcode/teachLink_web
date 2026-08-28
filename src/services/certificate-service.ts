@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 import { query } from '@/lib/db/pool';
 import { createLogger } from '@/lib/logging';
 import {
@@ -105,8 +105,7 @@ export async function verifyCertificate(certId: string): Promise<CertificateVeri
   }
 
   // Recompute hash and compare
-  const expectedHash = computeCertificateHash(cert);
-  if (expectedHash !== cert.verificationHash) {
+  if (!verifyCertificateSignature(cert)) {
     logger.warn('Certificate verification failed: hash mismatch', {
       context: { certificateId: certId },
     });
@@ -139,6 +138,20 @@ function computeCertificateHash(
 
   const data = `${cert.userId}:${cert.courseId}:${cert.completionDate}:${SECRET}`;
   return createHash('sha256').update(data).digest('hex');
+}
+
+function secureHashEquals(expected: string, actual: string): boolean {
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const actualBuffer = Buffer.from(actual, 'hex');
+  return (
+    expectedBuffer.length === actualBuffer.length &&
+    timingSafeEqual(expectedBuffer, actualBuffer)
+  );
+}
+
+/** Verify an issued certificate's authenticity before it is trusted. */
+export function verifyCertificateSignature(cert: CertificateRecord): boolean {
+  return secureHashEquals(computeCertificateHash(cert), cert.verificationHash);
 }
 
 /**
@@ -219,7 +232,13 @@ export async function getCertificateForDownload(
   certId: string,
 ): Promise<CertificateResponse | null> {
   const cert = await getCertificateById(certId);
-  if (!cert || cert.revokedAt) {
+  const signatureValid = cert ? verifyCertificateSignature(cert) : false;
+  if (!cert || cert.revokedAt || !signatureValid) {
+    if (cert && !cert.revokedAt && !signatureValid) {
+      logger.warn('Certificate download blocked: signature verification failed', {
+        context: { certificateId: certId },
+      });
+    }
     return null;
   }
 
