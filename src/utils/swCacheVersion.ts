@@ -10,8 +10,7 @@
 export const SW_CACHE_VERSION = 'v2';
 
 /** Namespace a runtime cache name with the current service-worker version. */
-export const versionedCacheName = (name: string): string =>
-  `${SW_CACHE_VERSION}::${name}`;
+export const versionedCacheName = (name: string): string => `${SW_CACHE_VERSION}::${name}`;
 
 /**
  * Runtime cache names that predate versioning. They are cleaned up once so the

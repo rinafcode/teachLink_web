@@ -259,9 +259,7 @@ self.addEventListener('activate', (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys
-            .filter((key) => isObsoleteCacheName(key))
-            .map((key) => caches.delete(key)),
+          keys.filter((key) => isObsoleteCacheName(key)).map((key) => caches.delete(key)),
         ),
       )
       .then(() => {
