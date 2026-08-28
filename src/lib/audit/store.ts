@@ -1,10 +1,40 @@
+import { createLogger } from '@/lib/logging';
+import * as auditLogRepository from '@/lib/db/repositories/audit-log.repository';
 import type { AuditLogEntry, AuditQuery, CreateAuditLogInput } from './types';
 
-const AUDIT_CAP = 5000;
+const logger = createLogger('audit-store');
+
+// Durability: every entry is written to the `audit_log` table asynchronously
+// (see persistToDatabase below). This in-memory array is now only a small
+// recent-entries cache for fast, synchronous reads (e.g. UI optimistic
+// updates) — it is NOT the durable store and must stay small.
+const IN_MEMORY_BUFFER_CAP = 50;
 const auditStore: AuditLogEntry[] = [];
 
 function generateId(prefix = 'audit'): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/**
+ * Fire-and-forget persistence of a single audit entry to the database.
+ * Scheduled via setImmediate so it never blocks the caller (the audit log
+ * must not add latency to the request that triggered it), with any failure
+ * logged rather than thrown — losing the durable write should not crash the
+ * request, but it must be observable.
+ *
+ * There's no job queue library in this codebase (checked package.json), so
+ * this minimal fire-and-forget approach is intentional per the issue's
+ * guidance rather than a rejection of a queue that already existed.
+ */
+function persistToDatabase(entry: AuditLogEntry): void {
+  setImmediate(() => {
+    auditLogRepository.insert(entry).catch((error) => {
+      logger.error('[Audit] Failed to persist audit log entry to database', {
+        error: error instanceof Error ? error : new Error(String(error)),
+        context: { auditId: entry.id, targetType: entry.targetType, targetId: entry.targetId },
+      });
+    });
+  });
 }
 
 export function appendAuditLog(input: CreateAuditLogInput): AuditLogEntry {
@@ -24,13 +54,21 @@ export function appendAuditLog(input: CreateAuditLogInput): AuditLogEntry {
   };
 
   auditStore.unshift(entry);
-  if (auditStore.length > AUDIT_CAP) {
-    auditStore.length = AUDIT_CAP;
+  if (auditStore.length > IN_MEMORY_BUFFER_CAP) {
+    auditStore.length = IN_MEMORY_BUFFER_CAP;
   }
+
+  persistToDatabase(entry);
 
   return entry;
 }
 
+/**
+ * Synchronous, in-memory-only lookup over the small recent-entries buffer.
+ * Fast, but only ever sees the last IN_MEMORY_BUFFER_CAP entries — use
+ * queryAuditLog() (database-backed) for admin/compliance queries that need
+ * to see records older than the buffer.
+ */
 export function queryAuditLogs(query: AuditQuery = {}): {
   entries: AuditLogEntry[];
   total: number;
@@ -68,4 +106,16 @@ export function queryAuditLogs(query: AuditQuery = {}): {
 
 export function getAuditStoreSnapshot(): AuditLogEntry[] {
   return [...auditStore];
+}
+
+/**
+ * Database-backed audit query for admin/compliance use. Unlike
+ * queryAuditLogs(), this reads from the durable `audit_log` table, so it
+ * can return entries beyond the small in-memory buffer (i.e. anything ever
+ * written, not just the most recent IN_MEMORY_BUFFER_CAP entries).
+ */
+export async function queryAuditLog(
+  query: AuditQuery = {}
+): Promise<{ entries: AuditLogEntry[]; total: number }> {
+  return auditLogRepository.findMany(query);
 }
