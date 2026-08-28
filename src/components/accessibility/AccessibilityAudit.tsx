@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle2, ClipboardList, X } from 'lucide-react';
  * Development helper: heuristic WCAG-oriented checks over the document.
  * Does not replace manual testing with assistive technology.
  */
+
 export function AccessibilityAudit() {
   const { runPageAudit, announce } = useAccessibility();
   const [open, setOpen] = useState(false);
