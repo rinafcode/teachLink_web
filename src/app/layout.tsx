@@ -101,9 +101,16 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50 flex flex-col min-h-screen`}
       >
+        {/* Skip-to-content link — visually hidden until focused, satisfies WCAG 2.4.1 */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-gray-900 focus:shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:focus:bg-gray-900 dark:focus:text-gray-50"
+        >
+          Skip to main content
+        </a>
         <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
           <EnvironmentBanner />
-          <main className="flex-grow">{children}</main>
+          <main id="main-content" className="flex-grow">{children}</main>
           <Footer />
         </RootProviders>
 
