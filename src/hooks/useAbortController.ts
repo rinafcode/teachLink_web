@@ -16,11 +16,15 @@ export function useAbortController() {
     return controllerRef.current.signal;
   }, []);
 
+  const abort = useCallback(() => {
+    controllerRef.current?.abort();
+  }, []);
+
   useEffect(() => {
     return () => {
       controllerRef.current?.abort();
     };
   }, []);
 
-  return { getSignal };
+  return { getSignal, abort };
 }
