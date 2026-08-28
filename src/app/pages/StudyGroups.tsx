@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { Search, Plus, X, Users } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
 import StudyGroupCard from '@/app/components/social/StudyGroupCard';
 import GroupDiscussionThread from '@/app/components/social/GroupDiscussionThread';
 import CertificateManagementPanel from '@/app/components/social/CertificateManagementPanel';
@@ -107,7 +108,30 @@ export default function StudyGroupsPage() {
                 Groups ({filteredGroups.length})
               </h2>
             </div>
-            {filteredGroups.length === 0 ? (
+            {!sg.isHydrated ? (
+              <div
+                role="status"
+                aria-busy="true"
+                aria-label="Loading study groups"
+                className="space-y-3"
+              >
+                <span className="sr-only">Loading study groups…</span>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Skeleton variant="circle" height={40} width={40} animation="pulse" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton height={14} width="60%" animation="pulse" />
+                        <Skeleton height={12} width="40%" animation="pulse" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredGroups.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                 <Users size={48} className="mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                 <p className="text-sm">

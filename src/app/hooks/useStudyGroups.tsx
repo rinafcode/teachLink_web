@@ -148,6 +148,13 @@ export type UseStudyGroupsApi = {
   challenges: GroupChallenge[];
   certificates: ForumCertificate[];
   currentUser: { id: string; name: string };
+  /**
+   * False until the hook has read persisted state from localStorage on the
+   * client. Always `false` during SSR and on the very first client render, so
+   * consumers can render a loading state instead of prematurely treating an
+   * empty `groups` array as "no groups yet".
+   */
+  isHydrated: boolean;
   // group
   createGroup: (input: { name: string; description?: string }) => StudyGroup;
   joinGroup: (groupId: string) => void;
@@ -207,8 +214,17 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   const [certificates, setCertificates] = useState<ForumCertificate[]>(() =>
     load(STORAGE_KEYS.certificates, [] as ForumCertificate[]),
   );
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const me = currentUser ?? { id: 'current-user', name: 'You' };
+
+  // Marks state as hydrated once the client has mounted. The state above is
+  // already populated synchronously from localStorage via the lazy useState
+  // initializers, but this flag lets consumers distinguish "still loading"
+  // (SSR / pre-mount) from a genuinely empty result.
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const persistAll = useCallback(
     (g = groups, m = messages, r = resources, c = challenges, certs = certificates) => {
@@ -608,6 +624,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     challenges,
     certificates,
     currentUser: me,
+    isHydrated,
     createGroup,
     joinGroup,
     leaveGroup,
