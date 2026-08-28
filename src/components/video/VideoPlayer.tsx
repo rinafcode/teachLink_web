@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import 'video.js/dist/video-js.css';
 import { Expand, Pause, Play, Volume2, VolumeX, X } from 'lucide-react';
 import { BookmarkSystem } from '@/components/video/BookmarkSystem';
 import { CollaborativeAnnotations } from '@/components/video/CollaborativeAnnotations';
@@ -32,25 +33,6 @@ export function VideoPlayer({
   sources,
   transcript,
 }: VideoPlayerProps) {
-  const [cssLoaded, setCssLoaded] = useState(false);
-
-  // Dynamically load video.js CSS
-  useEffect(() => {
-    if (cssLoaded) return;
-
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://cdn.jsdelivr.net/npm/video.js@8.23.7/dist/video-js.min.css';
-    link.onload = () => setCssLoaded(true);
-    document.head.appendChild(link);
-
-    return () => {
-      if (link.parentNode) {
-        link.parentNode.removeChild(link);
-      }
-    };
-  }, [cssLoaded]);
-
   const {
     videoElementRef,
     playerRef,
@@ -119,17 +101,6 @@ export function VideoPlayer({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded, playerRef]);
-
-  if (!cssLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] bg-gray-50 rounded-lg">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading video player...</p>
-        </div>
-      </div>
-    );
-  }
 
   const createThumbnail = async (time: number): Promise<string | null> => {
     const video = videoElementRef.current;
