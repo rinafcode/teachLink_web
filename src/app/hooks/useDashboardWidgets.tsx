@@ -97,10 +97,23 @@ const DEFAULT_WIDGETS: Widget[] = [
 ];
 
 export const useDashboardWidgets = () => {
-  const [widgets, setWidgets] = useState<Widget[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [widgets, setWidgets] = useState<Widget[]>(() => {
+    try {
+      const saved = localStorage.getItem('dashboard-widgets');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed;
+      }
+      // Save defaults if nothing was saved
+      localStorage.setItem('dashboard-widgets', JSON.stringify(DEFAULT_WIDGETS));
+    } catch (error) {
+      logger.error('Failed to load widget layout from localStorage', { error });
+    }
+    return DEFAULT_WIDGETS;
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load widget layout from localStorage
+  // Load widget layout from localStorage (for manual reload only)
   const loadWidgetLayout = useCallback((): Widget[] => {
     try {
       const saved = localStorage.getItem('dashboard-widgets');
@@ -110,7 +123,7 @@ export const useDashboardWidgets = () => {
     } catch (error) {
       logger.error('Failed to load widget layout', { error });
     }
-    return [];
+    return DEFAULT_WIDGETS;
   }, []);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -147,18 +160,6 @@ export const useDashboardWidgets = () => {
       console.error('Failed to schedule dashboard layout save:', error);
     }
   }, []);
-
-  // Initialize widgets on mount
-  useEffect(() => {
-    const savedWidgets = loadWidgetLayout();
-    if (savedWidgets.length > 0) {
-      setWidgets(savedWidgets);
-    } else {
-      setWidgets(DEFAULT_WIDGETS);
-      saveWidgetLayout(DEFAULT_WIDGETS);
-    }
-    setIsLoading(false);
-  }, [loadWidgetLayout, saveWidgetLayout]);
 
   // Add a new widget
   const addWidget = useCallback(
