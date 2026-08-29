@@ -1,13 +1,11 @@
-import { createLogger } from '@/lib/logging';
-import * as auditLogRepository from '@/lib/db/repositories/audit-log.repository';
 import type { AuditLogEntry, AuditQuery, CreateAuditLogInput } from './types';
 
-const logger = createLogger('audit-store');
-
-// Durability: every entry is written to the `audit_log` table asynchronously
-// (see persistToDatabase below). This in-memory array is now only a small
-// recent-entries cache for fast, synchronous reads (e.g. UI optimistic
-// updates) — it is NOT the durable store and must stay small.
+// This module must stay Edge-Runtime-safe: it's reachable from Edge routes
+// (e.g. src/app/api/admin/feature-flags/route.ts, via src/middleware/audit.ts),
+// and the Edge Runtime doesn't provide Node.js core modules (`fs`, `net`,
+// `tls`) that a database driver needs. Durable persistence therefore lives
+// in a separate, Node-only module (./persist.ts) that wraps appendAuditLog
+// below — never import a database/repository module from this file.
 const IN_MEMORY_BUFFER_CAP = 50;
 const auditStore: AuditLogEntry[] = [];
 
@@ -16,27 +14,10 @@ function generateId(prefix = 'audit'): string {
 }
 
 /**
- * Fire-and-forget persistence of a single audit entry to the database.
- * Scheduled via setImmediate so it never blocks the caller (the audit log
- * must not add latency to the request that triggered it), with any failure
- * logged rather than thrown — losing the durable write should not crash the
- * request, but it must be observable.
- *
- * There's no job queue library in this codebase (checked package.json), so
- * this minimal fire-and-forget approach is intentional per the issue's
- * guidance rather than a rejection of a queue that already existed.
+ * Records an entry in the small in-memory recent-entries buffer. This is
+ * NOT durable storage on its own — see ./persist.ts's appendAuditLog, which
+ * wraps this with an async database write for every non-Edge caller.
  */
-function persistToDatabase(entry: AuditLogEntry): void {
-  setImmediate(() => {
-    auditLogRepository.insert(entry).catch((error) => {
-      logger.error('[Audit] Failed to persist audit log entry to database', {
-        error: error instanceof Error ? error : new Error(String(error)),
-        context: { auditId: entry.id, targetType: entry.targetType, targetId: entry.targetId },
-      });
-    });
-  });
-}
-
 export function appendAuditLog(input: CreateAuditLogInput): AuditLogEntry {
   const entry: AuditLogEntry = {
     id: generateId(),
@@ -58,16 +39,14 @@ export function appendAuditLog(input: CreateAuditLogInput): AuditLogEntry {
     auditStore.length = IN_MEMORY_BUFFER_CAP;
   }
 
-  persistToDatabase(entry);
-
   return entry;
 }
 
 /**
  * Synchronous, in-memory-only lookup over the small recent-entries buffer.
  * Fast, but only ever sees the last IN_MEMORY_BUFFER_CAP entries — use
- * queryAuditLog() (database-backed) for admin/compliance queries that need
- * to see records older than the buffer.
+ * queryAuditLog() (database-backed, in ./persist.ts) for admin/compliance
+ * queries that need to see records older than the buffer.
  */
 export function queryAuditLogs(query: AuditQuery = {}): {
   entries: AuditLogEntry[];
@@ -106,16 +85,4 @@ export function queryAuditLogs(query: AuditQuery = {}): {
 
 export function getAuditStoreSnapshot(): AuditLogEntry[] {
   return [...auditStore];
-}
-
-/**
- * Database-backed audit query for admin/compliance use. Unlike
- * queryAuditLogs(), this reads from the durable `audit_log` table, so it
- * can return entries beyond the small in-memory buffer (i.e. anything ever
- * written, not just the most recent IN_MEMORY_BUFFER_CAP entries).
- */
-export async function queryAuditLog(
-  query: AuditQuery = {}
-): Promise<{ entries: AuditLogEntry[]; total: number }> {
-  return auditLogRepository.findMany(query);
 }
