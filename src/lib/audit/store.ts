@@ -1,12 +1,23 @@
 import type { AuditLogEntry, AuditQuery, CreateAuditLogInput } from './types';
 
-const AUDIT_CAP = 5000;
+// This module must stay Edge-Runtime-safe: it's reachable from Edge routes
+// (e.g. src/app/api/admin/feature-flags/route.ts, via src/middleware/audit.ts),
+// and the Edge Runtime doesn't provide Node.js core modules (`fs`, `net`,
+// `tls`) that a database driver needs. Durable persistence therefore lives
+// in a separate, Node-only module (./persist.ts) that wraps appendAuditLog
+// below — never import a database/repository module from this file.
+const IN_MEMORY_BUFFER_CAP = 50;
 const auditStore: AuditLogEntry[] = [];
 
 function generateId(prefix = 'audit'): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/**
+ * Records an entry in the small in-memory recent-entries buffer. This is
+ * NOT durable storage on its own — see ./persist.ts's appendAuditLog, which
+ * wraps this with an async database write for every non-Edge caller.
+ */
 export function appendAuditLog(input: CreateAuditLogInput): AuditLogEntry {
   const entry: AuditLogEntry = {
     id: generateId(),
@@ -25,13 +36,19 @@ export function appendAuditLog(input: CreateAuditLogInput): AuditLogEntry {
   };
 
   auditStore.unshift(entry);
-  if (auditStore.length > AUDIT_CAP) {
-    auditStore.length = AUDIT_CAP;
+  if (auditStore.length > IN_MEMORY_BUFFER_CAP) {
+    auditStore.length = IN_MEMORY_BUFFER_CAP;
   }
 
   return entry;
 }
 
+/**
+ * Synchronous, in-memory-only lookup over the small recent-entries buffer.
+ * Fast, but only ever sees the last IN_MEMORY_BUFFER_CAP entries — use
+ * queryAuditLog() (database-backed, in ./persist.ts) for admin/compliance
+ * queries that need to see records older than the buffer.
+ */
 export function queryAuditLogs(query: AuditQuery = {}): {
   entries: AuditLogEntry[];
   total: number;
