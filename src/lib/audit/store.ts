@@ -20,6 +20,7 @@ export function appendAuditLog(input: CreateAuditLogInput): AuditLogEntry {
     userAgent: input.userAgent,
     statusCode: input.statusCode,
     timestamp: new Date().toISOString(),
+    traceId: input.traceId,
     metadata: input.metadata,
   };
 

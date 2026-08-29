@@ -50,6 +50,7 @@ export function logAuditMutation(request: Request, input: AuditMutationInput): v
     ip: getClientIp(request),
     userAgent: getRequestHeader(request, 'user-agent') || 'unknown',
     statusCode: input.statusCode,
+    traceId: getRequestHeader(request, 'x-trace-id') || undefined,
     metadata: input.metadata,
   });
 }
