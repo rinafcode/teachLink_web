@@ -4,6 +4,7 @@ import { checkRoutePermission } from './middleware/rbac';
 import { applySecurityHeaders } from './middleware/security';
 import { applyCspHeaders } from './middleware/csp';
 import { handleRedirects } from './middleware/redirectManagement';
+import { applyCsrfCookie, checkCsrf } from './lib/csrfMiddleware';
 import {
   API_DEPRECATION_HEADER,
   API_DEPRECATION_INFO_HEADER,
@@ -37,11 +38,20 @@ export async function middleware(request: NextRequest) {
   const payload = await verifyToken(token);
   const userRole = payload?.role ?? null;
 
+  // CSRF protection (double-submit cookie) for state-mutating requests. Runs
+  // before RBAC so a cross-origin forgery attempt is rejected with 403
+  // rather than falling through to a redirect.
+  const csrf = checkCsrf(request);
+  const isHttps = request.nextUrl.protocol === 'https:';
+
   const withHeaders = (response: NextResponse) => {
     response.headers.set('x-trace-id', traceId);
     const withSecurity = applySecurityHeaders(response, request);
-    return applyCspHeaders(withSecurity, request, cspNonce);
+    const withCsp = applyCspHeaders(withSecurity, request, cspNonce);
+    return csrf.tokenToIssue ? applyCsrfCookie(withCsp, csrf.tokenToIssue, isHttps) : withCsp;
   };
+
+  if (csrf.errorResponse) return withHeaders(csrf.errorResponse);
 
   const permissionResponse = checkRoutePermission(request, userRole);
   if (permissionResponse) return withHeaders(permissionResponse);
