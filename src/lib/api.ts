@@ -84,8 +84,9 @@ function shouldRetry(status: number, attempt: number, maxRetries: number): boole
   return [408, 429, 500, 502, 503, 504].includes(status);
 }
 
-function getRetryDelay(attempt: number, baseDelay: number): number {
-  return baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+export function getRetryDelay(attempt: number, baseDelay: number): number {
+  const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
+  return Math.random() * exponentialDelay;
 }
 
 // ---------------------------------------------------------------------------

@@ -50,6 +50,7 @@ export class CircuitBreaker {
   private totalSuccesses: number = 0;
   private activeRequests: number = 0;
   private failureHistory: number[] = [];
+  private recoveryDeadline?: number;
 
   constructor(private config: CircuitBreakerConfig = DEFAULT_CONFIG) {}
 
@@ -120,13 +121,16 @@ export class CircuitBreaker {
    */
   private onFailure(): void {
     this.totalFailures++;
-    this.lastFailureTime = Date.now();
-    this.failureHistory.push(Date.now());
+    const now = Date.now();
+    this.lastFailureTime = now;
 
-    // Clean up old failures outside monitoring period
+    // Clean up old failures outside monitoring period before recording
+    // the current failure so the count represents the active window.
     this.failureHistory = this.failureHistory.filter(
-      (time) => Date.now() - time < this.config.monitoringPeriod,
+      (time) => now - time < this.config.monitoringPeriod,
     );
+    this.failureCount = this.failureHistory.length;
+    this.failureHistory.push(now);
 
     if (this.state === 'HALF_OPEN') {
       this.transitionTo('OPEN');
@@ -142,8 +146,8 @@ export class CircuitBreaker {
    * Check if we should attempt to reset the circuit
    */
   private shouldAttemptReset(): boolean {
-    if (!this.lastFailureTime) return false;
-    return Date.now() - this.lastFailureTime > this.config.timeout;
+    if (!this.recoveryDeadline) return false;
+    return Date.now() >= this.recoveryDeadline;
   }
 
   /**
@@ -160,6 +164,8 @@ export class CircuitBreaker {
       this.successCount = 0;
     } else if (newState === 'OPEN') {
       this.successCount = 0;
+      const recoveryDelay = Math.random() * this.config.timeout;
+      this.recoveryDeadline = Date.now() + recoveryDelay;
     } else if (newState === 'HALF_OPEN') {
       this.successCount = 0;
     }
@@ -191,6 +197,7 @@ export class CircuitBreaker {
     this.lastFailureTime = undefined;
     this.lastStateChange = Date.now();
     this.failureHistory = [];
+    this.recoveryDeadline = undefined;
   }
 
   /**
