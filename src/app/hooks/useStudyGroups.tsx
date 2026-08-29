@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNotificationStore } from '@/app/store/notificationStore';
 
@@ -614,8 +614,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   );
 
   // Persist when state changes (robust against batch updates via persistAll)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => persistAll(), [groups, messages, resources, challenges, certificates, persistAll]);
+  useEffect(() => {
+    persistAll();
+  }, [persistAll]);
 
   return {
     groups,
