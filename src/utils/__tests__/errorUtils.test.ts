@@ -17,8 +17,20 @@ import {
 // classifyError – network / fetch errors
 // ---------------------------------------------------------------------------
 describe('classifyError – network errors', () => {
-  it('classifies a fetch TypeError as NETWORK', () => {
+  it('classifies a fetch TypeError matching CORS patterns as CORS_BLOCKED (not NETWORK)', () => {
+    // "Failed to fetch" is the canonical browser CORS error message.
+    // Since #1163 it must be tagged CORS_BLOCKED rather than NETWORK so
+    // backend misconfiguration can be triaged separately.
     const err = new TypeError('Failed to fetch');
+    const info = classifyError(err);
+    expect(info.type).toBe(ErrorType.CORS_BLOCKED);
+    expect(info.retryable).toBe(false);
+  });
+
+  it('classifies a non-CORS fetch TypeError as NETWORK', () => {
+    // A TypeError whose message doesn't match CORS patterns still falls
+    // through to the generic NETWORK branch.
+    const err = new TypeError('fetch is not defined');
     const info = classifyError(err);
     expect(info.type).toBe(ErrorType.NETWORK);
     expect(info.retryable).toBe(true);
@@ -130,8 +142,10 @@ describe('classifyError – unknown', () => {
 // isRetryable
 // ---------------------------------------------------------------------------
 describe('isRetryable', () => {
-  it('returns true for network errors', () => {
-    expect(isRetryable(new TypeError('Failed to fetch'))).toBe(true);
+  it('returns true for generic network errors (non-CORS TypeError)', () => {
+    // "fetch is not defined" is a NETWORK error (retryable).
+    // CORS TypeErrors ("Failed to fetch") are non-retryable — see CORS_BLOCKED.
+    expect(isRetryable(new TypeError('fetch is not defined'))).toBe(true);
   });
 
   it('returns false for 401', () => {

@@ -17,6 +17,7 @@ import {
 
 import { createLogger } from '@/lib/logging';
 import { tokenManager } from '@/lib/auth/tokenManager';
+import { isCorsError, ErrorType } from '@/utils/errorUtils';
 
 declare global {
   interface Window {
@@ -60,6 +61,20 @@ export const loggingResponseInterceptor: ResponseInterceptor = async (response) 
 };
 
 export const loggingErrorInterceptor: ErrorInterceptor = async (error: Error) => {
+  if (isCorsError(error)) {
+    // CORS blocks have no HTTP status and are caused by missing / wrong
+    // Access-Control-Allow-Origin headers — log them at a higher severity
+    // with a distinct error type so they don't get lost in generic network noise.
+    apiLogger.error('API request blocked by CORS policy', {
+      error,
+      context: {
+        errorType: ErrorType.CORS_BLOCKED,
+        message: error.message,
+      },
+    });
+    return;
+  }
+
   apiLogger.error('API request failed', { error });
 };
 
