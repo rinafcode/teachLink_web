@@ -18,12 +18,30 @@ vi.mock('@apollo/client', () => {
   const ApolloLink = { from: vi.fn((links) => links[0]) };
   const split = vi.fn((test, ws, http) => ({ _ws: ws, _http: http, _split: true }));
   const ApolloClient = vi.fn().mockImplementation(function (opts: { link: unknown }) {
-    return { link: opts.link };
+    return {
+      link: opts.link,
+      query: vi.fn().mockResolvedValue({
+        data: {
+          realtimeEvents: [
+            {
+              id: 'evt-1',
+              sequence: 1,
+              type: 'state.updated',
+              payload: { user: { id: 'u-1' } },
+              createdAt: '2026-01-01T00:00:00Z',
+            },
+          ],
+        },
+      }),
+    };
   });
   const InMemoryCache = vi.fn().mockImplementation(function () {
     return {};
   });
-  return { HttpLink, ApolloLink, split, ApolloClient, InMemoryCache };
+  const gql = vi.fn((strings: TemplateStringsArray, ..._values: unknown[]) =>
+    (Array.from(strings) as Array<string | unknown>).join(' '),
+  );
+  return { HttpLink, ApolloLink, split, ApolloClient, InMemoryCache, gql };
 });
 
 vi.mock('@apollo/client/utilities', () => ({
@@ -42,6 +60,8 @@ import {
   GRAPHQL_SUBSCRIPTIONS_CONNECTION,
   getActiveSubscriptions,
   getActiveSubscriptionCount,
+  onSubscriptionCatchUp,
+  requestRealtimeCatchUp,
 } from './subscriptions';
 
 const BASE_CONFIG: SubscriptionConfig = {
@@ -410,5 +430,47 @@ describe('createSubscriptionClient', () => {
       featureGate: { flagId: 'flag_targeting', context: { plan: 'free' } },
     });
     expect(createWSClient).not.toHaveBeenCalled();
+  });
+});
+
+// ── Realtime catch-up (issue #1175) ─────────────────────────────────────────
+
+describe('realtime catch-up', () => {
+  it('notifies catch-up listeners when an inbound sequence gap is detected', () => {
+    createSubscriptionClient(BASE_CONFIG);
+    const supervisor = getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION) as any;
+    const listener = vi.fn();
+    const unsubscribe = onSubscriptionCatchUp(listener);
+
+    supervisor.handleMessage({ sequence: 2 });
+    // Gap: next observed sequence jumps past the last seen one.
+    supervisor.handleMessage({ sequence: 5 });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    // `since` reflects the last applied sequence before the gap.
+    expect(listener).toHaveBeenCalledWith(2);
+
+    unsubscribe();
+    supervisor.handleMessage({ sequence: 7 });
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('notifies catch-up listeners after a supervisor reconnect', () => {
+    createSubscriptionClient(BASE_CONFIG);
+    const supervisor = getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION) as any;
+    const listener = vi.fn();
+    onSubscriptionCatchUp(listener);
+
+    supervisor.handleOpen();
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('resolves missed events through the active client catch-up query', async () => {
+    createSubscriptionClient(BASE_CONFIG);
+    const events = await requestRealtimeCatchUp(2);
+    expect(Array.isArray(events)).toBe(true);
+    expect(events?.length).toBe(1);
+    expect(events?.[0]).toMatchObject({ id: 'evt-1', sequence: 1 });
   });
 });
