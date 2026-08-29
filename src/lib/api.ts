@@ -15,6 +15,8 @@ import {
 import { logContextStorage } from './logging/context';
 import { tokenManager } from '@/lib/auth/tokenManager';
 
+import { dedupe, buildDedupeKey } from './api/dedupe';
+
 export type { ErrorInfo };
 
 // ---------------------------------------------------------------------------
@@ -45,6 +47,7 @@ export interface RequestConfig extends RequestInit {
   timeout?: number;
   schema?: z.ZodSchema;
   useCache?: boolean;
+  dedupe?: boolean;
   _bypassCacheRead?: boolean;
   _authRetried?: boolean;
   ttl?: number;
@@ -123,8 +126,16 @@ class ApiClientImpl {
   }
 
   invalidateCache(url?: string) {
-    if (url) this.cache.delete(url);
-    else this.cache.clear();
+    if (url) {
+      this.cache.delete(url);
+      for (const key of this.cache.keys()) {
+        if (key.startsWith(`${url}:`)) {
+          this.cache.delete(key);
+        }
+      }
+    } else {
+      this.cache.clear();
+    }
   }
 
   addRequestInterceptor(interceptor: RequestInterceptor) {
@@ -238,11 +249,20 @@ class ApiClientImpl {
    * GET request
    */
   async get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
-    return this.requestWithRetry<T>({
-      ...options,
-      url,
-      method: 'GET',
-    });
+    const shouldDedupe = options?.dedupe !== false;
+    const requestFn = () =>
+      this.requestWithRetry<T>({
+        ...options,
+        url,
+        method: 'GET',
+      });
+
+    if (shouldDedupe) {
+      const key = buildDedupeKey('GET', url);
+      return dedupe<T>(key, requestFn);
+    }
+
+    return requestFn();
   }
 
   /**

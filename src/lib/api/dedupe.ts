@@ -72,14 +72,13 @@ export function dedupe<T>(key: string, fn: () => Promise<T>): Promise<T> {
   fn()
     .then((result) => {
       clearTimeout(entry.timer);
+      cache.delete(key);
       resolve(result);
     })
     .catch((err) => {
       clearTimeout(entry.timer);
-      reject(err);
-    })
-    .finally(() => {
       cache.delete(key);
+      reject(err);
     });
 
   return promise;
