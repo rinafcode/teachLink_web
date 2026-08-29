@@ -8,7 +8,12 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { CONSENT_COOKIE_NAME, CONSENT_STORAGE_KEY, CONSENT_TTL_MS } from './constants';
+import {
+  CONSENT_COOKIE_NAME,
+  CONSENT_POLICY_VERSION,
+  CONSENT_STORAGE_KEY,
+  CONSENT_TTL_MS,
+} from './constants';
 import {
   type ConsentPreferences,
   type ConsentState,
@@ -63,6 +68,7 @@ function recordDecision(
     decided: true,
     preferences,
     decidedAt,
+    acceptedPolicyVersion: CONSENT_POLICY_VERSION,
   });
   if (!parsed.success) return;
   set(parsed.data);
@@ -90,8 +96,10 @@ export const useConsentStore = create<ConsentSlice>()(
       },
 
       isConsentValid: () => {
-        const { decided, decidedAt } = get();
+        const { decided, decidedAt, acceptedPolicyVersion } = get();
         if (!decided || decidedAt === null) return false;
+        // Re-prompt when the policy changed after the user's last decision.
+        if (acceptedPolicyVersion !== CONSENT_POLICY_VERSION) return false;
         return Date.now() - decidedAt < CONSENT_TTL_MS;
       },
     }),
@@ -103,6 +111,7 @@ export const useConsentStore = create<ConsentSlice>()(
         decided: state.decided,
         preferences: state.preferences,
         decidedAt: state.decidedAt,
+        acceptedPolicyVersion: state.acceptedPolicyVersion,
       }),
     },
   ),
