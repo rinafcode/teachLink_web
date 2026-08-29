@@ -27,6 +27,16 @@ describe('audit store', () => {
     expect(entry.method).toBe('POST');
   });
 
+  it('propagates the trace id into the log entry', () => {
+    const entry = appendAuditLog({ ...baseInput, traceId: 'trace_abc123' });
+    expect(entry.traceId).toBe('trace_abc123');
+  });
+
+  it('omits trace id when not provided', () => {
+    const entry = appendAuditLog(baseInput);
+    expect(entry.traceId).toBeUndefined();
+  });
+
   it('returns filtered results by action', () => {
     appendAuditLog({ ...baseInput, action: 'delete', targetId: 'note_del' });
     const { entries } = queryAuditLogs({ action: 'delete' });
