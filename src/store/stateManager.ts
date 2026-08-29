@@ -1,9 +1,38 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { persistenceLayer } from './persistenceLayer';
+import { persistenceLayer, pruneUnknownKeys } from './persistenceLayer';
 import { deepMerge } from '../utils/stateUtils';
 import { stateLogger } from './devTools';
 import { UserRole } from '../types/api';
+
+/**
+ * Version of the persisted store schema. Bump when slices are added/removed or
+ * their shapes change so stale persisted state is pruned (unknown slices are
+ * dropped) instead of hydrating invalid state.
+ */
+export const PERSISTED_SCHEMA_VERSION = 1 as const;
+
+/** Top-level slices the current store knows about and may hydrate. */
+const PERSISTED_ALLOWED_KEYS = ['user', 'app'] as const;
+
+/**
+ * Zustand persist migration: prunes unknown/stale slices when a previously
+ * persisted payload was written under an older schema version.
+ */
+export function migratePersistedStoreState(
+  persistedState: unknown,
+  version: number,
+): unknown {
+  if (version === PERSISTED_SCHEMA_VERSION || persistedState == null) {
+    return persistedState;
+  }
+  return {
+    ...pruneUnknownKeys(
+      persistedState as Record<string, unknown>,
+      PERSISTED_ALLOWED_KEYS,
+    ),
+  };
+}
 
 interface UserState {
   id: string | null;
@@ -157,6 +186,8 @@ export const useStore = create<StoreState>()(
       }),
       {
         name: 'teachlink-storage',
+        version: PERSISTED_SCHEMA_VERSION,
+        migrate: migratePersistedStoreState,
         storage: createJSONStorage(() => persistenceLayer),
         partialize: (state: StoreState) => ({
           user: state.user,
