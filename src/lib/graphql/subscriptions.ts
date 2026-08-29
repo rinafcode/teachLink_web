@@ -15,6 +15,7 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { DocumentNode, print } from 'graphql';
 import { flagStore, evaluateFlag } from '@/lib/feature-flags';
 import { createLogger } from '@/lib/logging';
+import { REALTIME_CATCHUP_QUERY } from './subscriptionQueries';
 import {
   BaseRealtimeTransport,
   ConnectionSupervisor,
@@ -26,6 +27,77 @@ const logger = createLogger('graphql-subscriptions');
 
 /** Name under which the GraphQL subscription supervisor is registered. */
 export const GRAPHQL_SUBSCRIPTIONS_CONNECTION = 'graphql-subscriptions';
+
+/** The most recently created GraphQL client (for catch-up queries). */
+let activeClient: ApolloClient<any> | null = null;
+
+/** Listeners notified when the realtime connection may have missed events. */
+const catchUpListeners = new Set<(since: number | undefined) => void>();
+
+/**
+ * Register a listener invoked when events may have been missed while the
+ * realtime transport was down or when an inbound sequence gap is detected.
+ * The `since` argument is the last sequence number observed by the supervisor
+ * (`undefined` when none was ever seen).
+ */
+export function onSubscriptionCatchUp(
+  listener: (since: number | undefined) => void,
+): () => void {
+  catchUpListeners.add(listener);
+  return () => catchUpListeners.delete(listener);
+}
+
+function emitSubscriptionCatchUp(): void {
+  const since = getLastRealtimeSequence();
+  catchUpListeners.forEach((listener) => {
+    try {
+      listener(since);
+    } catch (error) {
+      logger.warn('[GraphQLSubscriptions] Catch-up listener failed', { error });
+    }
+  });
+}
+
+/** Highest inbound sequence observed by the GraphQL supervisor, if any. */
+export function getLastRealtimeSequence(): number | undefined {
+  return getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION)?.getLastSequence();
+}
+
+/** A single event returned by the realtime catch-up query. */
+export interface RealtimeEvent {
+  id: string;
+  sequence: number;
+  type: string;
+  payload: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+/**
+ * Fetches events that occurred after `since` through the active GraphQL
+ * client (HTTP). Returns `null` when no client is available or the query
+ * fails, so consumers can fall back to the live subscription stream.
+ */
+export async function requestRealtimeCatchUp(
+  since: string | number,
+): Promise<RealtimeEvent[] | null> {
+  const client = activeClient;
+  if (!client || typeof client.query !== 'function') {
+    logger.warn('[GraphQLSubscriptions] No active client for catch-up query');
+    return null;
+  }
+  try {
+    const result = await client.query({
+      query: REALTIME_CATCHUP_QUERY,
+      variables: { since: String(since) },
+      fetchPolicy: 'network-only',
+    });
+    const events = result.data?.realtimeEvents;
+    return Array.isArray(events) ? events : null;
+  } catch (error) {
+    logger.error('[GraphQLSubscriptions] Catch-up query failed', { error });
+    return null;
+  }
+}
 
 /**
  * WebSocket subscription configuration options
@@ -496,6 +568,12 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
         registerSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION, supervisor);
         supervisor.connect();
 
+        // Notify catch-up listeners when a inbound sequence gap is detected
+        // (events missed while the socket stayed open) and after every
+        // successful (re)connect so consumers can backfill the gap window.
+        supervisor.setCatchUpHandler(emitSubscriptionCatchUp);
+        supervisor.onReconnect(emitSubscriptionCatchUp);
+
         const wsClient = transport.getClient()!;
         const wsLink = new GraphQLWsLink(wsClient);
 
@@ -525,6 +603,8 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
       },
     }),
   });
+
+  activeClient = client;
 
   return client;
 }
