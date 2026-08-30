@@ -1,4 +1,5 @@
 import { SignJWT } from 'jose';
+import { getJWTConfig } from '@/config/environment';
 import { UserRole } from '@/types/api';
 
 export interface JWTPayload {
@@ -31,6 +32,8 @@ const getSecret = () => {
   if (!secret) throw new Error('JWT_SECRET environment variable is not set');
   return new TextEncoder().encode(secret);
 };
+
+const getClockSkewSeconds = (): number => getJWTConfig().clockSkewMs / 1000;
 
 /**
  * Signs a new JWT for the given payload. Uses the `jose` library (Node runtime).
@@ -85,7 +88,10 @@ export async function verifyToken(token: string | undefined | null): Promise<JWT
     const payloadJson = new TextDecoder().decode(base64UrlDecode(payloadB64));
     const payload = JSON.parse(payloadJson) as JWTPayload;
 
-    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+    const nowSeconds = Date.now() / 1000;
+    const clockSkewSeconds = getClockSkewSeconds();
+    if (payload.exp && nowSeconds > payload.exp + clockSkewSeconds) return null;
+    if (payload.nbf && nowSeconds < payload.nbf - clockSkewSeconds) return null;
 
     const validRoles: UserRole[] = [
       UserRole.ADMIN,
@@ -160,10 +166,11 @@ export async function verifyTokenDetailed(
     const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64))) as JWTPayload;
 
     const nowSeconds = Date.now() / 1000;
-    if (payload.exp && nowSeconds > payload.exp) {
+    const clockSkewSeconds = getClockSkewSeconds();
+    if (payload.exp && nowSeconds > payload.exp + clockSkewSeconds) {
       return { valid: false, payload, reason: 'expired' };
     }
-    if (payload.nbf && nowSeconds < payload.nbf) {
+    if (payload.nbf && nowSeconds < payload.nbf - clockSkewSeconds) {
       return { valid: false, payload, reason: 'not_yet_valid' };
     }
 
