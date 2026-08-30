@@ -12,6 +12,13 @@ export enum ErrorType {
   TIMEOUT = 'TIMEOUT',
   OFFLINE = 'OFFLINE',
   RATE_LIMIT = 'RATE_LIMIT',
+  /**
+   * A cross-origin request was blocked by the browser's CORS policy.
+   * These arrive as opaque TypeErrors with no HTTP status — keep them
+   * separate from generic NETWORK failures so backend / infra teams can
+   * triage misconfigured CORS headers independently.
+   */
+  CORS_BLOCKED = 'CORS_BLOCKED',
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -26,6 +33,44 @@ export interface ErrorInfo {
   actionSuggestion?: string;
 }
 
+/**
+ * Returns `true` when an error is most likely a browser CORS block.
+ *
+ * CORS violations are surfaced by the browser as an opaque `TypeError` with
+ * no HTTP status code.  We detect them by checking for:
+ *   1. A `TypeError` (the only error type the Fetch API emits for CORS)
+ *   2. A message pattern that matches known browser CORS wording
+ *   3. No attached HTTP status (rules out genuine server 4xx/5xx errors)
+ *
+ * This is deliberately conservative: if the message doesn't match we fall
+ * back to the generic NETWORK type rather than produce a false positive.
+ */
+export function isCorsError(error: unknown): boolean {
+  if (!(error instanceof TypeError)) return false;
+
+  // Browsers deliberately give only a generic message for CORS failures.
+  // The exact wording varies by browser but all contain one of these tokens.
+  const CORS_MESSAGE_PATTERNS = [
+    /cors/i,
+    /cross.?origin/i,
+    /access.?control/i,
+    /failed to fetch/i,
+    /networkerror/i,
+    /load failed/i, // Safari
+  ];
+
+  const message = error.message ?? '';
+  const matchesCorsPattern = CORS_MESSAGE_PATTERNS.some((re) => re.test(message));
+
+  // A genuine network error or abort has no status; CORS blocks also have none.
+  // We narrow further by requiring the message to match — this avoids mis-tagging
+  // plain "fetch is not defined" TypeErrors in server-side environments.
+  const hasNoStatus =
+    !('status' in (error as object)) && !('statusCode' in (error as object));
+
+  return matchesCorsPattern && hasNoStatus;
+}
+
 export function classifyError(error: any): ErrorInfo {
   const now = Date.now();
   const isValidationTypedError =
@@ -33,6 +78,19 @@ export function classifyError(error: any): ErrorInfo {
     typeof error === 'object' &&
     'type' in error &&
     (error as { type?: ErrorType }).type === ErrorType.VALIDATION;
+
+  // Check for CORS blocks before generic network errors: both arrive as
+  // TypeErrors but they require different remediation actions.
+  if (isCorsError(error)) {
+    return {
+      type: ErrorType.CORS_BLOCKED,
+      message: error.message,
+      timestamp: now,
+      retryable: false, // Retrying won't help — the server config must change.
+      userMessage: 'The request was blocked by a CORS policy. Please contact support.',
+      actionSuggestion: 'Contact support or check CORS configuration',
+    };
+  }
 
   if (error instanceof TypeError && error.message.includes('fetch')) {
     return {
