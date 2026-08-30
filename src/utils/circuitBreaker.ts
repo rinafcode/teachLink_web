@@ -18,6 +18,7 @@ export interface CircuitBreakerConfig {
   timeout: number; // Time in ms before attempting recovery
   monitoringPeriod: number; // Time window for failure counting
   maxConcurrentRequests: number; // Maximum concurrent toast operations
+  maxConcurrentHalfOpenProbes: number; // Maximum concurrent recovery probes
 }
 
 export interface CircuitBreakerMetrics {
@@ -37,6 +38,7 @@ const DEFAULT_CONFIG: CircuitBreakerConfig = {
   timeout: 60000, // 1 minute
   monitoringPeriod: 10000, // 10 seconds
   maxConcurrentRequests: 10,
+  maxConcurrentHalfOpenProbes: 1,
 };
 
 export class CircuitBreaker {
@@ -49,6 +51,7 @@ export class CircuitBreaker {
   private totalFailures: number = 0;
   private totalSuccesses: number = 0;
   private activeRequests: number = 0;
+  private activeHalfOpenProbes: number = 0;
   private failureHistory: number[] = [];
   private recoveryDeadline?: number;
 
@@ -82,7 +85,20 @@ export class CircuitBreaker {
       throw new Error('Maximum concurrent requests reached');
     }
 
+    const isHalfOpenProbe = this.state === 'HALF_OPEN';
+
+    if (isHalfOpenProbe && this.activeHalfOpenProbes >= this.config.maxConcurrentHalfOpenProbes) {
+      this.totalFailures++;
+      if (fallback) {
+        return fallback();
+      }
+      throw new Error('Maximum concurrent half-open probes reached');
+    }
+
     this.activeRequests++;
+    if (isHalfOpenProbe) {
+      this.activeHalfOpenProbes++;
+    }
 
     try {
       const result = await operation();
@@ -96,6 +112,9 @@ export class CircuitBreaker {
       throw error;
     } finally {
       this.activeRequests--;
+      if (isHalfOpenProbe) {
+        this.activeHalfOpenProbes--;
+      }
     }
   }
 
