@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { User, UserRole } from '@/types/api';
 import { verifyToken } from '@/lib/auth/jwt';
+import { checkIdentityRateLimit, resetIdentityRateLimit } from '@/lib/ratelimit';
 
 /**
  * Checks for authentication via Bearer token or internal API secret.
@@ -40,6 +41,24 @@ export async function requireAuth(request: NextRequest): Promise<NextResponse | 
  */
 // Narrow the returned type to only the fields this helper provides.
 type AuthUser = Pick<User, 'id' | 'name' | 'email' | 'role' | 'referralCount'>;
+
+/**
+ * Per-identity (email) rate limit for failed login attempts.
+ * Returns a 429 response if the identity has exceeded the allowed number of
+ * failed attempts within the sliding window, or null if the attempt is allowed.
+ */
+export function checkLoginRateLimit(email: string): NextResponse | null {
+  const { rateLimitResponse } = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+  return rateLimitResponse;
+}
+
+/**
+ * Resets the per-identity login rate limit after a successful authentication
+ * so the user's next batch of attempts starts with a fresh window.
+ */
+export function resetLoginRateLimit(email: string): void {
+  resetIdentityRateLimit(email, 'LOGIN_IDENTITY');
+}
 
 export function getUserFromRequest(request: NextRequest): AuthUser | null {
   // Try to get user from Bearer token
