@@ -198,3 +198,68 @@ export const useStore = create<StoreState>()(
     ),
   ),
 );
+
+// ---------------------------------------------------------------------------
+// Selector memoization
+// ---------------------------------------------------------------------------
+
+/** A memoized selector, with a way to drop its cached result. */
+export type MemoizedSelector<TArgs extends readonly unknown[], R> = ((...args: TArgs) => R) & {
+  /** Forgets the cached inputs and result. */
+  clear: () => void;
+};
+
+/**
+ * Memoizes a derivation by the identity of its inputs.
+ *
+ * Zustand compares a selector's *result* with `Object.is` to decide whether to
+ * re-render. A selector that derives a new array or object — `notifications
+ * .filter(...)` — therefore returns a fresh reference on every store update,
+ * so every subscriber re-renders whenever any unrelated slice changes, and the
+ * filter runs again each time.
+ *
+ * Caching the last inputs and result fixes both: given the same input
+ * references the computation is skipped and the previous reference is
+ * returned, so `Object.is` holds and the component does not re-render.
+ *
+ * Only the most recent call is cached. That is the right size here: a selector
+ * is called with the current state, and state moves forward, so a larger cache
+ * would retain memory to serve inputs that are not coming back.
+ *
+ * Arguments are compared with `Object.is`, which makes the memo as cheap as
+ * the comparison — it is not a deep equality check, so a caller that rebuilds
+ * an equal-but-distinct input on every call gains nothing.
+ */
+export function memoizeByInputs<TArgs extends readonly unknown[], R>(
+  compute: (...args: TArgs) => R,
+): MemoizedSelector<TArgs, R> {
+  let lastArgs: TArgs | null = null;
+  let lastResult!: R;
+  let hasResult = false;
+
+  const memoized = ((...args: TArgs): R => {
+    if (hasResult && lastArgs !== null && sameArgs(lastArgs, args)) {
+      return lastResult;
+    }
+
+    lastArgs = args;
+    lastResult = compute(...args);
+    hasResult = true;
+    return lastResult;
+  }) as MemoizedSelector<TArgs, R>;
+
+  memoized.clear = () => {
+    lastArgs = null;
+    hasResult = false;
+  };
+
+  return memoized;
+}
+
+function sameArgs(a: readonly unknown[], b: readonly unknown[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index += 1) {
+    if (!Object.is(a[index], b[index])) return false;
+  }
+  return true;
+}

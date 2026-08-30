@@ -22,6 +22,20 @@ export const SYNC_BACKOFF_CAP_MS = 10000;
 export const SYNC_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 /** Retention window (ms) for dead-lettered operations before GC (30 days). */
 export const DEAD_LETTER_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+/**
+ * Hard cap on retained acknowledged operations.
+ *
+ * Age alone does not bound the store: a device that syncs thousands of
+ * operations inside the retention window keeps every one of them. The cap
+ * evicts oldest-first once it is exceeded.
+ */
+export const SYNC_MAX_ACKED_RECORDS = 5000;
+/** Hard cap on retained dead-letter records, evicted oldest-first. */
+export const DEAD_LETTER_MAX_RECORDS = 500;
+/** How often the background retention sweep runs (6 hours). */
+export const SYNC_RETENTION_SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000;
+/** Retention window (ms) for persisted store slices before GC (30 days). */
+export const PERSISTED_STATE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 /** Background sync tag used by the service worker to trigger a drain. */
 export const SYNC_BACKGROUND_TAG = 'teachlink-offline-sync';
 
