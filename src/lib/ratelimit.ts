@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
+import { query } from '@/lib/db/pool';
 
 /**
- * In-memory sliding window rate limiter for API routes.
+ * Database-backed sliding window rate limiter for API routes.
  * Provides IP-based rate limiting with configurable limits and windows.
+ *
+ * Counters are persisted to PostgreSQL so they survive process restarts.
+ * An in-memory Map serves as a fast synchronous cache; every write is also
+ * persisted to the database asynchronously (fire-and-forget) so that
+ * subsequent processes can pick up the state after a deploy.
  *
  * Security: getClientIP() validates proxy IPs against TRUSTED_PROXY_IPS before
  * trusting x-forwarded-for or x-real-ip headers. Requests from untrusted sources
@@ -30,8 +36,79 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
+/**
+ * Fast in-memory cache used as the synchronous hot path.
+ * Writes are also persisted to the database asynchronously.
+ */
 const stores = new Map<string, RateLimitEntry>();
 
+/**
+ * Persists a single rate-limit entry to the database.
+ * Errors are silently swallowed so that a DB outage never blocks request
+ * processing — the in-memory cache still provides best-effort limiting.
+ */
+async function persistToDb(identifier: string, entry: RateLimitEntry): Promise<void> {
+  try {
+    await query(
+      `INSERT INTO rate_limits (identifier, count, reset_at, updated_at)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (identifier) DO UPDATE
+         SET count = EXCLUDED.count,
+             reset_at = EXCLUDED.reset_at,
+             updated_at = NOW()`,
+      [identifier, entry.count, entry.resetAt],
+    );
+  } catch {
+    // Silently ignore — the in-memory store is still authoritative for
+    // the current process, and DB unavailability should not break requests.
+  }
+}
+
+/**
+ * Removes an expired entry from the database.
+ */
+async function removeFromDb(identifier: string): Promise<void> {
+  try {
+    await query('DELETE FROM rate_limits WHERE identifier = $1', [identifier]);
+  } catch {
+    // Silently ignore.
+  }
+}
+
+/**
+ * Loads all non-expired rate-limit entries from the database into the
+ * in-memory cache on process startup.  Called once at module load time.
+ */
+async function loadFromDb(): Promise<void> {
+  try {
+    const now = Date.now();
+    const result = await query(
+      'SELECT identifier, count, reset_at FROM rate_limits WHERE reset_at > $1',
+      [now],
+    );
+    for (const row of result.rows) {
+      stores.set(row.identifier as string, {
+        count: row.count as number,
+        resetAt: row.reset_at as number,
+      });
+    }
+  } catch {
+    // DB may not be available yet (e.g. during build or early startup).
+    // The in-memory store will be used as a fallback.
+  }
+}
+
+// Kick off the load-on-startup — non-blocking.
+void loadFromDb();
+
+/**
+ * Synchronous sliding-window rate limiter backed by an in-memory cache
+ * with asynchronous database persistence.
+ *
+ * The function signature is intentionally synchronous so that the 30+
+ * existing call-sites (withRateLimit, certificate routes, etc.) do not
+ * need to become async.
+ */
 export function slidingWindowRateLimit(
   identifier: string,
   config: RateLimitConfig,
@@ -42,9 +119,12 @@ export function slidingWindowRateLimit(
   if (!entry || entry.resetAt <= now) {
     if (entry) {
       stores.delete(identifier);
+      void removeFromDb(identifier);
     }
     const resetAt = now + config.windowMs;
-    stores.set(identifier, { count: 1, resetAt });
+    const newEntry: RateLimitEntry = { count: 1, resetAt };
+    stores.set(identifier, newEntry);
+    void persistToDb(identifier, newEntry);
     return {
       success: true,
       remaining: config.limit - 1,
@@ -66,6 +146,7 @@ export function slidingWindowRateLimit(
 
   entry.count += 1;
   stores.set(identifier, entry);
+  void persistToDb(identifier, entry);
 
   return {
     success: true,
