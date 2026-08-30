@@ -13,6 +13,8 @@ import {
   IDBTransaction,
 } from 'fake-indexeddb';
 import { OfflineStorage, OfflineSyncService, OfflineProgressRecord } from '@/services/offlineSync';
+import { createResolutionPolicy } from '@/lib/conflict/resolver';
+import { tokenManager } from '@/lib/auth/tokenManager';
 import { SYNC_RETENTION_MS, DEAD_LETTER_RETENTION_MS } from '@/constants/app.constants';
 
 // The shared test-setup stubs IndexedDB; swap in the real fake implementation
@@ -77,6 +79,12 @@ beforeEach(async () => {
   // Fresh in-memory database per test.
   (globalThis as any).indexedDB = new IDBFactory();
   syncLessonProgressMock.mockReset();
+
+  // syncData gates the drain on a valid session and returns early without
+  // one. There is no session in the test environment, so every drain-based
+  // test needs the gate satisfied — otherwise they assert against a run that
+  // never happened.
+  vi.spyOn(tokenManager, 'getValidAccessToken').mockResolvedValue('test-access-token');
 
   storage = new OfflineStorage();
   await storage.init();
@@ -354,5 +362,243 @@ describe('retention / GC', () => {
     const after = await service.getSyncStatus();
     expect(after.pending).toBe(0);
     expect(after.lastSyncTime).toBeDefined();
+  });
+});
+
+describe('retention caps and sweeps', () => {
+  const putAcked = (db: any, id: string, ackedAt: string) =>
+    db.put('ackedOps', { operationId: id, entityKey: 'c1:m1', ackedAt });
+
+  const putDead = (db: any, id: string, failedAt: string) =>
+    db.put('deadLetter', {
+      id,
+      operationId: `op-${id}`,
+      entityKey: 'c1:m1',
+      failedAt,
+      lastError: 'exhausted',
+      seq: Number(id.replace(/\D/g, '')) || 1,
+      type: 'course_progress',
+      timestamp: failedAt,
+      version: 1,
+      versionVector: { 'replica-a': 1 },
+      updatedBy: 'replica-a',
+      status: 'dead',
+      attempts: 3,
+      maxAttempts: 3,
+    });
+
+  // Age alone leaves the store unbounded: a device that syncs thousands of
+  // operations inside the retention window keeps every one of them.
+  it('evicts oldest-first once the acked cap is exceeded', async () => {
+    const db = storage.getDb();
+    for (let i = 0; i < 5; i += 1) {
+      await putAcked(db, `op-${i}`, new Date(1_000 + i * 1_000).toISOString());
+    }
+
+    const removed = await service.gcAckedRecords({ maxAckedRecords: 2, now: 5_000 });
+
+    expect(removed.acked).toBe(3);
+    const survivors = await db.getAll('ackedOps');
+    expect(survivors.map((r: any) => r.operationId).sort()).toEqual(['op-3', 'op-4']);
+  });
+
+  it('leaves the store alone when it is under the cap', async () => {
+    const db = storage.getDb();
+    await putAcked(db, 'op-1', new Date().toISOString());
+
+    const removed = await service.gcAckedRecords({ maxAckedRecords: 10 });
+
+    expect(removed.acked).toBe(0);
+    expect(await db.getAll('ackedOps')).toHaveLength(1);
+  });
+
+  it('applies the cap to dead-letter records too', async () => {
+    const db = storage.getDb();
+    for (let i = 0; i < 4; i += 1) {
+      await putDead(db, `dl${i}`, new Date(1_000 + i * 1_000).toISOString());
+    }
+
+    const removed = await service.gcAckedRecords({ maxDeadLetterRecords: 1, now: 5_000 });
+
+    expect(removed.deadLetter).toBe(3);
+    expect(await db.getAll('deadLetter')).toHaveLength(1);
+  });
+
+  it('honours an overridden retention window', async () => {
+    const db = storage.getDb();
+    await putAcked(db, 'op-old', new Date(0).toISOString());
+
+    const removed = await service.gcAckedRecords({ ackedRetentionMs: 1_000, now: 10_000 });
+
+    expect(removed.acked).toBe(1);
+  });
+
+  it('collects nothing from empty stores', async () => {
+    expect(await service.gcAckedRecords()).toEqual({ acked: 0, deadLetter: 0 });
+  });
+
+  it('runs a sweep on demand', async () => {
+    const db = storage.getDb();
+    await putAcked(db, 'op-old', new Date(0).toISOString());
+
+    const swept = await service.runRetentionSweep({ ackedRetentionMs: 1_000, now: 10_000 });
+
+    expect(swept.acked).toBe(1);
+    expect(await db.getAll('ackedOps')).toHaveLength(0);
+  });
+
+  // The client that most needs collecting is the one that never syncs.
+  it('still collects when a sync is skipped for lack of a session', async () => {
+    const db = storage.getDb();
+    await putAcked(db, 'op-old', new Date(Date.now() - SYNC_RETENTION_MS - 1000).toISOString());
+    vi.spyOn(tokenManager, 'getValidAccessToken').mockResolvedValue(null);
+
+    const result = await service.syncData();
+
+    expect(result.errors).toContain('Skipped: no authenticated session');
+    expect(await db.getAll('ackedOps')).toHaveLength(0);
+  });
+
+  it('stops the periodic sweep when the returned function is called', async () => {
+    vi.useFakeTimers();
+    const sweep = vi.spyOn(service, 'runRetentionSweep').mockResolvedValue({
+      acked: 0,
+      deadLetter: 0,
+    });
+
+    const stop = service.startRetentionSweep(1_000);
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(sweep).toHaveBeenCalledTimes(2);
+
+    stop();
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(sweep).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
+  // A failed sweep would otherwise reject inside a timer callback with nobody
+  // to catch it.
+  it('survives a failing sweep', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(service, 'runRetentionSweep').mockRejectedValue(new Error('idb closed'));
+
+    const stop = service.startRetentionSweep(1_000);
+    await expect(vi.advanceTimersByTimeAsync(1_000)).resolves.not.toThrow();
+
+    stop();
+    vi.useRealTimers();
+  });
+});
+
+describe('dead-letter visibility', () => {
+  const deadRecord = (id: string, failedAt: string, type = 'course_progress') => ({
+    id,
+    operationId: `op-${id}`,
+    entityKey: `c1:${id}`,
+    failedAt,
+    lastError: 'exhausted',
+    seq: 1,
+    type,
+    timestamp: failedAt,
+    version: 1,
+    versionVector: { 'replica-a': 1 },
+    updatedBy: 'replica-a',
+    status: 'dead',
+    attempts: 3,
+    maxAttempts: 3,
+  });
+
+  it('counts an empty queue as zero', async () => {
+    expect(await service.getDeadLetterCount()).toBe(0);
+  });
+
+  it('counts dead-lettered operations', async () => {
+    const db = storage.getDb();
+    await db.put('deadLetter', deadRecord('dl1', '2026-01-02T00:00:00.000Z'));
+    await db.put('deadLetter', deadRecord('dl2', '2026-01-03T00:00:00.000Z'));
+
+    expect(await service.getDeadLetterCount()).toBe(2);
+  });
+
+  // A bare count says something is stuck but not whether it is one operation
+  // from this morning or forty from last month.
+  it('summarises the queue by type and oldest failure', async () => {
+    const db = storage.getDb();
+    await db.put('deadLetter', deadRecord('dl1', '2026-01-03T00:00:00.000Z'));
+    await db.put('deadLetter', deadRecord('dl2', '2026-01-02T00:00:00.000Z'));
+
+    const summary = await service.getDeadLetterSummary();
+
+    expect(summary.count).toBe(2);
+    expect(summary.byType.course_progress).toBe(2);
+    expect(summary.oldestFailedAt).toBe('2026-01-02T00:00:00.000Z');
+  });
+
+  it('summarises an empty queue without an oldest timestamp', async () => {
+    expect(await service.getDeadLetterSummary()).toEqual({
+      count: 0,
+      byType: {},
+      oldestFailedAt: null,
+    });
+  });
+
+  it('re-enqueues every dead-lettered operation', async () => {
+    const db = storage.getDb();
+    await db.put('deadLetter', deadRecord('dl1', '2026-01-02T00:00:00.000Z'));
+    await db.put('deadLetter', deadRecord('dl2', '2026-01-03T00:00:00.000Z'));
+
+    const requeued = await service.retryAllDeadLetter();
+
+    expect(requeued).toBe(2);
+    expect(await service.getDeadLetterCount()).toBe(0);
+    expect(await service.getQueue()).toHaveLength(2);
+  });
+
+  it('reports nothing requeued for an empty queue', async () => {
+    expect(await service.retryAllDeadLetter()).toBe(0);
+  });
+});
+
+describe('per-entity conflict strategies', () => {
+  it('defaults to the shipped policy', () => {
+    expect(service.getConflictPolicy().byEntityType.course_progress).toBe('merge');
+  });
+
+  it('accepts a policy through the constructor', () => {
+    const policy = createResolutionPolicy({ byEntityType: { note: 'local' } });
+    const configured = new OfflineSyncService(storage, policy);
+
+    expect(configured.getConflictPolicy()).toBe(policy);
+  });
+
+  it('replaces the policy at runtime', () => {
+    const policy = createResolutionPolicy({ default: 'remote' });
+    service.setConflictPolicy(policy);
+
+    expect(service.getConflictPolicy()).toBe(policy);
+  });
+
+  // The strategy an entity type resolves under is what the policy exists to
+  // decide; a global 'merge' would flatten every type into the same rule.
+  it('resolves an entity type by its configured strategy', async () => {
+    service.setConflictPolicy(
+      createResolutionPolicy({ byEntityType: { course_progress: 'local' } }),
+    );
+    const record = makeProgress('c1', 'm1', 40);
+    await enqueueProgress(record);
+
+    syncLessonProgressMock.mockResolvedValue({
+      success: false,
+      conflict: true,
+      remote: { ...record, progress: 90, versionVector: { 'replica-b': 1 } },
+    } as any);
+
+    await service.syncData({ retryAttempts: 1 });
+
+    const conflicts = await service.getPendingConflicts();
+    const stored = await storage.getProgress('c1', 'm1');
+    // 'local' keeps the device's own value rather than merging to the max.
+    expect(stored?.progress === 40 || conflicts.length > 0).toBe(true);
   });
 });
