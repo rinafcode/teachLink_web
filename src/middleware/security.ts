@@ -85,3 +85,40 @@ export function applySecurityHeaders(
 
   return response;
 }
+
+/** Entropy (in bytes) for a generated OAuth state nonce — 256 bits. */
+const OAUTH_STATE_BYTES = 32;
+
+/**
+ * Generate a cryptographically random OAuth `state` nonce.
+ *
+ * The OAuth `state` parameter must be unpredictable. A guessable value lets an
+ * attacker prefix the flow with a state they control, then submit the victim's
+ * authorization code back to the callback as a login CSRF. `Math.random()` is
+ * seeded by time and is not cryptographically strong, so the value is drawn
+ * from the CSPRNG (`crypto.getRandomValues`) available on the edge runtime.
+ */
+export function generateOAuthState(byteLength: number = OAUTH_STATE_BYTES): string {
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Constant-time comparison of an OAuth `state` nonce against the stored value.
+ * The value supplied on the callback (`actual`) must match the value stored
+ * when the flow started (`expected`); any mismatch aborts the exchange.
+ */
+export function validateOAuthState(actual?: string, expected?: string): boolean {
+  if (!actual || !expected || actual.length !== expected.length) {
+    return false;
+  }
+
+  let diff = 0;
+  for (let i = 0; i < expected.length; i += 1) {
+    diff |= actual.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+
+  return diff === 0;
+}
