@@ -5,7 +5,15 @@
 
 import { createLogger } from '@/lib/logging';
 import { createCounterMetric, measureAsync } from '@/lib/logging/performance';
-import { ExportExecutionOptions, emitProgress, prepareExportData } from '@/lib/export';
+import {
+  createCSVSnapshot,
+  createJSONSnapshot,
+  escapeHtml,
+  escapeXml,
+  ExportExecutionOptions,
+  emitProgress,
+  prepareExportData,
+} from '@/lib/export';
 import { ExportFormat, ExportTemplate } from './types';
 
 export interface ExportData {
@@ -87,64 +95,57 @@ export async function exportData(
 }
 
 async function exportToCSV(data: ExportData): Promise<Blob> {
-  const { headers, rows } = data;
-
-  const escape = (value: unknown): string => {
-    const str = String(value ?? '');
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-
-  const csvLines: string[] = [];
-  csvLines.push(headers.map(escape).join(','));
-
-  for (const row of rows) {
-    const values = headers.map((header) => escape(row[header]));
-    csvLines.push(values.join(','));
+  const parts: string[] = [];
+  for await (const chunk of createCSVSnapshot(data)) {
+    parts.push(chunk.join('\n'));
   }
 
-  return new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  return new Blob([parts.join('\n')], { type: 'text/csv;charset=utf-8;' });
 }
 
 async function exportToJSON(data: ExportData): Promise<Blob> {
-  return new Blob([JSON.stringify(data.rows, null, 2)], {
-    type: 'application/json;charset=utf-8;',
-  });
+  const parts: string[] = [];
+  for await (const chunk of createJSONSnapshot(data)) {
+    parts.push(chunk);
+  }
+
+  return new Blob(parts, { type: 'application/json;charset=utf-8;' });
 }
 
 async function exportToXLSX(data: ExportData): Promise<Blob> {
   const { headers, rows } = data;
 
-  let xml = '<?xml version="1.0"?>\n';
-  xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ';
-  xml += 'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
-  xml += '  <Worksheet ss:Name="Sheet1">\n';
-  xml += '    <Table>\n';
-  xml += '      <Row>\n';
-
-  for (const header of headers) {
-    xml += `        <Cell><Data ss:Type="String">${escapeXml(header)}</Data></Cell>\n`;
-  }
-
-  xml += '      </Row>\n';
-
+  const headerRow = headers
+    .map((header) => `<Cell><Data ss:Type="String">${escapeXml(header)}</Data></Cell>`)
+    .join('\n        ');
+  const rowChunks: string[] = [];
   for (const row of rows) {
-    xml += '      <Row>\n';
-    for (const header of headers) {
-      const value = row[header];
-      const type = typeof value === 'number' ? 'Number' : 'String';
-      xml += `        <Cell><Data ss:Type="${type}">${escapeXml(
-        String(value ?? ''),
-      )}</Data></Cell>\n`;
-    }
-    xml += '      </Row>\n';
+    rowChunks.push(
+      `      <Row>\n${headers
+        .map((header) => {
+          const value = row[header];
+          const type = typeof value === 'number' ? 'Number' : 'String';
+          return `        <Cell><Data ss:Type="${type}">${escapeXml(
+            String(value ?? ''),
+          )}</Data></Cell>`;
+        })
+        .join('\n')}\n      </Row>`,
+    );
   }
 
-  xml += '    </Table>\n';
-  xml += '  </Worksheet>\n';
-  xml += '</Workbook>';
+  const xml =
+    '<?xml version="1.0"?>\n' +
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ' +
+    'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n' +
+    '  <Worksheet ss:Name="Sheet1">\n' +
+    '    <Table>\n' +
+    '      <Row>\n' +
+    `        ${headerRow}\n` +
+    '      </Row>\n' +
+    rowChunks.join('\n') +
+    '\n    </Table>\n' +
+    '  </Worksheet>\n' +
+    '</Workbook>';
 
   return new Blob([xml], { type: 'application/vnd.ms-excel' });
 }
@@ -152,7 +153,8 @@ async function exportToXLSX(data: ExportData): Promise<Blob> {
 async function exportToPDF(data: ExportData, title: string): Promise<Blob> {
   const { headers, rows } = data;
 
-  let html = `<!DOCTYPE html>
+  const headPart =
+    `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -172,49 +174,32 @@ async function exportToPDF(data: ExportData, title: string): Promise<Blob> {
   <table>
     <thead>
       <tr>
-`;
-
-  for (const header of headers) {
-    html += `        <th>${escapeHtml(header)}</th>\n`;
-  }
-
-  html += `      </tr>
+` +
+    headers.map((header) => `        <th>${escapeHtml(header)}</th>`).join('\n') +
+    `
+      </tr>
     </thead>
     <tbody>
 `;
 
+  const bodyChunks: string[] = [];
   for (const row of rows) {
-    html += '      <tr>\n';
-    for (const header of headers) {
-      html += `        <td>${escapeHtml(String(row[header] ?? ''))}</td>\n`;
-    }
-    html += '      </tr>\n';
+    bodyChunks.push(
+      '      <tr>\n' +
+        headers
+          .map((header) => `        <td>${escapeHtml(String(row[header] ?? ''))}</td>`)
+          .join('\n') +
+        '\n      </tr>',
+    );
   }
 
-  html += `    </tbody>
+  const tailPart = `
+    </tbody>
   </table>
 </body>
 </html>`;
 
-  return new Blob([html], { type: 'text/html' });
-}
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return new Blob([headPart, bodyChunks.join('\n'), tailPart], { type: 'text/html' });
 }
 
 function extensionForFormat(format: ExportFormat): string {
