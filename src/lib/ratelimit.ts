@@ -171,6 +171,10 @@ export function getClientIP(request: Request): string {
 
 export const RATE_LIMIT_TIERS = {
   AUTH: { limit: 5, windowMs: 60_000 },
+  // Per-identity (email) throttle for failed login attempts. Uses a wider
+  // window than the IP-based AUTH tier so credential-stuffing bots that rotate
+  // IPs are still throttled per target account.
+  LOGIN_IDENTITY: { limit: 5, windowMs: 900_000 },
   WRITE: { limit: 30, windowMs: 60_000 },
   READ: { limit: 60, windowMs: 60_000 },
   // Lower tier for unauthenticated, client-driven endpoints (e.g. error
@@ -206,6 +210,36 @@ export function createRateLimitResponse(result: RateLimitResult): NextResponse |
   response.headers.set('Retry-After', String(retryAfter));
 
   return response;
+}
+
+/**
+ * Checks a per-identity (e.g. email) rate limit without binding to a request.
+ * Returns the rate limit result and a helper to produce a 429 response when
+ * the limit has been exceeded.
+ */
+export function checkIdentityRateLimit(
+  identity: string,
+  tier: RateLimitTier,
+): {
+  result: RateLimitResult;
+  rateLimitResponse: NextResponse | null;
+} {
+  const config = RATE_LIMIT_TIERS[tier];
+  const identifier = `identity:${identity}:${tier}`;
+  const result = slidingWindowRateLimit(identifier, config);
+  return {
+    result,
+    rateLimitResponse: createRateLimitResponse(result),
+  };
+}
+
+/**
+ * Resets the rate-limit counter for a given identity and tier. Called after a
+ * successful login so the user's next batch of attempts starts fresh.
+ */
+export function resetIdentityRateLimit(identity: string, tier: RateLimitTier): void {
+  const identifier = `identity:${identity}:${tier}`;
+  stores.delete(identifier);
 }
 
 export function withRateLimit<T extends Request>(

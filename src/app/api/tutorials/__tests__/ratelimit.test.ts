@@ -5,6 +5,8 @@ import {
   createRateLimitResponse,
   withRateLimit,
   RATE_LIMIT_TIERS,
+  checkIdentityRateLimit,
+  resetIdentityRateLimit,
 } from '@/lib/ratelimit';
 
 // ---------------------------------------------------------------------------
@@ -223,5 +225,106 @@ describe('withRateLimit', () => {
     // READ limit for the same IP should still be open
     const readAllowed = withRateLimit(makeRequest(ip), 'READ');
     expect(readAllowed.rateLimitResponse).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// checkIdentityRateLimit — per-identity (email) rate limiting
+// ---------------------------------------------------------------------------
+describe('checkIdentityRateLimit', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('allows requests within the LOGIN_IDENTITY limit', () => {
+    const email = `test-${Date.now()}@example.com`;
+
+    const r1 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    const r2 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    const r3 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+
+    expect(r1.rateLimitResponse).toBeNull();
+    expect(r2.rateLimitResponse).toBeNull();
+    expect(r3.rateLimitResponse).toBeNull();
+    expect(r3.result.remaining).toBe(2);
+  });
+
+  it('blocks after exceeding the LOGIN_IDENTITY limit (5 attempts / 15 min)', () => {
+    const email = `blocked-${Date.now()}@example.com`;
+
+    for (let i = 0; i < 5; i++) {
+      const r = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+      expect(r.rateLimitResponse).toBeNull();
+    }
+
+    const blocked = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(blocked.rateLimitResponse).not.toBeNull();
+    expect(blocked.rateLimitResponse!.status).toBe(429);
+    expect(blocked.result.success).toBe(false);
+    expect(blocked.result.retryAfter).toBeGreaterThan(0);
+  });
+
+  it('resets the window after resetIdentityRateLimit is called', () => {
+    const email = `reset-${Date.now()}@example.com`;
+
+    // Exhaust the limit
+    for (let i = 0; i < 5; i++) {
+      checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    }
+    const blocked = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(blocked.rateLimitResponse).not.toBeNull();
+
+    // Reset (simulates successful login)
+    resetIdentityRateLimit(email, 'LOGIN_IDENTITY');
+
+    const allowed = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(allowed.rateLimitResponse).toBeNull();
+    expect(allowed.result.remaining).toBe(4);
+  });
+
+  it('tracks different identities independently', () => {
+    const email1 = `user1-${Date.now()}@example.com`;
+    const email2 = `user2-${Date.now()}@example.com`;
+
+    // Exhaust limit for email1
+    for (let i = 0; i < 5; i++) {
+      checkIdentityRateLimit(email1, 'LOGIN_IDENTITY');
+    }
+    const blocked1 = checkIdentityRateLimit(email1, 'LOGIN_IDENTITY');
+    expect(blocked1.rateLimitResponse).not.toBeNull();
+
+    // email2 should still be allowed
+    const allowed2 = checkIdentityRateLimit(email2, 'LOGIN_IDENTITY');
+    expect(allowed2.rateLimitResponse).toBeNull();
+  });
+
+  it('returns correct remaining count', () => {
+    const email = `remaining-${Date.now()}@example.com`;
+
+    const r1 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(r1.result.remaining).toBe(4);
+
+    const r2 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(r2.result.remaining).toBe(3);
+  });
+
+  it('resets the window after the sliding window expires', () => {
+    const email = `expire-${Date.now()}@example.com`;
+    const windowMs = RATE_LIMIT_TIERS.LOGIN_IDENTITY.windowMs;
+
+    for (let i = 0; i < 5; i++) {
+      checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    }
+    const blocked = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(blocked.rateLimitResponse).not.toBeNull();
+
+    vi.advanceTimersByTime(windowMs + 1);
+
+    const allowed = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(allowed.rateLimitResponse).toBeNull();
   });
 });
