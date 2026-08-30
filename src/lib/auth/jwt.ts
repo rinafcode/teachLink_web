@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto';
 import { SignJWT } from 'jose';
 import { getJWTConfig } from '@/config/environment';
 import { UserRole } from '@/types/api';
@@ -112,6 +113,19 @@ function base64UrlDecode(str: string): Uint8Array {
   const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
   const binary = atob(padded);
   return Uint8Array.from(binary, (c) => c.charCodeAt(0));
+}
+
+/**
+ * Performs a constant-time comparison of two strings to prevent timing attacks.
+ * Both inputs are compared byte-by-byte regardless of where they differ.
+ */
+export function constantTimeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) {
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { verifyToken, verifyTokenDetailed } from '../jwt';
+import { constantTimeEqual, verifyToken, verifyTokenDetailed } from '../jwt';
 
 const SECRET = 'test-jwt-secret';
 const USER_ROLE = 'STUDENT' as const;
@@ -26,6 +26,58 @@ async function signTokenWithSecret(payload: Record<string, unknown>): Promise<st
     .replace(/=+$/g, '');
   return `${unsigned}.${signatureB64}`;
 }
+
+describe('constantTimeEqual', () => {
+  it('returns true for identical strings', () => {
+    expect(constantTimeEqual('hello', 'hello')).toBe(true);
+  });
+
+  it('returns false for different strings of the same length', () => {
+    expect(constantTimeEqual('hello', 'world')).toBe(false);
+  });
+
+  it('returns false for strings of different lengths', () => {
+    expect(constantTimeEqual('hello', 'helloo')).toBe(false);
+    expect(constantTimeEqual('hello', 'hell')).toBe(false);
+  });
+
+  it('returns true for empty strings', () => {
+    expect(constantTimeEqual('', '')).toBe(true);
+  });
+
+  it('returns false when one string is empty', () => {
+    expect(constantTimeEqual('', 'a')).toBe(false);
+    expect(constantTimeEqual('a', '')).toBe(false);
+  });
+
+  it('works with hex-encoded hash strings', () => {
+    const hash1 = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2';
+    const hash2 = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2';
+    const hash3 = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f3';
+
+    expect(constantTimeEqual(hash1, hash2)).toBe(true);
+    expect(constantTimeEqual(hash1, hash3)).toBe(false);
+  });
+
+  it('returns false for strings that differ only in the last character', () => {
+    expect(constantTimeEqual('aaaa', 'aaab')).toBe(false);
+  });
+
+  it('returns false for strings that differ only in the first character', () => {
+    expect(constantTimeEqual('aaaa', 'baaa')).toBe(false);
+  });
+
+  it('handles strings with special characters', () => {
+    expect(constantTimeEqual('hello world!', 'hello world!')).toBe(true);
+    expect(constantTimeEqual('hello world!', 'hello world?')).toBe(false);
+  });
+
+  it('handles strings with different byte lengths (unicode)', () => {
+    // héllo has a multi-byte UTF-8 char, making it different byte-length than hello
+    expect(constantTimeEqual('héllo', 'héllo')).toBe(true);
+    expect(constantTimeEqual('héllo', 'hello')).toBe(false);
+  });
+});
 
 describe('JWT clock skew tolerance', () => {
   beforeEach(() => {
