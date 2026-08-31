@@ -24,13 +24,27 @@ export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
   GUEST: [Permission.COURSE_VIEW],
 };
 
+const ROLE_HIERARCHY = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN] as const;
+
+const roleHierarchyIndex = new Map<UserRole, number>(
+  ROLE_HIERARCHY.map((role, index) => [role, index]),);
+
+const rolePermissionsCache = new Map<UserRole, Permission[]>();
+
+function getPermissionsForRole(role: UserRole): Permission[] {
+  if (!rolePermissionsCache.has(role)) {
+    rolePermissionsCache.set(role, ROLES_PERMISSIONS[role] ?? []);
+  }
+  return rolePermissionsCache.get(role)!;
+}
+
 /**
- * Check if a user (or any object that contains a role) has a specific permission.
+ * Check if a user (or any object that contains a role)  has a specific permission.
  */
 export function hasPermission(user: RoleHolder | null | undefined, permission: Permission): boolean {
   if (!user) return false;
 
-  const permissions = ROLES_PERMISSIONS[user.role] ?? [];
+  const permissions = getPermissionsForRole(user.role);
   return permissions.includes(permission);
 }
 
@@ -75,9 +89,10 @@ export function isAtLeast(user: RoleHolder | null | undefined, role: UserRole): 
 export function isAtLeastRole(userRole: UserRole | null | undefined, role: UserRole): boolean {
   if (!userRole) return false;
 
-  const hierarchy = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN];
-  const userRoleIndex = hierarchy.indexOf(userRole);
-  const requiredRoleIndex = hierarchy.indexOf(role);
+  const userRoleIndex = roleHierarchyIndex.get(userRole);
+  const requiredRoleIndex = roleHierarchyIndex.get(role);
+
+  if (userRoleIndex === undefined || requiredRoleIndex === undefined) return false;
 
   return userRoleIndex >= requiredRoleIndex;
 }
