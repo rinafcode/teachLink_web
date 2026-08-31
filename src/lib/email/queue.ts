@@ -13,6 +13,12 @@ const DEFAULT_OPTIONS: QueueOptions = {
 };
 
 /**
+ * Upper bound for exponential backoff between retries, so a stuck queue
+ * doesn't stall with ever-growing delays.
+ */
+const DEFAULT_MAX_RETRY_DELAY_MS = 30_000;
+
+/**
  * How long a completed send is remembered for dedupe purposes.
  *
  * Long enough to cover the retries and redeliveries that cause duplicates,
@@ -158,7 +164,11 @@ export class EmailQueue {
       }
 
       if (job.attempts < this.options.maxRetries) {
-        await delay(this.options.retryDelayMs * job.attempts);
+        const backoff = Math.min(
+          this.options.retryDelayMs * 2 ** (job.attempts - 1),
+          DEFAULT_MAX_RETRY_DELAY_MS,
+        );
+        await delay(backoff);
       }
     }
 
