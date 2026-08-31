@@ -10,6 +10,8 @@
  * - HALF_OPEN: Testing if the system has recovered
  */
 
+import { recordCircuitBreakerStateChange } from '@/lib/monitoring/metrics';
+
 export type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
 export interface CircuitBreakerConfig {
@@ -173,7 +175,8 @@ export class CircuitBreaker {
    * Transition to a new state
    */
   private transitionTo(newState: CircuitState): void {
-    if (this.state === newState) return;
+    const previousState = this.state;
+    if (previousState === newState) return;
 
     this.state = newState;
     this.lastStateChange = Date.now();
@@ -188,6 +191,8 @@ export class CircuitBreaker {
     } else if (newState === 'HALF_OPEN') {
       this.successCount = 0;
     }
+
+    recordCircuitBreakerStateChange(previousState, newState);
   }
 
   /**
@@ -210,13 +215,10 @@ export class CircuitBreaker {
    * Manually reset the circuit breaker
    */
   reset(): void {
-    this.state = 'CLOSED';
-    this.failureCount = 0;
-    this.successCount = 0;
-    this.lastFailureTime = undefined;
-    this.lastStateChange = Date.now();
+    this.transitionTo('CLOSED');
     this.failureHistory = [];
     this.recoveryDeadline = undefined;
+    this.lastFailureTime = undefined;
   }
 
   /**
