@@ -5,6 +5,7 @@
 import type { ConsentPreferences } from './types';
 
 const CONSENT_API = '/api/v1/consent';
+const CONSENT_EXPORT_API = '/api/v1/consent/export';
 
 export interface RemoteConsentPayload {
   userId: string;
@@ -13,9 +14,21 @@ export interface RemoteConsentPayload {
 }
 
 /** Fetch stored consent preferences for a user from the server. */
-export async function fetchRemoteConsent(userId: string): Promise<RemoteConsentPayload | null> {
+export async function fetchRemoteConsent(userId: string): Promise<RemoteConsentPayload null> {
   try {
     const res = await fetch(`${CONSENT_API}?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) return null;
+    const json = (await res.json()) as { data?: RemoteConsentPayload };
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch consent data for GDPR subject-data export. */
+export async function fetchConsentExport(userId: string): Promise<RemoteConsentPayload null> {
+  try {
+    const res = await fetch(`${CONSENT_EXPORT_API}?userId=${encodeURIComponent(userId)}`);
     if (!res.ok) return null;
     const json = (await res.json()) as { data?: RemoteConsentPayload };
     return json.data ?? null;
