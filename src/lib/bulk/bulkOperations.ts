@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api';
+import { apiClient } from '@lib/api';
 
 export type BulkOperationType = 'create' | 'update' | 'delete';
 
@@ -30,6 +30,8 @@ export interface BulkResult<T> {
 export interface BulkOptions {
   /** Batch size for processing (default: 50) */
   batchSize?: number;
+  /** Maximum number of concurrent operations (default: 10) */
+  concurrency?: number;
   /** Progress callback */
   onProgress?: (progress: BulkProgress) => void;
   /** Cancellation token */
@@ -39,16 +41,50 @@ export interface BulkOptions {
 }
 
 const DEFAULT_BATCH_SIZE = 50;
+const DEFAULT_CONCURRENCY = 10;
 
 /**
- * Generic bulk operation processor with batching, progress tracking, and cancellation.
+ * A simple semaphore to limit concurrency of async operations.
+ */
+class Semaphore {
+  private capacity: number;
+  private active = 0;
+  private waiters: Array<() => void> = [];
+
+  constructor(capacity: number) {
+    this.capacity = Math.max(1, Math.floor(capacity));
+  }
+
+  async acquire(): Promise<void> {
+    if (this.active < this.capacity) {
+      this.active++;
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      this.waiters.push(resolve);
+    });
+  }
+
+  release(): void {
+    this.active--;
+    const next = this.waiters.shift();
+    if (next) {
+      this.active++;
+      next();
+    }
+  }
+}
+
+/**
+ * Generic bulk operation processor with batching, progress tracking, cancellation,
+ * and bounded concurrency via a semaphore.
  */
 async function processBulkOperation<T extends { id?: string }>(
   items: T[],
   operation: BulkOperationType,
   options: BulkOptions = {},
 ): Promise<BulkResult<T>> {
-  const { batchSize = DEFAULT_BATCH_SIZE, onProgress, signal, endpoint } = options;
+  const { batchSize = DEFAULT_BATCH_SIZE, concurrency = DEFAULT_CONCURRENCY, onProgress, signal, endpoint } = options;
   const successful: BulkSuccessItem<T>[] = [];
   const failed: BulkFailedItem<T>[] = [];
   let completed = 0;
@@ -56,10 +92,11 @@ async function processBulkOperation<T extends { id?: string }>(
 
   const total = items.length;
   const endpointBase = endpoint || '/api/bulk';
+  const semaphore = new Semaphore(concurrency);
 
   const reportProgress = (currentItem?: unknown) => {
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-    onProgress?.({ completed, total, percentage, currentItem });
+    onProgress?.{ completed, total, percentage, currentItem });
   };
 
   // Process in batches
@@ -75,6 +112,7 @@ async function processBulkOperation<T extends { id?: string }>(
         return { item, success: false, error: new Error('Operation cancelled') } as const;
       }
 
+      await semaphore.acquire();
       try {
         let result: unknown;
         const url = `${endpointBase}/${operation}`;
@@ -100,6 +138,8 @@ async function processBulkOperation<T extends { id?: string }>(
           success: false,
           error: error instanceof Error ? error : new Error(String(error)),
         } as const;
+      } finally {
+        semaphore.release();
       }
     });
 
