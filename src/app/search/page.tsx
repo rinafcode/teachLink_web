@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { AdvancedSearchInterface } from '@/components/search/AdvancedSearchInterface';
 
 export const metadata: Metadata = {
@@ -21,7 +22,15 @@ export const metadata: Metadata = {
 export default function SearchPage() {
   return (
     <main className="min-h-screen bg-slate-50/50">
-      <AdvancedSearchInterface />
+      <Suspense
+        fallback={
+          <div className="max-w-6xl mx-auto px-4 py-12 text-center text-slate-400">
+            Loading search...
+          </div>
+        }
+      >
+        <AdvancedSearchInterface />
+      </Suspense>
     </main>
   );
 }
