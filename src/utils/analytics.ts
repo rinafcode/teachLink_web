@@ -83,6 +83,21 @@ export interface AnalyticsEvent {
 export type AnalyticsAdapter = (event: AnalyticsEvent) => void | Promise<void>;
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Sampling configuration for high-volume events
+// ──────────────────────────────────────────────────────────────────────────────
+
+const HIGH_VOLUME_EVENT_NAMES: EventName[] = [
+  'page_view',
+  'button_clicked',
+  'link_clicked',
+  'search_performed',
+  'filter_applied',
+  'sort_changed',
+];
+
+const DEFAULT_SAMPLE_RATE = 0.1; // Only send 10% of high-volume events
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Built-in adapters
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -143,6 +158,7 @@ class Analytics {
   private adapters: AnalyticsAdapter[] = [consoleAdapter];
   private userId: string | undefined;
   private globalProperties: EventProperties = {};
+  private sampleRates: Partial<Record<string, number>> = {};
 
   private get sessionId(): string {
     return getOrCreate(SESSION_KEY, () => generateId('s_'));
@@ -188,6 +204,12 @@ class Analytics {
     this.globalProperties = { ...this.globalProperties, ...properties };
   }
 
+  /** Set sampling rate for a specific event type. Rate is 0-1. */
+  setSampleRate(eventName: EventName, rate: number): this {
+    this.sampleRates[eventName] = Math.min(1, Math.max(0, rate));
+    return this;
+  }
+
   track(name: EventName, properties: EventProperties = {}): void {
     const event: AnalyticsEvent = {
       name,
@@ -197,6 +219,12 @@ class Analytics {
       anonymousId: this.anonymousId,
       userId: this.userId,
     };
+
+    // Sample high-volume events unless explicitly configured otherwise
+    const sampleRate = this.sampleRates[name] ?? (HIGH_VOLUME_EVENT_NAMES.includes(name) ? DEFAULT_SAMPLE_RATE : 1);
+    if (sampleRate < 1 && Math.random() > sampleRate) {
+      return;
+    }
 
     for (const adapter of this.adapters) {
       try {
