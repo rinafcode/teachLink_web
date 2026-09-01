@@ -14,13 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate PR body contains issue closing keyword
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const body = context.payload.pull_request?.body || '';
+            const title = context.payload.pull_request?.title || '';
             // Accept common keywords: close, closes, closed, fix, fixes, fixed, resolve, resolves, resolved
-            // Require a GitHub issue reference like: "Closes #123"
-            const re = /(close[sd]?|fix(ed|es)?|resolve[sd]?)\s+#\d+/i;
-            if (!re.test(body)) {
+            // Require a GitHub assue reference like: "Closes #123"
+            const re = /(close[sd]?|fix(ed|es)?|resolve[sd]?)\s+#\d+/;
+            const isSecurityFix = /^fix\(security\):/i.test(title);
+            if (!isSecurityFix && !re.test(body)) {
               core.setFailed('PR description must reference an issue using e.g. "Closes #123".');
             }
