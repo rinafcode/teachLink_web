@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { User, UserRole } from '@/types/api';
-import { verifyToken } from '@/lib/auth/jwt';
+import { verifyToken, verifyRefreshToken, updateRotationSequence } from '@/lib/auth/jwt';
 import { checkIdentityRateLimit, resetIdentityRateLimit } from '@/lib/ratelimit';
 
 /**
@@ -33,6 +33,53 @@ export async function requireAuth(request: NextRequest): Promise<NextResponse | 
   }
 
   return null;
+}
+
+/**
+ * Verify a refresh token with reuse detection.
+ * Returns a 401 response if the token is invalid or reused, or the verified payload if valid.
+ * Usage: const result = await verifyRefreshTokenAuth(request);
+ */
+export async function verifyRefreshTokenAuth(
+  request: NextRequest,
+): Promise<{ payload: null; response: NextResponse } | { payload: import('@/lib/auth/jwt').RefreshTokenPayload; response: null }> {
+  const body = await request.json().catch(() => ({}));
+  const refreshToken = (body as { refreshToken?: string }).refreshToken;
+
+  if (!refreshToken) {
+    return {
+      payload: null,
+      response: NextResponse.json({ message: 'Refresh token required' }, { status: 400 }),
+    };
+  }
+
+  const verification = await verifyRefreshToken(refreshToken);
+
+  if (!verification.valid || !verification.payload) {
+    const status = verification.reason === 'refresh_token_reuse_detected' ? 401 : 401;
+    return {
+      payload: null,
+      response: NextResponse.json(
+        {
+          message:
+            verification.reason === 'refresh_token_reuse_detected'
+              ? 'Refresh token reuse detected. Please log in again.'
+              : 'Invalid refresh token',
+        },
+        { status },
+      ),
+    };
+  }
+
+  return { payload: verification.payload, response: null };
+}
+
+/**
+ * Update the rotation sequence after a successful token refresh.
+ * Should be called after issuing new tokens to record the new sequence.
+ */
+export function updateRefreshTokenSequence(family: string, newSequence: number): void {
+  updateRotationSequence(family, newSequence);
 }
 
 /**
