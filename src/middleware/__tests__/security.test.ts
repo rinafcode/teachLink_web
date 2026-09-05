@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { NextRequest, NextResponse } from 'next/server';
-import { applySecurityHeaders, buildSecurityHeaders } from '../security';
+import {
+  applySecurityHeaders,
+  buildSecurityHeaders,
+  generateOAuthState,
+  validateOAuthState,
+} from '../security';
 import { CSP_NONCE_REQUEST_HEADER, CSP_NONCE_RESPONSE_HEADER, containsUnsafeSources } from '../csp';
 
 function createRequest(options: { nonce?: string; protocol?: string } = {}): NextRequest {
@@ -103,5 +108,38 @@ describe('applySecurityHeaders', () => {
     expect(containsUnsafeSources(response.headers.get('Content-Security-Policy') ?? '')).toBe(
       false,
     );
+  });
+});
+
+describe('generateOAuthState', () => {
+  it('returns distinct, high-entropy hex nonces', () => {
+    const state1 = generateOAuthState();
+    const state2 = generateOAuthState();
+
+    expect(state1).toMatch(/^[0-9a-f]{64}$/);
+    expect(state2).toMatch(/^[0-9a-f]{64}$/);
+    expect(state1).not.toBe(state2);
+  });
+
+  it('derives entropy from the configured byte length', () => {
+    expect(generateOAuthState(16)).toMatch(/^[0-9a-f]{32}$/);
+    expect(generateOAuthState(1)).toMatch(/^[0-9a-f]{2}$/);
+  });
+});
+
+describe('validateOAuthState', () => {
+  it('accepts a matching value', () => {
+    expect(validateOAuthState('deadbeef', 'deadbeef')).toBe(true);
+  });
+
+  it('rejects mismatched values', () => {
+    expect(validateOAuthState('deadbeef', 'deadbeec')).toBe(false);
+    expect(validateOAuthState('deadbeef', 'deadbeef1')).toBe(false);
+  });
+
+  it('rejects missing values', () => {
+    expect(validateOAuthState(undefined, 'deadbeef')).toBe(false);
+    expect(validateOAuthState('deadbeef', undefined)).toBe(false);
+    expect(validateOAuthState(undefined, undefined)).toBe(false);
   });
 });

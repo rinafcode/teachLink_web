@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   slidingWindowRateLimit,
   getClientIP,
   createRateLimitResponse,
   withRateLimit,
   RATE_LIMIT_TIERS,
+  checkIdentityRateLimit,
+  resetIdentityRateLimit,
 } from '@/lib/ratelimit';
 
 // Mock the DB pool to prevent real database calls during tests
@@ -16,9 +18,13 @@ vi.mock('@/lib/db/pool', () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
+// A trusted proxy used throughout so header-derived client IPs are honored.
+// Without a configured allowlist getClientIP ignores forwarded headers.
+const TRUSTED_PROXY = '10.0.0.1';
+
 function makeRequest(ip = '1.2.3.4'): Request {
   return new Request('https://example.com/api/tutorials', {
-    headers: { 'x-forwarded-for': ip },
+    headers: { 'x-forwarded-for': ip, 'cf-connecting-ip': TRUSTED_PROXY },
   });
 }
 
@@ -34,7 +40,6 @@ describe('slidingWindowRateLimit', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
-
 
   it('allows requests within the limit', () => {
     const config = { limit: 3, windowMs: 60_000 };
@@ -114,21 +119,36 @@ describe('RATE_LIMIT_TIERS', () => {
 // ---------------------------------------------------------------------------
 
 describe('getClientIP', () => {
-  it('extracts IP from x-forwarded-for header', () => {
+  const original = process.env.TRUSTED_PROXY_IPS;
+
+  afterEach(() => {
+    if (original === undefined) {
+      delete process.env.TRUSTED_PROXY_IPS;
+    } else {
+      process.env.TRUSTED_PROXY_IPS = original;
+    }
+  });
+
+  it('extracts IP from x-forwarded-for header when connection is from a trusted proxy', () => {
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
     const req = new Request('https://example.com', {
-      headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1' },
+      headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1', 'cf-connecting-ip': TRUSTED_PROXY },
     });
     expect(getClientIP(req)).toBe('203.0.113.1');
   });
 
-  it('falls back to x-real-ip', () => {
+  it('ignores x-forwarded-for when no trusted proxy is configured (spoofing prevention)', () => {
+    // Legacy deployments that never configure TRUSTED_PROXY_IPS must not trust
+    // the header, otherwise a client could spoof its IP to bypass rate limits.
+    delete process.env.TRUSTED_PROXY_IPS;
     const req = new Request('https://example.com', {
-      headers: { 'x-real-ip': '203.0.113.2' },
+      headers: { 'x-forwarded-for': '203.0.113.2' },
     });
-    expect(getClientIP(req)).toBe('203.0.113.2');
+    expect(getClientIP(req)).toBe('127.0.0.1');
   });
 
   it('returns 127.0.0.1 when no IP header is present', () => {
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
     const req = new Request('https://example.com');
     expect(getClientIP(req)).toBe('127.0.0.1');
   });
@@ -166,8 +186,20 @@ describe('createRateLimitResponse', () => {
 // ---------------------------------------------------------------------------
 
 describe('withRateLimit', () => {
+  const original = process.env.TRUSTED_PROXY_IPS;
+
   beforeEach(() => {
     vi.useFakeTimers();
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    if (original === undefined) {
+      delete process.env.TRUSTED_PROXY_IPS;
+    } else {
+      process.env.TRUSTED_PROXY_IPS = original;
+    }
   });
 
   it('allows a GET /tutorials request under READ limit', () => {
@@ -228,5 +260,106 @@ describe('withRateLimit', () => {
     // READ limit for the same IP should still be open
     const readAllowed = withRateLimit(makeRequest(ip), 'READ');
     expect(readAllowed.rateLimitResponse).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// checkIdentityRateLimit — per-identity (email) rate limiting
+// ---------------------------------------------------------------------------
+describe('checkIdentityRateLimit', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('allows requests within the LOGIN_IDENTITY limit', () => {
+    const email = `test-${Date.now()}@example.com`;
+
+    const r1 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    const r2 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    const r3 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+
+    expect(r1.rateLimitResponse).toBeNull();
+    expect(r2.rateLimitResponse).toBeNull();
+    expect(r3.rateLimitResponse).toBeNull();
+    expect(r3.result.remaining).toBe(2);
+  });
+
+  it('blocks after exceeding the LOGIN_IDENTITY limit (5 attempts / 15 min)', () => {
+    const email = `blocked-${Date.now()}@example.com`;
+
+    for (let i = 0; i < 5; i++) {
+      const r = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+      expect(r.rateLimitResponse).toBeNull();
+    }
+
+    const blocked = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(blocked.rateLimitResponse).not.toBeNull();
+    expect(blocked.rateLimitResponse!.status).toBe(429);
+    expect(blocked.result.success).toBe(false);
+    expect(blocked.result.retryAfter).toBeGreaterThan(0);
+  });
+
+  it('resets the window after resetIdentityRateLimit is called', () => {
+    const email = `reset-${Date.now()}@example.com`;
+
+    // Exhaust the limit
+    for (let i = 0; i < 5; i++) {
+      checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    }
+    const blocked = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(blocked.rateLimitResponse).not.toBeNull();
+
+    // Reset (simulates successful login)
+    resetIdentityRateLimit(email, 'LOGIN_IDENTITY');
+
+    const allowed = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(allowed.rateLimitResponse).toBeNull();
+    expect(allowed.result.remaining).toBe(4);
+  });
+
+  it('tracks different identities independently', () => {
+    const email1 = `user1-${Date.now()}@example.com`;
+    const email2 = `user2-${Date.now()}@example.com`;
+
+    // Exhaust limit for email1
+    for (let i = 0; i < 5; i++) {
+      checkIdentityRateLimit(email1, 'LOGIN_IDENTITY');
+    }
+    const blocked1 = checkIdentityRateLimit(email1, 'LOGIN_IDENTITY');
+    expect(blocked1.rateLimitResponse).not.toBeNull();
+
+    // email2 should still be allowed
+    const allowed2 = checkIdentityRateLimit(email2, 'LOGIN_IDENTITY');
+    expect(allowed2.rateLimitResponse).toBeNull();
+  });
+
+  it('returns correct remaining count', () => {
+    const email = `remaining-${Date.now()}@example.com`;
+
+    const r1 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(r1.result.remaining).toBe(4);
+
+    const r2 = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(r2.result.remaining).toBe(3);
+  });
+
+  it('resets the window after the sliding window expires', () => {
+    const email = `expire-${Date.now()}@example.com`;
+    const windowMs = RATE_LIMIT_TIERS.LOGIN_IDENTITY.windowMs;
+
+    for (let i = 0; i < 5; i++) {
+      checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    }
+    const blocked = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(blocked.rateLimitResponse).not.toBeNull();
+
+    vi.advanceTimersByTime(windowMs + 1);
+
+    const allowed = checkIdentityRateLimit(email, 'LOGIN_IDENTITY');
+    expect(allowed.rateLimitResponse).toBeNull();
   });
 });

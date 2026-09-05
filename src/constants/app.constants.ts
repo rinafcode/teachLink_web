@@ -51,6 +51,8 @@ export const API_TIMEOUT_UPLOAD = 60000;
 export const API_TIMEOUT_DOWNLOAD = 60000;
 export const API_TIMEOUT_SEARCH = 15000;
 export const API_CACHE_TTL_DEFAULT = 300000; // 5 minutes
+export const API_CACHE_MAX_ENTRIES_DEFAULT = 100;
+export const API_CACHE_MAX_SIZE_DEFAULT = 100;
 
 // API URLs & Endpoints
 export const DEFAULT_SOCKET_URL = 'http://localhost:3001';

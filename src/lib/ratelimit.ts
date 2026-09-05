@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db/pool';
+import { getTrustedProxyConfig } from '@/config/environment';
 
 /**
  * Database-backed sliding window rate limiter for API routes.
@@ -10,9 +11,10 @@ import { query } from '@/lib/db/pool';
  * persisted to the database asynchronously (fire-and-forget) so that
  * subsequent processes can pick up the state after a deploy.
  *
- * Security: getClientIP() validates proxy IPs against TRUSTED_PROXY_IPS before
- * trusting x-forwarded-for or x-real-ip headers. Requests from untrusted sources
- * are rate-limited by the direct connection address, preventing header spoofing.
+ * Security: getClientIP() only trusts x-forwarded-for / x-real-ip headers when
+ * the request arrives from a proxy listed in TRUSTED_PROXY_IPS (see
+ * src/config/environment.ts). When no proxies are configured the headers are
+ * ignored entirely, preventing IP spoofing from bypassing rate limits.
  */
 
 export interface RateLimitConfig {
@@ -157,67 +159,41 @@ export function slidingWindowRateLimit(
 }
 
 /**
- * Parses the TRUSTED_PROXY_IPS environment variable into a Set of trimmed IP strings.
- *
- * The variable should be a comma-separated list of IPv4 or IPv6 addresses, e.g.:
- *   TRUSTED_PROXY_IPS=10.0.0.1,10.0.0.2,172.16.0.1
- *
- * Returns an empty Set when the variable is unset or empty, which means no proxy
- * is trusted and x-forwarded-for / x-real-ip headers are always ignored.
- */
-export function parseTrustedProxyIPs(envValue: string | undefined): Set<string> {
-  if (!envValue || envValue.trim() === '') {
-    return new Set();
-  }
-  const ips = envValue
-    .split(',')
-    .map((ip) => ip.trim())
-    .filter((ip) => ip.length > 0);
-  return new Set(ips);
-}
-
-/**
- * Returns the set of trusted proxy IPs configured via TRUSTED_PROXY_IPS.
- * Parsed once per module load and cached for performance.
- *
- * Exported for testing purposes — tests can override process.env before importing
- * or call parseTrustedProxyIPs() directly.
- */
-export function getTrustedProxyIPs(): Set<string> {
-  return parseTrustedProxyIPs(process.env.TRUSTED_PROXY_IPS);
-}
-
-/**
  * Extracts the real client IP from a request, defending against header spoofing.
  *
- * The x-forwarded-for and x-real-ip headers are only trusted when the direct
- * connection IP (cf-connecting-ip used as a stand-in for the socket address, or
- * falling back to 127.0.0.1) originates from a known proxy listed in
- * TRUSTED_PROXY_IPS. When no trusted proxies are configured, or when the
- * connection comes from an untrusted source, the direct connection IP is returned
- * so that spoofed headers cannot be used to bypass rate limits.
+ * Forwarded headers (x-forwarded-for, x-real-ip, cf-connecting-ip) are only
+ * trusted when the request arrives directly from a proxy listed in
+ * TRUSTED_PROXY_IPS. When no trusted proxies are configured — or when the
+ * connection does not come from a trusted proxy — the forwarded headers are
+ * ignored and the fallback sentinel is returned, so spoofed headers cannot be
+ * used to rotate rate-limit buckets.
  *
- * Header precedence (when trusted):
+ * Header precedence (when the connection is from a trusted proxy):
  *   1. x-forwarded-for  – standard proxy chain header; leftmost IP is the client
  *   2. x-real-ip        – set by nginx and similar proxies
  *   3. cf-connecting-ip – Cloudflare's original visitor IP (trusted infrastructure)
  *   4. fallback         – 127.0.0.1 (local / direct connection)
  */
 export function getClientIP(request: Request): string {
-  const trustedProxies = getTrustedProxyIPs();
+  const { trustedProxyIPs } = getTrustedProxyConfig();
+
+  // When no trusted proxies are configured, trusting x-forwarded-for would let
+  // any client spoof its IP and bypass rate limits — so forwarded headers are
+  // always ignored in that case.
+  if (trustedProxyIPs.size === 0) {
+    return '127.0.0.1';
+  }
 
   // Determine the direct connection address. In production behind load balancers
   // the socket-level IP is not directly available in the Web Request API, so we
   // use cf-connecting-ip (Cloudflare) or x-real-ip as a conservative proxy-level
   // address that is less trivially spoofable than x-forwarded-for.
-  // When no trusted proxies are configured we fall back immediately.
   const directConnectionIP =
     request.headers.get('cf-connecting-ip') ?? request.headers.get('x-real-ip') ?? null;
 
-  const isFromTrustedProxy =
-    trustedProxies.size > 0 &&
-    directConnectionIP !== null &&
-    trustedProxies.has(directConnectionIP);
+  // The request is only eligible for header-derived IPs if it was received from
+  // a configured trusted proxy. Otherwise all forwarded headers are ignored.
+  const isFromTrustedProxy = directConnectionIP !== null && trustedProxyIPs.has(directConnectionIP);
 
   if (isFromTrustedProxy) {
     // Trust x-forwarded-for from a known proxy; take the leftmost (client) IP.
@@ -231,27 +207,17 @@ export function getClientIP(request: Request): string {
     if (directConnectionIP) return directConnectionIP;
   }
 
-  // No trusted proxy configuration — legacy / unconfigured deployment.
-  // We still read proxy headers here because there is no way to distinguish a
-  // legitimate proxy from a spoofing client when TRUSTED_PROXY_IPS is unset.
-  // Deployments that care about spoofing MUST set TRUSTED_PROXY_IPS.
-  if (trustedProxies.size === 0) {
-    const forwarded = request.headers.get('x-forwarded-for');
-    if (forwarded) {
-      const firstIP = forwarded.split(',')[0]?.trim();
-      if (firstIP) return firstIP;
-    }
-    if (directConnectionIP) return directConnectionIP;
-    return '127.0.0.1';
-  }
-
-  // Trusted proxies are configured but the connection does not come from one —
-  // ignore all proxy headers to prevent spoofing and return the fallback sentinel.
+  // Connection does not come from a trusted proxy — ignore all proxy headers
+  // to prevent spoofing and return the fallback sentinel.
   return '127.0.0.1';
 }
 
 export const RATE_LIMIT_TIERS = {
   AUTH: { limit: 5, windowMs: 60_000 },
+  // Per-identity (email) throttle for failed login attempts. Uses a wider
+  // window than the IP-based AUTH tier so credential-stuffing bots that rotate
+  // IPs are still throttled per target account.
+  LOGIN_IDENTITY: { limit: 5, windowMs: 900_000 },
   WRITE: { limit: 30, windowMs: 60_000 },
   READ: { limit: 60, windowMs: 60_000 },
   // Lower tier for unauthenticated, client-driven endpoints (e.g. error
@@ -287,6 +253,36 @@ export function createRateLimitResponse(result: RateLimitResult): NextResponse |
   response.headers.set('Retry-After', String(retryAfter));
 
   return response;
+}
+
+/**
+ * Checks a per-identity (e.g. email) rate limit without binding to a request.
+ * Returns the rate limit result and a helper to produce a 429 response when
+ * the limit has been exceeded.
+ */
+export function checkIdentityRateLimit(
+  identity: string,
+  tier: RateLimitTier,
+): {
+  result: RateLimitResult;
+  rateLimitResponse: NextResponse | null;
+} {
+  const config = RATE_LIMIT_TIERS[tier];
+  const identifier = `identity:${identity}:${tier}`;
+  const result = slidingWindowRateLimit(identifier, config);
+  return {
+    result,
+    rateLimitResponse: createRateLimitResponse(result),
+  };
+}
+
+/**
+ * Resets the rate-limit counter for a given identity and tier. Called after a
+ * successful login so the user's next batch of attempts starts fresh.
+ */
+export function resetIdentityRateLimit(identity: string, tier: RateLimitTier): void {
+  const identifier = `identity:${identity}:${tier}`;
+  stores.delete(identifier);
 }
 
 export function withRateLimit<T extends Request>(

@@ -10,6 +10,8 @@
  * - HALF_OPEN: Testing if the system has recovered
  */
 
+import { recordCircuitBreakerStateChange } from '@/lib/monitoring/metrics';
+
 export type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
 export interface CircuitBreakerConfig {
@@ -18,6 +20,7 @@ export interface CircuitBreakerConfig {
   timeout: number; // Time in ms before attempting recovery
   monitoringPeriod: number; // Time window for failure counting
   maxConcurrentRequests: number; // Maximum concurrent toast operations
+  maxConcurrentHalfOpenProbes: number; // Maximum concurrent recovery probes
 }
 
 export interface CircuitBreakerMetrics {
@@ -37,6 +40,7 @@ const DEFAULT_CONFIG: CircuitBreakerConfig = {
   timeout: 60000, // 1 minute
   monitoringPeriod: 10000, // 10 seconds
   maxConcurrentRequests: 10,
+  maxConcurrentHalfOpenProbes: 1,
 };
 
 export class CircuitBreaker {
@@ -49,6 +53,7 @@ export class CircuitBreaker {
   private totalFailures: number = 0;
   private totalSuccesses: number = 0;
   private activeRequests: number = 0;
+  private activeHalfOpenProbes: number = 0;
   private failureHistory: number[] = [];
   private recoveryDeadline?: number;
 
@@ -82,7 +87,20 @@ export class CircuitBreaker {
       throw new Error('Maximum concurrent requests reached');
     }
 
+    const isHalfOpenProbe = this.state === 'HALF_OPEN';
+
+    if (isHalfOpenProbe && this.activeHalfOpenProbes >= this.config.maxConcurrentHalfOpenProbes) {
+      this.totalFailures++;
+      if (fallback) {
+        return fallback();
+      }
+      throw new Error('Maximum concurrent half-open probes reached');
+    }
+
     this.activeRequests++;
+    if (isHalfOpenProbe) {
+      this.activeHalfOpenProbes++;
+    }
 
     try {
       const result = await operation();
@@ -96,6 +114,9 @@ export class CircuitBreaker {
       throw error;
     } finally {
       this.activeRequests--;
+      if (isHalfOpenProbe) {
+        this.activeHalfOpenProbes--;
+      }
     }
   }
 
@@ -154,7 +175,8 @@ export class CircuitBreaker {
    * Transition to a new state
    */
   private transitionTo(newState: CircuitState): void {
-    if (this.state === newState) return;
+    const previousState = this.state;
+    if (previousState === newState) return;
 
     this.state = newState;
     this.lastStateChange = Date.now();
@@ -169,6 +191,8 @@ export class CircuitBreaker {
     } else if (newState === 'HALF_OPEN') {
       this.successCount = 0;
     }
+
+    recordCircuitBreakerStateChange(previousState, newState);
   }
 
   /**
@@ -191,13 +215,10 @@ export class CircuitBreaker {
    * Manually reset the circuit breaker
    */
   reset(): void {
-    this.state = 'CLOSED';
-    this.failureCount = 0;
-    this.successCount = 0;
-    this.lastFailureTime = undefined;
-    this.lastStateChange = Date.now();
+    this.transitionTo('CLOSED');
     this.failureHistory = [];
     this.recoveryDeadline = undefined;
+    this.lastFailureTime = undefined;
   }
 
   /**

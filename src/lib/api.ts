@@ -11,6 +11,7 @@ import {
   RECONNECT_DELAY_MS,
   STORAGE_KEYS,
   API_CACHE_TTL_DEFAULT,
+  API_CACHE_MAX_ENTRIES_DEFAULT,
 } from '@/constants/app.constants';
 import { logContextStorage } from './logging/context';
 import { tokenManager } from '@/lib/auth/tokenManager';
@@ -27,6 +28,7 @@ const DEFAULT_TIMEOUT_MS = API_TIMEOUT_DEFAULT;
 const API_MAX_RETRIES = MAX_RETRIES;
 const RETRY_DELAY_MS = RECONNECT_DELAY_MS;
 const DEFAULT_TTL_MS = API_CACHE_TTL_DEFAULT;
+const DEFAULT_MAX_CACHE_SIZE = API_CACHE_MAX_ENTRIES_DEFAULT;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,6 +62,8 @@ export interface ApiClientConfig {
   retryDelay?: number;
   apiVersion?: string;
   defaultTTL?: number;
+  maxCacheSize?: number;
+  maxCacheEntries?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,6 +108,7 @@ class ApiClientImpl {
   private errorInterceptors: ErrorInterceptor[] = [];
 
   constructor(config: ApiClientConfig = {}) {
+    const maxCache = config.maxCacheSize ?? config.maxCacheEntries ?? DEFAULT_MAX_CACHE_SIZE;
     this.config = {
       baseURL: config.baseURL || process.env.NEXT_PUBLIC_API_URL || '',
       timeout: config.timeout || DEFAULT_TIMEOUT_MS,
@@ -111,6 +116,8 @@ class ApiClientImpl {
       retryDelay: config.retryDelay || RETRY_DELAY_MS,
       apiVersion: config.apiVersion || DEFAULT_API_VERSION,
       defaultTTL: config.defaultTTL || DEFAULT_TTL_MS,
+      maxCacheSize: maxCache,
+      maxCacheEntries: maxCache,
     };
   }
 
@@ -123,6 +130,36 @@ class ApiClientImpl {
     if (managed) return managed;
     if (typeof window === 'undefined') return null;
     return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+  }
+
+  private getFromCache<T>(key: string): CacheEntry<T> | undefined {
+    const cached = this.cache.get(key);
+    if (cached) {
+      // LRU refresh: re-insert so it becomes the most recently used entry
+      this.cache.delete(key);
+      this.cache.set(key, cached);
+    }
+    return cached;
+  }
+
+  private setInCache<T>(key: string, data: T): void {
+    if (this.config.maxCacheSize <= 0) return;
+
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+
+    while (this.cache.size >= this.config.maxCacheSize) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey === undefined) break;
+      this.cache.delete(oldestKey);
+    }
+
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  getCacheSize(): number {
+    return this.cache.size;
   }
 
   invalidateCache(url?: string) {
@@ -163,7 +200,7 @@ class ApiClientImpl {
 
     // CACHE
     if (config.method === 'GET' && config.useCache && !config._bypassCacheRead) {
-      const cached = this.cache.get(cacheKey);
+      const cached = this.getFromCache<T>(cacheKey);
       if (cached) {
         const ttl = config.ttl ?? this.config.defaultTTL;
         if (Date.now() - cached.timestamp < ttl) return cached.data;
@@ -228,7 +265,7 @@ class ApiClientImpl {
       const data = await response.json();
 
       if (config.method === 'GET' && config.useCache) {
-        this.cache.set(cacheKey, { data, timestamp: Date.now() });
+        this.setInCache(cacheKey, data);
       }
 
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method || '')) {
@@ -327,4 +364,4 @@ class ApiClientImpl {
 
 // Singleton
 export const apiClient = new ApiClientImpl();
-export type { ApiClientImpl };
+export { ApiClientImpl };

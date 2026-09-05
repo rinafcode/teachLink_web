@@ -40,6 +40,26 @@ export function recordAuthMetric(
   createCounterMetric(name, 1, tags);
 }
 
+/** Circuit breaker state machine states. */
+export type CircuitBreakerState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+
+/**
+ * Record a circuit breaker state transition as a counter. The metric is
+ * named `circuit_breaker.state_change` and tagged with the previous and new
+ * states so dashboards can count each transition independently.
+ */
+export function recordCircuitBreakerStateChange(
+  previousState: CircuitBreakerState,
+  newState: CircuitBreakerState,
+  tags?: Record<string, string | number | boolean>,
+): void {
+  createCounterMetric('circuit_breaker.state_change', 1, {
+    from: previousState,
+    to: newState,
+    ...tags,
+  });
+}
+
 /** Rolling window used to turn individual request outcomes into a rate. */
 export const DEFAULT_ERROR_RATE_WINDOW_MS = 60_000;
 
