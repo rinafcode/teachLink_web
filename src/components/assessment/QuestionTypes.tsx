@@ -43,7 +43,7 @@ export interface CodeChallengeAssessmentQuestion extends AssessmentQuestionBase 
   codeTemplate: string;
   language: string;
   testCases: AssessmentTestCase[];
-  partialCredit: boolean;
+  partialCredit?: boolean;
 }
 
 export interface EssayAssessmentQuestion extends AssessmentQuestionBase {
