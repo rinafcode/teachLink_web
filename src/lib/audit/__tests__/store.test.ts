@@ -1,11 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { appendAuditLog, queryAuditLogs, getAuditStoreSnapshot } from '../store';
-
-vi.mock('@/lib/audit', () => ({
-  appendAuditLog,
-  queryAuditLogs,
-  getAuditStoreSnapshot,
-}));
 
 const baseInput = {
   actorId: 'user_1',
@@ -19,12 +13,22 @@ const baseInput = {
   statusCode: 201,
 };
 
-describe('audit store', () => {
+describe('audit store (in-memory, Edge-safe)', () => {
   it('appends a log entry with correct fields', () => {
     const entry = appendAuditLog(baseInput);
     expect(entry.id).toMatch(/^audit_/);
     expect(entry.action).toBe('create');
     expect(entry.method).toBe('POST');
+  });
+
+  it('propagates the trace id into the log entry', () => {
+    const entry = appendAuditLog({ ...baseInput, traceId: 'trace_abc123' });
+    expect(entry.traceId).toBe('trace_abc123');
+  });
+
+  it('omits trace id when not provided', () => {
+    const entry = appendAuditLog(baseInput);
+    expect(entry.traceId).toBeUndefined();
   });
 
   it('returns filtered results by action', () => {
@@ -43,5 +47,12 @@ describe('audit store', () => {
   it('respects limit', () => {
     const { entries } = queryAuditLogs({ limit: 1 });
     expect(entries.length).toBeLessThanOrEqual(1);
+  });
+
+  it('caps the in-memory buffer at 50 entries', () => {
+    for (let i = 0; i < 60; i++) {
+      appendAuditLog({ ...baseInput, targetId: `bulk_${i}` });
+    }
+    expect(getAuditStoreSnapshot().length).toBeLessThanOrEqual(50);
   });
 });

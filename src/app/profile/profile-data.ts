@@ -31,15 +31,67 @@ export interface Achievement {
   earnedAt: string;
 }
 
-export const profileUser: ProfileUser = {
-  initials: 'JD',
-  name: 'John Doe',
-  email: 'john.doe@example.com',
-  bio: 'Passionate about Web3 technologies and decentralized learning platforms.',
+/**
+ * Fallback profile shown when there is no authenticated session (or the
+ * session could not be resolved). Intentionally generic — it must never look
+ * like a specific person's real data.
+ */
+export const guestProfileUser: ProfileUser = {
+  initials: 'GU',
+  name: 'Guest',
+  email: '',
+  bio: 'Sign in to personalize your profile.',
   learningGoal: 'Complete 1 course per month',
   dailyLearningTime: '30 minutes',
   avatarUrl: '/avatars/default.png',
 };
+
+/** @deprecated Use {@link buildProfileUser} with the current session instead of this static placeholder. */
+export const profileUser: ProfileUser = guestProfileUser;
+
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'GU';
+  const first = parts[0][0];
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+  return (first + last).toUpperCase();
+}
+
+function nameFromEmail(email: string): string {
+  const local = email.split('@')[0] ?? '';
+  const words = local
+    .replace(/[._-]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w[0].toUpperCase() + w.slice(1));
+  return words.length ? words.join(' ') : 'Member';
+}
+
+/** Minimal identity fields available from a verified session/JWT. */
+export interface SessionIdentity {
+  id: string;
+  email?: string;
+}
+
+/**
+ * Builds the `ProfileUser` shown on the profile page from the current
+ * session. Falls back to {@link guestProfileUser} when there is no session,
+ * rather than ever rendering placeholder data as if it belonged to a real
+ * signed-in user.
+ */
+export function buildProfileUser(session: SessionIdentity | null): ProfileUser {
+  if (!session) return guestProfileUser;
+
+  const name = session.email ? nameFromEmail(session.email) : `Member ${session.id.slice(0, 8)}`;
+
+  return {
+    ...guestProfileUser,
+    initials: initialsFromName(name),
+    name,
+    email: session.email ?? '',
+    bio: 'Welcome back! Tell the community a bit about yourself.',
+  };
+}
 
 export const profileTabs: Array<{ id: ProfileTabId; label: string }> = [
   { id: 'profile', label: 'Profile' },

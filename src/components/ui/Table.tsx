@@ -43,6 +43,7 @@ export interface TableProps<T> {
 interface TableRowProps<T> {
   row: T;
   rowId: string;
+  index: number;
   columns: ColumnDef<T>[];
   onRowClick?: (row: T) => void;
   onRowDoubleTap?: (row: T) => void;
@@ -58,6 +59,7 @@ interface TableRowProps<T> {
 function TableRow<T>({
   row,
   rowId,
+  index,
   columns,
   onRowClick,
   onRowDoubleTap,
@@ -229,7 +231,7 @@ function TableRow<T>({
               style={style}
             >
               {col.render
-                ? col.render(row, 0)
+                ? col.render(row, index)
                 : (row[col.key as keyof T] as unknown as React.ReactNode)}
             </div>
           );
@@ -532,13 +534,14 @@ export function Table<T>({
                 No data available
               </div>
             ) : (
-              pageItems.map((row) => {
+              pageItems.map((row, index) => {
                 const id = getRowId(row);
                 return (
                   <MemoizedTableRow
                     key={id}
                     row={row}
                     rowId={id}
+                    index={page * pageSize + index}
                     columns={columns}
                     onRowClick={onRowClick}
                     onRowDoubleTap={onRowDoubleTap}

@@ -1,6 +1,123 @@
 /**
- * Example GraphQL Subscriptions
- * Common subscription queries for TeachLink real-time features
+ * GraphQL Subscriptions
+ *
+ * ## Overview
+ * This module provides typed GraphQL subscription queries for real-time features in TeachLink.
+ * All subscriptions are automatically managed by the ConnectionSupervisor and will be
+ * resubscribed automatically after a socket reconnection.
+ *
+ * ## Automatic Resubscription
+ * When a WebSocket connection drops and reconnects:
+ * 1. The ConnectionSupervisor detects the disconnection
+ * 2. It automatically initiates reconnection with exponential backoff
+ * 3. Upon successful reconnection, all active subscriptions are re-established
+ * 4. Subscription handlers continue receiving updates without manual intervention
+ *
+ * ## Usage Example
+ * ```typescript
+ * import { subscribeRealtime } from '@/lib/graphql/subscriptions';
+ * import { USER_NOTIFICATIONS_SUBSCRIPTION } from '@/lib/graphql/subscriptionQueries';
+ *
+ * // Subscribe to notifications
+ * const unsubscribe = subscribeRealtime(
+ *   `user-notifications-${userId}`,  // Unique ID for this subscription
+ *   USER_NOTIFICATIONS_SUBSCRIPTION,   // GraphQL subscription document
+ *   { userId },                        // Variables to pass to the subscription
+ *   (data) => {                        // Handler for incoming data
+ *     console.log('New notification:', data);
+ *   }
+ * );
+ *
+ * // Unsubscribe when done (cleanup)
+ * unsubscribe();
+ * ```
+ *
+ * ## Subscription Lifecycle
+ * - **Initial Subscribe**: Subscription is established immediately when subscribeRealtime is called
+ * - **Active**: Subscription receives data from the server
+ * - **Disconnect**: If socket drops, subscription remains registered in the supervisor
+ * - **Reconnect**: Upon reconnection, all registered subscriptions are automatically re-established
+ * - **Unsubscribe**: Calling the returned unsubscribe function removes the subscription
+ *
+ * ## Error Handling
+ * Subscription errors are logged and emitted through the connection supervisor's error handlers.
+ * If a subscription fails during resubscription:
+ * - The error is logged with context
+ * - The subscription remains registered for future reconnect attempts
+ * - Other subscriptions are not affected
+ *
+ * ## Monitoring
+ * Get active subscriptions:
+ * ```typescript
+ * import { getActiveSubscriptions, getActiveSubscriptionCount } from '@/lib/graphql/subscriptions';
+ *
+ * const activeIds = getActiveSubscriptions();
+ * const count = getActiveSubscriptionCount();
+ * ```
+ *
+ * Listen to connection status:
+ * ```typescript
+ * import { getConnectionManager } from '@/lib/graphql/subscriptions';
+ *
+ * const manager = getConnectionManager();
+ * manager.onStateChange((event) => {
+ *   console.log('Connection state:', event.state);
+ * });
+ * ```
+ *
+ * ## Common Patterns
+ *
+ * ### React Hook (useSubscription)
+ * ```typescript
+ * function useNotifications(userId: string) {
+ *   const [notifications, setNotifications] = useState([]);
+ *
+ *   useEffect(() => {
+ *     const unsubscribe = subscribeRealtime(
+ *       `notifications-${userId}`,
+ *       USER_NOTIFICATIONS_SUBSCRIPTION,
+ *       { userId },
+ *       (data) => setNotifications(prev => [...prev, data])
+ *     );
+ *     return unsubscribe;
+ *   }, [userId]);
+ *
+ *   return notifications;
+ * }
+ * ```
+ *
+ * ### Multiple Subscriptions
+ * ```typescript
+ * // Multiple subscriptions are supported and will all be resubscribed
+ * const unsub1 = subscribeRealtime('sub1', QUERY_1, vars1, handler1);
+ * const unsub2 = subscribeRealtime('sub2', QUERY_2, vars2, handler2);
+ * const unsub3 = subscribeRealtime('sub3', QUERY_3, vars3, handler3);
+ *
+ * // Clean up individually
+ * unsub1();
+ * unsub2();
+ * unsub3();
+ * ```
+ *
+ * ## Performance Considerations
+ * - Each subscription maintains state in memory (query, variables, handler)
+ * - Handlers should be efficient to avoid blocking the event loop
+ * - Unsubscribe when the subscription is no longer needed
+ * - The supervisor manages outbound queue with bounded backpressure
+ *
+ * ## Feature Gate
+ * GraphQL subscriptions can be feature-gated using feature flags:
+ * ```typescript
+ * const client = createSubscriptionClient({
+ *   subscriptionUrl: 'ws://...',
+ *   httpUrl: 'http://...',
+ *   featureGate: {
+ *     flagId: 'realtime_subscriptions',
+ *     context: { userId, plan }
+ *   }
+ * });
+ * ```
+ * When the flag is disabled, subscriptions fall back to HTTP polling.
  */
 
 import { gql } from '@apollo/client';

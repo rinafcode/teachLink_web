@@ -1,5 +1,6 @@
 import {
   ConflictRecord,
+  ConflictResolutionPolicy,
   ResolutionStrategy,
   ProgressData,
   VersionVector,
@@ -8,7 +9,14 @@ import {
   MergeEntityType,
 } from './types';
 
-export type { ConflictRecord, ResolutionStrategy, VersionVector, VectorComparison } from './types';
+export type {
+  ConflictRecord,
+  ConflictResolutionPolicy,
+  EntityStrategyMap,
+  ResolutionStrategy,
+  VersionVector,
+  VectorComparison,
+} from './types';
 
 // ---------------------------------------------------------------------------
 // Version vector helpers
@@ -113,7 +121,10 @@ function isProgressData(data: any): data is ProgressData {
 /** Resolve using the per-entity-type strategy (falls back to shape detection, then generic). */
 export function resolveByEntityType<T>(entityType: string, local: T, remote: T): T {
   if (entityType !== 'generic') {
-    const strategy = (MERGE_STRATEGIES as Record<string, MergeStrategy>)[entityType];
+    // Registry rather than the frozen map, so a strategy registered for a new
+    // entity type is actually used rather than silently falling through to the
+    // generic merge.
+    const strategy = getMergeStrategy(entityType);
     if (strategy) return strategy(local, remote) as T;
   }
   // Progress-like payloads always use the deterministic progress merge so the
@@ -225,4 +236,122 @@ export function createConflictRecord<T>(
       },
     ],
   };
+}
+
+// ---------------------------------------------------------------------------
+// Per-entity-type resolution policy
+// ---------------------------------------------------------------------------
+
+/**
+ * Default policy: merge deterministically unless an entity type says otherwise.
+ *
+ * `course_progress` is listed explicitly rather than left to the default so
+ * that changing the default later cannot silently change how progress — the
+ * one payload with a proven deterministic merge — is resolved.
+ */
+export const DEFAULT_RESOLUTION_POLICY: ConflictResolutionPolicy = Object.freeze({
+  default: 'merge' as ResolutionStrategy,
+  byEntityType: Object.freeze({
+    course_progress: 'merge' as ResolutionStrategy,
+  }),
+});
+
+/**
+ * Builds a policy from partial overrides, leaving the defaults in place for
+ * anything not named. Returns a frozen value: a policy that can be mutated
+ * after the fact would make resolution depend on call order.
+ */
+export function createResolutionPolicy(
+  overrides: {
+    default?: ResolutionStrategy;
+    byEntityType?: Record<string, ResolutionStrategy>;
+  } = {},
+): ConflictResolutionPolicy {
+  return Object.freeze({
+    default: overrides.default ?? DEFAULT_RESOLUTION_POLICY.default,
+    byEntityType: Object.freeze({
+      ...DEFAULT_RESOLUTION_POLICY.byEntityType,
+      ...(overrides.byEntityType ?? {}),
+    }),
+  });
+}
+
+/**
+ * Returns a copy of `policy` with `entityType` bound to `strategy`.
+ *
+ * Immutable by design — callers hold onto the returned policy rather than
+ * relying on a mutated global, so two subsystems cannot fight over the same
+ * entity type.
+ */
+export function withEntityStrategy(
+  policy: ConflictResolutionPolicy,
+  entityType: string,
+  strategy: ResolutionStrategy,
+): ConflictResolutionPolicy {
+  return Object.freeze({
+    default: policy.default,
+    byEntityType: Object.freeze({ ...policy.byEntityType, [entityType]: strategy }),
+  });
+}
+
+/** The strategy that applies to `entityType` under `policy`. */
+export function strategyForEntity(
+  entityType: string | undefined,
+  policy: ConflictResolutionPolicy = DEFAULT_RESOLUTION_POLICY,
+): ResolutionStrategy {
+  if (!entityType) return policy.default;
+  return policy.byEntityType[entityType] ?? policy.default;
+}
+
+/**
+ * Resolves a conflict using the strategy the policy assigns to `entityType`.
+ *
+ * This is the entry point to prefer over [`resolveConflict`] when the caller
+ * knows the entity type but not which strategy should apply to it.
+ */
+export function resolveConflictForEntity<T>(
+  entityType: string,
+  local: T,
+  remote: T,
+  policy: ConflictResolutionPolicy = DEFAULT_RESOLUTION_POLICY,
+): T {
+  return resolveConflict(local, remote, strategyForEntity(entityType, policy), entityType);
+}
+
+// ---------------------------------------------------------------------------
+// Merge strategy registry
+// ---------------------------------------------------------------------------
+
+const mergeStrategyRegistry = new Map<string, MergeStrategy>(
+  Object.entries(MERGE_STRATEGIES),
+);
+
+/**
+ * Registers a deterministic merge strategy for an entity type.
+ *
+ * The strategy must be a pure function of `(local, remote)` and must produce
+ * the same result whichever way round it is called — the same conflict is
+ * resolved independently on every device, and they have to agree.
+ */
+export function registerMergeStrategy(entityType: string, strategy: MergeStrategy): void {
+  mergeStrategyRegistry.set(entityType, strategy);
+}
+
+/** Removes a registered strategy. Returns true when one was removed. */
+export function unregisterMergeStrategy(entityType: string): boolean {
+  if (entityType in MERGE_STRATEGIES) return false;
+  return mergeStrategyRegistry.delete(entityType);
+}
+
+/** Restores the registry to the strategies this module ships with. */
+export function resetMergeStrategies(): void {
+  mergeStrategyRegistry.clear();
+  for (const [entityType, strategy] of Object.entries(MERGE_STRATEGIES)) {
+    mergeStrategyRegistry.set(entityType, strategy);
+  }
+}
+
+/** The merge strategy registered for `entityType`, if any. */
+export function getMergeStrategy(entityType: string): MergeStrategy | undefined {
+  return mergeStrategyRegistry.get(entityType);
 }

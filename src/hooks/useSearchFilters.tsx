@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { debounce } from '../utils/formUtils';
 
 export interface FilterState {
   difficulty: string[];
@@ -76,7 +77,7 @@ export const useSearchFilters = () => {
   }, [router, pathname, searchParams]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const debouncedSync = debounce(() => {
       const params = new URLSearchParams();
 
       if (filters.difficulty && filters.difficulty.length > 0) {
@@ -123,7 +124,11 @@ export const useSearchFilters = () => {
       pRouter.replace(newUrl, { scroll: false });
     }, 300);
 
-    return () => clearTimeout(timer);
+    debouncedSync();
+
+    return () => {
+      debouncedSync.cancel();
+    };
   }, [filters]);
 
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
