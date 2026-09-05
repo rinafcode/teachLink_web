@@ -167,6 +167,8 @@ jobs:
 
       - name: Run Tests
         shell: bash
+        env:
+          NEXT_PUBLIC_STARKNET_NETWORK: goerli-alpha
         run: |
           if timeout 30s pnpm vitest run --coverage; then
             echo "Tests completed within the 30-second limit."
