@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useRef } from 'react';
-import analytics, { EventName, EventProperties } from '@/utils/analytics';
+import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
+import analytics, { EventName, EventProperties, shouldSample } from '@/utils/analytics';
 
 /**
- * useAnalytics – React hook for consistent event tracking.
+ * useAnalytics - React hook for consistent event tracking.
  *
  * Automatically fires a `page_view` event on mount (opt-out via `trackPageView: false`).
  * Provides a `track` helper that merges any page-level context automatically.
  *
  * @example
- * ```tsx
+ * ``tsx
  * function CoursePage({ course }) {
  *   const { track } = useAnalytics({ page: "course_detail", courseId: course.id });
  *
@@ -50,40 +50,51 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
   // Auto page_view on mount
   useEffect(() => {
     if (autoTrack) {
-      analytics.trackPageView({ ...contextRef.current, ...pageViewProperties });
+      const pageView = { ...contextRef.current, ...pageViewProperties };
+      if (shouldSample('page_view', pageView)) {
+        analytics.trackPageView(pageView);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // intentionally run once on mount
 
   const track = useCallback(
     (name: EventName, properties: EventProperties = {}) => {
-      analytics.track(name, { ...contextRef.current, ...properties });
+      const merged = { ...contextRef.current, ...properties };
+      if (shouldSample(name, merged)) {
+        analytics.track(name, merged);
+      }
     },
     [], // stable — context accessed via ref
   );
 
   const trackPageView = useCallback((overrides: EventProperties = {}) => {
-    analytics.trackPageView({ ...contextRef.current, ...overrides });
+    const merged = { ...contextRef.current, ...overrides };
+    if (shouldSample('page_view', merged)) {
+      analytics.trackPageView(merged);
+    }
   }, []);
 
   return { track, trackPageView };
 }
 
 /**
- * Higher-order helper: attach analytics tracking to any onClick handler.
+ * HIGHER order helper: attach analytics tracking to any onClick handler.
  *
  * @example
  * <button onClick={trackClick("button_clicked", { label: "Enroll" }, handleEnroll)}>
  *   Enroll
  * </button>
  */
-export function trackClick<T extends React.MouseEvent>(
+export function trackClick<T extends MouseEvent>(
   eventName: EventName,
   properties: EventProperties,
   handler?: (e: T) => void,
 ): (e: T) => void {
   return (e: T) => {
-    analytics.track(eventName, properties);
+    if (shouldSample(eventName, properties)) {
+      analytics.track(eventName, properties);
+    }
     handler?.(e);
   };
 }

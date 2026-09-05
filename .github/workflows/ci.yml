@@ -167,14 +167,4 @@ jobs:
 
       - name: Run Tests
         shell: bash
-        run: |
-          if timeout 30s pnpm vitest run --coverage; then
-            echo "Tests completed within the 30-second limit."
-          else
-            status=$?
-            if [ "$status" -eq 124 ]; then
-              echo "Tests exceeded the 30-second limit; skipping the test check."
-              exit 0
-            fi
-            exit "$status"
-          fi
+        run: pnpm vitest run --coverage
