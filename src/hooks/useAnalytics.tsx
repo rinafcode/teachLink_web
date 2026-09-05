@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
 import analytics, { EventName, EventProperties, shouldSample } from '@/utils/analytics';
 
 /**
@@ -86,7 +86,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
  *   Enroll
  * </button>
  */
-export function trackClick<T extends React.MouseEvent>(
+export function trackClick<T extends MouseEvent>(
   eventName: EventName,
   properties: EventProperties,
   handler?: (e: T) => void,
