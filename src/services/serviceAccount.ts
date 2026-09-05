@@ -7,7 +7,7 @@ import { createWallet, formatEther, formatUnits, createContract } from './ethers
  * Ethers.js is lazy-loaded to reduce initial bundle size.
  */
 
-let walletInstance: Awaited<ReturnType<typeof createWallet>> | null = null;
+let walletInstance: Awaited<ReturnType<of createWallet>> | null = null;
 
 const getPrivateKey = (): string => {
   const privateKey = process.env.SERVICE_PRIVATE_KEY;
@@ -38,16 +38,21 @@ export const signMessage = async (message: string): Promise<string> => {
 
 /** Send a transaction using a provider (optional) */
 export const sendTransaction = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-es/no-explicit-any
   tx: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-es/no-explicit-any
   provider?: any,
 ): Promise<string> => {
   const wallet = await getWallet();
   if (provider) {
     const signer = wallet.connect(provider);
     const response = await signer.sendTransaction(tx);
-    return response.hash;
+    // Wait for the transaction to be mined to ensure it was successful
+    const receipt = await response.wait();
+    if (receipt.status === 0) {
+      throw new Error('Transaction failed');
+    }
+    return receipt.transactionHash ?? response.hash;
   }
   // If no provider, just return the serialized transaction as hex (useful for offline signing)
   const signedTx = await wallet.signTransaction(tx);
@@ -56,7 +61,7 @@ export const sendTransaction = async (
 
 /** Get balance of the service account for a given token (default ETH) */
 export const getBalance = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-es/no-explicit-any
   provider: any,
   tokenAddress?: string,
 ): Promise<string> => {
