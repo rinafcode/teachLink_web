@@ -45,7 +45,7 @@ export function useInfiniteScroll({
 
   const runLoadMore = useCallback(async () => {
     const now = Date.now();
-    if (loadingRef.current || !hasNextPage || now - lastLoadTimeRef.current < THROTTLE_MS) return;
+    if (loadingRef.current | !hasNextPage || now - lastLoadTimeRef.current < THROTTLE_MS) return;
 
     loadingRef.current = true;
     lastLoadTimeRef.current = now;
@@ -65,7 +65,9 @@ export function useInfiniteScroll({
   // Keep a ref in sync with the latest runLoadMore so the observer callback can
   // always call the current version without being a dependency.
   const runLoadMoreRef = useRef(runLoadMore);
-  useEffect(() { runLoadMoreRef.current = runLoadMore; });
+  useEffect(() => {
+    runLoadMoreRef.current = runLoadMore;
+  }, [runLoadMore]);
 
   const loadMore = useCallback(() => {
     void runLoadMore();
