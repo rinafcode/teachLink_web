@@ -72,4 +72,53 @@ describe('useInfiniteScroll', () => {
 
     expect(onLoadMore).not.toHaveBeenCalled();
   });
+
+  it('does not call onLoadMore again while a load is pending', async () => {
+    makeObserver(true);
+    let resolve!: () => void;
+    const onLoadMore = vi.fn(
+      () =>
+        new Promise<void>((res) => {
+          resolve = res;
+        }),
+    );
+
+    const { result } = renderHook(() => useInfiniteScroll({ onLoadMore, hasNextPage: true }));
+
+    act(() => {
+      result.current.loadMore();
+    });
+    act(() => {
+      result.current.loadMore();
+    });
+
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    await act(async () => resolve());
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('calls onLoadMore again after the previous load resolves', async () => {
+    makeObserver(true);
+    let resolve!: () => void;
+    const onLoadMore = vi.fn(
+      () =>
+        new Promise<void>((res) => {
+          resolve = res;
+        }),
+    );
+
+    const { result } = renderHook(() => useInfiniteScroll({ onLoadMore, hasNextPage: true }));
+
+    act(() => {
+      result.current.loadMore();
+    });
+    await act(async () => resolve());
+
+    act(() => {
+      result.current.loadMore();
+    });
+
+    expect(onLoadMore).toHaveBeenCalledTimes(2);
+    await act(async () => resolve());
+  });
 });
