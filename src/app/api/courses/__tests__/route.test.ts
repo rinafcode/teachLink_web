@@ -1,16 +1,33 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GET } from '../route';
 import { resetCourseListConfig } from '@/lib/course-config';
 
+// Route sits behind a trusted proxy; without it getClientIP would ignore the
+// x-forwarded-for header and collapse all requests into one rate-limit bucket.
+const TRUSTED_PROXY = '10.0.0.1';
+const ORIGINAL_TRUSTED_PROXY_IPS = process.env.TRUSTED_PROXY_IPS;
+
 function makeRequest(query = ''): Request {
   return new Request(`http://localhost/api/courses${query}`, {
-    headers: { 'x-forwarded-for': `10.20.30.${Math.floor(Math.random() * 254) + 1}` },
+    headers: {
+      'x-forwarded-for': `10.20.30.${Math.floor(Math.random() * 254) + 1}`,
+      'cf-connecting-ip': TRUSTED_PROXY,
+    },
   });
 }
 
 describe('/api/courses GET', () => {
   beforeEach(() => {
     resetCourseListConfig();
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
+  });
+
+  afterEach(() => {
+    if (ORIGINAL_TRUSTED_PROXY_IPS === undefined) {
+      delete process.env.TRUSTED_PROXY_IPS;
+    } else {
+      process.env.TRUSTED_PROXY_IPS = ORIGINAL_TRUSTED_PROXY_IPS;
+    }
   });
 
   it('returns 200 with a paginated list of courses', async () => {
