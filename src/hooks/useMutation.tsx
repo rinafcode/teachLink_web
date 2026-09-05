@@ -209,7 +209,7 @@ export function useMutation<TData = unknown, TVariables = void>(
       } catch (raw) {
         const error = raw instanceof Error ? raw : new Error(String(raw));
 
-        setState({ isLoading: false, isSuccess: false, isError: true, data: null, error: null });
+        setState({ isLoading: false, isSuccess: false, isError: true, data: null, error });
 
         await onErrorRef.current?.(error, variables);
         onSettledRef.current?.(null, error, variables);
