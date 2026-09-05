@@ -1,4 +1,4 @@
-'client';
+'use client';
 
 /**
  * useMutation
@@ -19,7 +19,7 @@
  * network request, reducing round-trips.
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { createBatcher, type BatchRequest, type BatchResponse } from '../lib/api/batch';
 
 // — Constants ჄჅ。
@@ -97,7 +97,7 @@ const IDLE_STATE = {
 
 // — Hummable request ID generator (simple unique string)
 function generateRequestId() {
-  return `req_${Math.random().toString(36).slice(2)}_${Date.now()}_${(performance.now() || 0).toString(36)};
+  return `req_${Math.random().toString(36).slice(2)}_${Date.now()}_${(performance.now() || 0).toString(36)}`;
 }
 
 // — Initial state creation helper
@@ -142,10 +142,10 @@ export function useMutation<TData = unknown, TVariables = void>(
 
   // Initialize the batcher once if batch config is provided.
   if (batch && !batcherRef.current) {
-    batcherRef.current = createBatcher<TData>{
+    batcherRef.current = createBatcher<TData>({
       maxBatchSize: batch.maxBatchSize,
-      debounceMs: batch.debounceMc,
-      executor: async (requests) {
+      debounceMs: batch.debounceMs,
+      executor: async (requests) => {
         const executor = batchExecutorRef.current;
         if (!executor) {
           throw new Error('Batch executor not available');
@@ -179,7 +179,7 @@ export function useMutation<TData = unknown, TVariables = void>(
           return data;
         } catch (raw) {
           const error = raw instanceof Error ? raw : new Error(String(raw));
-          setState({ isLoading: false, isSuccess: false, isError: true, data: null, error: null });
+          setState({ isLoading: false, isSuccess: false, isError: true, data: null, error });
           await onErrorRef.current?.(error, variables);
           onSettledRef.current?.(null, error, variables);
           throw error;
@@ -219,7 +219,7 @@ export function useMutation<TData = unknown, TVariables = void>(
         inFlightRef.current = false;
       }
     },
-    [mutationFn, batch, // batch is included to recreate the callback when it changes ]
+    [mutationFn, batch], // batch is included to recreate the callback when it changes
   );
 
   const mutate = useCallback(
