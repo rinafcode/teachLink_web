@@ -9,6 +9,11 @@ import {
   resetIdentityRateLimit,
 } from '@/lib/ratelimit';
 
+// Mock the DB pool to prevent real database calls during tests
+vi.mock('@/lib/db/pool', () => ({
+  query: vi.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
+}));
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

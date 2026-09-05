@@ -12,6 +12,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parseTrustedProxyIPs } from '@/config/environment';
 import { slidingWindowRateLimit } from './ratelimit';
 
+// Mock the DB pool to prevent real database calls during tests
+vi.mock('@/lib/db/pool', () => ({
+  query: vi.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
+}));
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
