@@ -352,9 +352,9 @@ function AuditPanel({ flagId, onClose }: { flagId?: string; onClose: () => void 
     setLoading(false);
   }, [flagId]);
 
-  useState(() => {
+  useEffect(() => {
     void load();
-  });
+  }, [load]);
 
   const ACTION_COLORS: Record<AuditEntry['action'], string> = {
     created: 'green',
