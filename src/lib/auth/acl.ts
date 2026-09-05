@@ -24,6 +24,21 @@ export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
   GUEST: [Permission.COURSE_VIEW],
 };
 
+const ROLE_HIERARCHY = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN] as const;
+
+const roleHierarchyIndex = new Map<UserRole, number>(
+  ROLE_HIERARCHY.map((role, index) => [role, index]),
+);
+
+const rolePermissionsCache = new Map<UserRole, Permission[]>();
+
+function getPermissionsForRole(role: UserRole): Permission[] {
+  if (!rolePermissionsCache.has(role)) {
+    rolePermissionsCache.set(role, ROLES_PERMISSIONS[role] ?? []);
+  }
+  return rolePermissionsCache.get(role)!;
+}
+
 // Cache for permission lookups to avoid repeated evaluation
 const permissionCache = new Map<string, boolean>();
 
@@ -35,7 +50,7 @@ function getPermissionCacheKey(role: UserRole, permission: Permission): string {
 }
 
 /**
- * Check if a user (or any object that contains a role) has a specific permission.
+ * Check if a user (or any object that contains a role)  has a specific permission.
  */
 export function hasPermission(user: RoleHolder | null | undefined, permission: Permission): boolean {
   if (!user) return false;
@@ -44,7 +59,7 @@ export function hasPermission(user: RoleHolder | null | undefined, permission: P
   const cached = permissionCache.get(cacheKey);
   if (cached !== undefined) return cached;
 
-  const permissions = ROLES_PERMISSIONS[user.role] ?? [];
+  const permissions = getPermissionsForRole(user.role);
   const result = permissions.includes(permission);
   permissionCache.set(cacheKey, result);
   return result;
@@ -105,9 +120,10 @@ export function isAtLeastRole(userRole: UserRole | null | undefined, role: UserR
   const cached = roleHierarchyCache.get(cacheKey);
   if (cached !== undefined) return cached;
 
-  const hierarchy = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN];
-  const userRoleIndex = hierarchy.indexOf(userRole);
-  const requiredRoleIndex = hierarchy.indexOf(role);
+  const userRoleIndex = roleHierarchyIndex.get(userRole);
+  const requiredRoleIndex = roleHierarchyIndex.get(role);
+
+  if (userRoleIndex === undefined || requiredRoleIndex === undefined) return false;
 
   const result = userRoleIndex >= requiredRoleIndex;
   roleHierarchyCache.set(cacheKey, result);
@@ -119,5 +135,6 @@ export function isAtLeastRole(userRole: UserRole | null | undefined, role: UserR
  */
 export function clearAclCaches(): void {
   permissionCache.clear();
+  rolePermissionsCache.clear();
   roleHierarchyCache.clear();
 }
