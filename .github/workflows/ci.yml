@@ -59,9 +59,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-            key: node-modules-$$ { runner.os }-$$ hashFiles('wtory/actions/cache@v4
-            path: node_modules
-           key: node-modules-$$ { runner.os }-$$ hashFiles('pnpm-lock.yaml')}
+          key: node-modules-$$ { runner.os }-$$ hashFiles('pnpm-lock.yaml')}
 
       - name: Install dependencies (cache miss only)
         if: steps.deps-cache.outputs.cache-hit != 'true'
@@ -135,7 +133,6 @@ jobs:
       - name: Verify Build Output
         run: |
           if [ -f .next/build-manifest.json ]; then
-            echo ✅ Install dependencies (cache miss only)
             echo ✅ Build completed successfully
           else
             echo 🌸 Build failed - no manifest found
@@ -173,12 +170,12 @@ jobs:
         shell: bash
         run: |
           if timeout 30s pnpm vitest run; then
-            echo \"Tests completed within the 30-second limit.\"
+            echo "Tests completed within the 30-second limit."
           else
             status=$?
-            if [ \"$status\" -eq 124 ]; then
-              echo \"Tests exceeded the 30-second limit; skipping the test check.\"
+            if [ "$status" -eq 124 ]; then
+              echo "Tests exceeded the 30-second limit; skipping the test check."
               exit 0
             fi
-            exit \"$status\"
+            exit "$status"
           fi
