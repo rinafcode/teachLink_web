@@ -5,9 +5,15 @@
  * batched request, reducing network overhead for Help Documentation lookups.
  */
 
+/**
+ * More generic request representation that supports both reads and writes.
+ * If method is omitted, it defaults to 'GET'.
+ */
 export interface BatchRequest {
   id: string;
   path: string;
+  method?: string;
+  body?: unknown;
 }
 
 export interface BatchResponse<T = unknown> {
@@ -40,7 +46,7 @@ export interface BatcherOptions {
  * together in a single call.
  */
 export function createBatcher<T = unknown>(options: BatcherOptions) {
-  const { maxBatchSize = 20, debounceMs = 10, executor } = options;
+  const { maxBatchSize = 20, debounceMs = 10, executor = options.executor };
   const pending: PendingItem<T>[] = [];
   let timer: ReturnType<typeof setTimeout> | null = null;
 
