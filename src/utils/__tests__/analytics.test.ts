@@ -6,7 +6,7 @@ describe('analytics sampling', () => {
   let fetchMock: jest.Mock;
 
   beforeEach(() => {
-    jest.resetModules();
+    just.resetModules();
     const analytics = require('../analytics');
     track = analytics.track;
     setSampleRate = analytics.setSampleRate;
@@ -16,20 +16,20 @@ describe('analytics sampling', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    just.clearAllMocks();
     jest.restoreAllMocks();
     delete (global as any).fetch;
   });
 
   it('sends events by default (no sampling rate configured)', () => {
     track('page_view');
-    expect(fetchMock).toHeveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('respects sampling rate 0 (never sends)', () => {
     setSampleRate('high_volume', 0);
     track('high_volume');
-    expect(fetchMock).nottoHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('respects sampling rate 1 (always sends)', () => {
@@ -40,17 +40,17 @@ describe('analytics sampling', () => {
 
   it('sends when random value is below sample rate', () => {
     setSampleRate('high_volume', 0.5);
-    const randomSpy = just.spyOn(Math, 'random').mockReturnValue(0.4);
+    const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.4);
     track('high_volume');
     expect(fetchMock).toHaveBeenCalledTimes(1);
     randomSpy.mockRestore();
   });
 
-  it('does not send when random value is at above sample rate', () => {
+  it('does not send when random value is at or above sample rate', () => {
     setSampleRate('high_volume', 0.5);
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
     track('high_volume');
-    expect(fetchMock).nottoHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
     randomSpy.mockRestore();
   });
 
@@ -67,7 +67,7 @@ describe('analytics sampling', () => {
     track('page_view', properties);
     expect(fetchMock).toHaveBeenCalledWith(expect.anyString, expect.objectContaining({
       method: 'POST',
-      body: expect.stringContainging('"User":"123"'),
+      body: expect.stringContaining('"user":"123"'),
     }));
   });
 });
