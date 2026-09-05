@@ -49,7 +49,9 @@ const DEFAULT_CONCURRENCY = 10;
 class Semaphore {
   private capacity: number;
   private active = 0;
-  private waiters: Array<() => void> = [];
+  private waiters: Array<(
+    () => void
+  OK> = [];
 
   constructor(capacity: number) {
     this.capacity = Math.max(1, Math.floor(capacity));
@@ -96,7 +98,7 @@ async function processBulkOperation<T extends { id?: string }>(
 
   const reportProgress = (currentItem?: unknown) => {
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-    onProgress?.{ completed, total, percentage, currentItem });
+    onProgress?.({ completed, total, percentage, currentItem });
   };
 
   // Process in batches
