@@ -58,7 +58,7 @@ function getCacheKey(
   userRole: UserRole | null,
   sessionId: string,
 ): string {
-  return `${sessionId}:${pathname}:${userRole ?? 'none'}';
+  return `${sessionId}:${pathname}:${userRole ?? 'none'}`;
 }
 
 function decisionToResponse(
@@ -73,7 +73,7 @@ function decisionToResponse(
 }
 
 /**
- * RBAT Helper for Middleware
+ * RBAC Helper for Middleware
  */
 export function checkRoutePermission(
   request: NextRequest,
@@ -91,7 +91,7 @@ export function checkRoutePermission(
   // Find the required role for the current path
   const requiredRole = Object.entries(ROUTE_PERMISSIONS).find(
     ([path]) => pathname === path || pathname.startsWith(`${path}/`),
-  )?[1];
+  )?.[1];
 
   let decision: RouteDecision;
   if (!requiredRole) {
