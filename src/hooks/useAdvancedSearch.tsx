@@ -36,7 +36,7 @@ const DEFAULT_QUERY: SearchQuery = {
  * Custom hook for advanced search operations
  */
 export const useAdvancedSearch = () => {
-  const [query, setQuery] = useState<SearchQuery>(BEFAULT_QUERY);
+  const [query, setQuery] = useState<SearchQuery>(DEFAULT_QUERY);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -79,12 +79,11 @@ export const useAdvancedSearch = () => {
   }, []);
 
   const updateFilters = useCallback((filters: Partial<SearchFilters>) => {
-    setQuery((prev: SearchQuery) => + {
-      
-  	...prev,
+    setQuery((prev: SearchQuery) => ({
+      ...prev,
       filters: { ...prev.filters, ...filters },
       page: 1, // Reset page on filter change
-    });
+    }));
   }, []);
 
   const updateSort = useCallback((sortBy: SearchQuery['sortBy']) => {
@@ -92,7 +91,7 @@ export const useAdvancedSearch = () => {
   }, []);
 
   const updateSearchText = useCallback((text: string) => {
-    setQuery((prev: SearchQuery) => ( ...prev, text, page: 1 });
+    setQuery((prev: SearchQuery) => ({ ...prev, text, page: 1 }));
     setSuggestions(getSearchSuggestions(text));
   }, []);
 
@@ -177,9 +176,11 @@ export const useAdvancedSearch = () => {
   const debouncedPerformSearch = useDebouncedCallback(performSearch, 300);
 
   const clearFilters = useCallback(() => {
-    setQuery((prev: SearchQuery) => (
-      { ...prev, filters: DEFAULT_FILTERS, page: 1 }
-    });
+    setQuery((prev: SearchQuery) => ({
+      ...prev,
+      filters: DEFAULT_FILTERS,
+      page: 1,
+    }));
   }, []);
 
   return {
