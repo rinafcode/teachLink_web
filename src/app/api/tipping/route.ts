@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       throw new Error('TIP_NETWORK_RPC_URL is not set');
     }
 
-    const provider = new ethers.JsonRPCProvider(rpcUrl);
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
     const network = await provider.getNetwork();
     const chainId = network.chainId;
     const senderAddress = await getServiceAddress();
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (receipt && receipt.status !== 1) {
       throw new Error('Transaction reverted on-chain');
     }
-    const verifiedTxHash = receipt?.transactionHash || txHash;
+    const verifiedTxHash = receipt?.hash || txHash;
 
     const timestamp = Date.now();
     const payload = {
