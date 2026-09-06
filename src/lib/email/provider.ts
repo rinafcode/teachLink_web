@@ -3,12 +3,32 @@ import { EmailMessage, EmailProvider, EmailProviderType, EmailSendResult } from 
 const DEFAULT_FROM_EMAIL = process.env.EMAIL_FROM_ADDRESS ?? 'no-reply@teachlink.com';
 const DEFAULT_FROM_NAME = process.env.EMAIL_FROM_NAME ?? 'TeachLink';
 
+const MAX_RETRIES = 3;
+const BASE_BACKOFF_MS = 500;
+const MAX_BACKOFF_MS = 5000;
+
 function asArray<T>(value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
 function resolveFrom(message: EmailMessage) {
   return message.from ?? { email: DEFAULT_FROM_EMAIL, name: DEFAULT_FROM_NAME };
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableResult(result: EmailSendResult): boolean {
+  if (result.success) return false;
+  if (result.error?.includes('SENDGRID_API_KEY is not configured')) return false;
+  const match = /SendGrid error (\\d+)/.exec(result.error ?? '');
+  if (match) {
+    const status = parseInt(match[1]);
+    return status === 408 || status === 429 || status >= 500;
+  }
+  // Network errors and other transient exceptions should be retried.
+  return true;
 }
 
 class SendGridProvider implements EmailProvider {
@@ -20,6 +40,30 @@ class SendGridProvider implements EmailProvider {
       return { success: false, provider: this.type, error: 'SENDGRID_API_KEY is not configured' };
     }
 
+    let lastResult: EmailSendResult = {
+      success: false,
+      provider: this.type,
+      error: 'Email send failed after retries',
+    };
+    let delay = BASE_BACKOFF_MS;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      lastResult = await this.doSend(message, apiKey);
+
+      if (lastResult.success || !isRetryableResult(lastResult)) {
+        return lastResult;
+      }
+
+      if (attempt < MAX_RETRIES) {
+        await wait(delay);
+        delay = Math.min(delay * 2, MAX_BACKOFF_MS);
+      }
+    }
+
+    return lastResult;
+  }
+
+  private async doSend(message: EmailMessage, apiKey: string): Promise<EmailSendResult> {
     try {
       const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
         method: 'POST',

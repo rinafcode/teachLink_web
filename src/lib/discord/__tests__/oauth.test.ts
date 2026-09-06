@@ -15,14 +15,28 @@ describe('Discord OAuth Utilities', () => {
   });
 
   describe('generateState', () => {
-    it('should generate a random state string', () => {
+    it('should generate a cryptographically secure random state string', () => {
       const state1 = generateState();
       const state2 = generateState();
 
       expect(state1).toBeTruthy();
       expect(state2).toBeTruthy();
       expect(state1).not.toBe(state2);
-      expect(state1.length).toBeGreaterThan(10);
+      // Secure state should be 64 hex characters (32 bytes)
+      expect(state1.length).toBe(64);
+      expect(state2.length).toBe(64);
+      // Should be valid hex string
+      expect(state1).toMatch(/^[a-f0-9]{64}$/);
+      expect(state2).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it('should generate unique states across multiple calls', () => {
+      const states = new Set();
+      for (let i = 0; i < 100; i++) {
+        states.add(generateState());
+      }
+      // All 100 states should be unique
+      expect(states.size).toBe(100);
     });
   });
 
