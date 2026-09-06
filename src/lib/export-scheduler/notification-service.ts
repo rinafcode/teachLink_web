@@ -3,28 +3,71 @@
  * Handles email notifications for export completion
  */
 
-import { EmailMessage } from '@/lib/email/types';
+import { createEmailProvider, EmailQueue, EmailMessage } from '@/lib/email';
+import { escapeHtml } from '@/lib/export';
 import { ExportNotification } from './types';
 import { createLogger } from '@/lib/logging';
 
 const logger = createLogger('export-notification-service');
 
 export class ExportNotificationService {
+  private readonly queue: EmailQueue;
+
+  constructor(queue: EmailQueue = new EmailQueue(createEmailProvider())) {
+    this.queue = queue;
+  }
+
   /**
    * Send export completion notification
    */
   async sendExportNotification(notification: ExportNotification): Promise<void> {
     const message = this.buildNotificationEmail(notification);
 
-    // In production, this would use the email queue
-    // For now, we'll log it
-    logger.info('Export notification', { message });
+    try {
+      const result = await this.queue.enqueue({
+        ...message,
+        tags: ['export-scheduler', notification.status],
+        idempotencyKey: `export-notification:${notification.jobId}:${notification.status}`,
+      });
 
-    // Uncomment when email service is configured:
-    // const { EmailQueue } = await import('@/lib/email/queue');
-    // const { emailProvider } = await import('@/lib/email/provider');
-    // const queue = new EmailQueue(emailProvider);
-    // await queue.enqueue(message);
+      if (!result.success) {
+        logger.error('Export notification could not be sent', {
+          context: {
+            jobId: notification.jobId,
+            email: notification.email,
+            status: notification.status,
+            error: result.error,
+          },
+        });
+        return;
+      }
+
+      logger.info('Export notification queued', {
+        context: {
+          jobId: notification.jobId,
+          email: notification.email,
+          status: notification.status,
+          provider: result.provider,
+        },
+      });
+    } catch (error) {
+      logger.error('Export notification delivery failed', {
+        context: {
+          jobId: notification.jobId,
+          email: notification.email,
+          status: notification.status,
+          error: error instanceof Error ? error.message : 'Unknown notification error',
+        },
+      });
+    }
+  }
+
+  async notifyExportComplete(notification: Omit<ExportNotification, 'status'>): Promise<void> {
+    await this.sendExportNotification({ ...notification, status: 'completed' });
+  }
+
+  async notifyExportFailed(notification: Omit<ExportNotification, 'status'>): Promise<void> {
+    await this.sendExportNotification({ ...notification, status: 'failed' });
   }
 
   /**
@@ -38,9 +81,9 @@ export class ExportNotificationService {
     let text: string;
 
     if (status === 'completed' && downloadUrl) {
-      subject = `Export Ready: ${fileName}`;
-      html = this.buildSuccessEmailHTML(fileName!, downloadUrl);
-      text = this.buildSuccessEmailText(fileName!, downloadUrl);
+      subject = `Export Ready: ${fileName ?? 'Export'}`;
+      html = this.buildSuccessEmailHTML(fileName ?? 'export', downloadUrl);
+      text = this.buildSuccessEmailText(fileName ?? 'export', downloadUrl);
     } else if (status === 'failed') {
       subject = `Export Failed: ${fileName || 'Unknown'}`;
       html = this.buildFailureEmailHTML(fileName, error);
@@ -60,6 +103,9 @@ export class ExportNotificationService {
   }
 
   private buildSuccessEmailHTML(fileName: string, downloadUrl: string): string {
+    const safeFileName = escapeHtml(fileName);
+    const safeDownloadUrl = escapeHtml(downloadUrl);
+
     return `
 <!DOCTYPE html>
 <html>
@@ -81,10 +127,10 @@ export class ExportNotificationService {
     </div>
     <div class="content">
       <p>Your data export has been completed successfully!</p>
-      <p><strong>File:</strong> ${fileName}</p>
+      <p><strong>File:</strong> ${safeFileName}</p>
       <p>Click the button below to download your file:</p>
       <p style="text-align: center;">
-        <a href="${downloadUrl}" class="button">Download Export</a>
+        <a href="${safeDownloadUrl}" class="button">Download Export</a>
       </p>
       <p><small>This link will expire in 7 days.</small></p>
     </div>
@@ -115,6 +161,9 @@ This is an automated message from the Export Scheduler.
   }
 
   private buildFailureEmailHTML(fileName: string | undefined, error: string | undefined): string {
+    const safeFileName = fileName ? escapeHtml(fileName) : '';
+    const safeError = error ? escapeHtml(error) : '';
+
     return `
 <!DOCTYPE html>
 <html>
@@ -136,8 +185,8 @@ This is an automated message from the Export Scheduler.
     </div>
     <div class="content">
       <p>Unfortunately, your data export could not be completed.</p>
-      ${fileName ? `<p><strong>File:</strong> ${fileName}</p>` : ''}
-      ${error ? `<div class="error"><strong>Error:</strong> ${error}</div>` : ''}
+      ${safeFileName ? `<p><strong>File:</strong> ${safeFileName}</p>` : ''}
+      ${safeError ? `<div class="error"><strong>Error:</strong> ${safeError}</div>` : ''}
       <p>Please try again or contact support if the problem persists.</p>
     </div>
     <div class="footer">

@@ -31,67 +31,87 @@ export async function exportData(
   const timestamp = new Date().toISOString().split('T')[0];
   const fileName = `${template.name.replace(/\s+/g, '-').toLowerCase()}-${timestamp}`;
 
-  emitProgress(options.onProgress, {
-    stage: 'preparing',
-    percent: 15,
-    message: 'Preparing export dataset',
-  });
+  try {
+    emitProgress(options.onProgress, {
+      stage: 'preparing',
+      percent: 15,
+      message: 'Preparing export dataset',
+    });
 
-  const preparedData = prepareExportData(data, options);
+    const preparedData = prepareExportData(data, options);
 
-  emitProgress(options.onProgress, {
-    stage: 'filtering',
-    percent: 50,
-    message: 'Applying filters and sorting',
-  });
+    emitProgress(options.onProgress, {
+      stage: 'filtering',
+      percent: 50,
+      message: 'Applying filters and sorting',
+    });
 
-  const { result: blob, metric } = await measureAsync(
-    `export.${template.format}`,
-    async () => {
-      switch (template.format) {
-        case 'csv':
-          return exportToCSV(preparedData);
-        case 'json':
-          return exportToJSON(preparedData);
-        case 'xlsx':
-          return exportToXLSX(preparedData);
-        case 'pdf':
-          return exportToPDF(preparedData, template.name);
-        default:
-          throw new Error(`Unsupported export format: ${template.format}`);
-      }
-    },
-    {
-      format: template.format,
-      templateId: template.id,
-    },
-  );
+    const { result: blob, metric } = await measureAsync(
+      `export.${template.format}`,
+      async () => {
+        switch (template.format) {
+          case 'csv':
+            return exportToCSV(preparedData);
+          case 'json':
+            return exportToJSON(preparedData);
+          case 'xlsx':
+            return exportToXLSX(preparedData);
+          case 'pdf':
+            return exportToPDF(preparedData, template.name);
+          default:
+            throw new Error(`Unsupported export format: ${template.format}`);
+        }
+      },
+      {
+        format: template.format,
+        templateId: template.id,
+      },
+    );
 
-  emitProgress(options.onProgress, {
-    stage: 'formatting',
-    percent: 85,
-    message: 'Formatting export output',
-  });
+    emitProgress(options.onProgress, {
+      stage: 'formatting',
+      percent: 85,
+      message: 'Formatting export output',
+    });
 
-  exportLogger.info('Export data prepared', {
-    context: {
-      templateId: template.id,
-      format: template.format,
-      rows: preparedData.rows.length,
-    },
-    metrics: [metric, createCounterMetric('export.jobs', 1, { format: template.format })],
-  });
+    exportLogger.info('Export data prepared', {
+      context: {
+        templateId: template.id,
+        format: template.format,
+        rows: preparedData.rows.length,
+      },
+      metrics: [metric, createCounterMetric('export.jobs', 1, { format: template.format })],
+    });
 
-  emitProgress(options.onProgress, {
-    stage: 'completed',
-    percent: 100,
-    message: 'Export completed',
-  });
+    emitProgress(options.onProgress, {
+      stage: 'completed',
+      percent: 100,
+      message: 'Export completed',
+    });
 
-  return {
-    blob,
-    fileName: `${fileName}.${extensionForFormat(template.format)}`,
-  };
+    return {
+      blob,
+      fileName: `${fileName}.${extensionForFormat(template.format)}`,
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown export error';
+
+    emitProgress(options.onProgress, {
+      stage: 'failed',
+      percent: 100,
+      message: errorMessage,
+    });
+
+    exportLogger.error('Export data failed', {
+      context: {
+        templateId: template.id,
+        format: template.format,
+        error: errorMessage,
+      },
+    });
+
+    throw error;
+  }
 }
 
 async function exportToCSV(data: ExportData): Promise<Blob> {

@@ -9,7 +9,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseTrustedProxyIPs, slidingWindowRateLimit } from './ratelimit';
+import { parseTrustedProxyIPs } from '@/config/environment';
+import { slidingWindowRateLimit } from './ratelimit';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -24,8 +25,9 @@ function makeRequest(headers: Record<string, string> = {}): Request {
 
 /**
  * Import getClientIP with a specific TRUSTED_PROXY_IPS value injected via
- * process.env. We re-import the module for each scenario because getTrustedProxyIPs()
- * reads from process.env at call time, so we just set the env var before calling.
+ * process.env. We re-import the module for each scenario because
+ * getTrustedProxyConfig() reads from process.env at call time, so we just set
+ * the env var before calling.
  */
 async function getClientIPWith(
   trustedProxyIPs: string | undefined,
@@ -207,25 +209,27 @@ describe('getClientIP() — spoofing prevention', () => {
 });
 
 // ---------------------------------------------------------------------------
-// getClientIP() — no proxy configured (backwards compatibility)
+// getClientIP() — no proxy configured (secure default)
 // ---------------------------------------------------------------------------
 
 describe('getClientIP() — no TRUSTED_PROXY_IPS configured', () => {
-  it('reads x-forwarded-for when no proxy config exists (legacy behaviour)', async () => {
+  it('ignores x-forwarded-for when no trusted proxy is configured (no spoofing)', async () => {
     const ip = await getClientIPWith(undefined, {
       'x-forwarded-for': '203.0.113.42',
     });
-    expect(ip).toBe('203.0.113.42');
+    // Without a configured allowlist the header must NOT be trusted, otherwise
+    // anyone could spoof their IP to bypass rate limits.
+    expect(ip).toBe('127.0.0.1');
   });
 
-  it('falls back to x-real-ip when x-forwarded-for is absent and no proxy configured', async () => {
+  it('ignores x-real-ip when no trusted proxy is configured', async () => {
     const ip = await getClientIPWith(undefined, {
       'x-real-ip': '203.0.113.99',
     });
-    expect(ip).toBe('203.0.113.99');
+    expect(ip).toBe('127.0.0.1');
   });
 
-  it('falls back to 127.0.0.1 when no headers are present and no proxy configured', async () => {
+  it('returns 127.0.0.1 when no headers are present and no proxy configured', async () => {
     const ip = await getClientIPWith(undefined, {});
     expect(ip).toBe('127.0.0.1');
   });

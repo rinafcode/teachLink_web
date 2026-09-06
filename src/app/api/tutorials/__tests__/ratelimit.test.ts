@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   slidingWindowRateLimit,
   getClientIP,
@@ -13,9 +13,13 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
+// A trusted proxy used throughout so header-derived client IPs are honored.
+// Without a configured allowlist getClientIP ignores forwarded headers.
+const TRUSTED_PROXY = '10.0.0.1';
+
 function makeRequest(ip = '1.2.3.4'): Request {
   return new Request('https://example.com/api/tutorials', {
-    headers: { 'x-forwarded-for': ip },
+    headers: { 'x-forwarded-for': ip, 'cf-connecting-ip': TRUSTED_PROXY },
   });
 }
 
@@ -31,7 +35,6 @@ describe('slidingWindowRateLimit', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
-
 
   it('allows requests within the limit', () => {
     const config = { limit: 3, windowMs: 60_000 };
@@ -111,21 +114,36 @@ describe('RATE_LIMIT_TIERS', () => {
 // ---------------------------------------------------------------------------
 
 describe('getClientIP', () => {
-  it('extracts IP from x-forwarded-for header', () => {
+  const original = process.env.TRUSTED_PROXY_IPS;
+
+  afterEach(() => {
+    if (original === undefined) {
+      delete process.env.TRUSTED_PROXY_IPS;
+    } else {
+      process.env.TRUSTED_PROXY_IPS = original;
+    }
+  });
+
+  it('extracts IP from x-forwarded-for header when connection is from a trusted proxy', () => {
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
     const req = new Request('https://example.com', {
-      headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1' },
+      headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1', 'cf-connecting-ip': TRUSTED_PROXY },
     });
     expect(getClientIP(req)).toBe('203.0.113.1');
   });
 
-  it('falls back to x-real-ip', () => {
+  it('ignores x-forwarded-for when no trusted proxy is configured (spoofing prevention)', () => {
+    // Legacy deployments that never configure TRUSTED_PROXY_IPS must not trust
+    // the header, otherwise a client could spoof its IP to bypass rate limits.
+    delete process.env.TRUSTED_PROXY_IPS;
     const req = new Request('https://example.com', {
-      headers: { 'x-real-ip': '203.0.113.2' },
+      headers: { 'x-forwarded-for': '203.0.113.2' },
     });
-    expect(getClientIP(req)).toBe('203.0.113.2');
+    expect(getClientIP(req)).toBe('127.0.0.1');
   });
 
   it('returns 127.0.0.1 when no IP header is present', () => {
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
     const req = new Request('https://example.com');
     expect(getClientIP(req)).toBe('127.0.0.1');
   });
@@ -163,8 +181,20 @@ describe('createRateLimitResponse', () => {
 // ---------------------------------------------------------------------------
 
 describe('withRateLimit', () => {
+  const original = process.env.TRUSTED_PROXY_IPS;
+
   beforeEach(() => {
     vi.useFakeTimers();
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    if (original === undefined) {
+      delete process.env.TRUSTED_PROXY_IPS;
+    } else {
+      process.env.TRUSTED_PROXY_IPS = original;
+    }
   });
 
   it('allows a GET /tutorials request under READ limit', () => {
