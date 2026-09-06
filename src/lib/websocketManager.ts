@@ -5,6 +5,7 @@ import {
   BaseRealtimeTransport,
   ConnectionSupervisor,
   type ConnectionStatus,
+  type QueuePolicy,
   registerSupervisor,
 } from '@/lib/realtime/connectionSupervisor';
 import { tokenManager } from '@/lib/auth/tokenManager';
@@ -16,6 +17,10 @@ export interface WebSocketConfig {
   reconnectionDelay?: number;
   heartbeatInterval?: number;
   timeout?: number;
+  /** Upper bound of the outbound queue while disconnected. Default 100. */
+  queueLimit?: number;
+  /** Overflow policy once the outbound queue is full. Default 'drop-oldest'. */
+  queuePolicy?: QueuePolicy;
 }
 
 export type { ConnectionStatus };
@@ -130,6 +135,8 @@ export class WebSocketManager {
       maxReconnectAttempts: config.reconnectionAttempts ?? 5,
       maxReconnectDelayMs: (config.reconnectionDelay ?? 1000) * 32,
       heartbeatIntervalMs: config.heartbeatInterval ?? 30000,
+      queueLimit: config.queueLimit,
+      queuePolicy: config.queuePolicy,
     });
 
     this.supervisors.set(key, supervisor);

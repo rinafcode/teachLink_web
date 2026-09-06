@@ -8,12 +8,15 @@ import { CertificateInputSchema, type CertificateInput } from '@/schemas/certifi
 import { apiClient } from '@/lib/api';
 import { ApiError, ApiFieldError } from '@/utils/error-handler';
 import { FormInput } from '@/components/forms/FormInput';
-import { FieldError, FormError } from '@/components/forms/FormError';
+import { FormError } from '@/components/forms/FormError';
 import { SubmitButton } from '@/components/forms/SubmitButton';
+import { CertificateAnalyticsDashboard } from '@/components/certificates/CertificateAnalyticsDashboard';
 
 export default function CertificateGenerationPage() {
   const [apiError, setApiError] = useState<ApiFieldError[] | string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Increment to signal the analytics dashboard to refresh after a new cert is issued
+  const [analyticsKey, setAnalyticsKey] = useState(0);
 
   const methods = useForm<CertificateInput>({
     resolver: zodResolver(CertificateInputSchema),
@@ -37,6 +40,8 @@ export default function CertificateGenerationPage() {
       );
       setSuccessMessage(`Certificate generated successfully. ID: ${result.certificateId}`);
       reset();
+      // Bump the key so the analytics dashboard re-fetches fresh data
+      setAnalyticsKey((k) => k + 1);
     } catch (error) {
       if (error instanceof ApiError && error.errors) {
         setApiError(error.errors);
@@ -118,6 +123,21 @@ export default function CertificateGenerationPage() {
               </div>
             </motion.form>
           </FormProvider>
+        </motion.div>
+      </div>
+
+      {/* ── Data Visualisation: Certificate Analytics ────────────────────── */}
+      <div className="mx-auto max-w-5xl">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          {/*
+           * key={analyticsKey} forces a full remount — and therefore a fresh
+           * data fetch — every time a certificate is successfully generated.
+           */}
+          <CertificateAnalyticsDashboard key={analyticsKey} />
         </motion.div>
       </div>
     </div>

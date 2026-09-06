@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { evaluateTipCanary } from '../tipCanary';
+import { evaluateTipCanary, isValidTipIdempotencyKey } from '../tipCanary';
 
 function makeReq(cookies: Record<string, string> = {}, headers: Record<string, string> = {}) {
   return {
@@ -50,5 +50,19 @@ describe('evaluateTipCanary', () => {
     const res = evaluateTipCanary(req);
     expect(res.setAnonId).toBeDefined();
     expect(res.bucket).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('isValidTipIdempotencyKey', () => {
+  it('accepts keys in the tip-<recipientId>-<amount>-<rand> shape', () => {
+    expect(isValidTipIdempotencyKey('tip-user-99-0.05-abc123')).toBe(true);
+    expect(isValidTipIdempotencyKey('tip-user-42-1-uuid-here')).toBe(true);
+  });
+
+  it('rejects missing or malformed keys', () => {
+    expect(isValidTipIdempotencyKey('')).toBe(false);
+    expect(isValidTipIdempotencyKey('not-a-tip-key')).toBe(false);
+    expect(isValidTipIdempotencyKey('tip-user-99')).toBe(false);
+    expect(isValidTipIdempotencyKey('tip-')).toBe(false);
   });
 });

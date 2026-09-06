@@ -6,6 +6,7 @@ export type UpdateCallback = (registration: ServiceWorkerRegistration) => void;
  */
 
 import { createLogger } from '@/lib/logging';
+import { SW_CACHE_VERSION } from './swCacheVersion';
 
 const logger = createLogger('service-worker');
 export async function registerSW(
@@ -15,6 +16,8 @@ export async function registerSW(
 
   try {
     const registration = await navigator.serviceWorker.register('/sw.js');
+
+    logger.info('[SW] Registered', { cacheVersion: SW_CACHE_VERSION });
 
     const checkForWaiting = (reg: ServiceWorkerRegistration) => {
       if (reg.waiting) {
@@ -43,7 +46,7 @@ export async function registerSW(
 
     return registration;
   } catch (err) {
-    logger.error('[SW] Registration failed', { error: err });
+    logger.error('[SW] Registration failed', { error: err, cacheVersion: SW_CACHE_VERSION });
     return null;
   }
 }

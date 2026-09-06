@@ -407,8 +407,23 @@ export class ConnectionSupervisor {
       return;
     }
 
+    this.enqueue(payload);
+  }
+
+  /**
+   * Buffer an outbound message. Applies the configured queue bound and overflow
+   * policy (`drop-oldest` evicts the head to fit the new message; `block`
+   * discards the new message). Every eviction emits a `queue_dropped` metric so
+   * the pressure on the outbound path is observable.
+   */
+  private enqueue(payload: unknown): void {
     const limit = this.options.queueLimit ?? REALTIME_OUTBOUND_QUEUE_LIMIT;
     const policy = this.options.queuePolicy ?? REALTIME_QUEUE_POLICY;
+
+    if (limit <= 0) {
+      createCounterMetric('queue_dropped', 1, { transport: this.transport.name, policy });
+      return;
+    }
 
     if (this.outboundQueue.length >= limit) {
       if (policy === 'drop-oldest') {
@@ -667,16 +682,15 @@ export class ConnectionSupervisor {
     if (this.outboundQueue.length === 0 || !this.transport.isOpen()) {
       return;
     }
-    const queued = [...this.outboundQueue];
-    this.outboundQueue.length = 0;
+    const queued = this.outboundQueue.splice(0, this.outboundQueue.length);
     this.setStatus({ queuedCount: 0 });
-    queued.forEach((payload) => {
+    for (const payload of queued) {
       try {
         this.transport.send(payload);
       } catch (error) {
         logger.warn('[ConnectionSupervisor] Failed to flush queued message', { error });
       }
-    });
+    }
   }
 
   private startHeartbeat(): void {

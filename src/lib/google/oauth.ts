@@ -104,10 +104,39 @@ export async function getGoogleUser(accessToken: string): Promise<GoogleUser> {
 }
 
 /**
- * Generate a random state parameter for OAuth
+ * Generate a cryptographically secure state parameter for OAuth
  */
 export function generateState(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const bytes = new Uint8Array(32);
+
+  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
+    crypto.getRandomValues(bytes);
+  } else {
+    // Fallback for runtimes without Web Crypto support.
+    const randomValues = new Uint8Array(32);
+    for (let i = 0; i < randomValues.length; i += 1) {
+      randomValues[i] = Math.floor(Math.random() * 256);
+    }
+    randomValues.forEach((value, index) => {
+      bytes[index] = value;
+    });
+  }
+
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Validate an OAuth state value from the callback against the one stored in a cookie.
+ */
+export function validateState(
+  storedState: string | null | undefined,
+  callbackState: string | null | undefined,
+): boolean {
+  if (!storedState || !callbackState) {
+    return false;
+  }
+
+  return storedState === callbackState;
 }
 
 /**

@@ -1,4 +1,87 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// In-memory fake standing in for the `referrals` / `referred_users` tables so
+// this test suite can exercise the real repository + referral.ts wiring
+// without a live Postgres instance (no DB is available in CI here — see
+// PROCESS NOTES in the workflow this test suite was written under).
+interface FakeReferralRow {
+  code: string;
+  owner_email: string;
+  owner_id: string | null;
+  referral_count: number;
+  created_at: Date;
+}
+
+let referrals: Map<string, FakeReferralRow>;
+let referredUsers: Set<string>; // `${code}::${email}`
+
+function resetFakeDb() {
+  referrals = new Map();
+  referredUsers = new Set();
+}
+
+vi.mock('../db/pool', () => ({
+  query: vi.fn(async (text: string, params: unknown[] = []) => {
+    const sql = text.replace(/\s+/g, ' ').trim();
+
+    if (sql.startsWith('INSERT INTO referrals')) {
+      const [code, ownerEmail, ownerId] = params as [string, string, string | null];
+      if (!referrals.has(code)) {
+        referrals.set(code, {
+          code,
+          owner_email: ownerEmail,
+          owner_id: ownerId,
+          referral_count: 0,
+          created_at: new Date(),
+        });
+      }
+      return { rows: [] };
+    }
+
+    if (sql.startsWith('SELECT code, owner_email, owner_id, referral_count, created_at')) {
+      const [code] = params as [string];
+      const row = referrals.get(code);
+      return { rows: row ? [row] : [] };
+    }
+
+    if (sql.startsWith('SELECT 1 FROM referrals')) {
+      const [code] = params as [string];
+      return { rows: referrals.has(code) ? [{ '?column?': 1 }] : [] };
+    }
+
+    if (sql.startsWith('SELECT owner_email FROM referrals')) {
+      const [code] = params as [string];
+      const row = referrals.get(code);
+      return { rows: row ? [{ owner_email: row.owner_email }] : [] };
+    }
+
+    if (sql.startsWith('INSERT INTO referred_users')) {
+      const [code, referredEmail] = params as [string, string, string | null];
+      const key = `${code}::${referredEmail}`;
+      if (referredUsers.has(key)) {
+        return { rows: [] }; // ON CONFLICT DO NOTHING
+      }
+      referredUsers.add(key);
+      return { rows: [{ id: `ru_${key}` }] };
+    }
+
+    if (sql.startsWith('UPDATE referrals SET referral_count')) {
+      const [code] = params as [string];
+      const row = referrals.get(code);
+      if (row) row.referral_count += 1;
+      return { rows: [] };
+    }
+
+    if (sql.startsWith('SELECT COUNT(*)::int AS count FROM referred_users')) {
+      const [code] = params as [string];
+      const count = Array.from(referredUsers).filter((key) => key.startsWith(`${code}::`)).length;
+      return { rows: [{ count }] };
+    }
+
+    throw new Error(`Unhandled fake query: ${sql}`);
+  }),
+}));
+
 import {
   generateReferralCode,
   isValidReferralCodeFormat,
@@ -13,18 +96,8 @@ import {
 
 describe('Referral Code Utilities', () => {
   beforeEach(() => {
-    // Clear mock storage before each test
-    const mockReferralCodes = (global as any).mockReferralCodes || new Map();
-    mockReferralCodes.clear();
-    (global as any).mockReferralCodes = mockReferralCodes;
-  });
-
-  afterEach(() => {
-    // Clean up after each test
-    const mockReferralCodes = (global as any).mockReferralCodes;
-    if (mockReferralCodes) {
-      mockReferralCodes.clear();
-    }
+    resetFakeDb();
+    vi.clearAllMocks();
   });
 
   describe('generateReferralCode', () => {
@@ -65,8 +138,9 @@ describe('Referral Code Utilities', () => {
   describe('isValidReferralCodeFormat', () => {
     it('should return true for valid codes', () => {
       expect(isValidReferralCodeFormat('ABCDEFGH')).toBe(true);
-      expect(isValidReferralCodeFormat('12345678')).toBe(true);
-      expect(isValidReferralCodeFormat('AB12CD34')).toBe(true);
+      // Charset excludes 0/1/I/O, so '1' cannot appear in a valid code.
+      expect(isValidReferralCodeFormat('23456789')).toBe(true);
+      expect(isValidReferralCodeFormat('AB23CD34')).toBe(true);
     });
 
     it('should return false for invalid length', () => {
@@ -115,79 +189,92 @@ describe('Referral Code Utilities', () => {
   });
 
   describe('canUseReferralCode', () => {
-    it('should return true for valid scenario', () => {
-      expect(canUseReferralCode('ABCDEFGH', 'user@example.com')).toBe(true);
+    it('should return true for an unknown code (existence is checked separately)', async () => {
+      await expect(canUseReferralCode('CODE1234', 'user@example.com')).resolves.toBe(true);
     });
 
-    it('should return true by default (placeholder implementation)', () => {
-      // In the mock implementation, this always returns true
-      // In production, this would check against the database
-      expect(canUseReferralCode('CODE1234', 'user@example.com')).toBe(true);
+    it('should return false when the code belongs to the same user (self-referral)', async () => {
+      await storeReferralCode('owner@example.com', 'ABCDEFGH');
+      await expect(canUseReferralCode('ABCDEFGH', 'owner@example.com')).resolves.toBe(false);
+    });
+
+    it('should return true when the code belongs to a different user', async () => {
+      await storeReferralCode('owner@example.com', 'ABCDEFGH');
+      await expect(canUseReferralCode('ABCDEFGH', 'someone-else@example.com')).resolves.toBe(true);
     });
   });
 
   describe('storeReferralCode', () => {
-    it('should store a referral code for a user', () => {
-      storeReferralCode('user@example.com', 'ABCDEFGH');
-      expect(referralCodeExists('ABCDEFGH')).toBe(true);
+    it('should persist a referral code for a user', async () => {
+      await storeReferralCode('user@example.com', 'ABCDEFGH');
+      await expect(referralCodeExists('ABCDEFGH')).resolves.toBe(true);
     });
 
-    it('should store the correct owner email', () => {
-      storeReferralCode('user@example.com', 'ABCDEFGH');
-      expect(getReferralCodeOwner('ABCDEFGH')).toBe('user@example.com');
+    it('should store the correct owner email', async () => {
+      await storeReferralCode('user@example.com', 'ABCDEFGH');
+      await expect(getReferralCodeOwner('ABCDEFGH')).resolves.toBe('user@example.com');
     });
   });
 
   describe('referralCodeExists', () => {
-    it('should return false for non-existent codes', () => {
-      expect(referralCodeExists('NONEXIST')).toBe(false);
+    it('should return false for non-existent codes', async () => {
+      await expect(referralCodeExists('NONEXIST')).resolves.toBe(false);
     });
 
-    it('should return true for stored codes', () => {
-      storeReferralCode('user@example.com', 'ABCDEFGH');
-      expect(referralCodeExists('ABCDEFGH')).toBe(true);
+    it('should return true for stored codes', async () => {
+      await storeReferralCode('user@example.com', 'ABCDEFGH');
+      await expect(referralCodeExists('ABCDEFGH')).resolves.toBe(true);
     });
   });
 
   describe('getReferralCodeOwner', () => {
-    it('should return undefined for non-existent codes', () => {
-      expect(getReferralCodeOwner('NONEXIST')).toBeUndefined();
+    it('should return undefined for non-existent codes', async () => {
+      await expect(getReferralCodeOwner('NONEXIST')).resolves.toBeUndefined();
     });
 
-    it('should return the owner email for stored codes', () => {
-      storeReferralCode('user@example.com', 'ABCDEFGH');
-      expect(getReferralCodeOwner('ABCDEFGH')).toBe('user@example.com');
-    });
-  });
-
-  describe('incrementReferralCount', () => {
-    it('should increment the referral count', () => {
-      storeReferralCode('user@example.com', 'ABCDEFGH');
-      expect(getReferralCount('ABCDEFGH')).toBe(0);
-
-      incrementReferralCount('ABCDEFGH');
-      expect(getReferralCount('ABCDEFGH')).toBe(1);
-
-      incrementReferralCount('ABCDEFGH');
-      expect(getReferralCount('ABCDEFGH')).toBe(2);
-    });
-
-    it('should not throw for non-existent codes', () => {
-      expect(() => incrementReferralCount('NONEXIST')).not.toThrow();
+    it('should return the owner email for stored codes', async () => {
+      await storeReferralCode('user@example.com', 'ABCDEFGH');
+      await expect(getReferralCodeOwner('ABCDEFGH')).resolves.toBe('user@example.com');
     });
   });
 
-  describe('getReferralCount', () => {
-    it('should return 0 for non-existent codes', () => {
-      expect(getReferralCount('NONEXIST')).toBe(0);
+  describe('incrementReferralCount / getReferralCount', () => {
+    it('should increment the referral count for distinct referred users', async () => {
+      await storeReferralCode('owner@example.com', 'ABCDEFGH');
+      await expect(getReferralCount('ABCDEFGH')).resolves.toBe(0);
+
+      await incrementReferralCount('ABCDEFGH', 'friend1@example.com');
+      await expect(getReferralCount('ABCDEFGH')).resolves.toBe(1);
+
+      await incrementReferralCount('ABCDEFGH', 'friend2@example.com');
+      await expect(getReferralCount('ABCDEFGH')).resolves.toBe(2);
     });
 
-    it('should return the correct count for stored codes', () => {
-      storeReferralCode('user@example.com', 'ABCDEFGH');
-      expect(getReferralCount('ABCDEFGH')).toBe(0);
+    it('should not double-count the same referred email twice', async () => {
+      await storeReferralCode('owner@example.com', 'ABCDEFGH');
 
-      incrementReferralCount('ABCDEFGH');
-      expect(getReferralCount('ABCDEFGH')).toBe(1);
+      await incrementReferralCount('ABCDEFGH', 'friend1@example.com');
+      await incrementReferralCount('ABCDEFGH', 'friend1@example.com');
+
+      await expect(getReferralCount('ABCDEFGH')).resolves.toBe(1);
+    });
+
+    it('should not throw for non-existent codes', async () => {
+      await expect(incrementReferralCount('NONEXIST', 'friend@example.com')).resolves.not.toThrow();
+    });
+
+    it('should return 0 for non-existent codes', async () => {
+      await expect(getReferralCount('NONEXIST')).resolves.toBe(0);
+    });
+
+    it('persists across separate calls, simulating survival across a server restart', async () => {
+      await storeReferralCode('owner@example.com', 'ABCDEFGH');
+      await incrementReferralCount('ABCDEFGH', 'friend1@example.com');
+
+      // No in-memory Map is used anymore — every read goes through the
+      // (fake) database, so the count is available from any call site.
+      await expect(referralCodeExists('ABCDEFGH')).resolves.toBe(true);
+      await expect(getReferralCount('ABCDEFGH')).resolves.toBe(1);
     });
   });
 });

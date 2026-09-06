@@ -48,13 +48,19 @@ export const SearchResultsVisualizer = React.memo<SearchResultsVisualizerProps>(
 
     if (results.length === 0) {
       return (
-        <div className="text-center py-20 bg-slate-50 rounded-3xl border border-slate-100">
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="search-empty-state"
+          className="text-center py-20 bg-slate-50 rounded-3xl border border-slate-100"
+        >
           <div className="w-20 h-20 bg-white shadow-xl rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
-            <Eye className="w-10 h-10" />
+            <Eye className="w-10 h-10" aria-hidden="true" />
           </div>
           <h3 className="text-xl font-bold font-sans text-slate-700 mb-2">No results found</h3>
-          <p className="text-slate-400 max-w-xs mx-auto text-sm">
-            Try expanding your search parameters or checking for typos.
+          <p className="text-slate-500 max-w-sm mx-auto text-sm">
+            We couldn&apos;t find any matches for your search. Try adjusting your query keywords or
+            filters to find what you&apos;re looking for.
           </p>
         </div>
       );

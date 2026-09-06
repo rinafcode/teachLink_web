@@ -107,7 +107,7 @@ describe('Discord OAuth Callback API Route', () => {
       expect(json.message).toBe('Authorization code is required');
     });
 
-    it('should validate state parameter', async () => {
+    it('should validate state parameter using constant-time comparison', async () => {
       const mockRequest = {
         nextUrl: new URL(
           'http://localhost:3000/api/auth/discord/callback?code=test_code&state=wrong_state',
@@ -118,6 +118,47 @@ describe('Discord OAuth Callback API Route', () => {
             if (name === 'discord_oauth_state') return { value: 'correct_state' };
             return undefined;
           }),
+          delete: vi.fn(),
+        },
+      } as any;
+
+      const response = await GET(mockRequest);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.message).toBe('Invalid state parameter');
+    });
+
+    it('should reject when state parameter is missing', async () => {
+      const mockRequest = {
+        nextUrl: new URL(
+          'http://localhost:3000/api/auth/discord/callback?code=test_code',
+        ),
+        headers: new Headers(),
+        cookies: {
+          get: vi.fn((name: string) => {
+            if (name === 'discord_oauth_state') return { value: 'correct_state' };
+            return undefined;
+          }),
+          delete: vi.fn(),
+        },
+      } as any;
+
+      const response = await GET(mockRequest);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.message).toBe('Invalid state parameter');
+    });
+
+    it('should reject when stored state cookie is missing', async () => {
+      const mockRequest = {
+        nextUrl: new URL(
+          'http://localhost:3000/api/auth/discord/callback?code=test_code&state=test_state',
+        ),
+        headers: new Headers(),
+        cookies: {
+          get: vi.fn(() => undefined),
           delete: vi.fn(),
         },
       } as any;

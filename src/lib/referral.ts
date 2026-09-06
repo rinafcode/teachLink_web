@@ -3,7 +3,14 @@
  *
  * This module provides utilities for generating and validating referral codes
  * as part of the Authentication Flow Referral Program implementation.
+ *
+ * Persistence is backed by PostgreSQL (see
+ * `src/lib/db/repositories/referrals.repository.ts` and
+ * `src/lib/db/migrations/005_create_referrals_table.sql`) — codes and
+ * referral counts survive server restarts.
  */
+
+import * as referralsRepo from './db/repositories/referrals.repository';
 
 const REFERRAL_CODE_LENGTH = 8;
 const REFERRAL_CODE_CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No I, O, 0, 1 to avoid confusion
@@ -70,64 +77,70 @@ export function validateReferralCode(code: string): { isValid: boolean; error?: 
  * @param userEmail The email of the user attempting to use the code
  * @returns true if the user can use this referral code, false if it's their own
  */
-export function canUseReferralCode(referralCode: string, userEmail: string): boolean {
-  // In a real implementation, this would check against the database
-  // For now, we'll implement a basic check that can be extended
-  // This is a placeholder - actual implementation would query the database
-  // to ensure the referral code doesn't belong to the same user
-  return true;
+export async function canUseReferralCode(
+  referralCode: string,
+  userEmail: string,
+): Promise<boolean> {
+  const ownerEmail = await referralsRepo.getOwnerEmail(referralCode);
+  if (!ownerEmail) return true; // unknown codes are handled separately by referralCodeExists
+  return ownerEmail.toLowerCase() !== userEmail.toLowerCase();
 }
 
 /**
- * Mock storage for referral codes (in production, this would be a database)
- * This is used for the mock implementation in the authentication flow
- */
-const mockReferralCodes = new Map<string, { email: string; referralCount: number }>();
-
-/**
- * Stores a referral code for a user (mock implementation)
+ * Persists a referral code for a user in the database.
  * @param email The user's email
  * @param referralCode The referral code
+ * @param ownerId Optional user id to associate with the code, when known
  */
-export function storeReferralCode(email: string, referralCode: string): void {
-  mockReferralCodes.set(referralCode, { email, referralCount: 0 });
+export async function storeReferralCode(
+  email: string,
+  referralCode: string,
+  ownerId?: string | null,
+): Promise<void> {
+  await referralsRepo.create(referralCode, email, ownerId ?? null);
 }
 
 /**
- * Validates if a referral code exists (mock implementation)
+ * Checks whether a referral code exists, querying the database.
  * @param referralCode The referral code to check
  * @returns true if the referral code exists, false otherwise
  */
-export function referralCodeExists(referralCode: string): boolean {
-  return mockReferralCodes.has(referralCode);
+export async function referralCodeExists(referralCode: string): Promise<boolean> {
+  return referralsRepo.exists(referralCode);
 }
 
 /**
- * Gets the owner of a referral code (mock implementation)
+ * Gets the owner of a referral code.
  * @param referralCode The referral code
  * @returns The email of the owner, or undefined if not found
  */
-export function getReferralCodeOwner(referralCode: string): string | undefined {
-  return mockReferralCodes.get(referralCode)?.email;
+export async function getReferralCodeOwner(referralCode: string): Promise<string | undefined> {
+  return referralsRepo.getOwnerEmail(referralCode);
 }
 
 /**
- * Increments the referral count for a referral code (mock implementation)
- * @param referralCode The referral code
+ * Records a successful referral (a new signup that used `referralCode`) and
+ * increments the referral count in the database. Idempotent per
+ * (referralCode, referredEmail) — replaying the same signup does not
+ * double-count.
+ * @param referralCode The referral code that was used
+ * @param referredEmail The email of the user who signed up using the code
+ * @param referredUserId Optional id of the newly created user
  */
-export function incrementReferralCount(referralCode: string): void {
-  const data = mockReferralCodes.get(referralCode);
-  if (data) {
-    data.referralCount++;
-    mockReferralCodes.set(referralCode, data);
-  }
+export async function incrementReferralCount(
+  referralCode: string,
+  referredEmail: string,
+  referredUserId?: string | null,
+): Promise<void> {
+  await referralsRepo.recordReferral(referralCode, referredEmail, referredUserId ?? null);
 }
 
 /**
- * Gets the referral count for a referral code (mock implementation)
+ * Gets the referral count for a referral code from the database
+ * (`SELECT COUNT(*)` over the `referred_users` join table).
  * @param referralCode The referral code
- * @returns The number of referrals made with this code
+ * @returns The number of successful referrals made with this code
  */
-export function getReferralCount(referralCode: string): number {
-  return mockReferralCodes.get(referralCode)?.referralCount || 0;
+export async function getReferralCount(referralCode: string): Promise<number> {
+  return referralsRepo.getReferralCount(referralCode);
 }

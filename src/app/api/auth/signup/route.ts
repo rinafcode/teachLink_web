@@ -13,6 +13,7 @@ import {
 import {
   generateReferralCode,
   getReferralCodeOwner,
+  incrementReferralCount,
   referralCodeExists,
   storeReferralCode,
   validateReferralCode,
@@ -76,8 +77,8 @@ export async function POST(
         );
       }
 
-      // Check if referral code exists (mock implementation)
-      if (!referralCodeExists(referralCode)) {
+      // Check if referral code exists in the database
+      if (!(await referralCodeExists(referralCode))) {
         edgeLog('warn', route, 'Validation failed', { reason: 'referral_code_not_found' });
         return addHeaders(
           NextResponse.json({ message: 'Referral code not found' }, { status: 404 }),
@@ -85,7 +86,7 @@ export async function POST(
       }
 
       // Prevent self-referral (check if the referral code belongs to the same email)
-      const referrerEmail = getReferralCodeOwner(referralCode);
+      const referrerEmail = await getReferralCodeOwner(referralCode);
       if (referrerEmail === email) {
         edgeLog('warn', route, 'Validation failed', { reason: 'self_referral' });
         return addHeaders(
@@ -124,7 +125,13 @@ export async function POST(
 
     const userId = randomUUID();
     const userReferralCode = generateReferralCode();
-    storeReferralCode(email, userReferralCode);
+    await storeReferralCode(email, userReferralCode, userId);
+
+    // Attribute this signup to the referral code that was used, if any.
+    if (referralCode) {
+      await incrementReferralCount(referralCode, email, userId);
+    }
+
     edgeLog('info', route, 'Account created', {
       userId,
       verificationId: verificationResult.record.verificationId,

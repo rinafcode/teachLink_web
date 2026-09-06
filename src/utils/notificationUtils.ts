@@ -73,8 +73,14 @@ export function generateNotificationId(): string {
  */
 export function formatNotificationTime(timestamp: string): string {
   const date = new Date(timestamp);
+  if (isNaN(date.getTime())) {
+    return '';
+  }
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
+  if (diffMs < 0) {
+    return 'Just now';
+  }
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
@@ -99,13 +105,25 @@ export function isWithinQuietHours(quietHours: {
   end: string;
   timezone: string;
 }): boolean {
+  if (!quietHours?.start || !quietHours?.end || !quietHours?.timezone) {
+    return false;
+  }
   const now = new Date();
-  const currentTime = now.toLocaleTimeString('en-US', {
-    hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: quietHours.timezone,
-  });
+  let currentTime: string;
+  try {
+    currentTime = now.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: quietHours.timezone,
+    });
+  } catch {
+    currentTime = now.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   const start = quietHours.start;
   const end = quietHours.end;
@@ -126,6 +144,10 @@ export function shouldSendNotification(
   channel: NotificationChannel,
   preferences: UserNotificationPreferences,
 ): boolean {
+  if (!preferences?.channels || !preferences?.categories) {
+    return false;
+  }
+
   // Check if channel is enabled globally
   if (!preferences.channels[channel === 'in-app' ? 'inApp' : channel]) {
     return false;
@@ -138,19 +160,19 @@ export function shouldSendNotification(
   }
 
   // Check if channel is enabled for this category
-  if (!categoryPrefs.channels.includes(channel)) {
+  if (!categoryPrefs.channels?.includes(channel)) {
     return false;
   }
 
   // Check quiet hours
-  if (preferences.quietHours.enabled && channel !== 'in-app') {
+  if (preferences.quietHours?.enabled && channel !== 'in-app') {
     if (isWithinQuietHours(preferences.quietHours)) {
       return false;
     }
   }
 
   // Check category-specific quiet hours
-  if (categoryPrefs.quietHours) {
+  if (categoryPrefs.quietHours?.start && categoryPrefs.quietHours?.end) {
     const now = new Date();
     const currentTime = now.toLocaleTimeString('en-US', {
       hour12: false,
@@ -159,8 +181,11 @@ export function shouldSendNotification(
     });
 
     if (
-      currentTime >= categoryPrefs.quietHours.start &&
-      currentTime <= categoryPrefs.quietHours.end
+      categoryPrefs.quietHours.start > categoryPrefs.quietHours.end
+        ? currentTime >= categoryPrefs.quietHours.start ||
+          currentTime <= categoryPrefs.quietHours.end
+        : currentTime >= categoryPrefs.quietHours.start &&
+          currentTime <= categoryPrefs.quietHours.end
     ) {
       return false;
     }

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/ratelimit';
-import { exchangeCodeForToken, getGoogleUser, getGoogleAvatarUrl } from '@/lib/google/oauth';
+import {
+  exchangeCodeForToken,
+  getGoogleUser,
+  getGoogleAvatarUrl,
+  validateState,
+} from '@/lib/google/oauth';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
 
@@ -40,7 +45,7 @@ export async function GET(
 
     // Verify state parameter to prevent CSRF attacks
     const storedState = request.cookies.get('google_oauth_state')?.value;
-    if (!state || state !== storedState) {
+    if (!validateState(storedState, state)) {
       edgeLog('error', '/api/auth/google/callback', 'Invalid state parameter');
       return addHeaders(
         NextResponse.json({ message: 'Invalid state parameter' }, { status: 400 }),
