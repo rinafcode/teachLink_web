@@ -1,6 +1,28 @@
 import { NextResponse } from 'next/server';
-import { query } from '@/lib/db/pool';
 import { getTrustedProxyConfig } from '@/config/environment';
+
+type DbQueryResult = { rows: Array<Record<string, unknown>> };
+type DbQueryFn = (text: string, params?: unknown[]) => Promise<DbQueryResult>;
+
+let dbQueryPromise: Promise<DbQueryFn | null> | null = null;
+
+/**
+ * Lazily resolves the pg-backed `query` helper.
+ *
+ * `pg` can only run in a Node.js runtime and importing it from a module shared
+ * with Edge routes would break their bundling, so the database module is
+ * loaded dynamically and only outside the Edge runtime. When the DB is
+ * unavailable the in-memory cache remains authoritative.
+ */
+async function loadDbQuery(): Promise<DbQueryFn | null> {
+  if (process.env.NEXT_RUNTIME === 'edge') return null;
+  if (!dbQueryPromise) {
+    dbQueryPromise = import(/* webpackIgnore: true */ '@/lib/db/pool')
+      .then((mod) => mod.query as DbQueryFn)
+      .catch(() => null);
+  }
+  return dbQueryPromise;
+}
 
 /**
  * Database-backed sliding window rate limiter for API routes.
@@ -50,6 +72,8 @@ const stores = new Map<string, RateLimitEntry>();
  * processing — the in-memory cache still provides best-effort limiting.
  */
 async function persistToDb(identifier: string, entry: RateLimitEntry): Promise<void> {
+  const query = await loadDbQuery();
+  if (!query) return;
   try {
     await query(
       `INSERT INTO rate_limits (identifier, count, reset_at, updated_at)
@@ -70,6 +94,8 @@ async function persistToDb(identifier: string, entry: RateLimitEntry): Promise<v
  * Removes an expired entry from the database.
  */
 async function removeFromDb(identifier: string): Promise<void> {
+  const query = await loadDbQuery();
+  if (!query) return;
   try {
     await query('DELETE FROM rate_limits WHERE identifier = $1', [identifier]);
   } catch {
@@ -82,6 +108,8 @@ async function removeFromDb(identifier: string): Promise<void> {
  * in-memory cache on process startup.  Called once at module load time.
  */
 async function loadFromDb(): Promise<void> {
+  const query = await loadDbQuery();
+  if (!query) return;
   try {
     const now = Date.now();
     const result = await query(
