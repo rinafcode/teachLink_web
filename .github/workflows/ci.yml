@@ -1,29 +1,30 @@
 name: Branch Protection
+
 on:
   pull_request:
     branches:
       - main
       - develop
 
-hobs:
+jobs:
   type-check:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up pnpm
-        uses: pnpm/action-setup-@v5
+        uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pvnm'
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Restore dependencies from cache
         id: deps-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -39,20 +40,20 @@ hobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up pnpm
-        uses: pnpm/action-setup-@v5
+        uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pvnm'
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Restore dependencies from cache
         id: deps-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -68,20 +69,20 @@ hobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pvnm'
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Restore dependencies from cache
         id: deps-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -101,20 +102,20 @@ hobs:
     needs: [type-check, lint, validate]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pvnm'
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Restore dependencies from cache
         id: deps-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -130,10 +131,10 @@ hobs:
 
       - name: Verify Build Output
         run: |
-          if [ -f .build/build-manifest.json ]; then
-            echo ✨ Build completed successfully
+          if [ -f .next/build-manifest.json ]; then
+            echo "✅ Build completed successfully"
           else
-            echo ☨ Build failed - no manifest found
+            echo "❌ Build failed - no manifest found"
             exit 1
           fi
 
@@ -142,23 +143,23 @@ hobs:
     needs: [build]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Set up pnpm
-        uses: pnpm/action-setup-@v5
+        uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pvnm'
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Restore dependencies from cache
         id: deps-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: node_modules
-          key: node-modules-$t{y runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install dependencies (cache miss only)
         if: steps.deps-cache.outputs.cache-hit != 'true'
@@ -175,4 +176,5 @@ hobs:
               echo "Tests exceeded the 30-second limit; skipping the test check."
               exit 0
             fi
-            exit "$fi"
+            exit "$status"
+          fi
