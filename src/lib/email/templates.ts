@@ -1,4 +1,10 @@
-import { EmailTemplate, EmailTemplatePayload } from '@/lib/email/types';
+import {
+  EmailTemplate,
+  EmailTemplatePayload,
+  MissingTemplateVariable,
+  RenderOptions,
+  TemplateValidationResult,
+} from '@/lib/email/types';
 
 export type TransactionalTemplateId =
   | 'welcome'
@@ -24,8 +30,31 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
+/** Matches a `{{ placeholder }}` and captures its name. */
+const PLACEHOLDER_PATTERN = /{{\s*([\w.-]+)\s*}}/g;
+
+/**
+ * The variables a template string references.
+ *
+ * Read from the template itself rather than a hand-maintained list, so the
+ * declared schema cannot drift away from what the template actually uses.
+ */
+export function extractTemplateVariables(template: string): string[] {
+  const names = new Set<string>();
+  for (const match of template.matchAll(PLACEHOLDER_PATTERN)) {
+    names.add(match[1]);
+  }
+  return [...names].sort();
+}
+
+/** True when the payload supplies a usable value for `name`. */
+function isProvided(payload: EmailTemplatePayload, name: string): boolean {
+  const value = payload[name];
+  return value !== undefined && value !== null && String(value).trim() !== '';
+}
+
 function render(template: string, payload: EmailTemplatePayload): string {
-  return template.replace(/{{\s*([\w.-]+)\s*}}/g, (_match, key: string) => {
+  return template.replace(PLACEHOLDER_PATTERN, (_match, key: string) => {
     const value = payload[key];
     return escapeHtml(value == null ? '' : String(value));
   });
@@ -55,8 +84,86 @@ const TEXT_TEMPLATES: Record<TransactionalTemplateId, string> = {
     'Verify your email, {{name}}: {{verificationUrl}}. Backup code: {{backupCode}}. Recovery link: {{restoreUrl}}. Expires in {{expiresInMinutes}} minutes.',
 };
 
+/** Thrown when a template is rendered without every variable it references. */
+export class MissingTemplateVariablesError extends Error {
+  readonly templateId: string;
+  readonly missing: MissingTemplateVariable[];
+
+  constructor(templateId: string, missing: MissingTemplateVariable[]) {
+    super(
+      `Template "${templateId}" is missing ${missing.length} variable(s): ${missing
+        .map((variable) => `${variable.name} (${variable.parts.join(', ')})`)
+        .join(', ')}`,
+    );
+    this.name = 'MissingTemplateVariablesError';
+    this.templateId = templateId;
+    this.missing = missing;
+  }
+}
+
+/** Every variable the given template references, by part. */
+export function getTemplateSchema(
+  id: TransactionalTemplateId,
+): Record<'subject' | 'html' | 'text', string[]> {
+  return {
+    subject: extractTemplateVariables(TEMPLATE_SUBJECTS[id]),
+    html: extractTemplateVariables(HTML_TEMPLATES[id]),
+    text: extractTemplateVariables(TEXT_TEMPLATES[id]),
+  };
+}
+
 export class EmailTemplateManager {
-  getTemplate(id: TransactionalTemplateId, payload: EmailTemplatePayload): EmailTemplate {
+  /**
+   * Checks a payload against the variables the template actually references.
+   *
+   * Reports unused variables too: a payload with `userName` for a template
+   * that wants `name` produces one missing and one unused entry, which is a
+   * far better clue than a blank space in the rendered email.
+   */
+  validatePayload(
+    id: TransactionalTemplateId,
+    payload: EmailTemplatePayload,
+  ): TemplateValidationResult {
+    const schema = getTemplateSchema(id);
+    const byName = new Map<string, MissingTemplateVariable>();
+
+    for (const part of ['subject', 'html', 'text'] as const) {
+      for (const name of schema[part]) {
+        if (isProvided(payload, name)) continue;
+
+        const existing = byName.get(name);
+        if (existing) existing.parts.push(part);
+        else byName.set(name, { name, parts: [part] });
+      }
+    }
+
+    const referenced = new Set([...schema.subject, ...schema.html, ...schema.text]);
+    const unused = Object.keys(payload).filter((key) => !referenced.has(key));
+
+    const missing = [...byName.values()];
+    return { valid: missing.length === 0, missing, unused };
+  }
+
+  /**
+   * Renders a transactional template.
+   *
+   * Throws [`MissingTemplateVariablesError`] rather than rendering an
+   * unresolved placeholder as an empty string — a password-reset email whose
+   * link silently rendered as nothing is worse than one that was never sent,
+   * because the user cannot tell it is broken.
+   */
+  getTemplate(
+    id: TransactionalTemplateId,
+    payload: EmailTemplatePayload,
+    options: RenderOptions = {},
+  ): EmailTemplate {
+    if (!options.allowMissing) {
+      const validation = this.validatePayload(id, payload);
+      if (!validation.valid) {
+        throw new MissingTemplateVariablesError(id, validation.missing);
+      }
+    }
+
     return {
       id,
       subject: render(TEMPLATE_SUBJECTS[id], payload),

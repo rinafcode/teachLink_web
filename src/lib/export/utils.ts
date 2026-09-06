@@ -113,3 +113,99 @@ export function defaultSort(columns?: string[]): ExportSort[] {
 
   return [{ field: columns[0], direction: 'asc' }];
 }
+
+export interface ExportStreamOptions {
+  /** Max rows per yielded chunk. Keeps memory per chunk bounded on large datasets. */
+  chunkSize?: number;
+  /** Optional hook invoked after each chunk is produced (e.g. to surface progress). */
+  onChunk?: (index: number, total: number, chunk: string[]) => void;
+}
+
+export function escapeCSVCell(value: unknown): string {
+  const str = String(value ?? '');
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+export function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+export function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Yield a CSV payload in bounded chunks instead of building the whole
+ * string in memory. Each chunk contains a batch of `chunkSize` rows.
+ */
+export async function* createCSVSnapshot(
+  data: ExportDataset,
+  options: ExportStreamOptions = {},
+): AsyncGenerator<string[], void, unknown> {
+  const { chunkSize = 500, onChunk } = options;
+  const { headers, rows } = data;
+
+  const headerChunk = [headers.map(escapeCSVCell).join(',')];
+  yield headerChunk;
+
+  for (let index = 0; index < rows.length; index += chunkSize) {
+    const batch = rows.slice(index, index + chunkSize);
+    const chunk: string[] = [];
+    for (const row of batch) {
+      chunk.push(headers.map((header) => escapeCSVCell(row[header])).join(','));
+    }
+    onChunk?.(index + batch.length, rows.length, chunk);
+    yield chunk;
+  }
+}
+
+/**
+ * Yield a JSON array payload in bounded chunks. The wrapper `[` and `]`
+ * delimiters are emitted separately so memory stays bounded to `chunkSize`
+ * rows on large datasets.
+ */
+export async function* createJSONSnapshot(
+  data: ExportDataset,
+  options: ExportStreamOptions = {},
+): AsyncGenerator<string, void, unknown> {
+  const { chunkSize = 500, onChunk } = options;
+  const { rows } = data;
+
+  if (rows.length === 0) {
+    yield '[]';
+    return;
+  }
+
+  const indent = (value: unknown): string =>
+    JSON.stringify(value, null, 2)
+      .split('\n')
+      .map((line) => `  ${line}`)
+      .join('\n');
+
+  yield '[\n';
+  for (let index = 0; index < rows.length; index += chunkSize) {
+    const batch = rows.slice(index, index + chunkSize);
+    const chunk: string[] = [];
+    for (let rowIndex = 0; rowIndex < batch.length; rowIndex += 1) {
+      const globalIndex = index + rowIndex;
+      const isLast = globalIndex === rows.length - 1;
+      chunk.push(`${indent(batch[rowIndex])}${isLast ? '' : ','}\n`);
+    }
+    onChunk?.(index + batch.length, rows.length, chunk);
+    yield chunk.join('');
+  }
+  yield ']';
+}

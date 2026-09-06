@@ -61,3 +61,98 @@ export async function clearOutdatedCaches(cachePrefix = 'teachlink-cache-'): Pro
     logger.error('Failed to clear outdated caches', { error, cachePrefix });
   }
 }
+
+/**
+ * Default settle time for connectivity changes.
+ *
+ * A flapping connection — a train tunnel, a wifi handover — fires `online` and
+ * `offline` several times a second. Reacting to each one starts a sync that is
+ * cancelled by the next event, so nothing ever drains.
+ */
+export const CONNECTIVITY_DEBOUNCE_MS = 1500;
+
+export interface ConnectivityDebouncerOptions {
+  /** How long the state must hold before it is reported. */
+  debounceMs?: number;
+  /** Injectable timers, so tests need not wait in real time. */
+  setTimeoutFn?: typeof setTimeout;
+  clearTimeoutFn?: typeof clearTimeout;
+}
+
+export interface ConnectivityDebouncer {
+  /** Feed a raw connectivity event. */
+  push: (online: boolean) => void;
+  /** The last settled value reported to the callback. */
+  readonly settled: boolean;
+  /** The most recent raw value, settled or not. */
+  readonly pending: boolean;
+  /** Report the pending value immediately, cancelling the timer. */
+  flush: () => void;
+  /** Cancel any pending report. */
+  cancel: () => void;
+}
+
+/**
+ * Debounces connectivity transitions, reporting only states that hold.
+ *
+ * Two properties matter beyond plain debouncing:
+ *
+ * - A value equal to the last settled one cancels the pending timer instead of
+ *   restarting it. Offline → online → offline within the window is not a
+ *   change at all, and should not fire a callback.
+ * - The callback fires only on an actual change, so a run of `online` events
+ *   on an already-online connection stays silent.
+ */
+export function createConnectivityDebouncer(
+  initialOnline: boolean,
+  onChange: (online: boolean) => void,
+  options: ConnectivityDebouncerOptions = {},
+): ConnectivityDebouncer {
+  const debounceMs = options.debounceMs ?? CONNECTIVITY_DEBOUNCE_MS;
+  const setTimer = options.setTimeoutFn ?? setTimeout;
+  const clearTimer = options.clearTimeoutFn ?? clearTimeout;
+
+  let settled = initialOnline;
+  let pending = initialOnline;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  const cancel = () => {
+    if (timer !== null) {
+      clearTimer(timer);
+      timer = null;
+    }
+  };
+
+  const commit = () => {
+    timer = null;
+    if (pending === settled) return;
+    settled = pending;
+    onChange(settled);
+  };
+
+  return {
+    push(online: boolean) {
+      pending = online;
+
+      // Back to where we started: the flap cancelled itself out.
+      if (online === settled) {
+        cancel();
+        return;
+      }
+
+      cancel();
+      timer = setTimer(commit, debounceMs);
+    },
+    get settled() {
+      return settled;
+    },
+    get pending() {
+      return pending;
+    },
+    flush() {
+      cancel();
+      commit();
+    },
+    cancel,
+  };
+}

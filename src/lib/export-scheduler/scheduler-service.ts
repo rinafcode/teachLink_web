@@ -19,7 +19,13 @@ import {
   getTemplate,
   addHistory,
 } from './storage';
-import { getNextRunTime, frequencyToCron } from './cron-parser';
+import {
+  CronValidationError,
+  InvalidCronExpressionError,
+  getNextRunTime,
+  frequencyToCron,
+  validateCron,
+} from './cron-parser';
 import { exportData, fetchDataForTemplate } from './exporter';
 import { notificationService } from './notification-service';
 import { createLogger } from '@/lib/logging';
@@ -83,11 +89,39 @@ export class ExportSchedulerService {
       const dueSchedules = await getDueSchedules();
 
       for (const schedule of dueSchedules) {
-        await this.queueExportJob(schedule);
+        // Each schedule is isolated. One malformed cron expression used to
+        // throw out of getNextRunTime and abort this loop, so a single bad
+        // string stopped every *other* schedule from running too.
+        try {
+          await this.queueExportJob(schedule);
+        } catch (error) {
+          logger.error('Failed to queue scheduled export', {
+            scheduleId: schedule.id,
+            error,
+          });
+        }
       }
     } catch (error) {
       logger.error('Error checking due schedules', { error });
     }
+  }
+
+  /**
+   * Validates the cron expression a schedule would run on.
+   *
+   * Call this before saving a schedule: an invalid expression is otherwise
+   * accepted silently and the job simply never runs, with nothing to tell the
+   * user why.
+   */
+  validateSchedule(schedule: Pick<ExportSchedule, 'cronExpression' | 'frequency'>): {
+    valid: boolean;
+    cronExpression: string;
+    errors: CronValidationError[];
+  } {
+    const cronExpression = schedule.cronExpression || frequencyToCron(schedule.frequency);
+    const result = validateCron(cronExpression);
+
+    return { valid: result.valid, cronExpression, errors: result.errors };
   }
 
   /**
@@ -102,10 +136,18 @@ export class ExportSchedulerService {
       emailRecipients: schedule.emailRecipients,
     };
 
+    // Validate before enqueuing. Queuing the job first and then failing to
+    // compute the next run leaves the schedule due forever, re-running the
+    // same export on every sweep.
+    const { valid, cronExpression, errors } = this.validateSchedule(schedule);
+
+    if (!valid) {
+      throw new InvalidCronExpressionError(cronExpression, errors);
+    }
+
     taskQueue.enqueue('export-job', payload);
 
     // Update next run time
-    const cronExpression = schedule.cronExpression || frequencyToCron(schedule.frequency);
     const nextRun = getNextRunTime(cronExpression);
     await updateScheduleNextRun(schedule.id, nextRun, new Date());
   }

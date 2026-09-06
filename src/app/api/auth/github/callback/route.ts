@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/ratelimit';
-import { exchangeCodeForToken, getGitHubUser, getGitHubAvatarUrl } from '@/lib/github/oauth';
+import {
+  exchangeCodeForToken,
+  getGitHubUser,
+  getGitHubAvatarUrl,
+  validateState,
+} from '@/lib/github/oauth';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
 
@@ -21,7 +26,7 @@ export async function GET(
   try {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
-    const state = searchParams.get('state');
+    const state = searchParams.get('state') ?? undefined;
     const error = searchParams.get('error');
 
     // Check for OAuth errors
@@ -40,7 +45,7 @@ export async function GET(
 
     // Verify state parameter to prevent CSRF attacks
     const storedState = request.cookies.get('github_oauth_state')?.value;
-    if (!state || state !== storedState) {
+    if (!validateState(state, storedState)) {
       edgeLog('error', '/api/auth/github/callback', 'Invalid state parameter');
       return addHeaders(
         NextResponse.json({ message: 'Invalid state parameter' }, { status: 400 }),

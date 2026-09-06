@@ -10,6 +10,30 @@ function isVersionedApiPath(path: string): boolean {
   return path.startsWith(`${API_ROOT}/v`);
 }
 
+export interface ApiDeprecationInfo {
+  deprecatedPath: string;
+  versionedPath: string;
+  message: string;
+}
+
+export function getApiDeprecationInfo(path: string): ApiDeprecationInfo | null {
+  if (!path.startsWith(API_ROOT)) {
+    return null;
+  }
+
+  const versionSegment = path.slice(API_ROOT.length + 1).split('/')[0] ?? '';
+  if (/^v\d+$/.test(versionSegment)) {
+    return null;
+  }
+
+  const versionedPath = `${VERSIONED_API_ROOT}${path.slice(API_ROOT.length)}`;
+  return {
+    deprecatedPath: path,
+    versionedPath,
+    message: `Unversioned API path "${path}" is deprecated. Use "${versionedPath}" instead.`,
+  };
+}
+
 export function getVersionedApiPath(url: string): string {
   try {
     const base = new URL(url, 'http://localhost');

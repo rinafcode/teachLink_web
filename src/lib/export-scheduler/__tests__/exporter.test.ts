@@ -6,6 +6,15 @@ import { describe, it, expect } from 'vitest';
 import { exportData, fetchDataForTemplate } from '../exporter';
 import { ExportTemplate } from '../types';
 
+function readBlobText(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+}
+
 describe('Data Exporter', () => {
   const mockTemplate: ExportTemplate = {
     id: 'test-1',
@@ -31,14 +40,23 @@ describe('Data Exporter', () => {
       expect(result.blob).toBeInstanceOf(Blob);
       expect(result.fileName).toContain('.csv');
       expect(result.blob.type).toContain('text/csv');
+
+      const text = await readBlobText(result.blob);
+      expect(text.split('\n')[0]).toBe('id,name,value');
+      expect(text).toContain('Item 2');
+      expect(text).toContain('Item 1');
     });
 
-    it('should export to JSON', async () => {
+    it('should export to JSON as an equivalent, valid array', async () => {
       const template = { ...mockTemplate, format: 'json' as const };
       const result = await exportData(template, mockData);
       expect(result.blob).toBeInstanceOf(Blob);
       expect(result.fileName).toContain('.json');
       expect(result.blob.type).toContain('application/json');
+
+      const text = await readBlobText(result.blob);
+      expect(JSON.parse(text)).toEqual(mockData.rows);
+      expect(text).toBe(JSON.stringify(mockData.rows, null, 2));
     });
 
     it('should export to XLSX', async () => {

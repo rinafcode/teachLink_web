@@ -51,8 +51,11 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
       }
     },
     {
-      onSuccess: () => {
+      onSuccess: async () => {
         success('Form submitted successfully!');
+        if (autoSave && formConfig) {
+          await autoSaveManager.clearDraft(formConfig.id);
+        }
       },
       onError: () => {
         notifyError('Submission failed. Please try again.');
@@ -155,11 +158,6 @@ export const DynamicFormBuilder: React.FC<DynamicFormBuilderProps> = ({
     }
 
     await submitMutation.mutate(formState.values);
-
-    // Clear draft after successful submission
-    if (autoSave && submitMutation.isSuccess) {
-      await autoSaveManager.clearDraft(formConfig.id);
-    }
   };
 
   const renderField = (field: FieldDescriptor) => {

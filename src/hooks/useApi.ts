@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { buildDedupeKey, dedupe, cancelDedupe } from '@/lib/api/dedupe';
+import { useAbortController } from './useAbortController';
 
 export type ApiState<T> = {
   data: T | null;
@@ -28,6 +29,8 @@ export function useApi<T>(
 ): ApiState<T> & { refetch: () => void } {
   const { skip = false, body, ...fetchOptions } = options;
   const method = fetchOptions.method ?? 'GET';
+
+  const { getSignal } = useAbortController();
 
   // Serialize body and fetchOptions values using refs to keep identity stable
   // unless their deep or stringified contents actually change.
@@ -60,6 +63,7 @@ export function useApi<T>(
     const currentBody = bodyRef.current;
     const currentOptions = fetchOptionsRef.current;
     const currentMethod = currentOptions.method ?? 'GET';
+    const signal = getSignal();
 
     const key = buildDedupeKey(currentMethod, url, currentBody);
 
@@ -72,6 +76,7 @@ export function useApi<T>(
         fetch(url, {
           ...currentOptions,
           method: currentMethod,
+          signal,
           ...(currentBody ? { body: JSON.stringify(currentBody) } : {}),
         }).then((res) => {
           if (!res.ok) throw new Error(`Request failed: ${res.status} ${res.statusText}`);
@@ -84,6 +89,9 @@ export function useApi<T>(
       }
     } catch (err) {
       if (mountedRef.current) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
         setState({
           data: null,
           loading: false,
@@ -91,7 +99,7 @@ export function useApi<T>(
         });
       }
     }
-  }, [url, method, serializedBody, serializedOptions]);
+  }, [url, method, serializedBody, serializedOptions, getSignal]);
 
   useEffect(() => {
     if (!skip) {

@@ -1,9 +1,14 @@
 'use client';
 
 import { memo } from 'react';
-import { dailyLearningTimeOptions, learningGoalOptions, profileUser } from '../profile-data';
+import type { ProfileUser } from '../profile-data';
+import { dailyLearningTimeOptions, guestProfileUser, learningGoalOptions } from '../profile-data';
 
-function ProfileInfoPanel() {
+interface ProfileInfoPanelProps {
+  user?: ProfileUser;
+}
+
+function ProfileInfoPanel({ user = guestProfileUser }: ProfileInfoPanelProps) {
   return (
     <section
       id="profile-panel"
@@ -26,7 +31,7 @@ function ProfileInfoPanel() {
           <input
             id="profile-full-name"
             type="text"
-            defaultValue={profileUser.name}
+            defaultValue={user.name}
             autoComplete="name"
             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:placeholder-gray-400"
           />
@@ -42,7 +47,7 @@ function ProfileInfoPanel() {
           <input
             id="profile-email"
             type="email"
-            defaultValue={profileUser.email}
+            defaultValue={user.email}
             autoComplete="email"
             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:placeholder-gray-400"
           />
@@ -99,7 +104,7 @@ function ProfileInfoPanel() {
         <textarea
           id="profile-bio"
           rows={4}
-          defaultValue={profileUser.bio}
+          defaultValue={user.bio}
           className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:placeholder-gray-400"
         />
       </div>

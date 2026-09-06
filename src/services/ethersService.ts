@@ -3,13 +3,27 @@
  * This module dynamically imports ethers only when needed, reducing initial bundle size
  */
 
+import { CircuitBreaker } from '@/utils/circuitBreaker';
+
 type EthersModule = typeof import('ethers');
+
+const ethersCircuitBreaker = new CircuitBreaker({
+  failureThreshold: 1,
+  successThreshold: 1,
+  timeout: 60000,
+  monitoringPeriod: 10000,
+  maxConcurrentRequests: 10,
+  maxConcurrentHalfOpenProbes: 1,
+});
 
 let ethersPromise: Promise<EthersModule> | null = null;
 
 const loadEthers = (): Promise<EthersModule> => {
   if (!ethersPromise) {
-    ethersPromise = import('ethers');
+    ethersPromise = import('ethers').catch((error: unknown) => {
+      ethersPromise = null;
+      throw error;
+    });
   }
   return ethersPromise;
 };
@@ -18,8 +32,10 @@ const loadEthers = (): Promise<EthersModule> => {
  * Get ethers library (lazy-loaded)
  */
 export const getEthers = async (): Promise<EthersModule['ethers']> => {
-  const ethersModule = await loadEthers();
-  return ethersModule.ethers;
+  return ethersCircuitBreaker.execute(async () => {
+    const ethersModule = await loadEthers();
+    return ethersModule.ethers;
+  });
 };
 
 /**

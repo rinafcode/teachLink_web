@@ -1,4 +1,7 @@
-const CACHE_NAME = 'teachlink-cache-v1';
+// Bump CACHE_VERSION on deploy so stale assets are busted: the activate
+// handler below removes caches from older versions.
+const CACHE_VERSION = 2;
+const CACHE_NAME = 'teachlink-cache-v' + CACHE_VERSION;
 const OFFLINE_URL = '/offline.html';
 
 const URLS_TO_CACHE = [

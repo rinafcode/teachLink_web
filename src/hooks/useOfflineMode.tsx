@@ -1,6 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  CONNECTIVITY_DEBOUNCE_MS,
+  createConnectivityDebouncer,
+  type ConnectivityDebouncer,
+} from '../utils/pwaUtils';
 import {
   OfflineStorage,
   OfflineSyncService,
@@ -41,11 +46,21 @@ const estimateCourseSize = (course: DownloadCourseInput) => {
   return (course.sizeBytes || 0) + moduleEstimate + assetEstimate;
 };
 
-export const useOfflineMode = () => {
+export interface OfflineModeOptions {
+  /** Settle time for connectivity changes. Defaults to CONNECTIVITY_DEBOUNCE_MS. */
+  connectivityDebounceMs?: number;
+}
+
+export const useOfflineMode = (options: OfflineModeOptions = {}) => {
+  const { connectivityDebounceMs = CONNECTIVITY_DEBOUNCE_MS } = options;
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine,
+  );
 
   const storageRef = useRef<OfflineStorage | null>(null);
   const syncRef = useRef<OfflineSyncService | null>(null);
+  const debouncerRef = useRef<ConnectivityDebouncer | null>(null);
 
   const initializeOfflineMode = useCallback(async () => {
     if (storageRef.current && syncRef.current) {
@@ -285,9 +300,58 @@ export const useOfflineMode = () => {
     return URL.createObjectURL(asset.data);
   }, []);
 
+  // Held in a ref so the listeners below are attached once, rather than being
+  // torn down and re-subscribed every time syncData's identity changes.
+  const syncDataRef = useRef(syncData);
+  syncDataRef.current = syncData;
+
+  /**
+   * Reacts to connectivity only once it has held for the debounce window.
+   *
+   * A flapping connection fires `online`/`offline` several times a second, and
+   * each `online` used to start a sync that the next `offline` interrupted —
+   * so the queue never drained and every partial attempt burned a retry.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const debouncer = createConnectivityDebouncer(
+      navigator.onLine,
+      (online) => {
+        setIsOnline(online);
+        if (online) void syncDataRef.current().catch(() => undefined);
+      },
+      { debounceMs: connectivityDebounceMs },
+    );
+
+    debouncerRef.current = debouncer;
+
+    const handleOnline = () => debouncer.push(true);
+    const handleOffline = () => debouncer.push(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      // A pending timer firing after unmount would sync against a torn-down
+      // service.
+      debouncer.cancel();
+      debouncerRef.current = null;
+    };
+  }, [connectivityDebounceMs]);
+
+  /** Applies the pending connectivity state immediately, skipping the wait. */
+  const flushConnectivity = useCallback(() => {
+    debouncerRef.current?.flush();
+  }, []);
+
   return useMemo(
     () => ({
       isInitialized,
+      isOnline,
+      flushConnectivity,
       initializeOfflineMode,
       cleanupOfflineMode,
       downloadCourse,
@@ -310,6 +374,8 @@ export const useOfflineMode = () => {
     }),
     [
       isInitialized,
+      isOnline,
+      flushConnectivity,
       initializeOfflineMode,
       cleanupOfflineMode,
       downloadCourse,
