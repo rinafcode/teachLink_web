@@ -5,6 +5,7 @@
 import type { ConsentPreferences } from './types';
 
 const CONSENT_API = '/api/v1/consent';
+const CONSENT_EXPORT_API = '/api/v1/consent/export';
 
 export interface RemoteConsentPayload {
   userId: string;
@@ -22,6 +23,30 @@ export async function fetchRemoteConsent(userId: string): Promise<RemoteConsentP
   } catch {
     return null;
   }
+}
+
+/** Fetch consent data for GDPR subject-data export. */
+export async function fetchConsentExport(userId: string): Promise<RemoteConsentPayload | null> {
+  try {
+    const res = await fetch(`${CONSENT_EXPORT_API}?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) return null;
+    const json = (await res.json()) as { data?: RemoteConsentPayload };
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Consolidated GDPR subject-data export bundle for a user. */
+export async function exportSubjectData(userId: string): Promise<{
+  consent: RemoteConsentPayload | null;
+  exportedAt: string;
+}> {
+  const consent = await fetchConsentExport(userId);
+  return {
+    consent,
+    exportedAt: new Date().toISOString(),
+  };
 }
 
 /** Push consent preferences to the server for cross-device persistence. */
