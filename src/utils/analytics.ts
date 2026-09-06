@@ -158,7 +158,7 @@ class Analytics {
   private adapters: AnalyticsAdapter[] = [consoleAdapter];
   private userId: string | undefined;
   private globalProperties: EventProperties = {};
-  private sampleRates: Partial<Record<string, number>> = {};
+  private sampleRates: Partial<Record<EventName, number>> = {};
 
   private get sessionId(): string {
     return getOrCreate(SESSION_KEY, () => generateId('s_'));
@@ -210,7 +210,19 @@ class Analytics {
     return this;
   }
 
+  /** Whether an event should be sent given its configured/default sampling rate. */
+  private shouldSend(name: EventName): boolean {
+    const sampleRate =
+      this.sampleRates[name] ?? (HIGH_VOLUME_EVENT_NAMES.includes(name) ? DEFAULT_SAMPLE_RATE : 1);
+    if (sampleRate >= 1) return true;
+    if (sampleRate <= 0) return false;
+    return Math.random() < sampleRate;
+  }
+
   track(name: EventName, properties: EventProperties = {}): void {
+    // Sample high-volume events unless explicitly configured otherwise
+    if (!this.shouldSend(name)) return;
+
     const event: AnalyticsEvent = {
       name,
       properties: { ...this.globalProperties, ...properties },
@@ -219,12 +231,6 @@ class Analytics {
       anonymousId: this.anonymousId,
       userId: this.userId,
     };
-
-    // Sample high-volume events unless explicitly configured otherwise
-    const sampleRate = this.sampleRates[name] ?? (HIGH_VOLUME_EVENT_NAMES.includes(name) ? DEFAULT_SAMPLE_RATE : 1);
-    if (sampleRate < 1 && Math.random() > sampleRate) {
-      return;
-    }
 
     for (const adapter of this.adapters) {
       try {
