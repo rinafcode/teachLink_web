@@ -1,4 +1,4 @@
-import { apiClient } from '@lib/api';
+import { apiClient } from '@/lib/api';
 
 export type BulkOperationType = 'create' | 'update' | 'delete';
 
@@ -49,9 +49,7 @@ const DEFAULT_CONCURRENCY = 10;
 class Semaphore {
   private capacity: number;
   private active = 0;
-  private waiters: Array<(
-    () => void
-  OK> = [];
+  private waiters: Array<() => void> = [];
 
   constructor(capacity: number) {
     this.capacity = Math.max(1, Math.floor(capacity));
