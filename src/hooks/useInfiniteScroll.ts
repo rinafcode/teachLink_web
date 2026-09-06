@@ -28,9 +28,7 @@ export interface UseInfiniteScrollReturn {
   loadMore: () => void;
 }
 
-// Minimum interval between page loads to prevent duplicate requests.
-const THROTTLE_MS = 500;
-
+// In-flight guard so concurrent/overlapping page loads are prevented.
 export function useInfiniteScroll({
   onLoadMore,
   hasNextPage,
@@ -39,16 +37,13 @@ export function useInfiniteScroll({
 }: UseInfiniteScrollOptions): UseInfiniteScrollReturn {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef(false);
-  const lastLoadTimeRef = useRef(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
   const runLoadMore = useCallback(async () => {
-    const now = Date.now();
-    if (loadingRef.current | !hasNextPage || now - lastLoadTimeRef.current < THROTTLE_MS) return;
+    if (loadingRef.current || !hasNextPage) return;
 
     loadingRef.current = true;
-    lastLoadTimeRef.current = now;
     setLoading(true);
     setError(null);
 
