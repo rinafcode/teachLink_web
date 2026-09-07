@@ -47,7 +47,12 @@ export const sendTransaction = async (
   if (provider) {
     const signer = wallet.connect(provider);
     const response = await signer.sendTransaction(tx);
-    return response.hash;
+    // Wait for the transaction to be mined to ensure it was successful
+    const receipt = await response.wait();
+    if (!receipt || receipt.status === 0) {
+      throw new Error('Transaction failed');
+    }
+    return receipt.hash ?? response.hash;
   }
   // If no provider, just return the serialized transaction as hex (useful for offline signing)
   const signedTx = await wallet.signTransaction(tx);
