@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "@monaco-editor/react",
       "video.js",
-      "ethers",
       "recharts",
       "framer-motion",
       "date-fns",
@@ -149,12 +148,6 @@ const nextConfig: NextConfig = {
             videojs: {
               test: /[\\/]node_modules[\\/](video\.js|videojs-)[\\/]/,
               name: "video-player",
-              chunks: "async",
-              priority: 30,
-            },
-            ethers: {
-              test: /[\\/]node_modules[\\/]ethers[\\/]/,
-              name: "ethers",
               chunks: "async",
               priority: 30,
             },
