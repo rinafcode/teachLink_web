@@ -3,7 +3,7 @@
  * Handles error logging, analytics, and debugging insights
  */
 
-import { formatErrorForLogging } from '@/utils/errorUtils';
+import { formatErrorForLogging, isCorsError, ErrorType } from '@/utils/errorUtils';
 import { createLogger } from '@/lib/logging';
 
 const logger = createLogger('error-reporting');
@@ -94,6 +94,15 @@ class ErrorReportingService {
    * Report an error
    */
   async reportError(error: any, context?: Record<string, any>): Promise<ErrorReport> {
+    // Record a distinct breadcrumb for CORS blocks so they surface in analytics
+    // separately from generic network failures.
+    if (isCorsError(error)) {
+      this.addBreadcrumb('corsBlocked', {
+        message: (error as Error).message,
+        url: typeof window !== 'undefined' ? window.location.href : 'N/A',
+      });
+    }
+
     const report = this.createErrorReport(error, context);
 
     // Log to console in development
@@ -115,11 +124,16 @@ class ErrorReportingService {
   private createErrorReport(error: any, context?: Record<string, any>): ErrorReport {
     const errorData = formatErrorForLogging(error);
 
+    // Promote the CORS_BLOCKED type to a top-level flag so downstream consumers
+    // (dashboards, alert rules) can filter on it without parsing the message string.
+    const corsBlocked = errorData.type === ErrorType.CORS_BLOCKED;
+
     return {
       id: `${this.sessionId}-${Date.now()}`,
       timestamp: new Date().toISOString(),
       errorData: {
         ...errorData,
+        corsBlocked,
         context,
       },
       userId: this.userId,
@@ -202,6 +216,7 @@ class ErrorReportingService {
   getAnalyticsSummary(): {
     sessionId: string;
     totalErrors: number;
+    corsBlockedCount: number;
     errorTypes: Record<string, number>;
     mostRecentError?: {
       timestamp: string;
@@ -210,7 +225,10 @@ class ErrorReportingService {
     };
   } {
     const errorBreadcrumbs = this.breadcrumbs.filter(
-      (b) => b.action === 'globalError' || b.action === 'unhandledRejection',
+      (b) =>
+        b.action === 'globalError' ||
+        b.action === 'unhandledRejection' ||
+        b.action === 'corsBlocked',
     );
 
     const errorTypes: Record<string, number> = {};
@@ -219,9 +237,12 @@ class ErrorReportingService {
       errorTypes[type] = (errorTypes[type] || 0) + 1;
     });
 
+    const corsBlockedCount = this.breadcrumbs.filter((b) => b.action === 'corsBlocked').length;
+
     return {
       sessionId: this.sessionId,
       totalErrors: errorBreadcrumbs.length,
+      corsBlockedCount,
       errorTypes,
       mostRecentError:
         errorBreadcrumbs.length > 0
