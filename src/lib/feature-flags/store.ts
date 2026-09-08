@@ -108,6 +108,20 @@ export function generateId(prefix = ''): string {
   return prefix ? `${prefix}_${uuid}` : uuid;
 }
 
+/**
+ * Deterministic 0–99 bucket for a flag/user pair. Used for percentage
+ * rollouts so the same user always lands in the same bucket.
+ */
+export function getPercentageBucket(flagId: string, userId = ''): number {
+  let hash = 0;
+  const key = flagId + userId;
+  for (let i = 0; i < key.length; i++) {
+    hash = Math.imul(31, hash) + key.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) % 100;
+}
+
 export function createAuditEntry(
   action: AuditEntry['action'],
   actor: string,
@@ -145,13 +159,7 @@ export function evaluateFlag(flag: FeatureFlag, context: Record<string, string> 
       if (flag.percentage >= 100) return true;
       if (flag.percentage <= 0) return false;
       // Deterministic per-user bucket via userId hash
-      const userId = context.userId ?? '';
-      let hash = 0;
-      for (let i = 0; i < (flag.id + userId).length; i++) {
-        hash = Math.imul(31, hash) + (flag.id + userId).charCodeAt(i);
-        hash |= 0;
-      }
-      const bucket = Math.abs(hash) % 100;
+      const bucket = getPercentageBucket(flag.id, context.userId ?? '');
       return bucket < flag.percentage;
     }
 

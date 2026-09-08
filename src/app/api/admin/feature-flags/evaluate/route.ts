@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
   const { addHeaders, rateLimitResponse } = withRateLimit(req, 'READ');
   if (rateLimitResponse) return rateLimitResponse;
 
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL( req.url);
+
   const id = searchParams.get('id');
 
   if (!id) {
@@ -33,6 +34,6 @@ export async function GET(req: NextRequest) {
     if (key !== 'id') context[key] = value;
   });
 
-  const isEnabled = evaluateFlag(flag, context);
+  const isEnabled = await evaluateFlag(flag, context);
   return addHeaders(NextResponse.json({ flag, isEnabled, context }));
 }
