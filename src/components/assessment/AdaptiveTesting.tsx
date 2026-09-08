@@ -47,6 +47,7 @@ const SAMPLE_QUESTIONS: AssessmentQuestion[] = [
       { id: 't1', input: '1,2', expectedOutput: '3' },
       { id: 't2', input: '-1,4', expectedOutput: '3' },
     ],
+    partialCredit: true,
     explanation: 'The function should add numeric inputs and return the result.',
   },
   {
