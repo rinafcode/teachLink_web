@@ -14,9 +14,6 @@ const nextConfig: NextConfig = {
     lodash: {
       transform: 'lodash/{{member}}',
     },
-    'lucide-react': {
-      transform: 'lucide-react/dist/esm/icons/{{member}}',
-    },
   },
   eslint: {
     // Many legacy files do not match Prettier; keep type checking without blocking production builds.

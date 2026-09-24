@@ -7,8 +7,6 @@ describe('next.config modularizeImports', () => {
 
     expect(modularizeImports).toBeDefined();
     expect(modularizeImports.lodash).toEqual({ transform: 'lodash/{{member}}' });
-    expect(modularizeImports['lucide-react']).toEqual({
-      transform: 'lucide-react/dist/esm/icons/{{member}}',
-    });
+    expect(modularizeImports['lucide-react']).toBeUndefined();
   });
 });
