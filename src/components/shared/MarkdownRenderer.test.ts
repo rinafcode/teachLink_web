@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { markdownToHtml, clusterMarkdownLines } from './MarkdownRenderer';
+import { markdownToHtml } from './MarkdownRenderer';
+import DOMPurify from 'dompurify';
 
 // Tests cover the pure markdownToHtml function (no DOM/React needed).
 
@@ -193,6 +194,84 @@ describe('markdownToHtml', () => {
     const html = markdownToHtml(md);
     expect(html).toContain('<th>A</th>');
     expect(html).toContain('<td>1</td>');
+  });
+
+  // ── DOMPurify sanitization ───────────────────────────────────────────────────
+
+  it('sanitizes malicious HTML with DOMPurify using component config', () => {
+    const md = '<img src="x" onerror="alert(1)">';
+    const raw = markdownToHtml(md);
+    const sanitized = DOMPurify.sanitize(raw, {
+      ALLOWED_TAGS: [
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'p',
+        'br',
+        'strong',
+        'em',
+        'del',
+        'code',
+        'pre',
+        'ul',
+        'ol',
+        'li',
+        'blockquote',
+        'hr',
+        'a',
+        'img',
+        'table',
+        'thead',
+        'tbody',
+        'tr',
+        'th',
+        'td',
+        'input',
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel', 'type', 'checked', 'disabled'],
+    });
+    expect(sanitized).not.toContain('onerror');
+  });
+
+  it('sanitizes script tags with DOMPurify using component config', () => {
+    const md = '<script>alert("XSS")</script>';
+    const raw = markdownToHtml(md);
+    const sanitized = DOMPurify.sanitize(raw, {
+      ALLOWED_TAGS: [
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'p',
+        'br',
+        'strong',
+        'em',
+        'del',
+        'code',
+        'pre',
+        'ul',
+        'ol',
+        'li',
+        'blockquote',
+        'hr',
+        'a',
+        'img',
+        'table',
+        'thead',
+        'tbody',
+        'tr',
+        'th',
+        'td',
+        'input',
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel', 'type', 'checked', 'disabled'],
+    });
+    expect(sanitized).not.toContain('<script>');
   });
 });
 

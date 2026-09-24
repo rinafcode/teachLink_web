@@ -28,6 +28,7 @@ export interface UseInfiniteScrollReturn {
   loadMore: () => void;
 }
 
+// In-flight guard so concurrent/overlapping page loads are prevented.
 export function useInfiniteScroll({
   onLoadMore,
   hasNextPage,
@@ -35,12 +36,14 @@ export function useInfiniteScroll({
   rootMargin = '0px 0px 200px 0px',
 }: UseInfiniteScrollOptions): UseInfiniteScrollReturn {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingRef = useRef(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
   const runLoadMore = useCallback(async () => {
-    if (loading || !hasNextPage) return;
+    if (loadingRef.current || !hasNextPage) return;
 
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -49,9 +52,17 @@ export function useInfiniteScroll({
     } catch (err) {
       setError(err);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  }, [loading, hasNextPage, onLoadMore]);
+  }, [hasNextPage, onLoadMore]);
+
+  // Keep a ref in sync with the latest runLoadMore so the observer callback can
+  // always call the current version without being a dependency.
+  const runLoadMoreRef = useRef(runLoadMore);
+  useEffect(() => {
+    runLoadMoreRef.current = runLoadMore;
+  }, [runLoadMore]);
 
   const loadMore = useCallback(() => {
     void runLoadMore();
@@ -64,8 +75,8 @@ export function useInfiniteScroll({
     const observer = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
-        if (first?.isIntersecting && !loading) {
-          void runLoadMore();
+        if (first?.isIntersecting && !loadingRef.current) {
+          void runLoadMoreRef.current();
         }
       },
       { threshold, rootMargin },
@@ -74,7 +85,7 @@ export function useInfiniteScroll({
     observer.observe(sentinel);
 
     return () => observer.disconnect();
-  }, [hasNextPage, loading, rootMargin, runLoadMore, threshold]);
+  }, [hasNextPage, rootMargin, threshold]);
 
   return { sentinelRef, loading, error, loadMore };
 }

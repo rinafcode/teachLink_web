@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CONSENT_SCHEMA_VERSION } from './constants';
+import { CONSENT_POLICY_VERSION, CONSENT_SCHEMA_VERSION } from './constants';
 
 /**
  * Granular cookie categories following IAB TCF conventions.
@@ -26,6 +26,8 @@ export const consentStateSchema = z.object({
   preferences: consentPreferencesSchema,
   /** Unix ms timestamp of when consent was last recorded. */
   decidedAt: z.number().nullable(),
+  /** Consent policy version in effect when the decision was recorded. */
+  acceptedPolicyVersion: z.number().int().min(1),
 });
 export type ConsentState = z.infer<typeof consentStateSchema>;
 
@@ -41,6 +43,7 @@ export function createDefaultConsentState(): ConsentState {
       marketing: false,
     },
     decidedAt: null,
+    acceptedPolicyVersion: CONSENT_POLICY_VERSION,
   };
 }
 

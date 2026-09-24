@@ -3,7 +3,7 @@ import type { Course, PaginatedResponse, User, Topic } from '@/types/api';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://teachlink.app';
 
-export const revalidate = 3600; // regenerate every hour
+export const dynamic = 'force-dynamic';
 
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
   {

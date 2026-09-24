@@ -12,6 +12,7 @@ export interface AuditLogEntry {
   userAgent: string;
   timestamp: string;
   statusCode: number;
+  traceId?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -25,6 +26,7 @@ export interface CreateAuditLogInput {
   ip: string;
   userAgent: string;
   statusCode: number;
+  traceId?: string;
   metadata?: Record<string, unknown>;
 }
 

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
+import { getApiDeprecationInfo } from '@/lib/apiVersioning';
 import { createCounterMetric, recordMetric } from '@/lib/logging/performance';
-import { createLogger, runWithLogContext } from '@/lib/logging';
+import { type AppLogger, createLogger, runWithLogContext } from '@/lib/logging';
 
 function createRequestId(): string {
   return `req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -12,6 +13,20 @@ function getResponseStatus(result: unknown): number | undefined {
   }
 
   return undefined;
+}
+
+function warnIfUnversionedApi(log: AppLogger, pathname: string) {
+  const deprecation = getApiDeprecationInfo(pathname);
+  if (!deprecation) {
+    return;
+  }
+
+  log.warn(deprecation.message, {
+    context: {
+      deprecatedPath: deprecation.deprecatedPath,
+      versionedPath: deprecation.versionedPath,
+    },
+  });
 }
 
 export function createRequestLogger(
@@ -51,6 +66,7 @@ export async function withRequestLogging<T>(
   const start = globalThis.performance?.now?.() ?? Date.now();
 
   log.info('Request started', { requestId, correlationId, traceId });
+  warnIfUnversionedApi(log, request.nextUrl.pathname);
 
   try {
     const result = await runWithLogContext({ requestId, correlationId, traceId }, () =>

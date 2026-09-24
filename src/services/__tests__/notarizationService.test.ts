@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { notarizeTip } from '@/services/notarizationService';
+import { buildNotarizationHash } from '@/lib/notarization';
 
 declare global {
   var fetch: typeof fetch;
@@ -29,7 +30,7 @@ describe('notarizationService', () => {
 
     const responsePayload = {
       id: 'notarization-user-99-1680000000000-abc',
-      proof: 'proof-hash',
+      proof: buildNotarizationHash(payload),
       recordedAt: '2024-03-28T00:00:00.000Z',
       payload,
     };
@@ -67,5 +68,28 @@ describe('notarizationService', () => {
         timestamp: 1680000000000,
       }),
     ).rejects.toThrow('Notarization failed');
+  });
+
+  it('rejects a response with an invalid proof', async () => {
+    const payload = {
+      txHash: '0xabc',
+      recipientId: 'user-99',
+      amount: 0.05,
+      senderAddress: 'anonymous',
+      chainId: 'server',
+      timestamp: 1680000000000,
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 'notarization-user-99-1680000000000-abc',
+        proof: 'invalid-proof',
+        recordedAt: '2024-03-28T00:00:00.000Z',
+        payload,
+      }),
+    });
+
+    await expect(notarizeTip(payload)).rejects.toThrow('Invalid notarization signature');
   });
 });

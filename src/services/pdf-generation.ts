@@ -1,4 +1,18 @@
+import { createHash } from 'crypto';
 import puppeteer, { type PDFOptions } from 'puppeteer';
+
+const pdfCache = new Map<string, Buffer>();
+
+function getCacheKey(html: string, options?: PDFOptions): string {
+  return createHash('sha256')
+    .update(JSON.stringify({ html, options: options ?? {} }))
+    .digest('hex');
+}
+
+/** Clear generated PDF entries. Primarily useful for bounded process lifecycle/tests. */
+export function clearPDFCache(): void {
+  pdfCache.clear();
+}
 
 /**
  * Generate a PDF from the provided HTML string using Puppeteer.
@@ -15,6 +29,12 @@ export async function generatePDF(
   html: string,
   options?: PDFOptions
 ): Promise<Buffer> {
+  const cacheKey = getCacheKey(html, options);
+  const cached = pdfCache.get(cacheKey);
+  if (cached) {
+    return Buffer.from(cached);
+  }
+
   // Launch a headless browser. The flags ensure compatibility in most CI
   // and server environments without a sandbox.
   const browser = await puppeteer.launch({
@@ -31,8 +51,10 @@ export async function generatePDF(
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
     // Generate the PDF. Caller may supply additional options.
-    const pdfBuffer = await page.pdf({ format: 'A4', ...options });
-    return Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer);
+    const generatedPDF = await page.pdf({ format: 'A4', ...options });
+    const pdfBuffer = Buffer.isBuffer(generatedPDF) ? generatedPDF : Buffer.from(generatedPDF);
+    pdfCache.set(cacheKey, Buffer.from(pdfBuffer));
+    return pdfBuffer;
   } finally {
     // Ensure the browser process is always cleaned up, even on errors or timeouts.
     await browser.close();

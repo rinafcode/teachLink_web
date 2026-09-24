@@ -26,6 +26,27 @@ describe('dedupe (basic behavior)', () => {
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
+  it('fans out results to 3 or more concurrent callers', async () => {
+    const d = deferred<{ count: number }>();
+    const fn = vi.fn().mockReturnValue(d.promise);
+
+    const p1 = dedupe('fanout-key', fn);
+    const p2 = dedupe('fanout-key', fn);
+    const p3 = dedupe('fanout-key', fn);
+    const p4 = dedupe('fanout-key', fn);
+
+    d.resolve({ count: 42 });
+
+    const results = await Promise.all([p1, p2, p3, p4]);
+    expect(results).toEqual([
+      { count: 42 },
+      { count: 42 },
+      { count: 42 },
+      { count: 42 },
+    ]);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
   it('allows different keys to proceed independently', async () => {
     const d1 = deferred<string>();
     const d2 = deferred<string>();

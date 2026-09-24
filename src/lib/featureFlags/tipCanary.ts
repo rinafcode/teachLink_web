@@ -68,4 +68,17 @@ export function evaluateTipCanary(request: NextRequest): CanaryResult {
   return { enabled, bucket, percent, identifier: setAnonId ? undefined : identifier, setAnonId };
 }
 
+/**
+ * Validates a client-generated tip idempotency key (see `sendTip` in
+ * `@/services/tipService`). Keys follow the `tip-<recipientId>-<amount>-<rand>`
+ * shape; returns false for missing, malformed, or empty keys so server-side
+ * consumers can reject them before persisting a notarization.
+ */
+export function isValidTipIdempotencyKey(key: string): boolean {
+  if (typeof key !== 'string') return false;
+  if (!key.startsWith('tip-')) return false;
+  const parts = key.split('-');
+  return parts.length >= 4 && parts.every((part) => part.length > 0);
+}
+
 export {};

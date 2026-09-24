@@ -72,3 +72,26 @@ export type MergeEntityType = 'course_progress' | 'generic';
  * every device.
  */
 export type MergeStrategy<T = unknown> = (local: T, remote: T) => T;
+
+// ---------------------------------------------------------------------------
+// Per-entity-type resolution policy
+// ---------------------------------------------------------------------------
+
+/** Resolution strategy overrides keyed by entity type. */
+export type EntityStrategyMap = Readonly<Record<string, ResolutionStrategy>>;
+
+/**
+ * How conflicts are resolved, per entity type.
+ *
+ * A single global strategy is wrong for a store holding several entity types:
+ * course progress merges cleanly (max progress, OR-ed completion), while an
+ * entity whose fields cannot be combined — a submitted assessment, say — has
+ * to pick a side or ask the user. `byEntityType` records those decisions and
+ * `default` covers everything not listed.
+ */
+export interface ConflictResolutionPolicy {
+  /** Applied when no entity-type override matches. */
+  readonly default: ResolutionStrategy;
+  /** Overrides keyed by entity type. */
+  readonly byEntityType: EntityStrategyMap;
+}

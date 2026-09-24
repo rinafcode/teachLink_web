@@ -83,6 +83,21 @@ export interface AnalyticsEvent {
 export type AnalyticsAdapter = (event: AnalyticsEvent) => void | Promise<void>;
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Sampling configuration for high-volume events
+// ──────────────────────────────────────────────────────────────────────────────
+
+const HIGH_VOLUME_EVENT_NAMES: EventName[] = [
+  'page_view',
+  'button_clicked',
+  'link_clicked',
+  'search_performed',
+  'filter_applied',
+  'sort_changed',
+];
+
+const DEFAULT_SAMPLE_RATE = 0.1; // Only send 10% of high-volume events
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Built-in adapters
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -143,6 +158,7 @@ class Analytics {
   private adapters: AnalyticsAdapter[] = [consoleAdapter];
   private userId: string | undefined;
   private globalProperties: EventProperties = {};
+  private sampleRates: Partial<Record<EventName, number>> = {};
 
   private get sessionId(): string {
     return getOrCreate(SESSION_KEY, () => generateId('s_'));
@@ -188,7 +204,25 @@ class Analytics {
     this.globalProperties = { ...this.globalProperties, ...properties };
   }
 
+  /** Set sampling rate for a specific event type. Rate is 0-1. */
+  setSampleRate(eventName: EventName, rate: number): this {
+    this.sampleRates[eventName] = Math.min(1, Math.max(0, rate));
+    return this;
+  }
+
+  /** Whether an event should be sent given its configured/default sampling rate. */
+  private shouldSend(name: EventName): boolean {
+    const sampleRate =
+      this.sampleRates[name] ?? (HIGH_VOLUME_EVENT_NAMES.includes(name) ? DEFAULT_SAMPLE_RATE : 1);
+    if (sampleRate >= 1) return true;
+    if (sampleRate <= 0) return false;
+    return Math.random() < sampleRate;
+  }
+
   track(name: EventName, properties: EventProperties = {}): void {
+    // Sample high-volume events unless explicitly configured otherwise
+    if (!this.shouldSend(name)) return;
+
     const event: AnalyticsEvent = {
       name,
       properties: { ...this.globalProperties, ...properties },

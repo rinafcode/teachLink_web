@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useConsentStore } from '@/lib/consent/store';
+import { useStorageClassEnforcement } from '@/lib/consent/storageClasses';
 import { CookiePreferencesModal } from './CookiePreferencesModal';
 
 /**
@@ -15,6 +16,10 @@ export function CookieConsentBanner() {
   const acceptAll = useConsentStore((s) => s.acceptAll);
   const rejectAll = useConsentStore((s) => s.rejectAll);
   const [showPreferences, setShowPreferences] = useState(false);
+
+  // Purge any storage classes the user isn't (or is no longer) consenting to.
+  // Runs for the lifetime of the app since this component is always mounted.
+  useStorageClassEnforcement();
 
   // Hide banner once a valid decision exists
   if (decided && isConsentValid()) return null;

@@ -7,6 +7,7 @@ import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
 import { getVerificationStatus } from '@/lib/auth/email-verification';
 import { createLogger } from '@/lib/logging';
+import { checkLoginRateLimit, resetLoginRateLimit } from '@/lib/authMiddleware';
 
 const logger = createLogger('api-auth-login');
 import { signToken } from '@/lib/auth/jwt';
@@ -33,13 +34,28 @@ export async function POST(
     if (!result.ok) return addHeaders(result.error) as NextResponse;
 
     const { email, password } = result.data;
+
+    // Per-identity rate limit: blocks brute-force / credential-stuffing attacks
+    // that rotate IPs but target the same email address.
+    const identityLimitResponse = checkLoginRateLimit(email);
+    if (identityLimitResponse) {
+      return addHeaders(identityLimitResponse);
+    }
+
     const user = await findUserByEmail(email);
     const passwordHash = user?.password_hash ?? TIMING_SAFE_DUMMY_HASH;
     const credentialsMatch = await bcrypt.compare(password, passwordHash);
 
     if (!user || !credentialsMatch) {
+      // Each failed attempt increments the per-identity counter.
+      // The counter is reset on successful login (see below).
+      checkLoginRateLimit(email);
       return addHeaders(NextResponse.json({ message: 'Invalid credentials' }, { status: 401 }));
     }
+
+    // Successful login — reset the per-identity rate limit so the next
+    // batch of attempts starts with a fresh window.
+    resetLoginRateLimit(email);
 
     const verification = await getVerificationStatus(email);
 

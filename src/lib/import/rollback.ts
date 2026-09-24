@@ -2,8 +2,13 @@
  * Rollback manager for bulk import operations.
  *
  * Callers register compensating actions for each successfully persisted record.
- * On failure, `rollback()` executes them in reverse order (LIFO), ensuring
- * partial writes are cleaned up correctly.
+ * 
+ * On failure, `rollback()` executes them in reverse order (LIFO).
+ * 
+ * Rollback is all-or-nothing at the queue level: if every action succeeds,
+ * the queue is cleared. If any action fails, the failed actions remain
+ * registered (in their original order) so a subsequent `rollback()` call
+ * can retry them — `size` will be non-zero until rollback fully completes.
  *
  * Usage:
  *
@@ -17,6 +22,9 @@
  *   if (shouldRollback) {
  *     const result = await rb.rollback();
  *     console.log(result.errors); // any rollback failures
+ *     if (!result.complete) {
++ *       // rb.size > 0 — call rb.rollback() again to retry the remaining actions
++ *    }
  *   }
  */
 
@@ -32,6 +40,8 @@ export interface RollbackResult {
   rolledBack: number;
   /** Errors that occurred during rollback (non-fatal). */
   errors: Array<{ label: string; error: string }>;
+  /** True only if every registered action succeeded and the queue is now empty. */
+  complete: boolean;
 }
 
 export interface RollbackManager {
@@ -56,6 +66,7 @@ export function createRollbackManager(): RollbackManager {
     async rollback(): Promise<RollbackResult> {
       let rolledBack = 0;
       const errors: RollbackResult['errors'] = [];
+      const remaining: RollbackAction[] = [];
 
       // Execute in reverse insertion order
       for (let i = actions.length - 1; i >= 0; i--) {
@@ -65,12 +76,19 @@ export function createRollbackManager(): RollbackManager {
           rolledBack++;
         } catch (e: unknown) {
           errors.push({ label, error: e instanceof Error ? e.message : String(e) });
+          // Keep the failed action registered (in original relative order)
+          // so a retry only re-attempts what didn't succeed.
+          remaining.unshift({ fn, label });
         }
       }
 
-      // Clear after rollback attempt regardless of partial failures
+      // All-or-nothing at the queue level: only end up empty if every
+      // action succeeded. On partial failure, the failed actions stay
+      // queued for a subsequent retry.
       actions.length = 0;
-      return { rolledBack, errors };
+      actions.push(...remaining);
+
+      return { rolledBack, errors, complete: errors.length === 0 };
     },
 
     clear() {

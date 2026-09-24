@@ -3,12 +3,21 @@ import { createLogger } from '@/lib/logging';
 import { persistenceLayer } from './persistenceLayer';
 import { SyncStatusState } from './stateManager';
 import { onAnyReconnect } from '@/lib/realtime/connectionSupervisor';
+import {
+  type RealtimeEvent,
+  getLastRealtimeSequence,
+  onSubscriptionCatchUp,
+  requestRealtimeCatchUp,
+} from '@/lib/graphql/subscriptions';
 
 const logger = createLogger('synchronization-engine');
 
 const CHANNEL_NAME = 'teachlink_state_sync';
 
 const SYNC_STATE_KEY = 'offline_sync_status';
+
+/** Persisted high-water mark of realtime events applied to the local store. */
+const REALTIME_CURSOR_KEY = 'realtime_event_cursor';
 
 /** Shallow equality: primitives compared by value, objects by reference-per-key. */
 function shallowEqual(a: any, b: any): boolean {
@@ -64,6 +73,7 @@ export class SynchronizationEngine {
   private channel: BroadcastChannel | null = null;
   private isProcessingSync = false;
   private unsubscribeReconnect: (() => void) | null = null;
+  private unsubscribeCatchUp: (() => void) | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -72,10 +82,17 @@ export class SynchronizationEngine {
 
       // Catch-up: after any realtime transport reconnects, re-broadcast the
       // current state so other tabs converge on updates that may have been
-      // missed while the transport was down (reconnect gap recovery).
+      // missed while the transport was down (reconnect gap recovery), then
+      // backfill events that arrived during the gap from the server.
       this.unsubscribeReconnect = onAnyReconnect(() => {
         logger.debug('[SyncEngine] Realtime reconnected — broadcasting state for catch-up');
         this.broadcastState(useStore.getState());
+        void this.recoverMissedEvents();
+      });
+
+      this.unsubscribeCatchUp = onSubscriptionCatchUp((since) => {
+        logger.debug('[SyncEngine] Realtime catch-up signalled — backfilling missed events');
+        void this.recoverMissedEvents(since);
       });
     }
   }
@@ -157,9 +174,80 @@ export class SynchronizationEngine {
     }>(SYNC_STATE_KEY);
   }
 
+  /** Last realtime sequence the engine applied (from the persisted cursor). */
+  public async getAppliedSequence(): Promise<number> {
+    try {
+      const cursor = await persistenceLayer.getJSON<{ sequence: number }>(
+        REALTIME_CURSOR_KEY,
+      );
+      return typeof cursor?.sequence === 'number' ? cursor.sequence : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Backfills events that were missed while the realtime connection was down.
+   * Fetches everything after the last applied sequence, reconciles state slices
+   * into the store, persists the new high-water mark and re-broadcasts so other
+   * tabs converge. Keeps a static high watermark — re-applying an event is a
+   * no-op — so repeated reconnects stay idempotent.
+   */
+  private async recoverMissedEvents(sinceHint?: number): Promise<void> {
+    if (typeof window === 'undefined') return;
+    let since = await this.getAppliedSequence();
+    // The transport gap signal knows the exact point the live feed was at.
+    if (typeof sinceHint === 'number' && sinceHint > since) {
+      since = sinceHint;
+    }
+    const liveSequence = getLastRealtimeSequence();
+    if (typeof liveSequence === 'number' && liveSequence > since) {
+      // Prefer the supervisor's view — it may already have seen live events
+      // that advanced past the persisted cursor.
+      since = liveSequence;
+    }
+
+    const events = await requestRealtimeCatchUp(since);
+    if (!events || events.length === 0) return;
+
+    let maxSequence = since;
+    for (const event of events) {
+      if (typeof event.sequence === 'number' && event.sequence > maxSequence) {
+        maxSequence = event.sequence;
+      }
+      this.applyRecoveredEvent(event);
+    }
+
+    try {
+      await persistenceLayer.setJSON(REALTIME_CURSOR_KEY, { sequence: maxSequence });
+      useStore.getState().updateSyncTime();
+      this.broadcastState(useStore.getState());
+      logger.debug('[SyncEngine] Applied caught-up events', {
+        count: events.length,
+        sequence: maxSequence,
+      });
+    } catch (error) {
+      logger.error('[SyncEngine] Failed to persist replay cursor', { error });
+    }
+  }
+
+  /** Applies a recovered event payload to store slices it owns. */
+  private applyRecoveredEvent(event: RealtimeEvent): void {
+    const payload = event.payload;
+    if (!payload || typeof payload !== 'object') return;
+    const hasOwnedSlice =
+      (payload as Record<string, unknown>).user !== undefined ||
+      (payload as Record<string, unknown>).app !== undefined;
+    if (!hasOwnedSlice) return;
+    // Reconciliation is additive (deepMerge) and preserves store-owned actions.
+    useStore.getState().rehydrate(payload as any);
+  }
+
   public disconnect() {
     this.unsubscribeReconnect?.();
     this.unsubscribeReconnect = null;
+    this.unsubscribeCatchUp?.();
+    this.unsubscribeCatchUp = null;
     if (this.channel) {
       this.channel.close();
       this.channel = null;

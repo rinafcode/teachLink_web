@@ -84,4 +84,55 @@ describe('SessionPredictor', () => {
     predictor.resetSession();
     expect(predictor.predictIdleProbability(Date.now())).toBe(0);
   });
+
+  it('should record predicted sessions and bound their count', () => {
+    const predictor = new SessionPredictor({ predictedSessionTtlMs: 60000 });
+
+    for (let i = 0; i < 5; i++) {
+      predictor.recordPrediction(`session-${i}`);
+    }
+
+    expect(predictor.getPredictedSessionCount()).toBe(5);
+  });
+
+  it('should evict predicted sessions that exceed the TTL', () => {
+    const predictor = new SessionPredictor({ predictedSessionTtlMs: 60000 });
+
+    // Record "stale" early, then "fresh" 30s later (still within TTL).
+    vi.setSystemTime(1_000_000);
+    predictor.recordPrediction('stale');
+    vi.setSystemTime(1_000_000 + 30_000);
+    predictor.recordPrediction('fresh');
+
+    expect(predictor.getPredictedSessionCount()).toBe(2);
+
+    // 61s after "stale" was recorded it expires; "fresh" remains.
+    const evicted = predictor.evictStalePredictions(1_000_000 + 61_000);
+    expect(evicted).toBe(1);
+    expect(predictor.getPredictedSessionCount()).toBe(1);
+  });
+
+  it('should evict stale entries before recording a new prediction', () => {
+    const predictor = new SessionPredictor({ predictedSessionTtlMs: 60000 });
+
+    vi.setSystemTime(1_000_000);
+    predictor.recordPrediction('stale');
+
+    // Simulate the TTL passing before the next prediction is recorded.
+    vi.setSystemTime(1_000_000 + 61_000);
+    predictor.recordPrediction('new');
+
+    expect(predictor.getPredictedSessionCount()).toBe(1);
+  });
+
+  it('should respect a custom TTL for eviction', () => {
+    const predictor = new SessionPredictor({ predictedSessionTtlMs: 1000 });
+
+    vi.setSystemTime(1_000_000);
+    predictor.recordPrediction('a');
+    predictor.recordPrediction('b');
+
+    expect(predictor.evictStalePredictions(1_000_000 + 2_000)).toBe(2);
+    expect(predictor.getPredictedSessionCount()).toBe(0);
+  });
 });

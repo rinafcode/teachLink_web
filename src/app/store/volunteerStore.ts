@@ -3,11 +3,11 @@ import type { Volunteer, VolunteerSMSPreferences } from '@/types/volunteer';
 
 const STORAGE_KEY = 'volunteers_v1';
 
-function load<T>(key: string, fallback: T, reviver?: (key: string, value: unknown) => unknown): T {
+function load<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
   try {
     const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw, reviver) as T) : fallback;
+    return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
   }
@@ -28,6 +28,29 @@ interface VolunteerState {
   updateSMSPreferences: (id: string, sms: Partial<VolunteerSMSPreferences>) => void;
 }
 
+function readStoredVolunteers(): Volunteer[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw) as
+      | Volunteer[]
+      | { state?: { volunteers?: Volunteer[] }; version?: number };
+
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && Array.isArray(parsed.state?.volunteers)) return parsed.state.volunteers;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export function hydrateVolunteers() {
+  useVolunteerStore.setState({ volunteers: readStoredVolunteers() });
+}
+
 /**
  * Subscribe to a focused slice of volunteer state instead of the entire store.
  */
@@ -35,7 +58,7 @@ export const useVolunteerStoreSelector = <T>(selector: (state: VolunteerState) =
   useVolunteerStore(selector);
 
 export const useVolunteerStore = create<VolunteerState>((set, get) => ({
-  volunteers: load<Volunteer[]>(STORAGE_KEY, []),
+  volunteers: [],
 
   addVolunteer: (v) => {
     const volunteer: Volunteer = {
@@ -69,3 +92,9 @@ export const useVolunteerStore = create<VolunteerState>((set, get) => ({
     save(STORAGE_KEY, next);
   },
 }));
+
+if (typeof window !== 'undefined') {
+  queueMicrotask(() => {
+    hydrateVolunteers();
+  });
+}

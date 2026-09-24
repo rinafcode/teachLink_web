@@ -3,6 +3,8 @@
  * Handles GitHub OAuth2 flow for authentication
  */
 
+import { generateOAuthState, validateOAuthState } from '@/middleware/security';
+
 export interface GitHubUser {
   id: number;
   login: string;
@@ -123,9 +125,20 @@ export async function getGitHubUser(accessToken: string): Promise<GitHubUser> {
 
 /**
  * Generate a random state parameter for OAuth
+ *
+ * The value is drawn from the CSPRNG so it cannot be predicted or replayed by
+ * an attacker, which is the guarantee the OAuth `state` parameter exists for.
  */
 export function generateState(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return generateOAuthState();
+}
+
+/**
+ * Verify an OAuth `state` supplied on the callback against the value stored
+ * when the flow started. Guards the exchange against login CSRF.
+ */
+export function validateState(actual?: string, expected?: string): boolean {
+  return validateOAuthState(actual, expected);
 }
 
 /**

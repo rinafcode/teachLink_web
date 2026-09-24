@@ -24,14 +24,45 @@ export const ROLES_PERMISSIONS: Record<UserRole, Permission[]> = {
   GUEST: [Permission.COURSE_VIEW],
 };
 
+const ROLE_HIERARCHY = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN] as const;
+
+const roleHierarchyIndex = new Map<UserRole, number>(
+  ROLE_HIERARCHY.map((role, index) => [role, index]),
+);
+
+const rolePermissionsCache = new Map<UserRole, Permission[]>();
+
+function getPermissionsForRole(role: UserRole): Permission[] {
+  if (!rolePermissionsCache.has(role)) {
+    rolePermissionsCache.set(role, ROLES_PERMISSIONS[role] ?? []);
+  }
+  return rolePermissionsCache.get(role)!;
+}
+
+// Cache for permission lookups to avoid repeated evaluation
+const permissionCache = new Map<string, boolean>();
+
 /**
- * Check if a user (or any object that contains a role) has a specific permission.
+ * Generate a cache key for permission checks.
+ */
+function getPermissionCacheKey(role: UserRole, permission: Permission): string {
+  return `${role}:${permission}`;
+}
+
+/**
+ * Check if a user (or any object that contains a role)  has a specific permission.
  */
 export function hasPermission(user: RoleHolder | null | undefined, permission: Permission): boolean {
   if (!user) return false;
 
-  const permissions = ROLES_PERMISSIONS[user.role] ?? [];
-  return permissions.includes(permission);
+  const cacheKey = getPermissionCacheKey(user.role, permission);
+  const cached = permissionCache.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const permissions = getPermissionsForRole(user.role);
+  const result = permissions.includes(permission);
+  permissionCache.set(cacheKey, result);
+  return result;
 }
 
 /**
@@ -68,6 +99,16 @@ export function isAtLeast(user: RoleHolder | null | undefined, role: UserRole): 
   return isAtLeastRole(user.role, role);
 }
 
+// Cache for role hierarchy lookups
+const roleHierarchyCache = new Map<string, boolean>();
+
+/**
+ * Generate a cache key for role hierarchy checks.
+ */
+function getRoleHierarchyCacheKey(userRole: UserRole, requiredRole: UserRole): string {
+  return `${userRole}:${requiredRole}`;
+}
+
 /**
  * Check if a role has at least the minimum required role.
  * Roles are hierarchical: ADMIN > INSTRUCTOR > STUDENT > GUEST
@@ -75,9 +116,25 @@ export function isAtLeast(user: RoleHolder | null | undefined, role: UserRole): 
 export function isAtLeastRole(userRole: UserRole | null | undefined, role: UserRole): boolean {
   if (!userRole) return false;
 
-  const hierarchy = [UserRole.GUEST, UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN];
-  const userRoleIndex = hierarchy.indexOf(userRole);
-  const requiredRoleIndex = hierarchy.indexOf(role);
+  const cacheKey = getRoleHierarchyCacheKey(userRole, role);
+  const cached = roleHierarchyCache.get(cacheKey);
+  if (cached !== undefined) return cached;
 
-  return userRoleIndex >= requiredRoleIndex;
+  const userRoleIndex = roleHierarchyIndex.get(userRole);
+  const requiredRoleIndex = roleHierarchyIndex.get(role);
+
+  if (userRoleIndex === undefined || requiredRoleIndex === undefined) return false;
+
+  const result = userRoleIndex >= requiredRoleIndex;
+  roleHierarchyCache.set(cacheKey, result);
+  return result;
+}
+
+/**
+ * Clear all ACL caches. Useful for testing or when caches need to be reset.
+ */
+export function clearAclCaches(): void {
+  permissionCache.clear();
+  rolePermissionsCache.clear();
+  roleHierarchyCache.clear();
 }

@@ -136,6 +136,29 @@ describe('BundleSecurityContext (#409)', () => {
     });
   });
 
+  describe('scored rules', () => {
+    it('returns weighted findings while preserving audit violations', () => {
+      ctx.setDefaultPolicy({ trustLevel: 'trusted', requiredIntegrity: true });
+      const chunk = makeChunk({ id: 'risky', name: 'risky', size: 600 });
+      const result = ctx.auditScored(chunk);
+
+      expect(result.violations).toEqual(ctx.audit(chunk));
+      expect(result.matchedRules).toEqual(['integrity', 'size', 'trust']);
+      expect(result.score).toBe(90);
+    });
+
+    it('caps the aggregate score at 100', () => {
+      ctx.setDefaultPolicy({
+        trustLevel: 'trusted',
+        requiredIntegrity: true,
+        maxSize: 10,
+        allowedOrigins: [/^https:\/\/cdn\.example\.com\//],
+      });
+      const result = ctx.auditScored(makeChunk({ id: 'risky', size: 100 }));
+      expect(result.score).toBe(100);
+    });
+  });
+
   describe('singleton', () => {
     it('exports a shared instance', () => {
       expect(bundleSecurityContext).toBeInstanceOf(BundleSecurityContext);

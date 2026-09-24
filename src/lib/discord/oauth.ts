@@ -3,6 +3,8 @@
  * Handles Discord OAuth2 flow for authentication
  */
 
+import { generateOAuthState as generateSecureOAuthState } from '@/middleware/security';
+
 export interface DiscordUser {
   id: string;
   username: string;
@@ -102,10 +104,10 @@ export async function getDiscordUser(accessToken: string): Promise<DiscordUser> 
 }
 
 /**
- * Generate a random state parameter for OAuth
+ * Generate a cryptographically secure random state parameter for OAuth
  */
 export function generateState(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return generateSecureOAuthState();
 }
 
 /**

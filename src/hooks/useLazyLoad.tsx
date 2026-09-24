@@ -15,6 +15,10 @@ function DefaultFallback() {
   );
 }
 
+// Cache completed or pending import promises per import function to prevent
+// duplicate network requests when preloading the same chunk multiple times.
+const importCache = new WeakMap<() => Promise<unknown>, Promise<unknown>>();
+
 export function createLazyComponent<T extends ComponentType<any>>(
   importFn: () => Promise<any>,
   options: LazyLoadOptions = {},
@@ -33,9 +37,24 @@ export function createLazyComponent<T extends ComponentType<any>>(
 }
 
 export function preloadComponent(importFn: () => Promise<unknown>) {
-  if (typeof window !== 'undefined') {
-    importFn();
+  if (typeof window === 'undefined') {
+    return;
   }
+
+  const existing = importCache.get(importFn);
+  if (existing) {
+    return existing;
+  }
+
+  const promise = Promise.resolve(importFn());
+  importCache.set(importFn, promise);
+
+  // If the import fails (network error, syntax error), allow retry.
+  promise.catch(() => {
+    importCache.delete(importFn);
+  });
+
+  return promise;
 }
 
 export function createLazy<T>(importFn: () => Promise<any>): React.LazyExoticComponent<T> {

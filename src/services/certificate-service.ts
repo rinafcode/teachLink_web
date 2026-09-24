@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 import { query } from '@/lib/db/pool';
 import { createLogger } from '@/lib/logging';
 import {
@@ -105,8 +105,7 @@ export async function verifyCertificate(certId: string): Promise<CertificateVeri
   }
 
   // Recompute hash and compare
-  const expectedHash = computeCertificateHash(cert);
-  if (expectedHash !== cert.verificationHash) {
+  if (!verifyCertificateSignature(cert)) {
     logger.warn('Certificate verification failed: hash mismatch', {
       context: { certificateId: certId },
     });
@@ -139,6 +138,20 @@ function computeCertificateHash(
 
   const data = `${cert.userId}:${cert.courseId}:${cert.completionDate}:${SECRET}`;
   return createHash('sha256').update(data).digest('hex');
+}
+
+function secureHashEquals(expected: string, actual: string): boolean {
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const actualBuffer = Buffer.from(actual, 'hex');
+  return (
+    expectedBuffer.length === actualBuffer.length &&
+    timingSafeEqual(expectedBuffer, actualBuffer)
+  );
+}
+
+/** Verify an issued certificate's authenticity before it is trusted. */
+export function verifyCertificateSignature(cert: CertificateRecord): boolean {
+  return secureHashEquals(computeCertificateHash(cert), cert.verificationHash);
 }
 
 /**
@@ -219,7 +232,13 @@ export async function getCertificateForDownload(
   certId: string,
 ): Promise<CertificateResponse | null> {
   const cert = await getCertificateById(certId);
-  if (!cert || cert.revokedAt) {
+  const signatureValid = cert ? verifyCertificateSignature(cert) : false;
+  if (!cert || cert.revokedAt || !signatureValid) {
+    if (cert && !cert.revokedAt && !signatureValid) {
+      logger.warn('Certificate download blocked: signature verification failed', {
+        context: { certificateId: certId },
+      });
+    }
     return null;
   }
 
@@ -292,4 +311,115 @@ export async function getCertificatesForUser(userId: string): Promise<Certificat
   }
 
   return certs;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data Visualization Analytics
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface CertificateIssuedByDay {
+  date: string;   // ISO date string, e.g. "2026-08-25"
+  count: number;
+}
+
+export interface CertificateIssuedByCourse {
+  courseName: string;
+  count: number;
+}
+
+export interface CertificateAnalytics {
+  /** Total certificates ever issued (including revoked). */
+  totalIssued: number;
+  /** Certificates currently active (not revoked). */
+  totalActive: number;
+  /** Certificates that have been revoked. */
+  totalRevoked: number;
+  /** Daily issuance counts for the last 30 days (sorted ascending by date). */
+  issuedByDay: CertificateIssuedByDay[];
+  /** Breakdown of active certificates by course (sorted descending by count). */
+  issuedByCourse: CertificateIssuedByCourse[];
+  /** Average days between course completion and certificate issuance. */
+  avgCompletionToIssuanceDays: number;
+}
+
+/**
+ * Compute analytics over the in-memory certificate store.
+ *
+ * Scoped to a single user when `userId` is provided; when omitted, aggregates
+ * across all certificates (admin use-case).
+ *
+ * NOTE: In production this should be backed by indexed database queries rather
+ * than a full scan of the in-memory store.
+ */
+export function getCertificateAnalytics(userId?: string): CertificateAnalytics {
+  const now = new Date();
+
+  // Build a 30-day bucket map initialised to zero so that days with no
+  // issuances still appear in the trend chart.
+  const buckets = new Map<string, number>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    buckets.set(d.toISOString().slice(0, 10), 0);
+  }
+
+  let totalIssued = 0;
+  let totalRevoked = 0;
+  const courseCount = new Map<string, number>();
+  let completionToIssuanceMs = 0;
+  let completionToIssuanceSamples = 0;
+
+  for (const cert of certificateStore.values()) {
+    // Apply user scope filter when requested
+    if (userId !== undefined && cert.userId !== userId) continue;
+
+    totalIssued++;
+
+    if (cert.revokedAt) {
+      totalRevoked++;
+      // Revoked certificates are excluded from the course breakdown and trend
+      continue;
+    }
+
+    // Daily issuance bucket (last 30 days only)
+    const issuedDate = cert.issuedAt.slice(0, 10);
+    if (buckets.has(issuedDate)) {
+      buckets.set(issuedDate, (buckets.get(issuedDate) ?? 0) + 1);
+    }
+
+    // Course breakdown
+    courseCount.set(cert.courseName, (courseCount.get(cert.courseName) ?? 0) + 1);
+
+    // Completion → issuance latency
+    const issued = new Date(cert.issuedAt).getTime();
+    const completed = new Date(cert.completionDate).getTime();
+    if (!isNaN(issued) && !isNaN(completed) && issued >= completed) {
+      completionToIssuanceMs += issued - completed;
+      completionToIssuanceSamples++;
+    }
+  }
+
+  const totalActive = totalIssued - totalRevoked;
+
+  const issuedByDay: CertificateIssuedByDay[] = Array.from(buckets.entries()).map(
+    ([date, count]) => ({ date, count }),
+  );
+
+  const issuedByCourse: CertificateIssuedByCourse[] = Array.from(courseCount.entries())
+    .map(([courseName, count]) => ({ courseName, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const avgCompletionToIssuanceDays =
+    completionToIssuanceSamples > 0
+      ? completionToIssuanceMs / completionToIssuanceSamples / (1000 * 60 * 60 * 24)
+      : 0;
+
+  return {
+    totalIssued,
+    totalActive,
+    totalRevoked,
+    issuedByDay,
+    issuedByCourse,
+    avgCompletionToIssuanceDays: parseFloat(avgCompletionToIssuanceDays.toFixed(2)),
+  };
 }

@@ -246,6 +246,15 @@ export async function findUserByEmail(email: string): Promise<UserAuthRecord | n
 }
 
 export const dbPool = DatabasePool;
+
+/**
+ * Acquire a dedicated client from the pool for transactional work.
+ * The caller MUST call `client.release()` when done.
+ */
+export async function getClient() {
+  return DatabasePool.getInstance().connect();
+}
+
 export const query = (text: string, params?: unknown[]) => {
   const traceId = logContextStorage.getStore()?.traceId ?? '';
   if (traceId && process.env.NODE_ENV === 'development') {

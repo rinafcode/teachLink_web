@@ -5,9 +5,15 @@
  * batched request, reducing network overhead for Help Documentation lookups.
  */
 
+/**
+ * More generic request representation that supports both reads and writes.
+ * If method is omitted, it defaults to 'GET'.
+ */
 export interface BatchRequest {
   id: string;
   path: string;
+  method?: string;
+  body?: unknown;
 }
 
 export interface BatchResponse<T = unknown> {

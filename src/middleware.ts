@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { checkRoutePermission } from './middleware/rbac';
 import { applySecurityHeaders } from './middleware/security';
-import { applyCspHeaders } from './middleware/csp';
+import { applyCspHeaders, attachCspRequestHeaders, generateNonce } from './middleware/csp';
 import { handleRedirects } from './middleware/redirectManagement';
+import { applyCsrfCookie, checkCsrf } from './lib/csrfMiddleware';
 import {
   API_DEPRECATION_HEADER,
   API_DEPRECATION_INFO_HEADER,
@@ -18,8 +19,11 @@ export async function middleware(request: NextRequest) {
   const traceId = crypto.randomUUID();
   request.headers.set('x-trace-id', traceId);
 
-  const cspNonce = crypto.randomUUID();
-  request.headers.set('x-csp-nonce', cspNonce);
+  // Forwarded to the app so server-rendered scripts can carry the nonce rather
+  // than relying on inline execution, which the policy refuses.
+  const cspNonce = generateNonce();
+  const requestHeaders = attachCspRequestHeaders(request, cspNonce);
+  const forwardRequestHeaders = { request: { headers: requestHeaders } };
 
   // Handle redirects first (early in the chain)
   const redirectResponse = handleRedirects(request);
@@ -37,11 +41,20 @@ export async function middleware(request: NextRequest) {
   const payload = await verifyToken(token);
   const userRole = payload?.role ?? null;
 
+  // CSRF protection (double-submit cookie) for state-mutating requests. Runs
+  // before RBAC so a cross-origin forgery attempt is rejected with 403
+  // rather than falling through to a redirect.
+  const csrf = checkCsrf(request);
+  const isHttps = request.nextUrl.protocol === 'https:';
+
   const withHeaders = (response: NextResponse) => {
     response.headers.set('x-trace-id', traceId);
-    const withSecurity = applySecurityHeaders(response, request);
-    return applyCspHeaders(withSecurity, request, cspNonce);
+    const withSecurity = applySecurityHeaders(response, request, cspNonce);
+    const withCsp = applyCspHeaders(withSecurity, request, cspNonce);
+    return csrf.tokenToIssue ? applyCsrfCookie(withCsp, csrf.tokenToIssue, isHttps) : withCsp;
   };
+
+  if (csrf.errorResponse) return withHeaders(csrf.errorResponse);
 
   const permissionResponse = checkRoutePermission(request, userRole);
   if (permissionResponse) return withHeaders(permissionResponse);
@@ -49,7 +62,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith(API_ROOT)) {
     if (request.headers.get(INTERNAL_API_REQUEST_HEADER) === 'true') {
-      const response = NextResponse.next();
+      const response = NextResponse.next(forwardRequestHeaders);
       response.headers.set(API_VERSION_HEADER, DEFAULT_API_VERSION);
       return withHeaders(response);
     }
@@ -57,7 +70,7 @@ export async function middleware(request: NextRequest) {
     if (!pathname.startsWith(`${API_ROOT}/v`)) {
       const rewriteUrl = request.nextUrl.clone();
       rewriteUrl.pathname = `${VERSIONED_API_ROOT}${pathname.slice(API_ROOT.length)}`;
-      const response = NextResponse.rewrite(rewriteUrl.toString());
+      const response = NextResponse.rewrite(rewriteUrl.toString(), forwardRequestHeaders);
       response.headers.set(API_VERSION_HEADER, DEFAULT_API_VERSION);
       response.headers.set(API_DEPRECATION_HEADER, 'true');
       response.headers.set(
@@ -74,12 +87,12 @@ export async function middleware(request: NextRequest) {
     if (!extractedVersion || !/^v\d+$/.test(extractedVersion)) {
       return withHeaders(new NextResponse('Invalid API version', { status: 400 }));
     }
-    const response = NextResponse.next();
+    const response = NextResponse.next(forwardRequestHeaders);
     response.headers.set(API_VERSION_HEADER, extractedVersion);
     return withHeaders(response);
   }
 
-  return withHeaders(NextResponse.next());
+  return withHeaders(NextResponse.next(forwardRequestHeaders));
 }
 
 export const config = {

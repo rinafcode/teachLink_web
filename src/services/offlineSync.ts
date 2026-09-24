@@ -3,12 +3,15 @@
 import { openDB, IDBPDatabase, IDBPObjectStore } from 'idb';
 import {
   ConflictRecord,
+  ConflictResolutionPolicy,
   ResolutionStrategy,
   VersionVector,
+  DEFAULT_RESOLUTION_POLICY,
   detectConflict,
   resolveConflict,
   createConflictRecord,
   mergeVersionVectors,
+  strategyForEntity,
 } from '@/lib/conflict/resolver';
 import {
   SYNC_BATCH_SIZE,
@@ -17,6 +20,9 @@ import {
   SYNC_BACKOFF_CAP_MS,
   SYNC_RETENTION_MS,
   DEAD_LETTER_RETENTION_MS,
+  SYNC_MAX_ACKED_RECORDS,
+  DEAD_LETTER_MAX_RECORDS,
+  SYNC_RETENTION_SWEEP_INTERVAL_MS,
 } from '@/constants/app.constants';
 import { offlineApi } from './offlineApi';
 import { tokenManager } from '@/lib/auth/tokenManager';
@@ -130,9 +136,34 @@ export interface SyncResult {
   cursor?: number;
 }
 
+/** Shape of the dead-letter queue, for the UI to prompt on. */
+export interface DeadLetterSummary {
+  count: number;
+  /** How many dead-lettered operations of each sync item type. */
+  byType: Record<string, number>;
+  /** ISO timestamp of the earliest failure, or null when the queue is empty. */
+  oldestFailedAt: string | null;
+}
+
+/** Overrides for one retention sweep. Defaults come from app constants. */
+export interface RetentionOptions {
+  ackedRetentionMs?: number;
+  deadLetterRetentionMs?: number;
+  maxAckedRecords?: number;
+  maxDeadLetterRecords?: number;
+  /** Injectable clock, so retention is testable without waiting days. */
+  now?: number;
+}
+
 export interface SyncOptions {
   forceSync?: boolean;
+  /**
+   * Explicit strategy for this drain. `auto` (the default) defers to the
+   * per-entity-type policy instead of forcing one strategy on every type.
+   */
   resolveConflicts?: 'auto' | ResolutionStrategy;
+  /** Per-entity-type policy for this drain; falls back to the service's own. */
+  conflictPolicy?: ConflictResolutionPolicy;
   retryAttempts?: number;
   /** Lifetime delivery cap per operation (defaults to SYNC_MAX_RETRY_ATTEMPTS). */
   maxRetryAttempts?: number;
@@ -439,9 +470,11 @@ interface ItemAttempt {
 export class OfflineSyncService {
   private readonly storage: OfflineStorage;
   private isSyncing = false;
+  private conflictPolicy: ConflictResolutionPolicy;
 
-  constructor(storage: OfflineStorage) {
+  constructor(storage: OfflineStorage, conflictPolicy: ConflictResolutionPolicy = DEFAULT_RESOLUTION_POLICY) {
     this.storage = storage;
+    this.conflictPolicy = conflictPolicy;
   }
 
   private get db(): IDBPDatabase {
@@ -518,7 +551,48 @@ export class OfflineSyncService {
   }
 
   async getDeadLetterCount(): Promise<number> {
-    return (await this.db.getAll('deadLetter')).length;
+    return await this.db.count('deadLetter');
+  }
+
+  /**
+   * Counts and characterises the dead-letter queue in one read.
+   *
+   * A bare count tells the user something is stuck but not whether it is one
+   * operation from this morning or forty from last month, which is the
+   * difference between "retry" and "ask for help". `byType` and
+   * `oldestFailedAt` give the UI enough to say which.
+   */
+  async getDeadLetterSummary(): Promise<DeadLetterSummary> {
+    const records = await this.getDeadLetter();
+    const byType: Record<string, number> = {};
+    let oldestFailedAt: string | null = null;
+
+    for (const record of records) {
+      byType[record.type] = (byType[record.type] ?? 0) + 1;
+      if (!oldestFailedAt || record.failedAt < oldestFailedAt) {
+        oldestFailedAt = record.failedAt;
+      }
+    }
+
+    return { count: records.length, byType, oldestFailedAt };
+  }
+
+  /**
+   * Re-enqueues every dead-lettered operation.
+   *
+   * Returns how many were requeued. Records that vanish between the read and
+   * the retry are skipped rather than failing the whole call — another tab may
+   * have retried them already.
+   */
+  async retryAllDeadLetter(): Promise<number> {
+    const records = await this.getDeadLetter();
+    let requeued = 0;
+
+    for (const record of records) {
+      if (await this.retryDeadLetter(record.id)) requeued += 1;
+    }
+
+    return requeued;
   }
 
   /** Re-enqueue a dead-lettered operation for another sync attempt. */
@@ -698,19 +772,41 @@ export class OfflineSyncService {
   // Retention / GC for acked + dead-lettered records
   // -------------------------------------------------------------------------
 
-  /** Removes acked ops and dead-letter records older than their retention windows. */
-  async gcAckedRecords(): Promise<{ acked: number; deadLetter: number }> {
-    const now = Date.now();
+  /**
+   * Removes acked ops and dead-letter records that have outlived their
+   * retention window, then evicts oldest-first down to the record caps.
+   *
+   * Both halves are needed. Age alone leaves the store unbounded — a device
+   * that syncs thousands of operations inside the window keeps every one of
+   * them — while a cap alone would keep stale records around indefinitely on
+   * a quiet device.
+   */
+  async gcAckedRecords(
+    options: RetentionOptions = {},
+  ): Promise<{ acked: number; deadLetter: number }> {
+    const now = options.now ?? Date.now();
+    const ackedRetentionMs = options.ackedRetentionMs ?? SYNC_RETENTION_MS;
+    const deadLetterRetentionMs = options.deadLetterRetentionMs ?? DEAD_LETTER_RETENTION_MS;
+    const maxAcked = options.maxAckedRecords ?? SYNC_MAX_ACKED_RECORDS;
+    const maxDeadLetter = options.maxDeadLetterRecords ?? DEAD_LETTER_MAX_RECORDS;
+
     const tx = this.db.transaction(['ackedOps', 'deadLetter'], 'readwrite');
     const ackedStore = tx.objectStore('ackedOps');
     const deadStore = tx.objectStore('deadLetter');
 
+    // Cursors walk each index in ascending timestamp order, so the surviving
+    // count can be capped in the same pass: once the number of records newer
+    // than the cutoff exceeds the cap, the oldest survivors are the ones still
+    // ahead of the cursor.
     const ackedIndex = ackedStore.index('ackedAt');
+    const ackedTotal = await ackedIndex.count();
     let ackedCursor = await ackedIndex.openCursor();
     let ackedRemoved = 0;
     while (ackedCursor) {
       const record = ackedCursor.value as { ackedAt: string };
-      if (now - new Date(record.ackedAt).getTime() > SYNC_RETENTION_MS) {
+      const expired = now - new Date(record.ackedAt).getTime() > ackedRetentionMs;
+      const overCap = ackedTotal - ackedRemoved > maxAcked;
+      if (expired || overCap) {
         await ackedCursor.delete();
         ackedRemoved += 1;
       }
@@ -718,11 +814,14 @@ export class OfflineSyncService {
     }
 
     const deadIndex = deadStore.index('failedAt');
+    const deadTotal = await deadIndex.count();
     let deadCursor = await deadIndex.openCursor();
     let deadRemoved = 0;
     while (deadCursor) {
       const record = deadCursor.value as { failedAt: string };
-      if (now - new Date(record.failedAt).getTime() > DEAD_LETTER_RETENTION_MS) {
+      const expired = now - new Date(record.failedAt).getTime() > deadLetterRetentionMs;
+      const overCap = deadTotal - deadRemoved > maxDeadLetter;
+      if (expired || overCap) {
         await deadCursor.delete();
         deadRemoved += 1;
       }
@@ -731,6 +830,42 @@ export class OfflineSyncService {
 
     await tx.done;
     return { acked: ackedRemoved, deadLetter: deadRemoved };
+  }
+
+  /**
+   * Runs retention without needing a sync.
+   *
+   * `syncData` GCs on its way in, but it returns early when there is no
+   * authenticated session — so a signed-out or long-offline client would
+   * otherwise never collect anything, which is exactly the client whose store
+   * grows unattended.
+   */
+  async runRetentionSweep(
+    options: RetentionOptions = {},
+  ): Promise<{ acked: number; deadLetter: number }> {
+    return await this.gcAckedRecords(options);
+  }
+
+  /**
+   * Starts a periodic retention sweep. Returns a function that stops it.
+   *
+   * The timer is unreferenced where the runtime supports it so a pending
+   * sweep never holds the process open.
+   */
+  startRetentionSweep(
+    intervalMs: number = SYNC_RETENTION_SWEEP_INTERVAL_MS,
+    options: RetentionOptions = {},
+  ): () => void {
+    const timer = setInterval(() => {
+      void this.runRetentionSweep(options).catch(() => {
+        // A failed sweep is not worth surfacing: the next one retries, and
+        // throwing here would reach an empty timer context anyway.
+      });
+    }, intervalMs);
+
+    (timer as unknown as { unref?: () => void }).unref?.();
+
+    return () => clearInterval(timer);
   }
 
   // -------------------------------------------------------------------------
@@ -748,6 +883,11 @@ export class OfflineSyncService {
     // re-authenticates rather than burning retries against a dead credential.
     const accessToken = await tokenManager.getValidAccessToken();
     if (!accessToken) {
+      // Retention still runs. Skipping it here would mean a signed-out client
+      // never collects anything, and that is precisely the client whose store
+      // grows unattended for weeks.
+      await this.runRetentionSweep().catch(() => undefined);
+
       return {
         success: false,
         syncedItems: 0,
@@ -1023,6 +1163,16 @@ export class OfflineSyncService {
     await tx.done;
   }
 
+  /**
+   * Picks the strategy for one conflict.
+   *
+   * An explicit `options.resolveConflicts` is an instruction for this drain
+   * and wins outright. Otherwise the entity type decides, via the policy —
+   * which is the point of having a policy at all: `course_progress` merges,
+   * while an entity whose fields cannot be combined can be configured to pick
+   * a side or wait for the user, without the caller having to know which is
+   * which.
+   */
   private resolveConflictStrategy(
     conflict: SyncConflict,
     options: SyncOptions,
@@ -1039,7 +1189,16 @@ export class OfflineSyncService {
       return 'manual';
     }
 
-    // Default auto strategy: deterministically merge progress payloads.
-    return 'merge';
+    return strategyForEntity(conflict.entityType, options.conflictPolicy ?? this.conflictPolicy);
+  }
+
+  /** Replaces the per-entity-type resolution policy used by `auto` resolution. */
+  setConflictPolicy(policy: ConflictResolutionPolicy): void {
+    this.conflictPolicy = policy;
+  }
+
+  /** The policy currently applied to `auto` conflict resolution. */
+  getConflictPolicy(): ConflictResolutionPolicy {
+    return this.conflictPolicy;
   }
 }

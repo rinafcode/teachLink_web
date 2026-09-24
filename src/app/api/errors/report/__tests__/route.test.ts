@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST } from '../route';
 import { RATE_LIMIT_TIERS } from '@/lib/ratelimit';
@@ -28,6 +28,12 @@ vi.mock('@/lib/logging', async () => {
 
 const LIMIT = RATE_LIMIT_TIERS.REPORTING.limit;
 
+// Simulate the app sitting behind a trusted proxy so x-forwarded-for is honored
+// (getClientIP ignores forwarded headers unless the connection comes from a
+// configured proxy).
+const TRUSTED_PROXY = '10.0.0.1';
+const ORIGINAL_TRUSTED_PROXY_IPS = process.env.TRUSTED_PROXY_IPS;
+
 let ipCounter = 0;
 /** Fresh IP per call keeps each test isolated from the shared in-memory store. */
 function makeRequest(body: unknown, ip = `203.0.113.${ipCounter++}`): NextRequest {
@@ -36,6 +42,7 @@ function makeRequest(body: unknown, ip = `203.0.113.${ipCounter++}`): NextReques
     headers: {
       'content-type': 'application/json',
       'x-forwarded-for': ip,
+      'cf-connecting-ip': TRUSTED_PROXY,
     },
     body: JSON.stringify(body),
   });
@@ -55,6 +62,15 @@ describe('POST /api/errors/report rate limiting', () => {
     ipCounter = 0;
     loggerError.mockClear();
     loggerWarn.mockClear();
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
+  });
+
+  afterEach(() => {
+    if (ORIGINAL_TRUSTED_PROXY_IPS === undefined) {
+      delete process.env.TRUSTED_PROXY_IPS;
+    } else {
+      process.env.TRUSTED_PROXY_IPS = ORIGINAL_TRUSTED_PROXY_IPS;
+    }
   });
 
   it('accepts legitimate error reports within the limit', async () => {
@@ -109,6 +125,15 @@ describe('POST /api/errors/report PII scrubbing', () => {
     ipCounter = 0;
     loggerError.mockClear();
     loggerWarn.mockClear();
+    process.env.TRUSTED_PROXY_IPS = TRUSTED_PROXY;
+  });
+
+  afterEach(() => {
+    if (ORIGINAL_TRUSTED_PROXY_IPS === undefined) {
+      delete process.env.TRUSTED_PROXY_IPS;
+    } else {
+      process.env.TRUSTED_PROXY_IPS = ORIGINAL_TRUSTED_PROXY_IPS;
+    }
   });
 
   it('redacts known PII fields (email, password) before logging', async () => {

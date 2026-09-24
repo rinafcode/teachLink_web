@@ -3,7 +3,10 @@ import { withRateLimit } from '@/lib/ratelimit';
 import { validateReferralCode, referralCodeExists } from '@/lib/referral';
 import { edgeLog } from '@/../infra/edge-config';
 
-export const runtime = 'edge';
+// `pg` (used by the referrals repository) requires Node.js APIs, so this
+// route can no longer run on the edge runtime now that it queries the
+// database instead of an in-memory mock.
+export const runtime = 'nodejs';
 
 // ---------------------------------------------------------------------------
 // GET /api/referral/validate?code=XXXX
@@ -42,8 +45,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Check if referral code exists
-    const exists = referralCodeExists(code);
+    // Check if referral code exists in the database
+    const exists = await referralCodeExists(code);
     if (!exists) {
       edgeLog('warn', route, 'Validation failed', { reason: 'code_not_found' });
       return addHeaders(

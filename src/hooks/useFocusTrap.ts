@@ -25,6 +25,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
     if (!isActive || !containerRef.current) return;
 
     const container = containerRef.current;
+    const listenerController = new AbortController();
     previouslyFocusedRef.current =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
@@ -77,12 +78,13 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
       if (!container.contains(event.target as Node)) focusInitialElement();
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('keydown', handleKeyDown, { signal: listenerController.signal });
+    document.addEventListener('focusin', handleFocusIn, { signal: listenerController.signal });
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('focusin', handleFocusIn);
+      listenerController.abort();
       if (restoreFocus && previouslyFocusedRef.current?.isConnected) {
         previouslyFocusedRef.current.focus();
       }
