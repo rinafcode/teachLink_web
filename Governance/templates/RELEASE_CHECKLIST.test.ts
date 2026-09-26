@@ -16,6 +16,11 @@ import path from 'node:path';
 const TEMPLATE_PATH = path.resolve(__dirname, 'RELEASE_CHECKLIST.md');
 const template = readFileSync(TEMPLATE_PATH, 'utf8');
 
+/** Resolve a sibling governance document relative to this test file. */
+function readGovernanceDoc(relativePath: string): string {
+  return readFileSync(path.resolve(__dirname, relativePath), 'utf8');
+}
+
 /** Strip Markdown syntax so keyword assertions match prose, not formatting. */
 function plainProse(markdown: string): string {
   return markdown
@@ -159,32 +164,17 @@ describe('post-release step guarantees', () => {
 describe('template consistency with the governance folder', () => {
   it('routes the release schedule to the release cadence process document', () => {
     expect(prose).toContain('governance/processes/release_cadence.md');
-    expect(() =>
-      readFileSync(
-        path.resolve(__dirname, '../processes/RELEASE_CADENCE.md'),
-        'utf8',
-      ),
-    ).not.toThrow();
+    expect(() => readGovernanceDoc('../processes/RELEASE_CADENCE.md')).not.toThrow();
   });
 
   it('routes the sign-off gates to the release sign-off process document', () => {
     expect(prose).toContain('governance/processes/release_signoff.md');
-    expect(() =>
-      readFileSync(
-        path.resolve(__dirname, '../processes/RELEASE_SIGNOFF.md'),
-        'utf8',
-      ),
-    ).not.toThrow();
+    expect(() => readGovernanceDoc('../processes/RELEASE_SIGNOFF.md')).not.toThrow();
   });
 
   it('routes the version number to the versioning policy document', () => {
     expect(prose).toContain('governance/policies/versioning.md');
-    expect(() =>
-      readFileSync(
-        path.resolve(__dirname, '../policies/VERSIONING.md'),
-        'utf8',
-      ),
-    ).not.toThrow();
+    expect(() => readGovernanceDoc('../policies/VERSIONING.md')).not.toThrow();
   });
 
   it('mentions the governance-folder-only rule for changes to this template', () => {
