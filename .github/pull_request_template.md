@@ -4,7 +4,7 @@ Brief description of changes
 
 ## Related Issue
 
-Closes #
+Closes #1537
 
 ## Type of Change
 
