@@ -28,6 +28,8 @@ export interface QueueOptions {
   maxAttempts?: number;
   /** Base delay in ms for exponential backoff (default: 500). */
   retryDelay?: number;
+  /** Cap in ms for exponential backoff so retries never spin indefinitely (default: 10s). */
+  retryDelayCap?: number;
 }
 
 let _idCounter = 0;
@@ -51,6 +53,7 @@ export class TaskQueue {
       concurrency: options.concurrency ?? 3,
       maxAttempts: options.maxAttempts ?? 3,
       retryDelay: options.retryDelay ?? 500,
+      retryDelayCap: options.retryDelayCap ?? 10000,
     };
   }
 
@@ -99,6 +102,15 @@ export class TaskQueue {
     return true;
   }
 
+  /** Snapshot of queue health (pending/running/done/failed/dead-letter counts). */
+  getStats(): { pending: number; running: number; done: number; failed: number; deadLetter: number } {
+    const counts = { pending: 0, running: 0, done: 0, failed: 0, deadLetter: this.deadLetter.length };
+    for (const job of this.queue) {
+      counts[job.status] += 1;
+    }
+    return counts;
+  }
+
   private tick(): void {
     while (this.running < this.opts.concurrency) {
       const job = this.queue.find((j) => j.status === 'pending');
@@ -135,7 +147,10 @@ export class TaskQueue {
       } catch (err) {
         job.lastError = err instanceof Error ? err.message : String(err);
         if (attempt < job.maxAttempts) {
-          const backoff = this.opts.retryDelay * Math.pow(2, attempt - 1);
+          const backoff = Math.min(
+            this.opts.retryDelayCap,
+            this.opts.retryDelay * Math.pow(2, attempt - 1),
+          );
           await delay(backoff);
         }
       }

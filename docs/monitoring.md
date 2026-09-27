@@ -7,7 +7,7 @@
 3. Click "Enable Notifications" and allow permission
 4. Send a test message
 
-## Features
+##Features
 
 - **System Health**: Real memory, CPU, uptime from Node.js
 - **Notification Metrics**: Sent, Delivered, Clicked, Failed counts

@@ -44,6 +44,11 @@ export const AdvancedSearchInterface = React.memo(() => {
     setHasSearched(false);
   }, [clearFilters, updateSearchText]);
 
+  const handleFilterReset = useCallback(() => {
+    clearFilters();
+    setHasSearched(false);
+  }, [clearFilters]);
+
   const handleShare = useCallback(async () => {
     const ok = await copyShareableUrl();
     if (ok) {
@@ -150,10 +155,7 @@ export const AdvancedSearchInterface = React.memo(() => {
             <FacetedFilterSystem
               filters={query.filters}
               onFilterChange={updateFilters}
-              onReset={() => {
-                clearFilters();
-                setHasSearched(false);
-              }}
+              onReset={handleFilterReset}
             />
           </div>
         )}

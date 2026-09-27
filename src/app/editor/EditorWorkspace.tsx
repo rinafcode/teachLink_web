@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { sanitizeHtml } from '@/utils/sanitize';
 
@@ -17,16 +17,29 @@ const RichContentEditor = dynamic(
 export function EditorWorkspace() {
   const [content, setContent] = useState('<p>Start editing...</p>');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const workspaceTitleId = useId();
+  const editorPanelId = useId();
+  const previewPanelId = useId();
+  const editorHelpId = useId();
+  const liveRegionId = useId();
 
   return (
-    <div className="container mx-auto max-w-6xl p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-          Advanced Content Editor Demo
-        </h1>
+    <main aria-labelledby={workspaceTitleId} className="container mx-auto max-w-6xl p-8">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h1 id={workspaceTitleId} className="text-3xl font-bold text-gray-800 dark:text-white">
+            Post Editor
+          </h1>
+          <p id={editorHelpId} className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            Create accessible post content with keyboard-friendly formatting controls and a preview
+            mode for reviewing published output.
+          </p>
+        </div>
         <button
+          type="button"
           onClick={() => setIsPreviewMode((prev) => !prev)}
           aria-pressed={isPreviewMode}
+          aria-controls={isPreviewMode ? previewPanelId : editorPanelId}
           className={`rounded-lg px-4 py-2 font-medium transition-colors ${
             isPreviewMode
               ? 'bg-blue-600 text-white hover:bg-blue-700'
@@ -37,15 +50,29 @@ export function EditorWorkspace() {
         </button>
       </div>
 
+      <p id={liveRegionId} className="sr-only" aria-live="polite">
+        {isPreviewMode ? 'Preview mode is active.' : 'Editor mode is active.'}
+      </p>
+
       {isPreviewMode ? (
-        <div className="prose prose-lg max-w-none min-h-[calc(100vh-200px)] rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:prose-invert dark:border-gray-700 dark:bg-gray-800">
+        <section
+          id={previewPanelId}
+          aria-labelledby={workspaceTitleId}
+          aria-describedby={editorHelpId}
+          className="prose prose-lg max-w-none min-h-[calc(100vh-200px)] rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:prose-invert dark:border-gray-700 dark:bg-gray-800"
+        >
           <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
-        </div>
+        </section>
       ) : (
-        <div className="mb-8">
+        <section
+          id={editorPanelId}
+          aria-labelledby={workspaceTitleId}
+          aria-describedby={editorHelpId}
+          className="mb-8"
+        >
           <RichContentEditor initialContent={content} onUpdate={setContent} />
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   );
 }

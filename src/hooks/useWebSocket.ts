@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ConnectionSupervisor,
+  RawWebSocketTransport,
+  type ConnectionStatus as RealtimeConnectionStatus,
+  registerSupervisor,
+} from '@/lib/realtime/connectionSupervisor';
+import { useRealtimeConnection } from './useRealtimeConnection';
 
 type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
 type ConnectionMode = 'websocket' | 'broadcast' | 'disabled';
@@ -19,6 +26,8 @@ interface UseWebSocketResult<TMessage> {
   mode: ConnectionMode;
   lastMessage: TMessage | null;
   sendMessage: (message: TMessage) => void;
+  /** Unified realtime connection status shared by all realtime hooks. */
+  connection: RealtimeConnectionStatus;
 }
 
 export const useWebSocket = <TMessage>({
@@ -30,47 +39,52 @@ export const useWebSocket = <TMessage>({
   parse,
   serialize,
 }: UseWebSocketOptions<TMessage>): UseWebSocketResult<TMessage> => {
-  const [status, setStatus] = useState<ConnectionStatus>(enabled ? 'connecting' : 'idle');
+  const connectionName = useMemo(() => (url ? `websocket:${url}` : 'broadcast'), [url]);
+  const realtimeConnection = useRealtimeConnection(connectionName);
+
   const [mode, setMode] = useState<ConnectionMode>('disabled');
   const [lastMessage, setLastMessage] = useState<TMessage | null>(null);
+  const [parseFailed, setParseFailed] = useState(false);
 
-  const socketRef = useRef<WebSocket | null>(null);
+  const supervisorRef = useRef<ConnectionSupervisor | null>(null);
+  const transportRef = useRef<RawWebSocketTransport | null>(null);
   const channelRef = useRef<BroadcastChannel | null>(null);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Stabilize parse/serialize callbacks to prevent reconnect thrashing
+  const parseRef = useRef(parse);
+  const serializeRef = useRef(serialize);
+
+  useEffect(() => {
+    parseRef.current = parse;
+  }, [parse]);
+
+  useEffect(() => {
+    serializeRef.current = serialize;
+  }, [serialize]);
 
   const canUseWindow = typeof window !== 'undefined';
 
   const safeParse = useCallback(
     (raw: string): TMessage => {
-      if (parse) {
-        return parse(raw);
+      if (parseRef.current) {
+        return parseRef.current(raw);
       }
       return JSON.parse(raw) as TMessage;
     },
-    [parse],
+    [],
   );
 
   const safeSerialize = useCallback(
     (message: TMessage): string => {
-      if (serialize) {
-        return serialize(message);
+      if (serializeRef.current) {
+        return serializeRef.current(message);
       }
       return JSON.stringify(message);
     },
-    [serialize],
+    [],
   );
 
   const cleanup = useCallback(() => {
-    if (reconnectTimerRef.current) {
-      clearTimeout(reconnectTimerRef.current);
-      reconnectTimerRef.current = null;
-    }
-
-    if (socketRef.current) {
-      socketRef.current.close();
-      socketRef.current = null;
-    }
-
     if (channelRef.current) {
       channelRef.current.close();
       channelRef.current = null;
@@ -80,67 +94,45 @@ export const useWebSocket = <TMessage>({
   useEffect(() => {
     if (!enabled || !canUseWindow) {
       cleanup();
+      supervisorRef.current?.disconnect();
+      supervisorRef.current = null;
+      transportRef.current = null;
       setMode('disabled');
-      setStatus(enabled ? 'connecting' : 'idle');
       return;
     }
 
     if (url) {
-      let cancelled = false;
+      const transport = new RawWebSocketTransport(url);
+      transportRef.current = transport;
+      const supervisor = new ConnectionSupervisor(transport, {
+        initialReconnectDelayMs: reconnectDelayMs,
+      });
+      supervisorRef.current = supervisor;
+      const unregister = registerSupervisor(connectionName, supervisor);
 
-      const connect = () => {
-        if (cancelled) {
-          return;
+      const unsubscribeMessage = transport.onMessage((payload) => {
+        try {
+          setLastMessage(safeParse(String(payload)));
+          setParseFailed(false);
+        } catch {
+          setParseFailed(true);
         }
+      });
 
-        setMode('websocket');
-        setStatus('connecting');
-
-        const socket = new WebSocket(url);
-        socketRef.current = socket;
-
-        socket.onopen = () => {
-          if (!cancelled) {
-            setStatus('connected');
-          }
-        };
-
-        socket.onmessage = (event) => {
-          try {
-            const message = safeParse(String(event.data));
-            setLastMessage(message);
-          } catch {
-            setStatus('error');
-          }
-        };
-
-        socket.onerror = () => {
-          if (!cancelled) {
-            setStatus('error');
-          }
-        };
-
-        socket.onclose = () => {
-          if (cancelled) {
-            return;
-          }
-
-          setStatus('disconnected');
-          reconnectTimerRef.current = setTimeout(connect, reconnectDelayMs);
-        };
-      };
-
-      connect();
+      setMode('websocket');
+      supervisor.connect();
 
       return () => {
-        cancelled = true;
-        cleanup();
+        unsubscribeMessage();
+        unregister();
+        supervisor.disconnect();
+        supervisorRef.current = null;
+        transportRef.current = null;
       };
     }
 
     const channelName = localChannelKey ?? `collaboration-room:${roomId ?? 'default'}`;
     setMode('broadcast');
-    setStatus('connected');
 
     const channel = new BroadcastChannel(channelName);
     channelRef.current = channel;
@@ -151,9 +143,20 @@ export const useWebSocket = <TMessage>({
 
     return () => {
       cleanup();
-      setStatus('disconnected');
     };
-  }, [canUseWindow, cleanup, enabled, localChannelKey, reconnectDelayMs, roomId, safeParse, url]);
+  }, [canUseWindow, cleanup, connectionName, enabled, localChannelKey, reconnectDelayMs, roomId, url]);
+
+  const status: ConnectionStatus = parseFailed
+    ? 'error'
+    : mode === 'broadcast'
+      ? 'connected'
+      : realtimeConnection.isConnected
+        ? 'connected'
+        : realtimeConnection.phase === 'connecting' || realtimeConnection.phase === 'reconnecting'
+          ? 'connecting'
+          : realtimeConnection.phase === 'idle' && enabled
+            ? 'connecting'
+            : 'disconnected';
 
   const sendMessage = useCallback(
     (message: TMessage) => {
@@ -161,8 +164,10 @@ export const useWebSocket = <TMessage>({
         return;
       }
 
-      if (mode === 'websocket' && socketRef.current?.readyState === WebSocket.OPEN) {
-        socketRef.current.send(safeSerialize(message));
+      if (mode === 'websocket' && supervisorRef.current) {
+        // Bounded, ordered outbound queue — messages sent while disconnected are
+        // buffered and flushed in order on reconnect (drop-oldest on overflow).
+        supervisorRef.current.send(safeSerialize(message));
         return;
       }
 
@@ -179,5 +184,6 @@ export const useWebSocket = <TMessage>({
     mode,
     lastMessage,
     sendMessage,
+    connection: realtimeConnection,
   };
 };

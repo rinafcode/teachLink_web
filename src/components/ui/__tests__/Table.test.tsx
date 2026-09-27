@@ -141,4 +141,84 @@ describe('Table Component', () => {
 
     vi.useRealTimers();
   });
+
+  describe('pagination', () => {
+    const manyRows: TestData[] = Array.from({ length: 30 }, (_, i) => ({
+      id: String(i),
+      name: `Person ${i}`,
+      role: 'Student',
+    }));
+
+    it('only renders one page of rows by default', () => {
+      render(<Table columns={columns} data={manyRows} rowKey="id" />);
+
+      expect(screen.getAllByRole('row').length).toBe(1 + 25); // header + 25 data rows
+      expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+      expect(screen.queryByText('Person 25')).not.toBeInTheDocument();
+    });
+
+    it('navigates to the next/previous page', () => {
+      render(<Table columns={columns} data={manyRows} rowKey="id" />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+      expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
+      expect(screen.getByText('Person 25')).toBeInTheDocument();
+      expect(screen.queryByText('Person 0')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
+      expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+      expect(screen.getByText('Person 0')).toBeInTheDocument();
+    });
+
+    it('does not render pagination controls when everything fits on one page', () => {
+      render(<Table columns={columns} data={data} rowKey="id" />);
+      expect(screen.queryByText(/Page \d+ of \d+/)).not.toBeInTheDocument();
+    });
+
+    it('respects a custom pageSize', () => {
+      render(<Table columns={columns} data={manyRows} rowKey="id" pageSize={10} />);
+      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+      expect(screen.getAllByRole('row').length).toBe(1 + 10);
+    });
+  });
+
+  describe('memoization', () => {
+    it('does not re-render an unrelated row when only one row is (de)selected', () => {
+      const renderCounts: Record<string, number> = { '1': 0, '2': 0 };
+      const trackedColumns: ColumnDef<TestData>[] = [
+        {
+          key: 'name',
+          header: 'Name',
+          render: (row) => {
+            renderCounts[row.id] = (renderCounts[row.id] ?? 0) + 1;
+            return row.name;
+          },
+        },
+        { key: 'role', header: 'Role' },
+      ];
+
+      function Wrapper() {
+        const [selected, setSelected] = React.useState<string[]>([]);
+        return (
+          <Table
+            columns={trackedColumns}
+            data={data}
+            rowKey="id"
+            selectedRowKeys={selected}
+            onSelectionChange={setSelected}
+          />
+        );
+      }
+
+      render(<Wrapper />);
+      renderCounts['1'] = 0;
+      renderCounts['2'] = 0;
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[1]); // select row '1' only
+
+      expect(renderCounts['1']).toBe(1);
+      expect(renderCounts['2']).toBe(0);
+    });
+  });
 });

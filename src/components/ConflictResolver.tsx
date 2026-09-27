@@ -1,9 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ConflictRecord, ResolutionStrategy } from '@/lib/conflict/types';
+import React, { useEffect, useId, useState } from 'react';
+import { ConflictRecord, ResolutionStrategy, SyncConflictState } from '@/lib/conflict/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, ArrowRight, Save, History, Check } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+
+const STATE_STYLES: Record<SyncConflictState, string> = {
+  pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30',
+  conflicted: 'bg-orange-500/10 text-orange-500 border-orange-500/30',
+  resolved: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+};
+
+const formatVector = (vector?: Record<string, number>): string => {
+  if (!vector || Object.keys(vector).length === 0) return '—';
+  return Object.entries(vector)
+    .map(([replica, count]) => `${replica.slice(0, 8)}:${count}`)
+    .join(', ');
+};
 
 interface ConflictResolverProps {
   conflict: ConflictRecord<any>;
@@ -18,6 +32,16 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 }) => {
   const [selectedStrategy, setSelectedStrategy] = useState<ResolutionStrategy>('manual');
   const [showHistory, setShowHistory] = useState(false);
+  const dialogRef = useFocusTrap<HTMLDivElement>(true);
+  const titleId = useId();
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   const localItems = Object.entries(conflict.localData).filter(
     ([key]) => !['updatedAt', 'version', 'id'].includes(key),
@@ -31,6 +55,10 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -43,14 +71,22 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                 <AlertTriangle size={24} />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Conflict Detected</h3>
+                <h3 id={titleId} className="text-xl font-bold text-white">
+                  Conflict Detected
+                </h3>
                 <p className="text-sm text-gray-400">
                   Resolution required for {conflict.entityType}
                 </p>
+                <span
+                  className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${STATE_STYLES[conflict.state ?? 'conflicted']}`}
+                >
+                  {conflict.state ?? 'conflicted'}
+                </span>
               </div>
             </div>
             <button
               onClick={onClose}
+              aria-label="Close conflict resolver"
               className="p-2 hover:bg-white/5 rounded-lg text-gray-400 transition-colors"
             >
               <X size={20} />
@@ -69,6 +105,12 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     : 'border-white/5 bg-white/5 hover:border-white/20'
                 }`}
               >
+                <div className="mb-2 text-[10px] text-gray-500">
+                  version vector:{' '}
+                  <span className="font-mono text-gray-400">
+                    {formatVector(conflict.localVersionVector)}
+                  </span>
+                </div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider text-orange-500">
                     Local Version
@@ -94,6 +136,12 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     : 'border-white/5 bg-white/5 hover:border-white/20'
                 }`}
               >
+                <div className="mb-2 text-[10px] text-gray-500">
+                  version vector:{' '}
+                  <span className="font-mono text-gray-400">
+                    {formatVector(conflict.remoteVersionVector)}
+                  </span>
+                </div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider text-blue-500">
                     Remote Version

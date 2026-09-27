@@ -12,11 +12,11 @@ const defaultFilters: FilterState = {
   sort: 'relevance',
   instructor: '',
   searchTerm: '',
-  nodeAffinity: 'auto',
+  learningFormat: [],
 };
 
-describe('FilterSidebar Component - Node Affinity', () => {
-  it('renders all Node Affinity options', () => {
+describe('FilterSidebar Component - Learning Format', () => {
+  it('renders all Learning Format options', () => {
     const onFilterChange = vi.fn();
     const onReset = vi.fn();
 
@@ -24,14 +24,14 @@ describe('FilterSidebar Component - Node Affinity', () => {
       <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
-    expect(screen.getByText('Node Affinity')).toBeInTheDocument();
-    expect(screen.getByText('Auto (Optimized)')).toBeInTheDocument();
-    expect(screen.getByText('Primary Cluster')).toBeInTheDocument();
-    expect(screen.getByText('Replica Node')).toBeInTheDocument();
-    expect(screen.getByText('Edge Cache')).toBeInTheDocument();
+    expect(screen.getByText('Learning Format')).toBeInTheDocument();
+    expect(screen.getByText('Video')).toBeInTheDocument();
+    expect(screen.getByText('Interactive')).toBeInTheDocument();
+    expect(screen.getByText('Text-Based')).toBeInTheDocument();
+    expect(screen.getByText('Mixed')).toBeInTheDocument();
   });
 
-  it('triggers onFilterChange callback when a new node affinity is selected', () => {
+  it('triggers onFilterChange callback when a learning format is selected', () => {
     const onFilterChange = vi.fn();
     const onReset = vi.fn();
 
@@ -39,11 +39,36 @@ describe('FilterSidebar Component - Node Affinity', () => {
       <FilterSidebar filters={defaultFilters} onFilterChange={onFilterChange} onReset={onReset} />,
     );
 
-    // Click on Primary Cluster option
-    const primaryOption = screen.getByText('Primary Cluster');
-    fireEvent.click(primaryOption);
+    // Click on Video option - use getByLabelText to find it
+    const videoLabel = screen.getByText('Video');
+    const videoCheckbox = videoLabel.closest('label')?.querySelector('input[type="checkbox"]');
+    if (videoCheckbox) fireEvent.click(videoCheckbox);
 
     expect(onFilterChange).toHaveBeenCalledTimes(1);
-    expect(onFilterChange).toHaveBeenCalledWith({ nodeAffinity: 'primary' });
+    expect(onFilterChange).toHaveBeenCalledWith({ learningFormat: ['video'] });
+  });
+
+  it('allows multiple learning formats to be selected', () => {
+    const onFilterChange = vi.fn();
+    const onReset = vi.fn();
+    const filtersWithVideo = {
+      ...defaultFilters,
+      learningFormat: ['video'],
+    };
+
+    render(
+      <FilterSidebar
+        filters={filtersWithVideo}
+        onFilterChange={onFilterChange}
+        onReset={onReset}
+      />,
+    );
+
+    // Click on Interactive - find it by its label text
+    const interactiveLabel = screen.getByText('Interactive');
+    const interactiveCheckbox = interactiveLabel.closest('label')?.querySelector('input[type="checkbox"]');
+    if (interactiveCheckbox) fireEvent.click(interactiveCheckbox);
+
+    expect(onFilterChange).toHaveBeenCalledWith({ learningFormat: ['video', 'interactive'] });
   });
 });

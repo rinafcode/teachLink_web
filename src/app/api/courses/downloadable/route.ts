@@ -30,18 +30,30 @@ export async function GET(request: Request) {
     return withSecurityHeaders(rateLimitResponse);
   }
 
-  const courses = getAllCourses().map(({ id, title, description, instructor, duration, totalLessons, progress, size, thumbnailUrl }) => ({
-    id,
-    title,
-    description,
-    instructor,
-    duration,
-    totalLessons,
-    progress,
-    size,
-    thumbnailUrl,
-    downloaded: false,
-  }));
+  const courses = getAllCourses().map(
+    ({
+      id,
+      title,
+      description,
+      instructor,
+      duration,
+      totalLessons,
+      progress,
+      size,
+      thumbnailUrl,
+    }) => ({
+      id,
+      title,
+      description,
+      instructor,
+      duration,
+      totalLessons,
+      progress,
+      size,
+      thumbnailUrl,
+      downloaded: false,
+    }),
+  );
 
   const sanitizedCourses = sanitizeObject(courses);
 

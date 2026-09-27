@@ -65,7 +65,9 @@ export function flattenThreadTree<T extends ThreadableItem>(
 
 export function getThreadPositionLabel(depth: number, replyCount: number): string {
   if (depth === 0) {
-    return replyCount === 1 ? 'Thread starter with 1 reply' : `Thread starter with ${replyCount} replies`;
+    return replyCount === 1
+      ? 'Thread starter with 1 reply'
+      : `Thread starter with ${replyCount} replies`;
   }
 
   return replyCount === 1

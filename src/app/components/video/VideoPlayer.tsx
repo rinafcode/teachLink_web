@@ -23,6 +23,8 @@ import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useVideoLazyLoad } from '../../hooks/useVideoLazyLoad';
 import { useAudioEnhancement } from '../../hooks/useAudioEnhancement';
 import { AudioInvoiceManager, AudioInvoiceButton } from '@/components/audio';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('VideoPlayer');
 
 interface VideoPlayerProps {
   src: string;
@@ -183,7 +185,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         await videoRef.current.requestPictureInPicture();
       }
     } catch (error) {
-      console.error('PiP error:', error);
+      logger.error('PiP error', { error });
     }
   }, []);
 

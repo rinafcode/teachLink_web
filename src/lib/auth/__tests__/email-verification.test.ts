@@ -2,6 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { constantTimeEqual } from '../jwt';
 import {
   __resetVerificationStoreForTests,
   __setVerificationStorePathForTests,
@@ -144,6 +145,54 @@ describe('email verification store', () => {
     const bySession = await getVerificationBySessionId(created.record.verificationId);
     expect(bySession?.email).toBe('session@teachlink.com');
     expect(bySession?.verificationId).toBe(created.record.verificationId);
+  });
+
+  it('rejects a wrong verification token (constant-time comparison)', async () => {
+    const created = await createOrRestoreVerification({
+      email: 'wrong-token@teachlink.com',
+      name: 'Wrong Token Tester',
+    });
+
+    if (!('verificationToken' in created)) throw new Error('Expected verification token');
+
+    // A random wrong token should not match
+    const wrongResult = await verifyEmailToken('0'.repeat(64));
+    expect(wrongResult.status).toBe('not_found');
+
+    // The correct token should still work
+    const correctResult = await verifyEmailToken(created.verificationToken);
+    expect(correctResult.status).toBe('verified');
+  });
+
+  it('rejects a wrong backup code during restore (constant-time comparison)', async () => {
+    const created = await createOrRestoreVerification({
+      email: 'wrong-backup@teachlink.com',
+      name: 'Wrong Backup Tester',
+    });
+
+    if (!('verificationToken' in created)) throw new Error('Expected verification token');
+
+    // Expire the verification token
+    const store = await loadStore();
+    store.records[0].expiresAt = new Date(Date.now() - 60_000).toISOString();
+    store.records[0].status = 'pending';
+    store.records[0].backupCodeExpiresAt = new Date(Date.now() + 60_000).toISOString();
+    await saveStore(store);
+    await __resetVerificationStoreForTests();
+
+    // Wrong backup code should fail
+    const wrongResult = await restoreVerificationEmail({
+      email: 'wrong-backup@teachlink.com',
+      backupCode: 'WRONGCODE',
+    });
+    expect(wrongResult.status).toBe('not_found');
+
+    // Correct backup code should succeed
+    const correctResult = await restoreVerificationEmail({
+      email: 'wrong-backup@teachlink.com',
+      backupCode: created.backupCode,
+    });
+    expect('verificationToken' in correctResult).toBe(true);
   });
 
   it('builds verification links using the public site URL', async () => {

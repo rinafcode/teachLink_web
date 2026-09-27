@@ -1,167 +1,108 @@
-### 🌐 `web/README.md`
+# TeachLink — Web
 
-# 📚 TeachLink Frontend
+The web client for **TeachLink**, a platform where technocrats and learners **share, analyze, and monetize knowledge**.
 
-![Frontend CI](https://github.com/teachlink/frontend/actions/workflows/ci.yml/badge.svg)
+- **Knowledge sharers & analysts** publish tutorials, threads, and analyses and earn from their contributions.
+- **Learners/students** earn by completing tasks, competitions, quizzes, and learning games.
+- Reputation is gamified, and rewards settle on-chain through the platform's Stellar/Soroban layer.
 
-**TeachLink** is a decentralized platform built for technocrats to **share, analyze, and monetize knowledge** through collaborative content, blockchain-based tipping, and gamified reputation. This repository contains the frontend codebase built with **Next.js (App Router)**, **Tailwind CSS**, and integrated with **Starknet** for seamless Web3 interactions.
+This repository is the **Next.js frontend**. It is one of four repositories that make up the platform:
 
----
+| Repo | Role | Stack |
+| --- | --- | --- |
+| **[teachLink_web](https://github.com/rinafcode/teachLink_web)** (this repo) | Web client | Next.js 15 (App Router), React 18, Tailwind |
+| [teachLink_backend](https://github.com/rinafcode/teachLink_backend) | Core API | NestJS, PostgreSQL, Redis/BullMQ |
+| [teachLink_contract](https://github.com/rinafcode/teachLink_contract) | On-chain rewards/escrow | Rust, Soroban (Stellar) |
+| [teachLink_mobile](https://github.com/rinafcode/teachLink_mobile) | Mobile app | Expo, React Native |
 
-## 🚀 Project Overview
-
-TeachLink empowers users to:
-
-- 📢 Share knowledge, tutorials, or insights
-- 🧠 Engage in discussions and collaborative learning
-- 💸 Earn through on-chain tipping
-- 🔗 Build reputation with verifiable Web3 credentials
-
-This frontend serves as the main user interface for interacting with TeachLink's decentralized knowledge ecosystem. It supports wallet-based login, markdown post creation, tipping, theming, user profiles, and topic feeds—all while maintaining a seamless Web2.5 user experience.
+> The web app is an API client of `teachLink_backend` (via `NEXT_PUBLIC_API_URL`). On-chain actions (rewards, tipping, escrow) are mediated by the backend and the Soroban contract; the frontend does not talk to the chain directly.
 
 ---
 
-## 🧱 Tech Stack
+## Tech stack
 
-| Layer      | Technology               |
-| ---------- | ------------------------ |
-| Framework  | Next.js (App Router)     |
-| Styling    | Tailwind CSS             |
-| Web3       | Starknet.js, StarknetKit |
-| State Mgmt | React Context / Hooks    |
-| Markdown   | React Markdown + Remark  |
-| Theming    | `next-themes`            |
-| Indexing   | Apibara (backend)        |
-| Wallets    | Argent X, Braavos        |
-
----
-
-## ⚙️ Features
-
-- 🔐 **Starknet Wallet Integration** – Login and interact using Starknet-compatible wallets
-- 🧾 **Markdown-Based Post Editor** – Rich, previewable post creation using markdown
-- 💡 **Tipping System** – Send and receive on-chain tips via smart contracts, now with Special Interest Group routing
-- 📝 **Tip Notarization Service** – Proof-backed tip transactions with server-side notarization records
-- 📧 **Email Verification Recovery** – Durable verification, resend, and restore flows with server-backed state and backup codes
-- 🌙 **Dark/Light Theme Toggle** – Accessible theming using Tailwind CSS
-- 🔎 **Dynamic Routing with App Router** – Clean, scalable navigation
-- 📂 **Profile and Topic Pages** – View user-specific content and explore topic-specific posts
-- 📱 **Responsive Layout** – Fully mobile-ready with modular components
+| Area | Technology |
+| --- | --- |
+| Framework | Next.js 15 (App Router), React 18, TypeScript |
+| Styling | Tailwind CSS, `next-themes` |
+| Content | TipTap / Monaco editor, React Markdown |
+| Data / realtime | REST (backend API), GraphQL & WebSocket subscriptions |
+| i18n | `i18next` / `react-i18next` |
+| Testing | Jest + React Testing Library, Playwright (E2E) |
+| Tooling | ESLint, Prettier, pnpm |
 
 ---
 
-## 📁 Directory Structure (Highlights)
+## Getting started
 
-/app
-/create → Post creation page
-/post/[id] → View individual post
-/profile/[user] → User profile
-/topics/[slug] → Topic feed
-/components
-Navbar.tsx → Top navigation bar
-Sidebar.tsx → Side navigation
-Editor.tsx → Markdown post editor
-WalletProvider.tsx → Wallet connection logic
-/styles
-globals.css → Tailwind directives
-
----
-
-## 🛠 Setup Instructions
-
-1. **Clone the repo**
+**Prerequisites:** Node.js ≥ 20 and [pnpm](https://pnpm.io) ≥ 10 (the repo pins `pnpm@10.33.2` via `packageManager`).
 
 ```bash
-git clone https://github.com/teachlink/frontend.git
-cd frontend
+# 1. Install dependencies
 pnpm install
+
+# 2. Configure environment
+cp .env.example .env.local
+# then edit .env.local — at minimum set NEXT_PUBLIC_API_URL to your teachLink_backend URL
+
+# 3. Run the dev server
+pnpm dev            # http://localhost:3000
 ```
 
-2. **Set up environment variables**
+### Common scripts
 
-Create a `.env.local` with:
+| Script | Purpose |
+| --- | --- |
+| `pnpm dev` | Start the dev server |
+| `pnpm build` / `pnpm start` | Production build / serve |
+| `pnpm test` | Unit tests (Jest) |
+| `pnpm test:e2e` | End-to-end tests (Playwright) |
+| `pnpm lint` / `pnpm lint:fix` | Lint |
+| `pnpm type-check` | TypeScript check |
+| `pnpm format` | Prettier |
 
-```ini
-NEXT_PUBLIC_STARKNET_NETWORK=testnet
-NEXT_PUBLIC_INDEXER_API_URL=https://indexer.teachlink.xyz
-NEXT_PUBLIC_SITE_URL=https://teachlink.app
-# Optional: overrides the verification recovery store location
-# EMAIL_VERIFICATION_STORE_PATH=.data/email-verification.json
-```
+### Key environment variables
 
-3. **Run the development server**
+Set these in `.env.local` (see `.env.example` for the full list):
 
-```bash
-pnpm run dev
-```
+| Variable | Description |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | Base URL of the TeachLink backend API |
+| `NEXT_PUBLIC_AUTH_REFRESH_ENDPOINT` | Token-refresh endpoint |
+| `NEXT_PUBLIC_GRAPHQL_WS_URL` / `NEXT_PUBLIC_COLLAB_WS_URL` | GraphQL / collaboration WebSocket URLs |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` / `NEXT_PUBLIC_IMGIX_DOMAIN` | Image/CDN hosts |
+| `NEXT_PUBLIC_FEATURE_TIPPING`, `NEXT_PUBLIC_FEATURE_OFFLINE_MODE`, `NEXT_PUBLIC_FEATURE_DAO_GOVERNANCE`, … | Feature flags |
 
-## 🧩 Monorepo Tooling Decision
+---
 
-The project now uses **pnpm workspaces** as the monorepo/dependency strategy.
-
-- **Evaluated:** Nx, Turborepo, pnpm workspaces
-- **Chosen:** pnpm workspaces (lowest migration risk, strict dependency graph, fast installs)
-- **Single source of truth:** `pnpm-lock.yaml` + root `pnpm.overrides`
-- **Shared tooling config:** `packages/tooling` (base ESLint + TypeScript config)
-
-🏗️ Development Milestones
-✅ Tailwind CSS Integration
-
-✅ App Router setup with nested layouts
-
-✅ Wallet connection via StarknetKit
-
-✅ Theme toggle and persistence
-
-✅ Markdown editor with live preview
-
-🚧 Topic and profile page rendering
-
-🚧 DAO & governance integration post-launch
-
-For detailed tasks, see GitHub Issues
-
-## 🤝 Contributing
-
-We welcome community contributions!
-
-- Read **`CONTRIBUTING.md`** before opening a PR.
-- All PRs must include an issue reference in the description (e.g. `Closes #68`).
-- Merges to protected branches require passing CI + approvals.
-
-Guidelines:
-
-- Fork the repo and make your changes in a feature branch
-- Before submitting a PR, read the **`CONTRIBUTING.md`** file
-
-## 📬 Join the Community
-
-- [Telegram](t.me/teachlinkOD)
-  Join our Telegram group for discussions and support
-
-Make sure your PR references the correct issue:
-Example: Close #3
-
-✅ Acceptance Criteria for PRs
-Feature must align with roadmap/issue description
-
-Must include working UI with no console errors
-
-Must use lucide icons for consistent usage throughout the app
-
-Must use Starknet best practices for wallet/contract interactions
-
-Use Tailwind CSS with responsive design
-
-PR title should be clear and reference issue number
-
-✅ Outcome: A scalable, token-driven learning platform where creators monetize knowledge, learners access premium content, and all users interact securely — powered by Web2 + Web3.
-
-let make our code clean, maintainable and scallable. Keep to Standard
-
-📜 License
-MIT © 2025 TeachLink DAO
+## Project structure
 
 ```
-
+src/
+  app/           Next.js App Router routes, layouts, and pages
+  components/    Reusable UI components
+  features/      Feature-scoped modules
+  hooks/         React hooks
+  services/      API clients and integrations
+  store/         Client state
+  lib/ utils/    Helpers and utilities
+  schemas/       Zod / validation schemas
+  locales/       i18n translation resources
+  middleware.ts  Next.js middleware
+__tests__/       Test suites
+docs/            Project documentation (see below)
 ```
+
+## Documentation
+
+Guides and references live in [`docs/`](docs/) — including accessibility, deployment,
+offline mode, redirect management, GraphQL subscriptions, security, and runbooks.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the workflow notes in
+[`docs/BRANCH_AND_PR_GUIDE.md`](docs/BRANCH_AND_PR_GUIDE.md).
+
+## License
+
+See the repository's license file.

@@ -11,11 +11,12 @@ import {
   getTranslation,
   getMissingTranslations,
 } from '@/locales/translationManager';
-import { DEFAULT_LANGUAGE } from '@/locales/config';
+import { DEFAULT_LANGUAGE, getAvailableLanguages } from '@/locales/config';
 import {
   getCulturalPreferences,
   formatDate as formatDateUtil,
   formatRelativeTime,
+  preloadDateFnsLocale,
   formatNumber as formatNumberUtil,
   formatCurrency as formatCurrencyUtil,
   formatPercentage,
@@ -26,6 +27,11 @@ import {
   formatDuration,
 } from '@/utils/i18nUtils';
 import i18n, { loadLocale } from '@/lib/i18n/config';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('use-internationalization');
+
+const I18N_LANGUAGE_STORAGE_KEY = 'i18n:language';
 
 interface I18nContextValue {
   language: LanguageCode;
@@ -73,6 +79,10 @@ export function I18nProvider({
     }
   }, [language]);
 
+  useEffect(() => {
+    void preloadDateFnsLocale(language);
+  }, [language]);
+
   // Load translations when language changes
   useEffect(() => {
     let cancelled = false;
@@ -95,9 +105,9 @@ export function I18nProvider({
               if (missing.length > 0) {
                 // Limit output to first 50 keys to avoid flooding logs
                 const sample = missing.slice(0, 50);
-                console.warn(
+                logger.warn(
                   `Translations for '${language}' missing ${missing.length} keys. Sample:`,
-                  sample,
+                  { sample },
                 );
               }
             }
@@ -123,8 +133,12 @@ export function I18nProvider({
 
   // Load initial language from localStorage
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('i18n:language') as LanguageCode | null;
-    if (savedLanguage && savedLanguage !== language) {
+    const savedLanguage = localStorage.getItem(I18N_LANGUAGE_STORAGE_KEY) as LanguageCode | null;
+    if (
+      savedLanguage &&
+      getAvailableLanguages().includes(savedLanguage) &&
+      savedLanguage !== language
+    ) {
       setLanguage(savedLanguage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,13 +147,18 @@ export function I18nProvider({
   // Save language preference to localStorage + cookie (cookie enables SSR-side lang/dir)
   const changeLanguage = useCallback(async (newLanguage: LanguageCode) => {
     setLanguage(newLanguage);
-    localStorage.setItem('i18n:language', newLanguage);
+
+    try {
+      localStorage.setItem(I18N_LANGUAGE_STORAGE_KEY, newLanguage);
+    } catch {
+      // localStorage may be unavailable (e.g. private browsing) — persist best-effort.
+    }
 
     // Persist to cookie so the server can read it on next request for SSR lang/dir.
     document.cookie = `i18n:language=${newLanguage};path=/;max-age=31536000;SameSite=Lax`;
 
     // Update <html lang> and <html dir> immediately for the current page visit.
-    const newDir = ['ar', 'he', 'fa', 'ur'].includes(newLanguage) ? 'rtl' : 'ltr';
+    const newDir = isRTLUtil(newLanguage) ? 'rtl' : 'ltr';
     document.documentElement.lang = newLanguage;
     document.documentElement.dir = newDir;
   }, []);
@@ -149,7 +168,7 @@ export function I18nProvider({
 
   // Translation function
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>) => {
+    (key: string, params?: Record<string, unknown>) => {
       return getTranslation(translations, key, params);
     },
     [translations],
@@ -247,7 +266,7 @@ export function useInternationalization(): I18nContextValue {
   if (!context) {
     const fallbackLanguage: LanguageCode = DEFAULT_LANGUAGE;
     const fallbackPreferences = getCulturalPreferences(fallbackLanguage);
-    const fallbackT = (key: string, params?: Record<string, string | number>) =>
+    const fallbackT = (key: string, params?: Record<string, unknown>) =>
       getTranslation({}, key, params);
 
     return {

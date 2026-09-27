@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { useOfflineModeContext } from '../../context/OfflineModeContext';
 import { offlineStorage } from '../../mobile/services/offlineStorage';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('storage-manager');
 
 interface StorageItem {
   id: string;
@@ -69,7 +72,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
 
       setStorageItems(items);
     } catch (error) {
-      console.error('Failed to load storage items:', error);
+      logger.error('Failed to load storage items', { error });
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +174,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       setStorageItems((prev) => prev.filter((item) => !selectedItems.includes(item.id)));
       setSelectedItems([]);
     } catch (error) {
-      console.error('Failed to delete items:', error);
+      logger.error('Failed to delete items', { error });
     }
   };
 
@@ -188,7 +191,7 @@ export const StorageManager: React.FC<StorageManagerProps> = ({ className = '' }
       setStorageItems([]);
       setSelectedItems([]);
     } catch (error) {
-      console.error('Failed to clear all data:', error);
+      logger.error('Failed to clear all data', { error });
     }
   };
 

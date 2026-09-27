@@ -2,12 +2,15 @@
  * useVirtualBackground Hook - Unit Tests
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useVirtualBackground } from '../useVirtualBackground';
 import { useSettingsStore } from '@/lib/settings/store';
 
-// Mock the settings store
-vi.mock('@/lib/settings/store');
+vi.mock('@/lib/settings/store', () => ({
+  useSettingsStore: vi.fn(),
+}));
+
+const mockedUseSettingsStore = vi.mocked(useSettingsStore);
 
 describe('useVirtualBackground Hook', () => {
   beforeEach(() => {
@@ -15,25 +18,27 @@ describe('useVirtualBackground Hook', () => {
   });
 
   it('returns correct configuration when virtual background is disabled', () => {
-    vi.mocked(useSettingsStore).mockReturnValue({
-      settings: {
-        virtualBackgroundEnabled: false,
-        virtualBackgroundType: 'none',
-        virtualBackgroundImage: '',
-        virtualBackgroundBlur: 10,
-        virtualBackgroundColor: '#000000',
-        version: 3,
-        theme: 'system',
-        language: 'en',
-        notificationsEnabled: true,
-        emailNotifications: true,
-        prefetchingEnabled: true,
-        reducedMotion: false,
-        electronicSignatureEnabled: false,
-        signatureName: '',
-        requireSignatureOnCertificates: false,
-      },
-    } as any);
+    mockedUseSettingsStore.mockImplementation((selector: any) =>
+      selector({
+        settings: {
+          virtualBackgroundEnabled: false,
+          virtualBackgroundType: 'none',
+          virtualBackgroundImage: '',
+          virtualBackgroundBlur: 10,
+          virtualBackgroundColor: '#000000',
+          version: 3,
+          theme: 'system',
+          language: 'en',
+          notificationsEnabled: true,
+          emailNotifications: true,
+          prefetchingEnabled: true,
+          reducedMotion: false,
+          electronicSignatureEnabled: false,
+          signatureName: '',
+          requireSignatureOnCertificates: false,
+        },
+      }),
+    );
 
     const { result } = renderHook(() => useVirtualBackground());
 
@@ -43,25 +48,27 @@ describe('useVirtualBackground Hook', () => {
   });
 
   it('returns correct configuration when virtual background is enabled with image', () => {
-    vi.mocked(useSettingsStore).mockReturnValue({
-      settings: {
-        virtualBackgroundEnabled: true,
-        virtualBackgroundType: 'image',
-        virtualBackgroundImage: 'https://example.com/bg.jpg',
-        virtualBackgroundBlur: 10,
-        virtualBackgroundColor: '#000000',
-        version: 3,
-        theme: 'system',
-        language: 'en',
-        notificationsEnabled: true,
-        emailNotifications: true,
-        prefetchingEnabled: true,
-        reducedMotion: false,
-        electronicSignatureEnabled: false,
-        signatureName: '',
-        requireSignatureOnCertificates: false,
-      },
-    } as any);
+    mockedUseSettingsStore.mockImplementation((selector: any) =>
+      selector({
+        settings: {
+          virtualBackgroundEnabled: true,
+          virtualBackgroundType: 'image',
+          virtualBackgroundImage: 'https://example.com/bg.jpg',
+          virtualBackgroundBlur: 10,
+          virtualBackgroundColor: '#000000',
+          version: 3,
+          theme: 'system',
+          language: 'en',
+          notificationsEnabled: true,
+          emailNotifications: true,
+          prefetchingEnabled: true,
+          reducedMotion: false,
+          electronicSignatureEnabled: false,
+          signatureName: '',
+          requireSignatureOnCertificates: false,
+        },
+      }),
+    );
 
     const { result } = renderHook(() => useVirtualBackground());
 
@@ -72,25 +79,27 @@ describe('useVirtualBackground Hook', () => {
   });
 
   it('returns correct configuration when virtual background is enabled with blur', () => {
-    vi.mocked(useSettingsStore).mockReturnValue({
-      settings: {
-        virtualBackgroundEnabled: true,
-        virtualBackgroundType: 'blur',
-        virtualBackgroundImage: '',
-        virtualBackgroundBlur: 25,
-        virtualBackgroundColor: '#000000',
-        version: 3,
-        theme: 'system',
-        language: 'en',
-        notificationsEnabled: true,
-        emailNotifications: true,
-        prefetchingEnabled: true,
-        reducedMotion: false,
-        electronicSignatureEnabled: false,
-        signatureName: '',
-        requireSignatureOnCertificates: false,
-      },
-    } as any);
+    mockedUseSettingsStore.mockImplementation((selector: any) =>
+      selector({
+        settings: {
+          virtualBackgroundEnabled: true,
+          virtualBackgroundType: 'blur',
+          virtualBackgroundImage: '',
+          virtualBackgroundBlur: 25,
+          virtualBackgroundColor: '#000000',
+          version: 3,
+          theme: 'system',
+          language: 'en',
+          notificationsEnabled: true,
+          emailNotifications: true,
+          prefetchingEnabled: true,
+          reducedMotion: false,
+          electronicSignatureEnabled: false,
+          signatureName: '',
+          requireSignatureOnCertificates: false,
+        },
+      }),
+    );
 
     const { result } = renderHook(() => useVirtualBackground());
 
@@ -101,25 +110,27 @@ describe('useVirtualBackground Hook', () => {
   });
 
   it('returns correct configuration when virtual background is enabled with color', () => {
-    vi.mocked(useSettingsStore).mockReturnValue({
-      settings: {
-        virtualBackgroundEnabled: true,
-        virtualBackgroundType: 'color',
-        virtualBackgroundImage: '',
-        virtualBackgroundBlur: 10,
-        virtualBackgroundColor: '#FF5733',
-        version: 3,
-        theme: 'system',
-        language: 'en',
-        notificationsEnabled: true,
-        emailNotifications: true,
-        prefetchingEnabled: true,
-        reducedMotion: false,
-        electronicSignatureEnabled: false,
-        signatureName: '',
-        requireSignatureOnCertificates: false,
-      },
-    } as any);
+    mockedUseSettingsStore.mockImplementation((selector: any) =>
+      selector({
+        settings: {
+          virtualBackgroundEnabled: true,
+          virtualBackgroundType: 'color',
+          virtualBackgroundImage: '',
+          virtualBackgroundBlur: 10,
+          virtualBackgroundColor: '#FF5733',
+          version: 3,
+          theme: 'system',
+          language: 'en',
+          notificationsEnabled: true,
+          emailNotifications: true,
+          prefetchingEnabled: true,
+          reducedMotion: false,
+          electronicSignatureEnabled: false,
+          signatureName: '',
+          requireSignatureOnCertificates: false,
+        },
+      }),
+    );
 
     const { result } = renderHook(() => useVirtualBackground());
 

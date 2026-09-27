@@ -6,6 +6,8 @@
  * Middleware or utility to log state transitions in development.
  */
 import { StateCreator } from 'zustand';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('DevTools');
 
 /**
  * Middleware or utility to log state transitions in development.
@@ -16,10 +18,8 @@ export const stateLogger =
     config(
       (args) => {
         if (process.env.NODE_ENV === 'development') {
-          console.group('%c [State Action]', 'color: #00bcd4; font-weight: bold;');
-
+          logger.debug('[State Action]', { context: { nextState: args } });
           set(args);
-          console.groupEnd();
         } else {
           set(args);
         }

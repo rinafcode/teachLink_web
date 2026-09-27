@@ -8,6 +8,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { findRedirectRule, logRedirect } from '@/lib/redirectManagement';
 import type { RedirectContext } from '@/lib/redirectManagement';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('redirect-management');
 
 /**
  * Middleware handler for redirects
@@ -45,7 +48,7 @@ export function handleRedirects(request: NextRequest): NextResponse | null {
       referrer: request.headers.get('referer') || undefined,
       statusCode: match.rule.status || 308,
     }).catch((err) => {
-      console.error('[Redirect Log Error]', err);
+      logger.error('[Redirect Log Error]', { error: err });
     });
 
     // Perform the redirect

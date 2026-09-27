@@ -11,10 +11,12 @@ describe('Data Validation', () => {
         name: 'John Doe',
         email: 'john@example.com',
         role: 'STUDENT',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       const result = UserSchema.parse(validUser);
-      expect(result).toEqual(validUser);
+      expect(result).toEqual({ ...validUser, referralCount: 0 });
     });
 
     it('should throw error for invalid email', () => {
@@ -84,10 +86,12 @@ describe('Data Validation', () => {
         name: 'John Doe',
         email: 'john@example.com',
         role: 'STUDENT',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       const result = validateData(UserSchema, validUser);
-      expect(result).toEqual(validUser);
+      expect(result).toEqual({ ...validUser, referralCount: 0 });
     });
 
     it('should throw ValidationError when incorrect', () => {

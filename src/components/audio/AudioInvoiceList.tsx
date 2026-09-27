@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { AudioInvoiceBadge } from './AudioInvoiceBadge';
+import { useDebounce } from '@/hooks/useDebounce';
 import type {
   Invoice,
   InvoiceFilter,
@@ -43,6 +45,20 @@ export function AudioInvoiceList({
   onSelectInvoice,
   onClearFilter,
 }: AudioInvoiceListProps) {
+  const [searchValue, setSearchValue] = useState(filter.search ?? '');
+  const debouncedSearch = useDebounce(searchValue, 300);
+
+  useEffect(() => {
+    if (debouncedSearch !== (filter.search ?? '')) {
+      onFilterChange({ ...filter, search: debouncedSearch || undefined });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    setSearchValue(filter.search ?? '');
+  }, [filter.search]);
+
   const hasActiveFilter =
     filter.status !== 'all' || filter.contentType !== 'all' || !!filter.search;
 
@@ -58,8 +74,8 @@ export function AudioInvoiceList({
           <input
             type="text"
             placeholder="Search invoices..."
-            value={filter.search ?? ''}
-            onChange={(e) => onFilterChange({ ...filter, search: e.target.value })}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Search invoices"
           />

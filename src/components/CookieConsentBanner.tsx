@@ -1,83 +1,29 @@
 'use client';
 
-import { useEffect, useRef, useId } from 'react';
+import { useEffect, useId } from 'react';
 import { Shield } from 'lucide-react';
 import { useGdprConsent } from '@/hooks/useGdprConsent';
 import { useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 /**
- * GDPR Cookie Consent Banner with full focus management:
- * - Traps focus inside the banner while visible
- * - Restores focus to the previously focused element on dismiss
+ * GDPR Cookie Consent Banner with keyboard focus management:
+ * - Traps focus inside the banner and restores it on dismissal
  * - Announces appearance to screen readers
  * - Keyboard: Tab/Shift+Tab cycle within banner; Enter/Space activate buttons
  */
 export function CookieConsentBanner() {
   const { showBanner, accept, reject } = useGdprConsent();
-  const bannerRef = useRef<HTMLDivElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const bannerRef = useFocusTrap<HTMLDivElement>(showBanner);
   const announce = useScreenReaderAnnouncement();
   const titleId = useId();
 
-  // Save the element that had focus before the banner appeared, then focus the banner
+  // Announce appearance to screen readers. useFocusTrap moves focus to the first control.
   useEffect(() => {
     if (!showBanner) return;
 
-    previousFocusRef.current = document.activeElement as HTMLElement;
     announce('Cookie consent banner appeared. Please choose your cookie preferences.', 'assertive');
-
-    // Focus the first interactive element inside the banner
-    const raf = requestAnimationFrame(() => {
-      const first = bannerRef.current?.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      first?.focus();
-    });
-
-    return () => cancelAnimationFrame(raf);
   }, [showBanner, announce]);
-
-  // Restore focus when banner is dismissed
-  useEffect(() => {
-    if (showBanner) return;
-    previousFocusRef.current?.focus();
-    previousFocusRef.current = null;
-  }, [showBanner]);
-
-  // Trap focus inside the banner while it is visible
-  useEffect(() => {
-    if (!showBanner) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab' || !bannerRef.current) return;
-
-      const focusable = Array.from(
-        bannerRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((el) => !el.hasAttribute('disabled'));
-
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showBanner]);
 
   if (!showBanner) return null;
 

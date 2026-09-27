@@ -5,6 +5,9 @@ import { QRCodeComponent, ShareModal } from '@/components';
 import { Download, Printer, Copy, Share2 } from 'lucide-react';
 import { downloadQRCode, printQRCode, copyQRCodeToClipboard } from '@/utils/generate-qr';
 import toast from 'react-hot-toast';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('QRCodeDemoPage');
 
 /**
  * QR Code Feature Demo Page
@@ -27,7 +30,7 @@ export default function QRCodeDemoPage() {
       toast.success('QR code downloaded!');
     } catch (error) {
       toast.error('Failed to download QR code');
-      console.error(error);
+      logger.error('Failed to download QR code', { error });
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +44,7 @@ export default function QRCodeDemoPage() {
       toast.success('Print dialog opened');
     } catch (error) {
       toast.error('Failed to open print dialog');
-      console.error(error);
+      logger.error('Failed to open print dialog', { error });
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +58,7 @@ export default function QRCodeDemoPage() {
       toast.success('QR code copied to clipboard');
     } catch (error) {
       toast.error('Failed to copy QR code');
-      console.error(error);
+      logger.error('Failed to copy QR code', { error });
     } finally {
       setIsLoading(false);
     }

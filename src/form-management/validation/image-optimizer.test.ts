@@ -1,8 +1,51 @@
-import { describe, it, expect } from 'vitest';
-import { optimizeImage, validateImageDimensions } from './image-optimizer.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { optimizeImage, validateImageDimensions } from './image-optimizer';
 import { FieldDescriptor } from '../types/core.js';
 
 describe('Image Optimization', () => {
+  const originalImage = global.Image;
+  const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+
+  beforeEach(() => {
+    // Mock Image class to trigger onload automatically in jsdom
+    class MockImage {
+      onload: () => void = () => {};
+      onerror: () => void = () => {};
+      width = 500;
+      height = 500;
+      private _src = '';
+
+      get src() {
+        return this._src;
+      }
+
+      set src(val: string) {
+        this._src = val;
+        // Trigger onload asynchronously to simulate image load
+        setTimeout(() => {
+          if (this.onload) {
+            this.onload();
+          }
+        }, 10);
+      }
+    }
+    global.Image = MockImage as any;
+
+    // Mock HTMLCanvasElement.prototype.toBlob
+    HTMLCanvasElement.prototype.toBlob = function (
+      callback: (blob: Blob | null) => void,
+      type?: string,
+    ) {
+      const file = new File(['mock content'], 'test.webp', { type: type || 'image/webp' });
+      setTimeout(() => callback(file), 10);
+    };
+  });
+
+  afterEach(() => {
+    global.Image = originalImage;
+    HTMLCanvasElement.prototype.toBlob = originalToBlob;
+    vi.restoreAllMocks();
+  });
   describe('optimizeImage', () => {
     const createMockImageFile = (name = 'test.jpg', size = 1000, type = 'image/jpeg'): File => {
       const file = new File(['mock image content'], name, { type });
@@ -180,6 +223,50 @@ describe('Image Optimization', () => {
 });
 
 describe('Image Optimization Integration', () => {
+  const originalImage = global.Image;
+  const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+
+  beforeEach(() => {
+    // Mock Image class to trigger onload automatically in jsdom
+    class MockImage {
+      onload: () => void = () => {};
+      onerror: () => void = () => {};
+      width = 500;
+      height = 500;
+      private _src = '';
+
+      get src() {
+        return this._src;
+      }
+
+      set src(val: string) {
+        this._src = val;
+        // Trigger onload asynchronously to simulate image load
+        setTimeout(() => {
+          if (this.onload) {
+            this.onload();
+          }
+        }, 10);
+      }
+    }
+    global.Image = MockImage as any;
+
+    // Mock HTMLCanvasElement.prototype.toBlob
+    HTMLCanvasElement.prototype.toBlob = function (
+      callback: (blob: Blob | null) => void,
+      type?: string,
+    ) {
+      const file = new File(['mock content'], 'test.webp', { type: type || 'image/webp' });
+      setTimeout(() => callback(file), 10);
+    };
+  });
+
+  afterEach(() => {
+    global.Image = originalImage;
+    HTMLCanvasElement.prototype.toBlob = originalToBlob;
+    vi.restoreAllMocks();
+  });
+
   it('should validate image dimensions in validation engine', async () => {
     const { ValidationEngineImpl } = await import('./validation-engine.js');
 

@@ -1,5 +1,7 @@
 // src/services/offlineStorage.ts
 import { Course, OfflineContent, Lesson } from '../types/mobile';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('offlineStorage');
 
 const DB_NAME = 'LearningAppDB';
 const DB_VERSION = 3;
@@ -372,7 +374,7 @@ class OfflineStorageService {
         percentage: (used / total) * 100,
       };
     } catch (error) {
-      console.error('Failed to get storage estimate:', error);
+      logger.error('Failed to get storage estimate', { error });
       return { used: 0, total: 5000 * 1024 * 1024, percentage: 0 };
     }
   }

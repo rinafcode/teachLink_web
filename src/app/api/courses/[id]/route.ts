@@ -52,7 +52,14 @@ export async function GET(
   const course = getCourseById(result.data.id);
   if (!course) {
     const notFound = addHeaders(
-      NextResponse.json({ data: null as unknown as CourseResponseDTO['data'], success: false, message: 'Course not found' }, { status: 404 }),
+      NextResponse.json(
+        {
+          data: null as unknown as CourseResponseDTO['data'],
+          success: false,
+          message: 'Course not found',
+        },
+        { status: 404 },
+      ),
     );
     return notFound as NextResponse<CourseResponseDTO>;
   }

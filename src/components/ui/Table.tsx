@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { usePagination } from '@/hooks/usePagination';
 
 export interface ColumnDef<T> {
   key: string;
@@ -35,11 +36,14 @@ export interface TableProps<T> {
   rowClassName?: string;
   selectedRowKeys?: string[];
   onSelectionChange?: (keys: string[]) => void;
+  /** Rows per page for client-side pagination. Defaults to 25. */
+  pageSize?: number;
 }
 
 interface TableRowProps<T> {
   row: T;
   rowId: string;
+  index: number;
   columns: ColumnDef<T>[];
   onRowClick?: (row: T) => void;
   onRowDoubleTap?: (row: T) => void;
@@ -47,7 +51,7 @@ interface TableRowProps<T> {
   rowActions?: TableRowAction<T>[];
   columnWidths: Record<string, number>;
   selected: boolean;
-  onSelect: () => void;
+  onSelect: (rowId: string) => void;
   touchOptimization: boolean;
   rowClassName?: string;
 }
@@ -55,6 +59,7 @@ interface TableRowProps<T> {
 function TableRow<T>({
   row,
   rowId,
+  index,
   columns,
   onRowClick,
   onRowDoubleTap,
@@ -211,7 +216,7 @@ function TableRow<T>({
         style={{ transform: `translateX(${swipeOffset}px)` }}
       >
         {/* Selection checkbox cell */}
-        {onSelectionChangeCheckbox(selected, onSelect, touchOptimization)}
+        {onSelectionChangeCheckbox(selected, () => onSelect(rowId), touchOptimization)}
 
         {/* Column cells */}
         {columns.map((col) => {
@@ -226,7 +231,7 @@ function TableRow<T>({
               style={style}
             >
               {col.render
-                ? col.render(row, 0)
+                ? col.render(row, index)
                 : (row[col.key as keyof T] as unknown as React.ReactNode)}
             </div>
           );
@@ -235,6 +240,10 @@ function TableRow<T>({
     </div>
   );
 }
+
+// Cast preserves TableRow's generic signature through React.memo, which would
+// otherwise erase it (same pattern used by InfiniteList.tsx).
+const MemoizedTableRow = memo(TableRow) as typeof TableRow;
 
 function onSelectionChangeCheckbox(
   selected: boolean,
@@ -276,6 +285,7 @@ export function Table<T>({
   rowClassName = '',
   selectedRowKeys = [],
   onSelectionChange,
+  pageSize = 25,
 }: TableProps<T>) {
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -383,14 +393,30 @@ export function Table<T>({
     [rowKey],
   );
 
-  const toggleSelectRow = (id: string) => {
-    if (!onSelectionChange) return;
-    if (selectedRowKeys.includes(id)) {
-      onSelectionChange(selectedRowKeys.filter((k) => k !== id));
-    } else {
-      onSelectionChange([...selectedRowKeys, id]);
-    }
-  };
+  // Keep a ref to the latest selection so `toggleSelectRow`'s identity stays
+  // stable across selection changes — otherwise every row's `onSelect` prop
+  // (all pointing at the same function) would change on every toggle, and
+  // memoizing TableRow would buy nothing.
+  const selectedRowKeysRef = useRef(selectedRowKeys);
+  useEffect(() => {
+    selectedRowKeysRef.current = selectedRowKeys;
+  }, [selectedRowKeys]);
+
+  const toggleSelectRow = useCallback(
+    (id: string) => {
+      if (!onSelectionChange) return;
+      const current = selectedRowKeysRef.current;
+      if (current.includes(id)) {
+        onSelectionChange(current.filter((k) => k !== id));
+      } else {
+        onSelectionChange([...current, id]);
+      }
+    },
+    [onSelectionChange],
+  );
+
+  const { page, pageCount, pageItems, nextPage, previousPage, hasNextPage, hasPreviousPage } =
+    usePagination(data, pageSize);
 
   const toggleSelectAll = () => {
     if (!onSelectionChange) return;
@@ -508,13 +534,14 @@ export function Table<T>({
                 No data available
               </div>
             ) : (
-              data.map((row) => {
+              pageItems.map((row, index) => {
                 const id = getRowId(row);
                 return (
-                  <TableRow
+                  <MemoizedTableRow
                     key={id}
                     row={row}
                     rowId={id}
+                    index={page * pageSize + index}
                     columns={columns}
                     onRowClick={onRowClick}
                     onRowDoubleTap={onRowDoubleTap}
@@ -522,7 +549,7 @@ export function Table<T>({
                     rowActions={rowActions}
                     columnWidths={columnWidths}
                     selected={selectedRowKeys.includes(id)}
-                    onSelect={() => toggleSelectRow(id)}
+                    onSelect={toggleSelectRow}
                     touchOptimization={touchOptimization}
                     rowClassName={rowClassName}
                   />
@@ -532,6 +559,33 @@ export function Table<T>({
           </div>
         </div>
       </div>
+
+      {/* Pagination footer */}
+      {pageCount > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300">
+          <button
+            type="button"
+            onClick={previousPage}
+            disabled={!hasPreviousPage}
+            aria-label="Previous page"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span>
+            Page {page + 1} of {pageCount}
+          </span>
+          <button
+            type="button"
+            onClick={nextPage}
+            disabled={!hasNextPage}
+            aria-label="Next page"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

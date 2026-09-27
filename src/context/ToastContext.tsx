@@ -11,7 +11,14 @@ import React, {
   useRef,
 } from 'react';
 import { Toast, ToastType } from '@/components/ui/Toast';
-import { createToastCircuitBreaker, CircuitBreakerMetrics } from '@/utils/circuitBreaker';
+import {
+  createToastCircuitBreaker,
+  type CircuitBreakerConfig,
+  type CircuitBreakerMetrics,
+} from '@/utils/circuitBreaker';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('ToastContext');
 
 export interface ToastMessage {
   id: string;
@@ -33,7 +40,13 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export function ToastProvider({ children }: { children: ReactNode }) {
+export function ToastProvider({
+  children,
+  circuitBreakerConfig,
+}: {
+  children: ReactNode;
+  circuitBreakerConfig?: Partial<CircuitBreakerConfig>;
+}) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const circuitBreaker = useRef(
     createToastCircuitBreaker({
@@ -42,6 +55,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       timeout: 60000,
       monitoringPeriod: 10000,
       maxConcurrentRequests: 10,
+      ...circuitBreakerConfig,
     }),
   ).current;
 
@@ -66,9 +80,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           },
           () => {
             // Fallback: Log to console when circuit is open
-            console.warn('[Toast Circuit Breaker] Toast notification suppressed:', {
-              type,
-              message,
+            logger.warn('[Toast Circuit Breaker] Toast notification suppressed', {
+              context: { type, message },
             });
             // Optionally show a simplified fallback toast
             const id = Math.random().toString(36).substring(2, 11);
@@ -89,7 +102,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           },
         )
         .catch((error: unknown) => {
-          console.error('[Toast Circuit Breaker] Error:', error);
+          logger.error('[Toast Circuit Breaker] Error', { error });
         });
     },
     [removeToast, circuitBreaker],

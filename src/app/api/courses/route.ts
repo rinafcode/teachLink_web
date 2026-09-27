@@ -4,6 +4,7 @@ import { edgeLog, CDN_CACHE_HEADERS } from '@/../infra/edge-config';
 import { validateQuery } from '@/lib/validation';
 import { CourseListQuerySchema } from '@/types/api/courses.dto';
 import type { CourseListResponseDTO } from '@/types/api/courses.dto';
+import { getPaginatedCourses } from '@/lib/course-config';
 import {
   withSecurityHeaders,
   validateQuerySafety,
@@ -36,17 +37,21 @@ export async function GET(request: Request): Promise<NextResponse<CourseListResp
   const result = validateQuery(CourseListQuerySchema, searchParams);
   if (!result.ok)
     return withSecurityHeaders(addHeaders(result.error)) as NextResponse<CourseListResponseDTO>;
-  const { limit, cursor } = result.data as { limit: number; cursor?: string };
+  const { limit, cursor, featured } = result.data as {
+    limit: number;
+    cursor?: string;
+    featured?: boolean;
+  };
 
-  const paginated = getPaginatedCourses(limit, cursor, { featured });
+  const { data: courses, total, nextCursor } = getPaginatedCourses(limit, cursor, { featured });
 
-  const sanitizedPage = sanitizeObject(page);
+  const sanitizedPage = sanitizeObject(courses);
 
   const response = withSecurityHeaders(
     addHeaders(
       NextResponse.json({
         data: sanitizedPage,
-        total: courses.length,
+        total,
         nextCursor,
       }),
     ),

@@ -13,6 +13,9 @@ import {
   frequencyToCron,
   validateCronExpression,
 } from '@/lib/export-scheduler';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-exports-schedules');
 
 // Mock user ID - in production, get from auth session
 const getCurrentUserId = (): string => 'user-123';
@@ -24,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ schedules });
   } catch (error) {
-    console.error('Error fetching schedules:', error);
+    logger.error('Error fetching schedules', { error });
     return NextResponse.json({ error: 'Failed to fetch schedules' }, { status: 500 });
   }
 }
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ schedule }, { status: 201 });
   } catch (error) {
-    console.error('Error creating schedule:', error);
+    logger.error('Error creating schedule', { error });
     return NextResponse.json({ error: 'Failed to create schedule' }, { status: 500 });
   }
 }

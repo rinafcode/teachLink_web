@@ -1,22 +1,17 @@
 import Image from 'next/image';
+import type { CourseEntry } from '@/lib/course-config';
 
 interface CourseHeroProps {
-  title?: string;
-  description?: string;
-  imageUrl?: string;
-  instructor?: string;
-  rating?: number;
-  enrolledStudents?: number;
+  course: CourseEntry;
 }
 
-export default function CourseHero({
-  title = 'Advanced Web Development',
-  description = 'Master modern web development with this comprehensive course covering frontend and backend technologies.',
-  imageUrl = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop',
-  instructor = 'John Doe',
-  rating = 4.8,
-  enrolledStudents = 1234,
-}: CourseHeroProps) {
+export default function CourseHero({ course }: CourseHeroProps) {
+  const title = course.title;
+  const description = course.description;
+  const imageUrl = course.thumbnailUrl || 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop';
+  const instructor = course.instructor;
+  const rating = 4.8;
+  const enrolledStudents = 1234;
   return (
     <div className="relative w-full bg-linear-to-br from-[#0066FF] via-[#00C2FF] to-[#0066FF] dark:from-[#0052CC] dark:via-[#0080CC] dark:to-[#0052CC]">
       <div className="h-[300px] sm:h-[400px] lg:h-[500px] w-full relative overflow-hidden">

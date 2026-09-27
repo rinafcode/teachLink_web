@@ -2,7 +2,8 @@
 
 import { useEffect, useId } from 'react';
 import { X } from 'lucide-react';
-import { useFocusTrap, useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
+import { useScreenReaderAnnouncement } from '@/hooks/useAccessibility';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundarySystem';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -15,9 +16,12 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
   full: 'max-w-full',
 };
 
+/** How the modal came to be closed. Optional so existing `() => void` handlers keep working. */
+export type ModalCloseReason = 'escape' | 'backdrop' | 'button';
+
 export interface ModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (reason?: ModalCloseReason) => void;
   title: string;
   children: React.ReactNode;
   /** Controls the maximum width of the modal panel */
@@ -27,8 +31,16 @@ export interface ModalProps {
 }
 
 /**
- * Accessible modal dialog with focus trap, Escape-to-close, and screen reader announcements.
- * Uses the existing `useFocusTrap` hook from `useAccessibility`.
+ * Accessible modal dialog with keyboard focus containment, focus restoration,
+ * Escape-to-close, and screen reader announcements.
+ *
+ * `onClose` now receives an optional reason ('escape' | 'backdrop' | 'button')
+ * so consumers that need to distinguish an ambient dismiss gesture from an
+ * explicit close action can do so — see `ModalFeedbackLoop`, which uses this
+ * to make Escape/backdrop always cancel outright instead of interrupting the
+ * user with a feedback prompt. Existing `() => void` handlers are unaffected;
+ * they simply ignore the extra argument.
+ *
  */
 export function Modal({
   isOpen,
@@ -39,7 +51,7 @@ export function Modal({
   className = '',
 }: ModalProps) {
   const titleId = useId();
-  const containerRef = useFocusTrap(isOpen);
+  const containerRef = useFocusTrap<HTMLDivElement>(isOpen);
   const announce = useScreenReaderAnnouncement();
 
   // Announce open/close and lock body scroll
@@ -59,7 +71,7 @@ export function Modal({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onClose('escape');
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -70,11 +82,15 @@ export function Modal({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} aria-hidden="true" />
+      <div
+        className="fixed inset-0 z-40 bg-black/50"
+        onClick={() => onClose('backdrop')}
+        aria-hidden="true"
+      />
 
       {/* Dialog */}
       <div
-        ref={containerRef as React.RefObject<HTMLDivElement>}
+        ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -89,7 +105,7 @@ export function Modal({
               {title}
             </h2>
             <button
-              onClick={onClose}
+              onClick={() => onClose('button')}
               aria-label="Close dialog"
               className="rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:text-gray-200"
             >

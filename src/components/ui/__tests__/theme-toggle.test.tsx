@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { errorReportingService } from '@/services/errorReporting';
 import { ThemeToggle } from '../theme-toggle';
+import { ThemeContext } from '@/contexts/ThemeContext';
 
 describe('ThemeToggle', () => {
   beforeEach(() => {
@@ -76,7 +77,6 @@ describe('ThemeToggle', () => {
           throw new Error('Mutation failed');
         },
       };
-      const ThemeContext = (require('@/contexts/ThemeContext') as any).ThemeContext;
       if (!ThemeContext) {
         // Fallback if imported context format differs
         throw new Error('ThemeContext not exportable');

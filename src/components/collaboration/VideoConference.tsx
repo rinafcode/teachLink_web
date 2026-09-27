@@ -17,6 +17,9 @@ import { useFraudDetection } from '../../hooks/useFraudDetection';
 import { useVirtualBackground } from '../../hooks/useVirtualBackground';
 import { fraudDetectionService, FraudDetectionService } from '../../services/fraud-detection';
 import type { FraudDetectionResult } from '../../services/fraud-detection';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('VideoConference');
 
 interface VideoConferenceProps {
   roomId: string;
@@ -131,7 +134,7 @@ export function VideoConference({
       try {
         await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
       } catch (error) {
-        console.error('Failed to add ICE candidate', error);
+        logger.error('Failed to add ICE candidate', { error });
       }
     });
 
@@ -208,7 +211,7 @@ export function VideoConference({
       return processedStream;
     } catch (error) {
       setStatus('Unable to access camera or microphone');
-      console.error(error);
+      logger.error('Error starting local stream', { error });
       return null;
     }
   };
@@ -325,7 +328,7 @@ export function VideoConference({
       };
     } catch (error) {
       setStatus('Screen sharing canceled or unavailable');
-      console.error(error);
+      logger.error('Screen sharing error', { error });
     }
   };
 

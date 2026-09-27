@@ -228,7 +228,7 @@ Helper functions for data transformation and formatting.
 
 ```tsx
 import {
-  formatNumber,
+  formatNumberCompact,
   formatPercentage,
   generateDateLabels,
   aggregateByTimePeriod,
@@ -241,9 +241,13 @@ import {
   generateSampleData,
 } from '@/utils/visualizationUtils';
 
-// Format numbers
-formatNumber(1500); // "1.5K"
-formatNumber(1500000); // "1.5M"
+// Format numbers with compact suffix (K, M, B)
+formatNumberCompact(1500); // "1.5K"
+formatNumberCompact(1500000); // "1.5M"
+
+// For locale-aware formatting, use i18nUtils.formatNumber
+import { formatNumber } from '@/utils/i18nUtils';
+formatNumber(1500, 'en-US'); // "1,500"
 
 // Format percentages
 formatPercentage(45.678); // "45.7%"

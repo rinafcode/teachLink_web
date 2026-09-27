@@ -11,6 +11,8 @@
 import React, { useState } from 'react';
 import { Tooltip, TooltipPlacement } from '@/components/ui/Tooltip';
 import { useTooltipAnomalyDetection } from '@/hooks/useTooltipAnomalyDetection';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('TooltipDemoPage');
 
 const PLACEMENTS: TooltipPlacement[] = ['top', 'bottom', 'left', 'right'];
 
@@ -21,7 +23,7 @@ export default function TooltipDemoPage() {
     rapidToggleWindowMs: 3000,
     longHoverThresholdMs: 10000,
     multiOpenThreshold: 3,
-    onAnomaly: (e) => console.warn('[TooltipAnomaly]', e),
+    onAnomaly: (e) => logger.warn('[TooltipAnomaly]', { error: e }),
   });
 
   return (

@@ -241,9 +241,9 @@ class OfflineSyncService {
   }
 
   private async simulateApiCall(type: string, item: SyncItem): Promise<void> {
-    // Simulate different API endpoints based on type
-    const endpoints = {
-      progress: '/api/progress',
+    // Real API endpoints aligned with the service worker background-sync routes
+    const endpoints: Record<string, string> = {
+      progress: '/api/lessons/[id]/progress',
       quiz_result: '/api/quiz-results',
       bookmark: '/api/bookmarks',
       note: '/api/notes',

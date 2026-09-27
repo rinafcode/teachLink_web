@@ -2,6 +2,12 @@
 
 This app ships a layered accessibility toolkit aimed at **WCAG 2.1 Level AA** patterns. Automated checks catch common failures; they do **not** replace testing with screen readers and keyboard-only navigation.
 
+## VPAT CDN delivery
+
+Published VPAT JSON reports are served from the read-only route `/api/accessibility/vpat/:version.json` and are safe to cache at a CDN because the version is part of the URL. Set `VPAT_REPORT_JSON` to the validated report JSON during deployment. The artifact's `version` must match the URL; invalid or missing artifacts return `404`.
+
+For a separate CDN origin, set `NEXT_PUBLIC_VPAT_CDN_URL` to its base URL. `getVPATCDNUrl(version)` then produces a versioned URL such as `https://cdn.example.com/api/accessibility/vpat/1.2.3.json`. Reports are delivered with one-year immutable browser and edge caching, `nosniff`, and inline JSON content disposition. Never place personal data or credentials in a VPAT report.
+
 ## Architecture
 
 | Piece                   | Role                                                                                                                                      |

@@ -49,6 +49,10 @@ export const MobileNavigation: React.FC<{
   const [activeTab, setActiveTab] = useState(initialActive);
   const [isFloating, setIsFloating] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  const openScanner = () => setIsScannerOpen(true);
+  const closeScanner = () => setIsScannerOpen(false);
 
   useEffect(() => {
     const handleResize = () => {

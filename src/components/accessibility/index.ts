@@ -7,3 +7,5 @@ export { ScreenReaderSupport } from './ScreenReaderSupport';
 export { VoiceControl } from './VoiceControl';
 
 export { getRovingFocusCandidates } from '@/utils/accessibilityUtils';
+export { AccessibilityConferenceManagement } from './AccessibilityConferenceManagement';
+export type { AccessibilityConference } from './AccessibilityConferenceManagement';

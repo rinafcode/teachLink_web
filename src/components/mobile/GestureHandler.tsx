@@ -14,6 +14,43 @@ interface GestureHandlerProps extends HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
+type EventHandler = (...args: unknown[]) => unknown;
+
+function composeHandlers(
+  gestureHandler?: EventHandler,
+  consumerHandler?: EventHandler,
+): EventHandler | undefined {
+  if (typeof gestureHandler !== 'function') return consumerHandler;
+  if (typeof consumerHandler !== 'function') return gestureHandler;
+  return (...args: unknown[]) => {
+    gestureHandler(...args);
+    consumerHandler(...args);
+  };
+}
+
+function mergeGestureProps<G extends Record<string, unknown>>(
+  gestureProps: G,
+  consumerProps: HTMLAttributes<HTMLDivElement>,
+): HTMLAttributes<HTMLDivElement> & G {
+  const merged = {
+    ...consumerProps,
+    ...gestureProps,
+  } as HTMLAttributes<HTMLDivElement> & G;
+
+  (Object.keys(gestureProps) as Array<keyof G>).forEach((key) => {
+    const gestureHandler = gestureProps[key];
+    const consumerHandler = consumerProps[key as keyof HTMLAttributes<HTMLDivElement>];
+    if (typeof gestureHandler === 'function' && typeof consumerHandler === 'function') {
+      (merged as Record<string, unknown>)[key as string] = composeHandlers(
+        gestureHandler as EventHandler,
+        consumerHandler as EventHandler,
+      );
+    }
+  });
+
+  return merged;
+}
+
 export const GestureHandler: React.FC<GestureHandlerProps> = ({
   onSwipeLeft,
   onSwipeRight,
@@ -68,13 +105,13 @@ export const GestureHandler: React.FC<GestureHandlerProps> = ({
     : { swipeThreshold };
 
   const gestureProps = useMobileGestures(activeGestures);
+  const mergedProps = mergeGestureProps(gestureProps, props);
 
   const touchActionStyle = gesturesEnabled ? 'pan-y' : 'auto';
 
   return (
     <div
-      {...gestureProps}
-      {...props}
+      {...mergedProps}
       style={{ touchAction: touchActionStyle, position: 'relative', ...props.style }}
     >
       {isIOS && (

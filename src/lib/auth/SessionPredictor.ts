@@ -5,11 +5,16 @@ export interface SessionPredictorOptions {
   maxSessionLength?: number;
   /** Activity threshold in milliseconds to consider the user idle */
   idleThreshold?: number;
+  /** TTL in milliseconds for predicted-session entries before they are evicted */
+  predictedSessionTtlMs?: number;
   /** Callback when the model predicts the user is about to abandon the session */
   onPredictiveAbandonment?: () => void;
   /** Callback when the session is predicted to expire soon and should be refreshed */
   onPredictiveRefresh?: () => void;
 }
+
+/** Default TTL for predicted-session entries (30 minutes). */
+export const DEFAULT_PREDICTED_SESSION_TTL_MS = 30 * 60 * 1000;
 
 /**
  * Predictive Analytics for Session Management.
@@ -19,7 +24,11 @@ export class SessionPredictor {
   private activityTimestamps: number[] = [];
   private maxSessionLength: number;
   private idleThreshold: number;
+  private predictedSessionTtlMs: number;
   private isTracking = false;
+
+  /** Predicted sessions keyed by session id, holding the last prediction timestamp. */
+  private predictedSessions = new Map<string, number>();
 
   private onPredictiveAbandonment?: () => void;
   private onPredictiveRefresh?: () => void;
@@ -30,6 +39,7 @@ export class SessionPredictor {
   constructor(options: SessionPredictorOptions = {}) {
     this.maxSessionLength = options.maxSessionLength || 60 * 60 * 1000; // 1 hour
     this.idleThreshold = options.idleThreshold || 15 * 60 * 1000; // 15 minutes
+    this.predictedSessionTtlMs = options.predictedSessionTtlMs || DEFAULT_PREDICTED_SESSION_TTL_MS;
     this.onPredictiveAbandonment = options.onPredictiveAbandonment;
     this.onPredictiveRefresh = options.onPredictiveRefresh;
     this.sessionStartTime = Date.now();
@@ -157,5 +167,37 @@ export class SessionPredictor {
   public resetSession(): void {
     this.sessionStartTime = Date.now();
     this.activityTimestamps = [];
+  }
+
+  /**
+   * Records a prediction for a session id. Entries are evicted after
+   * `predictedSessionTtlMs`, bounding memory growth for long-running apps.
+   */
+  public recordPrediction(sessionId: string, now: number = Date.now()): void {
+    this.evictStalePredictions(now);
+    this.predictedSessions.set(sessionId, now);
+  }
+
+  /**
+   * Removes predicted-session entries whose last prediction is older than the
+   * configured TTL. Returns the number of evicted entries.
+   */
+  public evictStalePredictions(now: number = Date.now()): number {
+    let evicted = 0;
+    for (const [sessionId, predictedAt] of this.predictedSessions) {
+      if (now - predictedAt > this.predictedSessionTtlMs) {
+        this.predictedSessions.delete(sessionId);
+        evicted += 1;
+      }
+    }
+    return evicted;
+  }
+
+  /**
+   * Number of non-expired predicted-session entries currently retained.
+   */
+  public getPredictedSessionCount(): number {
+    this.evictStalePredictions();
+    return this.predictedSessions.size;
   }
 }

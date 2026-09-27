@@ -28,6 +28,19 @@ export interface Assessment {
   }[];
 }
 
+export interface Discount {
+  id: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  code: string;
+  isActive: boolean;
+  startDate?: string;
+  endDate?: string;
+  maxUses?: number;
+  usedCount: number;
+  description?: string;
+}
+
 export interface CourseData {
   title: string;
   description: string;
@@ -40,6 +53,7 @@ export interface CourseData {
     type: 'free' | 'paid';
     amount?: number;
   };
+  discounts: Discount[];
 }
 
 export const useCourseCreation = () => {
@@ -52,6 +66,7 @@ export const useCourseCreation = () => {
     lessons: [],
     assessments: [],
     pricing: { type: 'free' },
+    discounts: [],
   });
 
   const updateCourseData = useCallback((data: Partial<CourseData>) => {
@@ -123,8 +138,75 @@ export const useCourseCreation = () => {
     }));
   }, []);
 
+  const addDiscount = useCallback((discount: Omit<Discount, 'id' | 'usedCount'>) => {
+    const newDiscount: Discount = {
+      ...discount,
+      id: `discount-${Date.now()}`,
+      usedCount: 0,
+    };
+    setCourseData((prev) => ({
+      ...prev,
+      discounts: [...prev.discounts, newDiscount],
+    }));
+  }, []);
+
+  const updateDiscount = useCallback((id: string, updates: Partial<Discount>) => {
+    setCourseData((prev) => ({
+      ...prev,
+      discounts: prev.discounts.map((discount) =>
+        discount.id === id ? { ...discount, ...updates } : discount,
+      ),
+    }));
+  }, []);
+
+  const deleteDiscount = useCallback((id: string) => {
+    setCourseData((prev) => ({
+      ...prev,
+      discounts: prev.discounts.filter((discount) => discount.id !== id),
+    }));
+  }, []);
+
+  const incrementDiscountUsage = useCallback((id: string) => {
+    setCourseData((prev) => ({
+      ...prev,
+      discounts: prev.discounts.map((discount) =>
+        discount.id === id ? { ...discount, usedCount: discount.usedCount + 1 } : discount,
+      ),
+    }));
+  }, []);
+
+  const calculateDiscountedPrice = useCallback(
+    (originalPrice: number, courseDiscounts: Discount[]) => {
+      const activeDiscounts = courseDiscounts.filter((d) => {
+        if (!d.isActive) return false;
+        if (d.startDate && new Date(d.startDate) > new Date()) return false;
+        if (d.endDate && new Date(d.endDate) < new Date()) return false;
+        if (d.maxUses && d.usedCount >= d.maxUses) return false;
+        return true;
+      });
+
+      if (activeDiscounts.length === 0) return originalPrice;
+
+      let bestDiscount = 0;
+      activeDiscounts.forEach((discount) => {
+        let discountAmount = 0;
+        if (discount.type === 'percentage') {
+          discountAmount = originalPrice * (discount.value / 100);
+        } else {
+          discountAmount = discount.value;
+        }
+        if (discountAmount > bestDiscount) {
+          bestDiscount = discountAmount;
+        }
+      });
+
+      return Math.max(0, originalPrice - bestDiscount);
+    },
+    [],
+  );
+
   const nextStep = useCallback(() => {
-    setCurrentStep((prev) => Math.min(prev + 1, 4));
+    setCurrentStep((prev) => Math.min(prev + 1, 5));
   }, []);
 
   const previousStep = useCallback(() => {
@@ -146,6 +228,11 @@ export const useCourseCreation = () => {
     addAssessment,
     updateAssessment,
     deleteAssessment,
+    addDiscount,
+    updateDiscount,
+    deleteDiscount,
+    incrementDiscountUsage,
+    calculateDiscountedPrice,
     nextStep,
     previousStep,
     goToStep,

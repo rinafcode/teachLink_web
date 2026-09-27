@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const manifest = readFileSync(join(process.cwd(), 'k8s/notification-system-persistence.yaml'), 'utf8');
+const manifest = readFileSync(
+  join(process.cwd(), 'k8s/notification-system-persistence.yaml'),
+  'utf8',
+);
 
 describe('notification system persistence manifest', () => {
   it('declares a persistent volume claim for notification data', () => {

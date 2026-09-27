@@ -10,7 +10,9 @@ import {
   AggregationType,
   generateDateLabels,
   generateSampleData,
+  formatNumberCompact,
 } from '@/utils/visualizationUtils';
+import { getNumberFormat } from './intlCache';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -108,7 +110,7 @@ export const formatDashboardMetric = (
 ): string => {
   switch (type) {
     case 'currency':
-      return new Intl.NumberFormat('en-US', {
+      return getNumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
         maximumFractionDigits: 0,
@@ -117,9 +119,7 @@ export const formatDashboardMetric = (
       return `${value.toFixed(1)}%`;
     case 'count':
     default:
-      if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-      if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-      return String(Math.round(value));
+      return formatNumberCompact(value);
   }
 };
 

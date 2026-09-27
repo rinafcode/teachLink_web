@@ -1,8 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNotificationStore } from '@/app/store/notificationStore';
 
@@ -89,13 +87,18 @@ const STORAGE_KEYS = {
   certificates: 'sl_group_certificates_v1',
 };
 
-function getCertificateStatus(certificate: Pick<ForumCertificate, 'validUntil' | 'revokedAt'>) {
+function getCertificateStatus(
+  certificate: Pick<ForumCertificate, 'validUntil' | 'revokedAt'>,
+): ForumCertificateStatus {
   if (certificate.revokedAt) return 'revoked';
   return new Date(certificate.validUntil).getTime() < Date.now() ? 'expired' : 'active';
 }
 
 function normalizeFingerprint(fingerprint: string): string {
-  return fingerprint.trim().replace(/[^a-fA-F0-9]/g, '').toUpperCase();
+  return fingerprint
+    .trim()
+    .replace(/[^a-fA-F0-9]/g, '')
+    .toUpperCase();
 }
 
 function assertValidCertificate(input: {
@@ -145,6 +148,13 @@ export type UseStudyGroupsApi = {
   challenges: GroupChallenge[];
   certificates: ForumCertificate[];
   currentUser: { id: string; name: string };
+  /**
+   * False until the hook has read persisted state from localStorage on the
+   * client. Always `false` during SSR and on the very first client render, so
+   * consumers can render a loading state instead of prematurely treating an
+   * empty `groups` array as "no groups yet".
+   */
+  isHydrated: boolean;
   // group
   createGroup: (input: { name: string; description?: string }) => StudyGroup;
   joinGroup: (groupId: string) => void;
@@ -204,8 +214,17 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   const [certificates, setCertificates] = useState<ForumCertificate[]>(() =>
     load(STORAGE_KEYS.certificates, [] as ForumCertificate[]),
   );
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const me = currentUser ?? { id: 'current-user', name: 'You' };
+
+  // Marks state as hydrated once the client has mounted. The state above is
+  // already populated synchronously from localStorage via the lazy useState
+  // initializers, but this flag lets consumers distinguish "still loading"
+  // (SSR / pre-mount) from a genuinely empty result.
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const persistAll = useCallback(
     (g = groups, m = messages, r = resources, c = challenges, certs = certificates) => {
@@ -262,11 +281,13 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'success',
-          message: `Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`,
+          title: 'Group Created',
+          message: `Created group "${group.name}"`,
+          timestamp: new Date(),
           meta: { groupId: group.id },
         });
       } catch {}
-      toast.success(`Created group Ã¢â‚¬Å“${group.name}Ã¢â‚¬Â`);
+      toast.success(`Created group "${group.name}"`);
       return group;
     },
     [me.id, me.name, triggerSync],
@@ -291,7 +312,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'info',
+          title: 'Group Joined',
           message: `You joined "${groupName || 'group'}"`,
+          timestamp: new Date(),
           meta: { groupId },
         });
       } catch {}
@@ -319,11 +342,13 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const { addNotification } = useNotificationStore.getState();
         addNotification({
           type: 'warning',
+          title: 'Group Left',
           message: `You left "${groupName || 'group'}"`,
+          timestamp: new Date(),
           meta: { groupId },
         });
       } catch {}
-      toast('Left group', { icon: 'Ã°Å¸â€˜â€¹' });
+      toast('Left group', { icon: '👋' });
     },
     [me.id, triggerSync],
   );
@@ -351,7 +376,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const group = groups.find((g) => g.id === groupId);
         addNotification({
           type: 'info',
+          title: 'New Message',
           message: `New message in "${group?.name || 'group'}"`,
+          timestamp: new Date(),
           meta: { groupId, messageId: msg.id },
         });
       } catch {}
@@ -443,7 +470,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const group = groups.find((g) => g.id === groupId);
         addNotification({
           type: 'success',
+          title: 'Resource Added',
           message: `New resource "${resource.title}" added to "${group?.name || 'group'}"`,
+          timestamp: new Date(),
           meta: { groupId, resourceId: res.id },
         });
       } catch {}
@@ -477,7 +506,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
         const group = groups.find((g) => g.id === groupId);
         addNotification({
           type: 'success',
+          title: 'Challenge Created',
           message: `New challenge "${challenge.title}" created in "${group?.name || 'group'}"`,
+          timestamp: new Date(),
           meta: { groupId, challengeId: ch.id },
         });
       } catch {}
@@ -521,9 +552,11 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
           const group = groups.find((g) => g.id === groupId);
           addNotification({
             type: 'info',
+            title: 'Progress Updated',
             message: `Progress updated for "${challengeTitle || 'challenge'}" in "${
               group?.name || 'group'
             }"`,
+            timestamp: new Date(),
             meta: { challengeId, groupId },
           });
         } catch {}
@@ -581,8 +614,9 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
   );
 
   // Persist when state changes (robust against batch updates via persistAll)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => persistAll(), [groups, messages, resources, challenges, certificates, persistAll]);
+  useEffect(() => {
+    persistAll();
+  }, [persistAll]);
 
   return {
     groups,
@@ -591,6 +625,7 @@ export function useStudyGroups(currentUser?: { id: string; name: string }): UseS
     challenges,
     certificates,
     currentUser: me,
+    isHydrated,
     createGroup,
     joinGroup,
     leaveGroup,

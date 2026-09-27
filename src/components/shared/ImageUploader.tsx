@@ -4,6 +4,9 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import Image from 'next/image';
 import { dataWarehouse } from '@/lib/dataWarehouse';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('image-uploader');
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -11,11 +14,7 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-function ImageUploader({
-  onImageSelect,
-  initialImageUrl,
-  className = '',
-}: ImageUploaderProps) {
+function ImageUploader({ onImageSelect, initialImageUrl, className = '' }: ImageUploaderProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialImageUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -43,61 +42,64 @@ function ImageUploader({
     setPreviewUrl(objectUrl);
   }, []);
 
-  const handleFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // const handleFileChange = useCallback(
+  //   async (event: ChangeEvent<HTMLInputElement>) => {
+  //     const file = event.target.files?.[0];
+  //     if (!file) return;
 
-    if (file.type.startsWith('video/')) {
-      try {
-        const video = document.createElement('video');
-        const videoObjectUrl = URL.createObjectURL(file);
-        video.src = videoObjectUrl;
-        video.crossOrigin = 'anonymous';
-        video.muted = true;
+  //     if (file.type.startsWith('video/')) {
+  //       try {
+  //         const video = document.createElement('video');
+  //         const videoObjectUrl = URL.createObjectURL(file);
+  //         video.src = videoObjectUrl;
+  //         video.crossOrigin = 'anonymous';
+  //         video.muted = true;
 
-        await new Promise<void>((resolve, reject) => {
-          video.onloadeddata = () => {
-            video.currentTime = Math.min(1, video.duration / 2);
-          };
-          video.onseeked = () => resolve();
-          video.onerror = () => reject(new Error('Failed to load video'));
-        });
+  //         await new Promise<void>((resolve, reject) => {
+  //           video.onloadeddata = () => {
+  //             video.currentTime = Math.min(1, video.duration / 2);
+  //           };
+  //           video.onseeked = () => resolve();
+  //           video.onerror = () => reject(new Error('Failed to load video'));
+  //         });
 
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                const objectUrl = URL.createObjectURL(blob);
-                setObjectPreviewUrl(objectUrl);
-                const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
-                  type: 'image/jpeg',
-                });
-                onImageSelect(optimizedFile);
-              }
-            },
-            'image/jpeg',
-            0.85,
-          );
-        }
-        URL.revokeObjectURL(videoObjectUrl);
-      } catch (error) {
-        console.error('Video optimization failed:', error);
-      }
-    } else if (file.type.startsWith('image/')) {
-      const objectUrl = URL.createObjectURL(file);
-      setObjectPreviewUrl(objectUrl);
-      onImageSelect(file);
-    }
+  //         const canvas = document.createElement('canvas');
+  //         canvas.width = video.videoWidth;
+  //         canvas.height = video.videoHeight;
+  //         const ctx = canvas.getContext('2d');
+  //         if (ctx) {
+  //           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  //           canvas.toBlob(
+  //             (blob) => {
+  //               if (blob) {
+  //                 const objectUrl = URL.createObjectURL(blob);
+  //                 setObjectPreviewUrl(objectUrl);
+  //                 const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+  //                   type: 'image/jpeg',
+  //                 });
+  //                 onImageSelect(optimizedFile);
+  //               }
+  //             },
+  //             'image/jpeg',
+  //             0.85,
+  //           );
+  //         }
+  //         URL.revokeObjectURL(videoObjectUrl);
+  //       } catch (error) {
+  //         console.error('Video optimization failed:', error);
+  //       }
+  //     } else if (file.type.startsWith('image/')) {
+  //       const objectUrl = URL.createObjectURL(file);
+  //       setObjectPreviewUrl(objectUrl);
+  //       onImageSelect(file);
+  //     }
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  }, [onImageSelect, setObjectPreviewUrl]);
+  //     if (fileInputRef.current) {
+  //       fileInputRef.current.value = '';
+  //     }
+  //   },
+  //   [onImageSelect, setObjectPreviewUrl],
+  // );
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -135,11 +137,15 @@ function ImageUploader({
                     type: 'image/jpeg',
                   });
 
-                  dataWarehouse.trackEvent('IMAGE_UPLOADED', {
-                    fileName: optimizedFile.name,
-                    fileSize: optimizedFile.size,
-                    fileType: optimizedFile.type,
-                  }).catch(console.error);
+                  dataWarehouse
+                    .trackEvent('IMAGE_UPLOADED', {
+                      fileName: optimizedFile.name,
+                      fileSize: optimizedFile.size,
+                      fileType: optimizedFile.type,
+                    })
+                    .catch((error) =>
+                      logger.error('Failed to track image upload event', { error }),
+                    );
 
                   onImageSelect(optimizedFile);
                 }
@@ -150,7 +156,7 @@ function ImageUploader({
           }
           URL.revokeObjectURL(videoObjectUrl);
         } catch (error) {
-          console.error('Video optimization failed:', error);
+          logger.error('Video optimization failed', { error });
         }
       } else if (file.type.startsWith('image/')) {
         const objectUrl = URL.createObjectURL(file);
@@ -163,7 +169,7 @@ function ImageUploader({
             fileSize: file.size,
             fileType: file.type,
           })
-          .catch(console.error);
+          .catch((error) => logger.error('Failed to track image upload event', { error }));
 
         onImageSelect(file);
       }

@@ -1,4 +1,7 @@
-const CACHE_NAME = 'teachlink-cache-v1';
+// Bump CACHE_VERSION on deploy so stale assets are busted: the activate
+// handler below removes caches from older versions.
+const CACHE_VERSION = 2;
+const CACHE_NAME = 'teachlink-cache-v' + CACHE_VERSION;
 const OFFLINE_URL = '/offline.html';
 
 const URLS_TO_CACHE = [
@@ -135,4 +138,13 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse || cache.match(OFFLINE_URL);
       })
   );
+});
+// Realtime transports degraded to offline mode — broadcast to all open clients
+// so the app can switch to offline mode.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'REALTIME_OFFLINE') {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      clients.forEach((client) => client.postMessage({ type: 'REALTIME_OFFLINE' }));
+    });
+  }
 });

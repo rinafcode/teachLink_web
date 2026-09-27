@@ -12,6 +12,9 @@ import {
   deleteSchedule,
   UpdateScheduleInput,
 } from '@/lib/export-scheduler';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('api-exports-schedules-id');
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -24,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json({ schedule });
   } catch (error) {
-    console.error('Error fetching schedule:', error);
+    logger.error('Error fetching schedule', { error });
     return NextResponse.json({ error: 'Failed to fetch schedule' }, { status: 500 });
   }
 }
@@ -51,7 +54,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json({ schedule });
   } catch (error) {
-    console.error('Error updating schedule:', error);
+    logger.error('Error updating schedule', { error });
     return NextResponse.json({ error: 'Failed to update schedule' }, { status: 500 });
   }
 }
@@ -66,7 +69,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting schedule:', error);
+    logger.error('Error deleting schedule', { error });
     return NextResponse.json({ error: 'Failed to delete schedule' }, { status: 500 });
   }
 }

@@ -1,8 +1,8 @@
 # Notification Persistent Volumes
-
+<!-- 
 The production notification system stores durable notification data on a Kubernetes
 PersistentVolumeClaim so pod restarts do not discard queued or cached notification
-state.
+state. -->
 
 ## Kubernetes Resources
 

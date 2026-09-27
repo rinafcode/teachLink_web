@@ -14,6 +14,12 @@ import {
 } from '@/utils/chartUtils';
 import type { ChartData } from '@/utils/visualizationUtils';
 import { useInternationalization } from '@/hooks/useInternationalization';
+import { useAnalyticsErrorTracking } from './useAnalyticsErrorTracking';
+import type {
+  AnalyticsErrorContext,
+  AnalyticsErrorType,
+  TrackedError,
+} from './useAnalyticsErrorTracking';
 import {
   getDashboardDatasetLabel,
   getDashboardPanelTitle,
@@ -51,6 +57,17 @@ export interface UseDashboardDataReturn {
   reorderPanels: (fromIndex: number, toIndex: number) => void;
   generateShareURL: () => string;
   exportPanel: (id: string, format: 'csv' | 'json') => void;
+  errors: TrackedError[];
+  hasErrors: boolean;
+  getLatestError: () => TrackedError | null;
+  dismissError: (errorId: string) => void;
+  clearAllErrors: () => void;
+  trackError: (
+    type: AnalyticsErrorType,
+    message: string,
+    additionalContext?: Partial<AnalyticsErrorContext>,
+    error?: Error,
+  ) => void;
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -114,6 +131,10 @@ const buildDefaultPanels = (
 
 export const useDashboardData = (): UseDashboardDataReturn => {
   const { language, t } = useInternationalization();
+  const { trackError, errors, hasErrors, getLatestError, dismissError, clearErrors } =
+    useAnalyticsErrorTracking({
+      componentName: 'useDashboardData',
+    });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -174,28 +195,42 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   // Update filters and regenerate data for non-realtime panels
   const setFilters = useCallback(
     (partial: Partial<DashboardFiltersState>) => {
-      setFiltersState((prev) => {
-        const next = { ...prev, ...partial };
-        if (partial.timeRange && partial.timeRange !== prev.timeRange) {
-          setPanels((prevPanels) =>
-            prevPanels.map((panel) =>
-              panel.id === 'realtime'
-                ? panel
-                : {
-                    ...panel,
-                    data: generateDashboardSampleData(panel.id, next.timeRange, {
-                      locale: language,
-                      datasetLabel: getDashboardDatasetLabel(panel.id, t),
-                    }),
-                    drillDownIndex: null,
-                  },
-            ),
-          );
-        }
-        return next;
-      });
+      try {
+        setFiltersState((prev) => {
+          const next = { ...prev, ...partial };
+          if (partial.timeRange && partial.timeRange !== prev.timeRange) {
+            setPanels((prevPanels) =>
+              prevPanels.map((panel) =>
+                panel.id === 'realtime'
+                  ? panel
+                  : {
+                      ...panel,
+                      data: generateDashboardSampleData(panel.id, next.timeRange, {
+                        locale: language,
+                        datasetLabel: getDashboardDatasetLabel(panel.id, t),
+                      }),
+                      drillDownIndex: null,
+                    },
+              ),
+            );
+          }
+          return next;
+        });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to apply filters';
+        trackError(
+          'FILTER_APPLICATION_ERROR',
+          errorMessage,
+          {
+            timeRange: partial.timeRange,
+            aggregation: partial.aggregation,
+            metadata: { partialFilters: partial },
+          },
+          err instanceof Error ? err : undefined,
+        );
+      }
     },
-    [language, t],
+    [language, t, trackError],
   );
 
   const resetFilters = useCallback(() => {
@@ -226,34 +261,58 @@ export const useDashboardData = (): UseDashboardDataReturn => {
   }, []);
 
   const generateShareURLFn = useCallback((): string => {
-    const config: DashboardShareConfig = {
-      timeRange: filters.timeRange,
-      categories: filters.categories,
-      metric: filters.metric,
-      aggregation: filters.aggregation,
-      panelOrder: sortedPanels.map((p) => p.id),
-    };
-    const url = generateShareableURL(config);
-    setShareURL(url);
-    return url;
-  }, [sortedPanels, filters]);
+    try {
+      const config: DashboardShareConfig = {
+        timeRange: filters.timeRange,
+        categories: filters.categories,
+        metric: filters.metric,
+        aggregation: filters.aggregation,
+        panelOrder: sortedPanels.map((p) => p.id),
+      };
+      const url = generateShareableURL(config);
+      setShareURL(url);
+      return url;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate shareable URL';
+      trackError(
+        'DASHBOARD_SHARE_ERROR',
+        errorMessage,
+        { metadata: { config: filters } },
+        err instanceof Error ? err : undefined,
+      );
+      return '';
+    }
+  }, [sortedPanels, filters, trackError]);
 
   const exportPanel = useCallback(
     (id: string, format: 'csv' | 'json') => {
-      const panel = panels.find((p) => p.id === id);
-      if (!panel) return;
-      const filename = `${panel.title.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
-      if (format === 'csv') {
-        exportToCSV(
-          panel.data,
-          filename,
-          translateWithFallback(t, 'dashboard.analytics.exports.labelColumn', 'Label'),
+      try {
+        const panel = panels.find((p) => p.id === id);
+        if (!panel) {
+          trackError('EXPORT_ERROR', 'Panel not found for export', { panelId: id });
+          return;
+        }
+        const filename = `${panel.title.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+        if (format === 'csv') {
+          exportToCSV(
+            panel.data,
+            filename,
+            translateWithFallback(t, 'dashboard.analytics.exports.labelColumn', 'Label'),
+          );
+        } else {
+          exportToJSON(panel.data, filename);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to export panel data';
+        trackError(
+          'EXPORT_ERROR',
+          errorMessage,
+          { panelId: id, metadata: { format } },
+          err instanceof Error ? err : undefined,
         );
-      } else {
-        exportToJSON(panel.data, filename);
       }
     },
-    [panels, t],
+    [panels, t, trackError],
   );
 
   return {
@@ -269,5 +328,12 @@ export const useDashboardData = (): UseDashboardDataReturn => {
     reorderPanels,
     generateShareURL: generateShareURLFn,
     exportPanel,
+    // Error tracking exports
+    errors,
+    hasErrors,
+    getLatestError,
+    dismissError,
+    clearAllErrors: clearErrors,
+    trackError,
   };
 };

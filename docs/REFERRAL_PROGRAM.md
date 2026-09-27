@@ -1,11 +1,13 @@
 # Referral Program Implementation
 
 ## Overview
+
 This document describes the Referral Program implementation for the Authentication Flow in TeachLink. The referral program allows users to invite others to join the platform using unique referral codes, tracking referrals and providing benefits for both the referrer and the referred user.
 
 ## Features
 
 ### Core Functionality
+
 - **Referral Code Generation**: Each user receives a unique 8-character referral code upon signup
 - **Referral Tracking**: Users can enter a referral code during signup to track who referred them
 - **Referral Validation**: The system validates referral codes before accepting them
@@ -15,9 +17,11 @@ This document describes the Referral Program implementation for the Authenticati
 ### API Endpoints
 
 #### POST /api/auth/signup
+
 Enhanced to support referral codes during user registration.
 
 **Request Body:**
+
 ```json
 {
   "name": "John Doe",
@@ -29,6 +33,7 @@ Enhanced to support referral codes during user registration.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Account created successfully",
@@ -46,12 +51,15 @@ Enhanced to support referral codes during user registration.
 ```
 
 #### GET /api/referral/validate
+
 Validates a referral code before use during signup.
 
 **Query Parameters:**
+
 - `code` (required): The referral code to validate
 
 **Response:**
+
 ```json
 {
   "valid": true,
@@ -60,12 +68,14 @@ Validates a referral code before use during signup.
 ```
 
 **Error Responses:**
+
 - `400`: Invalid referral code format
 - `404`: Referral code not found
 
 ## Data Model
 
 ### User Schema Extensions
+
 The user schema has been extended to include referral-related fields:
 
 ```typescript
@@ -91,6 +101,7 @@ The format excludes confusing characters (I, O, 0, 1) to improve readability and
 ## Implementation Details
 
 ### Utilities
+
 The referral functionality is implemented in `/src/lib/referral.ts` with the following utilities:
 
 - `generateReferralCode()`: Generates a unique referral code
@@ -104,13 +115,11 @@ The referral functionality is implemented in `/src/lib/referral.ts` with the fol
 ### Frontend Integration
 
 #### Signup Form
+
 The signup form now includes an optional referral code field:
+
 ```tsx
-<input
-  type="text"
-  placeholder="Enter referral code"
-  {...register('referralCode')}
-/>
+<input type="text" placeholder="Enter referral code" {...register('referralCode')} />
 ```
 
 The field is optional and allows users to enter a referral code during registration.
@@ -125,20 +134,26 @@ The field is optional and allows users to enter a referral code during registrat
 ## Testing
 
 ### Unit Tests
+
 Unit tests for referral utilities are located in `/src/lib/__tests__/referral.test.ts`:
+
 - Code generation uniqueness and format
 - Format validation
 - Storage and retrieval operations
 - Referral count tracking
 
 ### Integration Tests
+
 Integration tests for API endpoints are located in `/src/app/api/referral/__tests__/validate.test.ts`:
+
 - Referral validation endpoint behavior
 - Error handling for invalid codes
 - Rate limiting compliance
 
 ### E2E Tests
+
 E2E tests for the referral flow are in `/e2e/auth/signup.spec.ts`:
+
 - Signup with valid referral code
 - Signup without referral code
 - Error handling for invalid referral codes
@@ -183,6 +198,7 @@ When migrating from a system without referral support:
 ## Support and Maintenance
 
 For issues or questions related to the referral program:
+
 - Check the unit tests for usage examples
 - Review the API endpoint documentation
 - Contact the development team for complex scenarios
@@ -191,6 +207,7 @@ For issues or questions related to the referral program:
 ## Changelog
 
 ### Version 1.0.0 (Current)
+
 - Initial implementation of referral program
 - Referral code generation and validation
 - Integration with signup flow

@@ -9,6 +9,9 @@ import { useMobileOptimization } from '../hooks/useMobileOptimization';
 import { apiService } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
 import { Course, Lesson } from '../types/mobile';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('MobileLearningInterface');
 
 type Tab = 'home' | 'courses' | 'downloads' | 'progress' | 'profile';
 
@@ -57,7 +60,7 @@ export default function MobileLearningInterface() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
-      console.error('Error loading data:', err);
+      logger.error('Error loading data', { error: err });
     } finally {
       setLoading(false);
     }
@@ -72,7 +75,7 @@ export default function MobileLearningInterface() {
       try {
         await apiService.startLearningSession(lesson.id);
       } catch (err) {
-        console.error('Failed to start session:', err);
+        logger.error('Failed to start session', { error: err });
       }
     }
   };
@@ -83,7 +86,7 @@ export default function MobileLearningInterface() {
         // End learning session
         await apiService.updateLessonProgress(currentLesson.id, true);
       } catch (err) {
-        console.error('Failed to update progress:', err);
+        logger.error('Failed to update progress', { error: err });
       }
     }
     setShowVideo(false);

@@ -1,8 +1,17 @@
 # Contributing to TeachLink Frontend
 
+<!-- This document describes the Circuit Breaker pattern implementation for Toast Notifications in the TeachLink frontend. The Circuit Breaker prevents cascading failures and provides fallback behavior when the toast notification system is overwhelmed. -->
+
+<!-- Your Material Design Breadcrumbs implementation is now properly on a feature branch! -->
+
 Thanks for contributing to TeachLink.
 
+<!--
+This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
+
 ## Branching & workflow
+
+<!-- This guide provides comprehensive instructions for implementing WCAG 2.1 AA compliant accessibility features across the learning platform. -->
 
 - **Do not push directly** to protected branches (`main`, `develop`).
 - Create a feature branch from `develop` (preferred) or `main`:
@@ -20,7 +29,7 @@ Your PR will be blocked from merging unless it meets the following:
 
 1. **CI must pass**
 
-   - Required checks: `type-check`, `lint`, `build`, `test` (GitHub Actions: **Frontend CI**)
+   - Required checks: `type-check`, `lint`, `build`, `test`, `security-audit` (GitHub Actions: **Branch Protection**)
 
 2. **Approvals required**
 
@@ -34,16 +43,35 @@ Your PR will be blocked from merging unless it meets the following:
 
    - All review conversations must be resolved before merge.
 
-5. **Issue must be referenced**
-   - PR description must reference a GitHub issue and include one of:
-     - `Close #<issue-number>` / `Closes #<issue-number>` / `Fixes #<issue-number>`
+5. 5. **Issue must be referenced**
+   - PR description must reference a GitHub issue and include one of the standard closing keywords:
+     - **Close variants:** `Close #<issue-number>`, `Closes #<issue-number>`, `Closed #<issue-number>`
+     - **Fix variants:** `Fix #<issue-number>`, `Fixes #<issue-number>`, `Fixed #<issue-number>`
+     - **Resolve variants:** `Resolve #<issue-number>`, `Resolves #<issue-number>`, `Resolved #<issue-number>`
 
 ## Local checks (run before pushing)
 
-- `npm run type-check`
-- `npm run lint`
-- `npm run test`
-- `npm run build`
+- `pnpm run type-check`
+- `pnpm run lint`
+- `pnpm run test`
+- `pnpm run build`
+- `pnpm audit --audit-level=high`
+
+## Git hooks
+
+### Pre-push (`.husky/pre-push`)
+
+Before a push is sent to the remote, the pre-push hook runs automatically:
+
+1. **Git LFS** — validates LFS-tracked files (`git lfs pre-push`)
+2. **Type-check** — `pnpm run type-check` (`tsc --noEmit`)
+3. **Tests** — `pnpm run test` (`vitest run`)
+
+If type-check or tests fail, the push is **blocked** and the hook prints which check failed. Fix the reported errors and push again.
+
+The hook ensures `pnpm` is on `PATH` (common install locations and `$PNPM_HOME`). If `pnpm` still cannot be found, the push is blocked with a clear message.
+
+`lint` and `build` are not run by this hook; run them locally or rely on CI before opening a PR.
 
 ## PR description format
 
@@ -63,3 +91,47 @@ Use the PR template (auto-applied). Ensure it includes:
 ## Security
 
 Do not commit secrets. Use `.env.local` for local environment variables.
+
+### Dependency vulnerability audit
+
+CI runs a `security-audit` job on every pull request to `main` and `develop`. It executes:
+
+```bash
+pnpm audit --audit-level=high
+```
+
+**Policy:**
+
+- **High** and **critical** severity vulnerabilities **fail** the pipeline and block merge.
+- **Low** and **moderate** findings are reported but do not block merge.
+- The full JSON audit report is uploaded as a CI artifact (`dependency-audit-report`) on every run.
+
+Run the same check locally before pushing:
+
+```bash
+pnpm audit --audit-level=high
+```
+
+### Triaging and suppressing accepted risks
+
+If a high or critical CVE cannot be fixed immediately (no patch available, breaking upgrade, or false positive), you may suppress it after maintainer review:
+
+1. Confirm the risk is understood and document the rationale in the PR.
+2. Add the CVE or GHSA identifier to `pnpm.auditConfig` in `package.json`:
+
+```json
+"pnpm": {
+  "auditConfig": {
+    "ignoreCves": ["CVE-YYYY-NNNNN"],
+    "ignoreGhsas": ["GHSA-xxxx-xxxx-xxxx"]
+  }
+}
+```
+
+3. Open a follow-up issue to remove the suppression when a fix is available.
+
+Suppressions require explicit PR approval — do not add ignored CVEs without maintainer sign-off.
+
+### Automated dependency updates
+
+[Dependabot](https://docs.github.com/en/code-security/dependabot) (`.github/dependabot.yml`) opens weekly PRs for npm dependency updates. Review and merge these promptly to keep the dependency tree current.

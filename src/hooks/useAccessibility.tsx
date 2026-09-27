@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState, useCallback, useContext, useMemo } from 'react';
 import { AccessibilityContext } from '@/components/accessibility/AccessibilityContext';
 import {
-  getFocusableElements,
-  trapFocus,
   announceToScreenReader,
   checkAccessibilityIssues,
   AccessibilityIssue,
 } from '@/utils/accessibilityUtils';
 import type { AccessibilityContextValue } from '@/components/accessibility/AccessibilityContext';
+import { useFocusTrap as useSharedFocusTrap } from '@/hooks/useFocusTrap';
 
 /**
  * Global accessibility context with a safe fallback outside `AccessibilityProvider`.
@@ -59,45 +58,7 @@ export function useKeyboardNavigation(enabled: boolean = true) {
  * Hook for focus trap (modals, dialogs)
  */
 export function useFocusTrap(isActive: boolean = false) {
-  const containerRef = useRef<HTMLElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (!isActive || !containerRef.current) return;
-
-    const container = containerRef.current;
-    previousFocusRef.current = document.activeElement as HTMLElement;
-
-    const focusableElements = getFocusableElements(container);
-    let removedTabIndex = false;
-    if (focusableElements.length > 0) {
-      focusableElements[0]?.focus();
-    } else {
-      if (!container.hasAttribute('tabindex')) {
-        container.setAttribute('tabindex', '-1');
-        removedTabIndex = true;
-      }
-      container.focus();
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (containerRef.current) {
-        trapFocus(containerRef.current, event);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      if (removedTabIndex) {
-        container.removeAttribute('tabindex');
-      }
-      previousFocusRef.current?.focus();
-    };
-  }, [isActive]);
-
-  return containerRef;
+  return useSharedFocusTrap<HTMLElement>(isActive);
 }
 
 /**

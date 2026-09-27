@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import { AppNotification } from '@/lib/notifications/types';
 import { NotificationService } from '@/lib/notifications/service';
 
-function load<T>(key: string, fallback: T): T {
+function load<T>(key: string, fallback: T, reviver?: (key: string, value: unknown) => unknown): T {
   if (typeof window === 'undefined') return fallback;
   try {
     const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    return raw ? (JSON.parse(raw, reviver) as T) : fallback;
   } catch {
     return fallback;
   }
@@ -17,6 +17,16 @@ function save<T>(key: string, value: T) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {}
+}
+
+/** Revives ISO date strings found in `timestamp` fields back to Date objects. */
+function dateReviver(key: string, value: unknown): unknown {
+  if (key === 'timestamp' && typeof value === 'string') {
+    const date = new Date(value);
+    // Only return Date if the string was a valid ISO date
+    if (!isNaN(date.getTime())) return date;
+  }
+  return value;
 }
 
 const STORAGE_KEY = 'notifications_v1';
@@ -32,14 +42,57 @@ interface NotificationState {
   clearRead: () => void;
 }
 
+function readStoredNotifications(): AppNotification[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw, dateReviver) as
+      | AppNotification[]
+      | { state?: { notifications?: AppNotification[] }; version?: number };
+
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && Array.isArray(parsed.state?.notifications)) return parsed.state.notifications;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export function hydrateNotifications() {
+  useNotificationStore.setState({ notifications: readStoredNotifications() });
+}
+
+/**
+ * Subscribe to a focused slice of notification state instead of the entire store.
+ */
+export const useNotificationStoreSelector = <T>(selector: (state: NotificationState) => T): T =>
+  useNotificationStore(selector);
+
 export const useNotificationStore = create<NotificationState>((set, get) => ({
-  notifications: load<AppNotification[]>(STORAGE_KEY, []),
+  notifications: [],
   addNotification: (n) => {
-    const notif = NotificationService.createNotification({
+    const created = NotificationService.createNotification({
       message: n.message,
       type: n.type,
       meta: n.meta,
     });
+    const incoming = n as Partial<AppNotification>;
+    const notif: AppNotification = {
+      ...created,
+      ...incoming,
+      id: incoming.id ?? created.id,
+      createdAt: incoming.createdAt ?? created.createdAt,
+      timestamp: incoming.timestamp ?? created.timestamp,
+      read: incoming.read ?? created.read,
+      title: incoming.title ?? created.title,
+      meta: {
+        ...created.meta,
+        ...incoming.meta,
+      },
+    };
     const next = [notif, ...get().notifications].slice(0, 200);
     set({ notifications: next });
     save(STORAGE_KEY, next);
@@ -66,3 +119,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     save(STORAGE_KEY, next);
   },
 }));
+
+if (typeof window !== 'undefined') {
+  queueMicrotask(() => {
+    hydrateNotifications();
+  });
+}

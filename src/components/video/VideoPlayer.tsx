@@ -57,6 +57,7 @@ export function VideoPlayer({
   const videoAreaRef = useRef<HTMLDivElement | null>(null);
   const progress = getProgressPercent(currentTime, duration);
 
+  // Move all hooks before conditional returns (Rules of Hooks)
   useEffect(() => {
     if (!isExpanded) {
       return;
@@ -73,6 +74,7 @@ export function VideoPlayer({
       window.removeEventListener('keydown', onEscape);
       document.body.style.overflow = previous;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
   useEffect(() => {
@@ -97,6 +99,7 @@ export function VideoPlayer({
       observer.disconnect();
       window.clearTimeout(timer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded, playerRef]);
 
   const createThumbnail = async (time: number): Promise<string | null> => {

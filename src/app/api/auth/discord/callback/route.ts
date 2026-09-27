@@ -3,6 +3,10 @@ import { withRateLimit } from '@/lib/ratelimit';
 import { exchangeCodeForToken, getDiscordUser, getDiscordAvatarUrl } from '@/lib/discord/oauth';
 import type { AuthResponseDTO, AuthErrorDTO } from '@/types/api/auth.dto';
 import { edgeLog } from '@/../infra/edge-config';
+import { createLogger } from '@/lib/logging';
+import { validateOAuthState } from '@/middleware/security';
+
+const logger = createLogger('api-auth-discord-callback');
 
 export const runtime = 'edge';
 
@@ -38,9 +42,9 @@ export async function GET(
       ) as NextResponse;
     }
 
-    // Verify state parameter to prevent CSRF attacks
+    // Verify state parameter to prevent CSRF attacks using constant-time comparison
     const storedState = request.cookies.get('discord_oauth_state')?.value;
-    if (!state || state !== storedState) {
+    if (!validateOAuthState(state, storedState)) {
       edgeLog('error', '/api/auth/discord/callback', 'Invalid state parameter');
       return addHeaders(
         NextResponse.json({ message: 'Invalid state parameter' }, { status: 400 }),
@@ -103,7 +107,7 @@ export async function GET(
     return addHeaders(response) as NextResponse;
   } catch (error) {
     edgeLog('error', '/api/auth/discord/callback', `Error: ${error}`);
-    console.error('Discord OAuth callback error:', error);
+    logger.error('Discord OAuth callback error', { error });
 
     return addHeaders(
       NextResponse.json({ message: 'Internal server error' }, { status: 500 }),

@@ -124,6 +124,35 @@ const FILTER_HELP_CONTENT: Record<string, FilterHelpContent> = {
       },
     ],
   },
+  learningFormat: {
+    id: 'learningFormat',
+    title: 'Learning Format',
+    description:
+      'Choose the content formats that match your preferred learning style. Select multiple formats to find diverse content.',
+    tips: [
+      'Video content is great for visual learners and demonstrations',
+      'Interactive content offers hands-on practice and immediate feedback',
+      'Text-based content is ideal for reading and detailed explanations',
+      'Mixed format combines multiple content types for comprehensive learning',
+    ],
+    faqs: [
+      {
+        question: 'Can I select multiple learning formats?',
+        answer:
+          'Yes, you can select multiple formats to find content with your preferred mix of video, interactive, and text-based materials.',
+      },
+      {
+        question: 'What is the difference between Interactive and Video content?',
+        answer:
+          'Video content is pre-recorded presentations and demonstrations. Interactive content includes quizzes, labs, coding exercises, and other hands-on activities.',
+      },
+      {
+        question: 'What does Mixed format mean?',
+        answer:
+          'Mixed format means the course combines different content types (video, interactive, and text) throughout the lessons.',
+      },
+    ],
+  },
   'content-type': {
     id: 'content-type',
     title: 'Content Type',

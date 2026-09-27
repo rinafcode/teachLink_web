@@ -16,6 +16,7 @@ import {
 } from './api';
 
 import { createLogger } from '@/lib/logging';
+import { tokenManager } from '@/lib/auth/tokenManager';
 
 declare global {
   interface Window {
@@ -62,12 +63,35 @@ export const loggingErrorInterceptor: ErrorInterceptor = async (error: Error) =>
   apiLogger.error('API request failed', { error });
 };
 
+/**
+ * Attaches a valid (silently refreshed if needed) access token to outgoing
+ * requests via the shared token manager, so the REST client, sockets and the
+ * offline queue all present the same, non-expired credential.
+ */
+export const authRequestInterceptor: RequestInterceptor = async (config) => {
+  const token = await tokenManager.getValidAccessToken();
+  if (token) {
+    const headers: Record<string, string> = (config.headers as Record<string, string>) || {};
+    headers['Authorization'] = `Bearer ${token}`;
+    config.headers = headers;
+  }
+  return config;
+};
+
 export const authRefreshInterceptor: ErrorInterceptor = async (error: Error) => {
   const isUnauthorized = error.message?.includes('401') || error.message?.includes('Unauthorized');
+  if (!isUnauthorized) return;
 
-  if (isUnauthorized && typeof window !== 'undefined') {
-    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-    window.location.href = '/login';
+  // Route the failure through the token manager so a single coordinated refresh
+  // happens (single-flight). Only if the refresh itself fails do we hard-logout.
+  try {
+    await tokenManager.refresh();
+  } catch {
+    tokenManager.forceLogout('rest_401');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      window.location.href = '/login';
+    }
   }
 };
 
@@ -105,6 +129,7 @@ export const headerEnhancementInterceptor: RequestInterceptor = async (config) =
 
 export function setupApiInterceptors(): void {
   apiClient.addRequestInterceptor(loggingRequestInterceptor);
+  apiClient.addRequestInterceptor(authRequestInterceptor);
   apiClient.addRequestInterceptor(timeoutInterceptor);
   apiClient.addRequestInterceptor(headerEnhancementInterceptor);
 

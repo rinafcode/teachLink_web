@@ -1,0 +1,66 @@
+﻿
+> my-app@0.1.0 validate C:\Users\GODSWILL\teachLink_web
+> pnpm run validate:ui && pnpm run validate:web3
+
+
+> my-app@0.1.0 validate:ui C:\Users\GODSWILL\teachLink_web
+> node scripts/validate-ui.cjs
+
+Running UI validation checks...
+
+Warnings:
+
+  [RESPONSIVE] src\components\BulkImporter.tsx:539: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\cms\VersionControl.tsx:92: Grid layout may need responsive classes
+  [CONSOLE] src\components\CommandPalette.tsx: Contains 1 console.log statement(s)
+  [RESPONSIVE] src\components\ConflictResolver.tsx:62: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\dashboard\RealTimeUpdater.tsx:243: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\search\AdvancedSearchInterface.tsx:187: Grid layout may need responsive classes
+  [CONSOLE] src\components\shared\MarkdownRenderer.test.ts: Contains 1 console.log statement(s)
+  [RESPONSIVE] src\components\ShareModal.tsx:140: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\theme\ThemeCustomizer.tsx:35: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\tickets\TicketForm.tsx:87: Grid layout may need responsive classes
+  [CONSOLE] src\components\ui\Quote.tsx: Contains 2 console.log statement(s)
+  [RESPONSIVE] src\components\video\VideoPlayer.tsx:328: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\video\VideoPlayerLazy.tsx:327: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\web3\DeFiInterface.tsx:317: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\web3\DeFiInterface.tsx:371: Grid layout may need responsive classes
+  [RESPONSIVE] src\components\web3\NFTGallery.tsx:452: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\(auth)\login\page.tsx:189: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\(auth)\signup\page.tsx:261: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\accessibility\AccessibilityTester.tsx:181: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\accessibility\ColorContrastChecker.tsx:228: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\dashboard\widgets\LearningStreakWidget.tsx:216: Grid layout may need responsive classes
+  [ICON] src\app\components\messaging\ConversationList.tsx: Uses react-icons - prefer lucide-react for consistency
+  [ICON] src\app\components\messaging\MessageComposer.tsx: Uses react-icons - prefer lucide-react for consistency
+  [ICON] src\app\components\messaging\MessageThread.tsx: Uses react-icons - prefer lucide-react for consistency
+  [RESPONSIVE] src\app\components\notifications\MultiChannelDelivery.tsx:196: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\notifications\MultiChannelDelivery.tsx:256: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\notifications\NotificationCenter.tsx:238: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\notifications\NotificationCenter.tsx:297: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\notifications\UserPreferences.tsx:237: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\components\notifications\UserPreferences.tsx:312: Grid layout may need responsive classes
+  [ICON] src\app\components\quizzes\question-types\CodeChallengeQuestion.tsx: Uses react-icons - prefer lucide-react for consistency
+  [ICON] src\app\components\quizzes\question-types\MultipleChoiceQuestion.tsx: Uses react-icons - prefer lucide-react for consistency
+  [ICON] src\app\components\quizzes\question-types\TrueFalseQuestion.tsx: Uses react-icons - prefer lucide-react for consistency
+  [ICON] src\app\components\quizzes\QuizContainer.tsx: Uses react-icons - prefer lucide-react for consistency
+  [ICON] src\app\messages\page.tsx: Uses react-icons - prefer lucide-react for consistency
+  [RESPONSIVE] src\app\mobile\components\MobileProgressTracker.tsx:217: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\pages\admin\feature-flags\page.tsx:213: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\pages\admin\feature-flags\page.tsx:530: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\pages\admin\feature-flags\page.tsx:774: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\qr-code-demo\page.tsx:99: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\qr-code-demo\page.tsx:245: Grid layout may need responsive classes
+  [RESPONSIVE] src\app\subscriptions-demo\page.tsx:229: Grid layout may need responsive classes
+  [CONSOLE] src\app\web3-demo\page.tsx: Contains 4 console.log statement(s)
+  [RESPONSIVE] src\pages\events\new.tsx:87: Grid layout may need responsive classes
+  [RESPONSIVE] src\pages\events\[id].tsx:136: Grid layout may need responsive classes
+
+UI validation passed (45 warning(s))
+
+> my-app@0.1.0 validate:web3 C:\Users\GODSWILL\teachLink_web
+> node scripts/validate-web3.cjs
+
+Running Web3 validation checks...
+
+Web3 validation passed (0 warning(s))

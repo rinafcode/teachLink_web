@@ -1,6 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  CONNECTIVITY_DEBOUNCE_MS,
+  createConnectivityDebouncer,
+  type ConnectivityDebouncer,
+} from '../utils/pwaUtils';
 import {
   OfflineStorage,
   OfflineSyncService,
@@ -8,7 +13,10 @@ import {
   OfflineProgressRecord,
   SyncResult,
   SyncConflict,
+  SyncStatus,
 } from '../services/offlineSync';
+import { incrementVersionVector } from '../lib/conflict/resolver';
+import { syncEngine } from '../store/synchronizationEngine';
 
 export interface DownloadCourseInput {
   id: string;
@@ -38,11 +46,21 @@ const estimateCourseSize = (course: DownloadCourseInput) => {
   return (course.sizeBytes || 0) + moduleEstimate + assetEstimate;
 };
 
-export const useOfflineMode = () => {
+export interface OfflineModeOptions {
+  /** Settle time for connectivity changes. Defaults to CONNECTIVITY_DEBOUNCE_MS. */
+  connectivityDebounceMs?: number;
+}
+
+export const useOfflineMode = (options: OfflineModeOptions = {}) => {
+  const { connectivityDebounceMs = CONNECTIVITY_DEBOUNCE_MS } = options;
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine,
+  );
 
   const storageRef = useRef<OfflineStorage | null>(null);
   const syncRef = useRef<OfflineSyncService | null>(null);
+  const debouncerRef = useRef<ConnectivityDebouncer | null>(null);
 
   const initializeOfflineMode = useCallback(async () => {
     if (storageRef.current && syncRef.current) {
@@ -156,7 +174,12 @@ export const useOfflineMode = () => {
       }
 
       const existing = await storageRef.current.getProgress(courseId, moduleId);
-      const version = existing?.version ? existing.version + 1 : 1;
+      const replicaId = await storageRef.current.getReplicaId();
+      const version = (existing?.version ?? 0) + 1;
+      const logicalClock = (existing?.logicalClock ?? 0) + 1;
+      // Deterministic per-record versioning: base the new vector on the last
+      // known state so merges are stable regardless of device clock drift.
+      const versionVector = incrementVersionVector(existing?.versionVector ?? {}, replicaId);
       const record: OfflineProgressRecord = {
         courseId,
         moduleId,
@@ -165,6 +188,9 @@ export const useOfflineMode = () => {
         updatedAt: new Date().toISOString(),
         synced: false,
         version,
+        logicalClock,
+        updatedBy: replicaId,
+        versionVector,
       };
 
       await storageRef.current.saveProgress(record);
@@ -186,7 +212,51 @@ export const useOfflineMode = () => {
 
   const syncData = useCallback(async (): Promise<SyncResult> => {
     if (!syncRef.current) throw new Error('Offline mode not initialized');
-    return await syncRef.current.syncData({ resolveConflicts: 'auto' });
+    const result = await syncRef.current.syncData({ resolveConflicts: 'auto' });
+
+    // Reconcile the persisted store after each drain so other tabs and a
+    // restarted app observe the same sync state.
+    try {
+      const status = await syncRef.current.getSyncStatus();
+      await syncEngine.recordDrainResult(
+        {
+          success: result.success,
+          syncedItems: result.syncedItems,
+          conflicts: result.conflicts.length,
+          lastSyncTime: result.lastSyncTime,
+        },
+        status.pending,
+      );
+    } catch (error) {
+      // Store reconciliation is best-effort; the drain itself already succeeded.
+      console.warn('Failed to reconcile sync state', error);
+    }
+
+    return result;
+  }, []);
+
+  const getSyncStatus = useCallback(async (): Promise<SyncStatus> => {
+    if (!syncRef.current) {
+      return {
+        isSyncing: false,
+        pending: 0,
+        conflicted: 0,
+        resolved: 0,
+        deadLetter: 0,
+        lastSyncTime: null,
+      };
+    }
+    return await syncRef.current.getSyncStatus();
+  }, []);
+
+  const getDeadLetterCount = useCallback(async (): Promise<number> => {
+    if (!syncRef.current) return 0;
+    return await syncRef.current.getDeadLetterCount();
+  }, []);
+
+  const retryDeadLetter = useCallback(async (id: string): Promise<boolean> => {
+    if (!syncRef.current) return false;
+    return await syncRef.current.retryDeadLetter(id);
   }, []);
 
   const getStorageInfo = useCallback(async () => {
@@ -230,9 +300,58 @@ export const useOfflineMode = () => {
     return URL.createObjectURL(asset.data);
   }, []);
 
+  // Held in a ref so the listeners below are attached once, rather than being
+  // torn down and re-subscribed every time syncData's identity changes.
+  const syncDataRef = useRef(syncData);
+  syncDataRef.current = syncData;
+
+  /**
+   * Reacts to connectivity only once it has held for the debounce window.
+   *
+   * A flapping connection fires `online`/`offline` several times a second, and
+   * each `online` used to start a sync that the next `offline` interrupted —
+   * so the queue never drained and every partial attempt burned a retry.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const debouncer = createConnectivityDebouncer(
+      navigator.onLine,
+      (online) => {
+        setIsOnline(online);
+        if (online) void syncDataRef.current().catch(() => undefined);
+      },
+      { debounceMs: connectivityDebounceMs },
+    );
+
+    debouncerRef.current = debouncer;
+
+    const handleOnline = () => debouncer.push(true);
+    const handleOffline = () => debouncer.push(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      // A pending timer firing after unmount would sync against a torn-down
+      // service.
+      debouncer.cancel();
+      debouncerRef.current = null;
+    };
+  }, [connectivityDebounceMs]);
+
+  /** Applies the pending connectivity state immediately, skipping the wait. */
+  const flushConnectivity = useCallback(() => {
+    debouncerRef.current?.flush();
+  }, []);
+
   return useMemo(
     () => ({
       isInitialized,
+      isOnline,
+      flushConnectivity,
       initializeOfflineMode,
       cleanupOfflineMode,
       downloadCourse,
@@ -243,6 +362,9 @@ export const useOfflineMode = () => {
       getProgress,
       getCourseProgress,
       syncData,
+      getSyncStatus,
+      getDeadLetterCount,
+      retryDeadLetter,
       getStorageInfo,
       getPendingSyncCount,
       getPendingConflicts,
@@ -252,6 +374,8 @@ export const useOfflineMode = () => {
     }),
     [
       isInitialized,
+      isOnline,
+      flushConnectivity,
       initializeOfflineMode,
       cleanupOfflineMode,
       downloadCourse,
@@ -262,6 +386,9 @@ export const useOfflineMode = () => {
       getProgress,
       getCourseProgress,
       syncData,
+      getSyncStatus,
+      getDeadLetterCount,
+      retryDeadLetter,
       getStorageInfo,
       getPendingSyncCount,
       getPendingConflicts,

@@ -3,21 +3,25 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Search, X, Clock, ChevronRight, Sparkles, User, Tag, Type } from 'lucide-react';
 import { getSearchSuggestions, highlightMatch } from '../../utils/searchUtils';
+import { useDebounce } from '../../hooks/useDebounce';
 
 interface IntelligentAutoCompleteProps {
   value: string;
   onChange: (value: string) => void;
   onSearch: (value: string) => void;
   history?: string[];
+  debounceMs?: number;
 }
 
 export const IntelligentAutoComplete = React.memo<IntelligentAutoCompleteProps>(
-  ({ value, onChange, onSearch, history = [] }) => {
+  ({ value, onChange, onSearch, history = [], debounceMs = 300 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const suggestions = useMemo(() => getSearchSuggestions(value), [value]);
+
+    const debouncedValue = useDebounce(value, debounceMs);
+    const suggestions = useMemo(() => getSearchSuggestions(debouncedValue), [debouncedValue]);
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -154,11 +158,11 @@ export const IntelligentAutoComplete = React.memo<IntelligentAutoCompleteProps>(
                         {getSuggestionIcon(suggestion)}
                       </div>
                       <span className="flex-1 truncate">
-                        {highlightMatch(suggestion, value).map((part, index) => (
+                        {highlightMatch(suggestion, debouncedValue).map((part, index) => (
                           <span
                             key={index}
                             className={
-                              part.toLowerCase() === value.toLowerCase()
+                              part.toLowerCase() === debouncedValue.toLowerCase()
                                 ? 'font-bold text-primary'
                                 : ''
                             }

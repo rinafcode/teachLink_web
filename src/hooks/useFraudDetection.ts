@@ -58,44 +58,38 @@ export function useFraudDetection(
     };
   }, [user.id, user.name, roomId]);
 
+  const applyResult = useCallback(
+    (result: FraudDetectionResult) => {
+      setFraudScore(service.getUserScore(user.id));
+      setFraudEvents(service.getEvents(user.id));
+      setIsBlocked((blocked) => blocked || result.blocked);
+      setLastCheck(result);
+      return result;
+    },
+    [service, user.id],
+  );
+
   const checkJoin = useCallback((): FraudDetectionResult => {
     updateContext();
-    const result = service.checkJoinMeeting(contextRef.current);
-    setFraudScore(service.getUserScore(user.id));
-    setFraudEvents(service.getEvents(user.id));
-    setLastCheck(result);
-    return result;
-  }, [service, updateContext, user.id]);
+    return applyResult(service.checkJoinMeeting(contextRef.current));
+  }, [applyResult, service, updateContext]);
 
   const checkLeave = useCallback((): FraudDetectionResult => {
     updateContext();
-    const result = service.checkLeaveMeeting(contextRef.current);
-    setFraudScore(service.getUserScore(user.id));
-    setFraudEvents(service.getEvents(user.id));
-    setLastCheck(result);
-    return result;
-  }, [service, updateContext, user.id]);
+    return applyResult(service.checkLeaveMeeting(contextRef.current));
+  }, [applyResult, service, updateContext]);
 
   const checkStartCall = useCallback((): FraudDetectionResult => {
     updateContext();
-    const result = service.checkStartCall(contextRef.current);
-    setFraudScore(service.getUserScore(user.id));
-    setFraudEvents(service.getEvents(user.id));
-    setIsBlocked(result.blocked);
-    setLastCheck(result);
-    return result;
-  }, [service, updateContext, user.id]);
+    return applyResult(service.checkStartCall(contextRef.current));
+  }, [applyResult, service, updateContext]);
 
   const checkScreenShare = useCallback(
     (enabled: boolean): FraudDetectionResult => {
       updateContext();
-      const result = service.checkScreenShare(contextRef.current, enabled);
-      setFraudScore(service.getUserScore(user.id));
-      setFraudEvents(service.getEvents(user.id));
-      setLastCheck(result);
-      return result;
+      return applyResult(service.checkScreenShare(contextRef.current, enabled));
     },
-    [service, updateContext, user.id],
+    [applyResult, service, updateContext],
   );
 
   const checkAccess = useCallback((): ConferenceAccessCheck => {
@@ -106,12 +100,8 @@ export function useFraudDetection(
 
   const checkMeetingBombing = useCallback((): FraudDetectionResult => {
     updateContext();
-    const result = service.checkMeetingBombing(contextRef.current);
-    setFraudScore(service.getUserScore(user.id));
-    setFraudEvents(service.getEvents(user.id));
-    setLastCheck(result);
-    return result;
-  }, [service, updateContext, user.id]);
+    return applyResult(service.checkMeetingBombing(contextRef.current));
+  }, [applyResult, service, updateContext]);
 
   const resetScore = useCallback(() => {
     service.resetUserScore(user.id);

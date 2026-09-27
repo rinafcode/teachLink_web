@@ -2,8 +2,8 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { GET as verifyGET, POST as verifyPOST } from '../email-verification/verify/route';
 import { POST as resendPOST } from '../email-verification/resend/route';
 import { POST as restorePOST } from '../email-verification/restore/route';
-import { POST as signupPOST } from '../../signup/route';
-import { POST as loginPOST } from '../../login/route';
+import { POST as signupPOST } from '../signup/route';
+import { POST as loginPOST } from '../login/route';
 
 vi.mock('@/lib/ratelimit', () => ({
   withRateLimit: vi.fn(() => ({
@@ -43,12 +43,36 @@ vi.mock('@/lib/auth/email-verification', () => ({
   getVerificationTokenTtlMinutes: vi.fn(() => 15),
 }));
 
+vi.mock('bcryptjs', () => ({
+  default: {
+    compare: vi.fn().mockResolvedValue(true),
+  },
+}));
+
+vi.mock('@/lib/referral', () => ({
+  generateReferralCode: vi.fn(() => 'ABCDEFGH'),
+  validateReferralCode: vi.fn(() => ({ isValid: true })),
+  referralCodeExists: vi.fn(() => true),
+  storeReferralCode: vi.fn(),
+  getReferralCodeOwner: vi.fn(() => undefined),
+  incrementReferralCount: vi.fn(),
+  canUseReferralCode: vi.fn(() => true),
+}));
+
+vi.mock('@/lib/db/pool', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/db/pool')>();
+  return {
+    ...actual,
+    findUserByEmail: vi.fn(),
+  };
+});
+
 describe('email verification routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('returns verification details from signup', async () => {
+  it('returns verification details and referralCode from signup', async () => {
     const { createOrRestoreVerification } = await import('@/lib/auth/email-verification');
     vi.mocked(createOrRestoreVerification).mockResolvedValue({
       record: {
@@ -85,6 +109,8 @@ describe('email verification routes', () => {
 
     expect(response.status).toBe(201);
     const body = await response.json();
+    expect(body.user.referralCode).toBe('ABCDEFGH');
+    expect(body.user.referredBy).toBeNull();
     expect(body.verification.required).toBe(true);
     expect(body.verification.sessionId).toBe('verify-1');
     expect(body.user.email).toBe('student@teachlink.com');
@@ -92,8 +118,66 @@ describe('email verification routes', () => {
     expect(body).not.toHaveProperty('verificationToken');
   });
 
+  it('returns referredBy and referralCode when a valid referral code is used', async () => {
+    const { createOrRestoreVerification } = await import('@/lib/auth/email-verification');
+    const { validateReferralCode, referralCodeExists, getReferralCodeOwner, storeReferralCode } = await import('@/lib/referral');
+
+    vi.mocked(createOrRestoreVerification).mockResolvedValue({
+      record: {
+        verificationId: 'verify-2',
+        email: 'newuser@teachlink.com',
+        emailNormalized: 'newuser@teachlink.com',
+        name: 'New User',
+        status: 'pending',
+        verificationTokenHash: 'hash-2',
+        backupCodeHash: 'backup-hash-2',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 900000).toISOString(),
+        backupCodeExpiresAt: new Date(Date.now() + 86400000).toISOString(),
+        resendAvailableAt: new Date(Date.now() + 60000).toISOString(),
+        resendCount: 0,
+      },
+      verificationToken: 'raw-token-2',
+      backupCode: 'BACKUP456',
+    } as any);
+
+    vi.mocked(validateReferralCode).mockReturnValue({ isValid: true });
+    vi.mocked(referralCodeExists).mockReturnValue(true);
+    vi.mocked(getReferralCodeOwner).mockReturnValue('referrer@teachlink.com');
+    vi.mocked(storeReferralCode).mockClear();
+
+    const request = new Request('http://localhost/api/auth/signup', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: 'New User',
+        email: 'newuser@teachlink.com',
+        password: 'secret123',
+        confirmPassword: 'secret123',
+        referralCode: 'EXISTING1',
+      }),
+    }) as any;
+
+    const response = await signupPOST(request);
+
+    expect(response.status).toBe(201);
+    const body = await response.json();
+    expect(body.user.referralCode).toBe('ABCDEFGH');
+    expect(body.user.referredBy).toBe('EXISTING1');
+    expect(body.verification.required).toBe(true);
+    expect(body.verification.sessionId).toBe('verify-2');
+    expect(body.user.email).toBe('newuser@teachlink.com');
+  });
+
   it('blocks login until verification is complete', async () => {
     const { getVerificationStatus } = await import('@/lib/auth/email-verification');
+    const { findUserByEmail } = await import('@/lib/db/pool');
+    vi.mocked(findUserByEmail).mockResolvedValue({
+      id: 'user-1',
+      password_hash: 'hashed-password',
+      role: 'STUDENT',
+    });
     vi.mocked(getVerificationStatus).mockResolvedValue({
       required: true,
       status: 'pending',

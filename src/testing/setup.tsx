@@ -9,22 +9,6 @@ afterEach(() => {
 });
 
 // ─── Next.js App Router mocks ──────────────────────────────────────────────
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    prefetch: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-    refresh: vi.fn(),
-  }),
-  useSearchParams: () => new URLSearchParams(),
-  usePathname: () => '/',
-  useParams: () => ({}),
-  redirect: vi.fn(),
-  notFound: vi.fn(),
-}));
-
 vi.mock('next/image', () => ({
   default: ({
     src,

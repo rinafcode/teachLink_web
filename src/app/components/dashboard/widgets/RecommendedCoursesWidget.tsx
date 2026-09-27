@@ -40,9 +40,16 @@ function buildRecommendedCourses() {
       rating: (4.5 + i * 0.2) as 4.7 | 4.8 | 4.9,
       students: [12450, 8920, 15680][i] ?? 10000,
       duration: c.duration,
-      level: (i === 2 ? 'beginner' : i === 1 ? 'intermediate' : 'advanced') as 'beginner' | 'intermediate' | 'advanced',
+      level: (i === 2 ? 'beginner' : i === 1 ? 'intermediate' : 'advanced') as
+        | 'beginner'
+        | 'intermediate'
+        | 'advanced',
       category: c.category,
-      image: c.thumbnailUrl ?? `https://via.placeholder.com/300x200/${['3B82F6', '10B981', '8B5CF6'][i]}/ffffff?text=${encodeURIComponent(c.title.split(' ')[0])}`,
+      image:
+        c.thumbnailUrl ??
+        `https://via.placeholder.com/300x200/${
+          ['3B82F6', '10B981', '8B5CF6'][i]
+        }/ffffff?text=${encodeURIComponent(c.title.split(' ')[0])}`,
       price: [89, 129, 69][i] ?? 99,
     }));
   }

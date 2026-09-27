@@ -6,6 +6,9 @@
  */
 
 import type { AppSettings } from '@/lib/settings/types';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('virtual-background');
 
 export interface VirtualBackgroundConfig {
   enabled: boolean;
@@ -147,7 +150,7 @@ async function applyImageBackground(
 
     ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
   } catch (error) {
-    console.error('Failed to load background image:', error);
+    logger.error('Failed to load background image', { error });
   }
 }
 

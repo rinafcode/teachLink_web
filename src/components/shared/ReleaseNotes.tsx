@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('ReleaseNotes');
 
 export interface ReleaseNote {
   version: string;
@@ -34,7 +36,7 @@ export const ReleaseNotes: React.FC = () => {
         await new Promise((resolve) => setTimeout(resolve, 500));
         setNotes(data);
       } catch (error) {
-        console.error('Failed to fetch release notes:', error);
+        logger.error('Failed to fetch release notes', { error });
       } finally {
         setLoading(false);
       }

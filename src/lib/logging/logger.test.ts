@@ -88,7 +88,9 @@ describe('structured logging', () => {
       },
     );
 
-    const results = queryLogs({ scope: 'tests.logging' });
+    const allResults = queryLogs({ scope: 'tests.logging' });
+    const results = allResults.filter(r => r.requestId === 'test-req-123');
+    
     expect(results).toHaveLength(2);
 
     expect(results[0]?.requestId).toBe('test-req-123');

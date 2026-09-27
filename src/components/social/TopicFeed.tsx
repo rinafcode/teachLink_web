@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -62,11 +62,10 @@ function SortBar({ current, onChange, postCount }: SortBarProps) {
           key={value}
           onClick={() => onChange(value)}
           aria-pressed={current === value}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-            current === value
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${current === value
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-          }`}
+            }`}
         >
           {icon}
           {label}
@@ -81,6 +80,8 @@ function SortBar({ current, onChange, postCount }: SortBarProps) {
 interface TopicFeedProps {
   slug: string;
 }
+
+const ESTIMATED_ROW_HEIGHT = 140; // Approximate height per post item in pixels
 
 export default function TopicFeed({ slug }: TopicFeedProps) {
   const {
@@ -97,7 +98,28 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
     followLoading,
     error,
   } = useTopicFeed(slug);
+
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(600);
+
+  // Track container scroll and viewport height for virtualization
+  useEffect(() => {
+    const handleScroll = () => {
+      if (containerRef.current) {
+        setScrollTop(containerRef.current.scrollTop);
+      }
+    };
+    const el = containerRef.current;
+    if (el) {
+      setContainerHeight(el.clientHeight || 600);
+      el.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    return () => {
+      if (el) el.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // Infinite scroll via IntersectionObserver
   useEffect(() => {
@@ -112,6 +134,22 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
     observer.observe(el);
     return () => observer.disconnect();
   }, [loadMore]);
+
+  // Virtualization window calculations
+  const totalPosts = posts.length;
+  const buffer = 5;
+  const startIndex = Math.max(0, Math.floor(scrollTop / ESTIMATED_ROW_HEIGHT) - buffer);
+  const endIndex = Math.min(
+    totalPosts,
+    Math.ceil((scrollTop + containerHeight) / ESTIMATED_ROW_HEIGHT) + buffer
+  );
+
+  const virtualPosts = useMemo(() => {
+    return posts.slice(startIndex, endIndex);
+  }, [posts, startIndex, endIndex]);
+
+  const topSpacerHeight = startIndex * ESTIMATED_ROW_HEIGHT;
+  const bottomSpacerHeight = Math.max(0, (totalPosts - endIndex) * ESTIMATED_ROW_HEIGHT);
 
   return (
     <div className="space-y-4">
@@ -150,11 +188,10 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
                 onClick={toggleFollow}
                 disabled={followLoading}
                 aria-label={topic.isFollowing ? `Unfollow #${topic.name}` : `Follow #${topic.name}`}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-60 ${
-                  topic.isFollowing
+                className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-60 ${topic.isFollowing
                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                  }`}
               >
                 {followLoading ? '…' : topic.isFollowing ? 'Following' : 'Follow'}
               </button>
@@ -181,8 +218,11 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
       {/* Sort bar */}
       <SortBar current={sort} onChange={setSort} postCount={topic?.postCount} />
 
-      {/* Posts list */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
+      {/* Posts list container with virtualization */}
+      <div
+        ref={containerRef}
+        className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800 max-h-[800px] overflow-y-auto relative"
+      >
         {/* Initial loading skeletons */}
         {loading &&
           posts.length === 0 &&
@@ -226,8 +266,11 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
           </div>
         )}
 
-        {/* Post items */}
-        {posts.map((post) => (
+        {/* Virtualized Top Spacer */}
+        {topSpacerHeight > 0 && <div style={{ height: `${topSpacerHeight}px` }} aria-hidden="true" />}
+
+        {/* Virtualized Post items */}
+        {virtualPosts.map((post) => (
           <article
             key={post.id}
             className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
@@ -317,6 +360,9 @@ export default function TopicFeed({ slug }: TopicFeedProps) {
             </div>
           </article>
         ))}
+
+        {/* Virtualized Bottom Spacer */}
+        {bottomSpacerHeight > 0 && <div style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true" />}
 
         {/* Infinite scroll sentinel */}
         {hasMore && <div ref={sentinelRef} className="h-4" aria-hidden="true" />}

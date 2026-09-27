@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
   GraduationCap,
   Calendar,
-  Check,
   Wallet,
   LogOut,
   Globe,
@@ -15,14 +14,17 @@ import {
   FileText,
   Loader2,
   BookOpen,
-  Mail,
 } from 'lucide-react';
 
 import { FormWizardController } from '@/form-management/components';
 import { FormStateManager } from '@/form-management/state/form-state-manager';
 import { ValidationEngineImpl } from '@/form-management/validation/validation-engine';
 import { useNotification } from '@/hooks/use-notification';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import type { EventProperties } from '@/utils/analytics';
 import type { WizardStep, FieldDescriptor, FormState } from '@/form-management/types/core';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('OnboardingPage');
 
 // Define field configuration for onboarding
 const onboardingFields: FieldDescriptor[] = [
@@ -142,6 +144,21 @@ const onboardingSteps: WizardStep[] = [
 export default function OnboardingPage() {
   const router = useRouter();
   const { success, error, loading, dismiss } = useNotification();
+  const { track } = useAnalytics({ context: { feature: 'onboarding' }, trackPageView: false });
+  const [currentStep, setCurrentStep] = useState<WizardStep>(onboardingSteps[0]);
+  const [hasFinishedOnboarding, setHasFinishedOnboarding] = useState(false);
+  const currentStepRef = React.useRef<WizardStep>(onboardingSteps[0]);
+
+  const safeTrack = useCallback(
+    (name: string, properties: EventProperties = {}) => {
+      try {
+        track(name as string, properties);
+      } catch (_err) {
+        logger.warn('[Onboarding Analytics] Failed to track event', { error: _err });
+      }
+    },
+    [track],
+  );
 
   // Initialize state manager and validation engine
   const [stateManager] = useState(() => {
@@ -176,7 +193,37 @@ export default function OnboardingPage() {
     document.title = 'User Onboarding - TeachLink';
   }, []);
 
-  const handleFieldChange = async (fieldId: string, value: any) => {
+  useEffect(() => {
+    safeTrack('onboarding_started', {
+      stepId: currentStep.id,
+      stepIndex: currentStep.index,
+      stepTitle: currentStep.title,
+    });
+  }, [safeTrack, currentStep.id, currentStep.index, currentStep.title]);
+
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
+
+  useEffect(() => {
+    const handleAbandon = () => {
+      if (!hasFinishedOnboarding) {
+        safeTrack('onboarding_abandoned', {
+          stepId: currentStepRef.current.id,
+          stepIndex: currentStepRef.current.index,
+          stepTitle: currentStepRef.current.title,
+        });
+      }
+    };
+
+    window.addEventListener('beforeunload', handleAbandon);
+    return () => {
+      handleAbandon();
+      window.removeEventListener('beforeunload', handleAbandon);
+    };
+  }, [hasFinishedOnboarding, safeTrack]);
+
+  const handleFieldChange = async (fieldId: string, value: unknown) => {
     stateManager.updateField(fieldId, value);
 
     // Perform real-time validation
@@ -219,7 +266,7 @@ export default function OnboardingPage() {
   };
 
   // Final onboarding submission
-  const handleComplete = async (values: Record<string, any>) => {
+  const handleComplete = async (values: Record<string, unknown>) => {
     const loadingToastId = loading('Finalizing your registration profile...');
 
     try {
@@ -228,11 +275,19 @@ export default function OnboardingPage() {
 
       dismiss(loadingToastId);
       success('Onboarding complete! Welcome to TeachLink.');
+      setHasFinishedOnboarding(true);
+      safeTrack('onboarding_completed', {
+        stepId: currentStep.id,
+        stepIndex: currentStep.index,
+        stepTitle: currentStep.title,
+        role: values.role as string,
+        walletConnected: !!values.walletAddress,
+      });
 
       // Save onboarding preference state locally so other pages know user is onboarded
       if (typeof window !== 'undefined') {
         localStorage.setItem('teachlink_onboarded', 'true');
-        localStorage.setItem('teachlink_user_role', values.role);
+        localStorage.setItem('teachlink_user_role', values.role as string);
       }
 
       // Redirect to main dashboard
@@ -830,6 +885,14 @@ export default function OnboardingPage() {
           formState={formState}
           stateManager={stateManager}
           fields={onboardingFields}
+          onStepChange={setCurrentStep}
+          onStepComplete={(step) =>
+            safeTrack('onboarding_step_completed', {
+              stepId: step.id,
+              stepIndex: step.index,
+              stepTitle: step.title,
+            })
+          }
           onComplete={handleComplete}
           allowNonLinearNavigation={false}
           validateBeforeNext={true}

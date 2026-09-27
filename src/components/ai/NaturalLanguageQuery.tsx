@@ -52,7 +52,9 @@ export default function NaturalLanguageQuery() {
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="relative flex gap-2">
           <div className="relative flex-1">
-            <label htmlFor="search-query" className="sr-only">Search query</label>
+            <label htmlFor="search-query" className="sr-only">
+              Search query
+            </label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               id="search-query"

@@ -1,9 +1,16 @@
 # Profile Page Performance
-
-The profile route keeps its static shell server-rendered and limits client JavaScript to the tab interaction layer.
+<!-- 
+The profile route keeps its static shell server-rendered and limits client JavaScript to the tab interaction layer. -->
 
 ## Implementation
 
+## Overview
+
+This project uses URL-based API versioning to protect clients from breaking changes.
+
+- Stable API paths continue to be served at `/api/v1/*`
+- Legacy paths under `/api/*` remain supported through a compatibility layer
+- Older `/api/*` requests are rewritten to `/api/v1/*` and receive deprecation headers
 - `src/app/profile/page.tsx` is a server component that renders the page shell and profile header.
 - `src/app/profile/components/ProfileTabs.tsx` owns the small client-side tab state.
 - The default profile panel renders first, while settings and achievements are split into lazy-loaded tab panels.

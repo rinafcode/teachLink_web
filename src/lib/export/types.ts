@@ -12,7 +12,7 @@ export interface ExportSort {
 }
 
 export interface ExportProgressState {
-  stage: 'preparing' | 'filtering' | 'formatting' | 'completed';
+  stage: 'preparing' | 'filtering' | 'formatting' | 'completed' | 'failed';
   percent: number;
   message: string;
 }

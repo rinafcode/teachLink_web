@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { buildDedupeKey, dedupe, cancelDedupe } from '@/lib/api/dedupe';
+import { useAbortController } from './useAbortController';
 
 export type ApiState<T> = {
   data: T | null;
@@ -29,6 +30,20 @@ export function useApi<T>(
   const { skip = false, body, ...fetchOptions } = options;
   const method = fetchOptions.method ?? 'GET';
 
+  const { getSignal } = useAbortController();
+
+  // Serialize body and fetchOptions values using refs to keep identity stable
+  // unless their deep or stringified contents actually change.
+  const bodyRef = useRef(body);
+  bodyRef.current = body;
+
+  const fetchOptionsRef = useRef(fetchOptions);
+  fetchOptionsRef.current = fetchOptions;
+
+  // Use a stable stringified representation for dependency checks to prevent reference churn
+  const serializedBody = JSON.stringify(body);
+  const serializedOptions = JSON.stringify(fetchOptions);
+
   const [state, setState] = useState<ApiState<T>>({
     data: null,
     loading: !skip,
@@ -45,7 +60,12 @@ export function useApi<T>(
   }, []);
 
   const fetchData = useCallback(async () => {
-    const key = buildDedupeKey(method, url, body);
+    const currentBody = bodyRef.current;
+    const currentOptions = fetchOptionsRef.current;
+    const currentMethod = currentOptions.method ?? 'GET';
+    const signal = getSignal();
+
+    const key = buildDedupeKey(currentMethod, url, currentBody);
 
     if (mountedRef.current) {
       setState((prev) => ({ ...prev, loading: true, error: null }));
@@ -54,9 +74,10 @@ export function useApi<T>(
     try {
       const data = await dedupe<T>(key, () =>
         fetch(url, {
-          ...fetchOptions,
-          method,
-          ...(body ? { body: JSON.stringify(body) } : {}),
+          ...currentOptions,
+          method: currentMethod,
+          signal,
+          ...(currentBody ? { body: JSON.stringify(currentBody) } : {}),
         }).then((res) => {
           if (!res.ok) throw new Error(`Request failed: ${res.status} ${res.statusText}`);
           return res.json() as Promise<T>;
@@ -68,6 +89,9 @@ export function useApi<T>(
       }
     } catch (err) {
       if (mountedRef.current) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
         setState({
           data: null,
           loading: false,
@@ -75,16 +99,16 @@ export function useApi<T>(
         });
       }
     }
-  }, [url, method, body]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [url, method, serializedBody, serializedOptions, getSignal]);
 
   useEffect(() => {
     if (!skip) {
       fetchData();
     }
     return () => {
-      cancelDedupe(buildDedupeKey(method, url, body));
+      cancelDedupe(buildDedupeKey(method, url, bodyRef.current));
     };
-  }, [skip, fetchData]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [skip, fetchData, method, url]);
 
   return { ...state, refetch: fetchData };
 }

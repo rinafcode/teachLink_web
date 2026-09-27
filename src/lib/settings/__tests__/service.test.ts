@@ -8,6 +8,7 @@ import {
   type AppSettings,
   type SettingsStorePersistedShape,
 } from '../types';
+import { SETTINGS_SCHEMA_VERSION } from '../constants';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -416,7 +417,7 @@ describe('SettingsService', () => {
 
     it('rejects data with missing settings', () => {
       const invalidData = {
-        version: 1,
+        version: SETTINGS_SCHEMA_VERSION,
         exportedAt: new Date().toISOString(),
         updatedAt: Date.now(),
       };

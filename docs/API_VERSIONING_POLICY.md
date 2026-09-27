@@ -1,19 +1,30 @@
 # API Versioning Policy
-
+<!-- 
 ## Overview
 
 This project uses URL-based API versioning to protect clients from breaking changes.
 
 - Stable API paths continue to be served at `/api/v1/*`
 - Legacy paths under `/api/*` remain supported through a compatibility layer
-- Older `/api/*` requests are rewritten to `/api/v1/*` and receive deprecation headers
+- Older `/api/*` requests are rewritten to `/api/v1/*` and receive deprecation headers -->
 
 ## Versioning strategy
-
 - New API routes are published under `/api/v1/`
 - Future versions should be added under `/api/v2/`, `/api/v3/`, etc.
 - Path-based versioning is the primary version selection mechanism
 - API clients should prefer explicit `/api/v1/...` paths when available
+
+## Supported version numbers
+
+The middleware validates version strings against the pattern `/^v\d+$/` (the letter
+`v` followed by one or more digits). Any other format is rejected with `400 Bad Request`.
+
+| Version | Status  | Notes                   |
+|---------|---------|-------------------------|
+| `v1`    | Active  | Current stable version  |
+| `v2`    | Planned | Reserved for future use |
+
+Examples of **invalid** version strings that are rejected: `vABC`, `v1.2`, `../v1`, `123`.
 
 ## Compatibility layer
 

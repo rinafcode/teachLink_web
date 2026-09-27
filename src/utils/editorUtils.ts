@@ -1,4 +1,5 @@
 import { Editor } from '@tiptap/react';
+import { getDateTimeFormat } from './intlCache';
 
 export interface EditorTemplate {
   id: string;
@@ -42,7 +43,7 @@ export const insertTemplate = (editor: Editor, templateId: string) => {
 };
 
 export const formatTime = (date: Date) => {
-  return new Intl.DateTimeFormat('en-US', {
+  return getDateTimeFormat('en-US', {
     hour: 'numeric',
     minute: 'numeric',
     second: 'numeric',

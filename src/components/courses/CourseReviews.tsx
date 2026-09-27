@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import { searchReviews, highlightTerms, type ReviewSortKey } from '@/utils/reviewSearch';
 import { useRatingStore } from '@/app/store/ratingStore';
 
@@ -28,7 +29,7 @@ export default function CourseReviews({
       id: '1',
       userName: 'Sarah Johnson',
       userAvatar:
-        'https://thumbs.dreamstime.com/b/matrix-style-digital-rain-green-binary-code-falling-downward-direction-abstract-background-depicting-effect-stream-397887374.jpg',
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
       rating: 5,
       date: '2 days ago',
       comment:
@@ -39,7 +40,7 @@ export default function CourseReviews({
       id: '2',
       userName: 'Michael Chen',
       userAvatar:
-        'https://static.vecteezy.com/system/resources/previews/053/715/379/non_2x/abstract-green-digital-rain-with-matrix-code-in-futuristic-cyber-background-perfect-for-technology-and-data-themed-visuals-png.png',
+        'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=150&q=80',
       rating: 4,
       date: '1 week ago',
       comment:
@@ -50,7 +51,7 @@ export default function CourseReviews({
       id: '3',
       userName: 'Emma Davis',
       userAvatar:
-        'https://thumbs.dreamstime.com/b/futuristic-laptop-glowing-digital-waves-emerging-screen-dark-setting-399809314.jpg',
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80',
       rating: 5,
       date: '2 weeks ago',
       comment:
@@ -75,8 +76,7 @@ export default function CourseReviews({
         })),
         { query, minRating, sortBy },
       ).map((scored) => scored.review),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [reviews, query, minRating, sortBy],
+    [reviews, query, minRating, sortBy, getHelpfulCount],
   );
 
   const sortOptions: { value: ReviewSortKey; label: string }[] = [
@@ -233,10 +233,11 @@ export default function CourseReviews({
             className="border-b border-[#E2E8F0] dark:border-[#334155] last:border-b-0 pb-6 last:pb-0"
           >
             <div className="flex items-start gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={review.userAvatar}
                 alt={review.userName}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div className="flex-1">

@@ -119,6 +119,19 @@ describe('getRelativeTime – extended ranges', () => {
   it('returns years ago', () => {
     expect(getRelativeTime(new Date(Date.now() - 400 * 86_400_000))).toBe('1 year ago');
   });
+
+  it('returns "just now" for future dates', () => {
+    const future = new Date(Date.now() + 3600_000);
+    expect(getRelativeTime(future)).toBe('just now');
+  });
+
+  it('returns "1 minute ago" at exactly 60 seconds', () => {
+    expect(getRelativeTime(new Date(Date.now() - 60_000))).toBe('1 minute ago');
+  });
+
+  it('returns "1 hour ago" at exactly 60 minutes', () => {
+    expect(getRelativeTime(new Date(Date.now() - 3600_000))).toBe('1 hour ago');
+  });
 });
 
 describe('formatFollowerCount – edge cases', () => {
@@ -126,6 +139,7 @@ describe('formatFollowerCount – edge cases', () => {
   it('handles exactly 1000', () => expect(formatFollowerCount(1000)).toBe('1K'));
   it('handles exactly 1_000_000', () => expect(formatFollowerCount(1_000_000)).toBe('1M'));
   it('handles large millions', () => expect(formatFollowerCount(2_500_000)).toBe('2.5M'));
+  it('handles negative numbers', () => expect(formatFollowerCount(-5)).toBe('-5'));
 });
 
 describe('groupActivitiesByDate – multi-day grouping', () => {
@@ -259,6 +273,32 @@ describe('useSocialInteractions – comment section', () => {
     await waitFor(() => expect(result.current.comments).toHaveLength(1));
     expect(result.current.comments[0].createdAt).toBeInstanceOf(Date);
   });
+
+  it('does not append comment when addComment API call fails', async () => {
+    vi.mocked(apiClient.post).mockRejectedValue(new Error('Network error'));
+    vi.mocked(apiClient.get).mockResolvedValue({ likes: 0, liked: false, comments: [] });
+    const { result } = renderHook(() => useSocialInteractions('post-1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(() => result.current.addComment('Will fail').catch(() => {}));
+    expect(result.current.comments).toHaveLength(0);
+  });
+
+  it('re-fetches when contentId changes', async () => {
+    vi.mocked(apiClient.get)
+      .mockResolvedValueOnce({ likes: 3, liked: false, comments: [makeComment({ id: 'old' })] })
+      .mockResolvedValueOnce({ likes: 7, liked: true, comments: [] });
+
+    const { result, rerender } = renderHook(({ cid }) => useSocialInteractions(cid), {
+      initialProps: { cid: 'post-a' },
+    });
+    await waitFor(() => expect(result.current.likes).toBe(3));
+
+    rerender({ cid: 'post-b' });
+    await waitFor(() => expect(result.current.likes).toBe(7));
+    expect(result.current.liked).toBe(true);
+    expect(result.current.comments).toHaveLength(0);
+    expect(apiClient.get).toHaveBeenCalledWith('/api/social/interactions/post-b');
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -270,7 +310,11 @@ describe('SocialInteractions – Comment Section UI', () => {
     vi.mocked(apiClient.get).mockResolvedValue({ likes: 5, liked: false, comments: [] });
     vi.mocked(apiClient.post).mockResolvedValue(makeComment());
     vi.mocked(apiClient.delete).mockResolvedValue({});
-    stubClipboard();
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => vi.clearAllMocks());
@@ -514,6 +558,130 @@ describe('SocialInteractions – Comment Section UI', () => {
     await user.click(screen.getByLabelText('Toggle comments'));
 
     expect(screen.getByText(xssName)).toBeInTheDocument();
+  });
+
+  // ── Loading state during submission ──────────────────────────────────────
+
+  it('disables the Post button while a comment submission is in progress', async () => {
+    let resolvePost!: (v: unknown) => void;
+    vi.mocked(apiClient.post).mockReturnValue(new Promise((res) => (resolvePost = res)));
+
+    const user = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user.click(screen.getByLabelText('Toggle comments'));
+
+    const input = screen.getByPlaceholderText('Add a comment…');
+    await user.type(input, 'Loading test');
+    const postBtn = screen.getByRole('button', { name: /post/i });
+
+    await user.click(postBtn);
+    expect(postBtn).toBeDisabled();
+
+    await act(async () => resolvePost(makeComment({ body: 'Loading test' })));
+    await waitFor(() => expect(screen.getByPlaceholderText('Add a comment…')).toHaveValue(''));
+  });
+
+  // ── Keyboard submission ──────────────────────────────────────────────────
+
+  it('submits the comment when Enter is pressed in the input', async () => {
+    const user = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user.click(screen.getByLabelText('Toggle comments'));
+
+    const input = screen.getByPlaceholderText('Add a comment…');
+    await user.type(input, 'Enter key submit{enter}');
+
+    await waitFor(() =>
+      expect(apiClient.post).toHaveBeenCalledWith('/api/social/interactions/post-1/comments', {
+        body: 'Enter key submit',
+      }),
+    );
+  });
+
+  // ── Share ────────────────────────────────────────────────────────────────
+
+  it('copies the provided contentUrl when share is clicked', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const nav = window.navigator;
+    Object.defineProperty(nav, 'clipboard', {
+      value: { writeText },
+      writable: true,
+      configurable: true,
+    });
+
+    const user = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" contentUrl="https://example.com/custom" />);
+    await user.click(screen.getByLabelText('Copy link'));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('https://example.com/custom'));
+    expect(screen.getByText('Copied!')).toBeInTheDocument();
+  });
+
+  it('handles clipboard write failure gracefully', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('Clipboard denied'));
+    const nav = window.navigator;
+    Object.defineProperty(nav, 'clipboard', {
+      value: { writeText },
+      writable: true,
+      configurable: true,
+    });
+
+    const user = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user.click(screen.getByLabelText('Copy link'));
+
+    // Should not throw or crash – still shows 'Share' (not 'Copied!')
+    await waitFor(() => expect(screen.getByText('Share')).toBeInTheDocument());
+  });
+
+  // ── Like button disabled during comment loading ──────────────────────────
+
+  it('disables the Like button while a comment operation is loading', async () => {
+    let resolvePost!: (v: unknown) => void;
+    vi.mocked(apiClient.post).mockReturnValue(new Promise((res) => (resolvePost = res)));
+
+    const user = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await user.click(screen.getByLabelText('Toggle comments'));
+
+    const input = screen.getByPlaceholderText('Add a comment…');
+    await user.type(input, 'Hello');
+    await user.click(screen.getByRole('button', { name: /post/i }));
+
+    // Like button should be disabled while the comment post is in flight
+    expect(screen.getByLabelText('Like')).toBeDisabled();
+
+    await act(async () => resolvePost(makeComment({ body: 'Hello' })));
+    await waitFor(() => expect(screen.getByLabelText('Like')).not.toBeDisabled());
+  });
+
+  // ── Comment count updates ────────────────────────────────────────────────
+
+  it('updates the comment count badge after adding a comment', async () => {
+    const existing = [makeComment({ id: 'c1' })];
+    vi.mocked(apiClient.get).mockResolvedValue({ likes: 0, liked: false, comments: existing });
+    vi.mocked(apiClient.post).mockResolvedValue(makeComment({ id: 'c2', body: 'Another' }));
+
+    const user = userEvent.setup();
+    render(<SocialInteractions contentId="post-1" />);
+    await waitFor(() => expect(screen.getByText('1')).toBeInTheDocument());
+    await user.click(screen.getByLabelText('Toggle comments'));
+
+    const input = screen.getByPlaceholderText('Add a comment…');
+    await user.type(input, 'Another');
+    await user.click(screen.getByRole('button', { name: /post/i }));
+
+    await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument());
+  });
+
+  // ── Zero state ───────────────────────────────────────────────────────────
+
+  it('renders with zero likes and zero comments initially', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ likes: 0, liked: false, comments: [] });
+    render(<SocialInteractions contentId="post-1" />);
+    await waitFor(() => expect(screen.getAllByText('0')).toHaveLength(2));
+    expect(screen.getByLabelText('Like')).toBeInTheDocument();
+    expect(screen.getByLabelText('Toggle comments')).toBeInTheDocument();
+    expect(screen.getByLabelText('Copy link')).toBeInTheDocument();
   });
 });
 

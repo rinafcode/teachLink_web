@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
-
+import Image from 'next/image';
 interface AuthLayoutProps {
   children: ReactNode;
   heroTitle: string;
@@ -16,7 +16,6 @@ export const AuthLayout = ({
   heroSubtitle,
   heroImage = '/hero-image.jpg',
 }: AuthLayoutProps) => {
-  void heroImage; // Reserved for future hero image display
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side - Form */}
@@ -36,6 +35,14 @@ export const AuthLayout = ({
         transition={{ duration: 0.5, delay: 0.2 }}
         className="flex-1 relative bg-gradient-to-br from-cyan-500 to-blue-600 p-12 flex items-center justify-center overflow-hidden"
       >
+        {/* Hero background image */}
+        <Image
+          src={heroImage}
+          alt="Hero background"
+          fill
+          className="absolute inset-0 object-cover"
+          priority
+        />
         {/* Background overlay pattern */}
         <div className="absolute inset-0 opacity-10">
           <div

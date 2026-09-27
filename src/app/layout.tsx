@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { RootProviders } from '@/providers/RootProviders';
 import { Footer } from '@/components/layout/Footer';
+import { EnvironmentBanner } from '@/components/ui/EnvironmentBanner';
 
 // Languages supported at startup — extend as new locale files are added.
 const VALID_LOCALES = new Set([
@@ -38,9 +39,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://teachlink.app'),
   title: 'TeachLink - Offline Learning Platform',
   description: 'Learn anywhere, anytime with offline capabilities',
   manifest: '/manifest.json',
+  openGraph: {
+    title: 'TeachLink - Offline Learning Platform',
+    description: 'Learn anywhere, anytime with offline capabilities',
+    type: 'website',
+    siteName: 'TeachLink',
+    url: 'https://teachlink.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@teachlink',
+    creator: '@teachlink',
+    title: 'TeachLink - Offline Learning Platform',
+    description: 'Learn anywhere, anytime with offline capabilities',
+  },
 };
 
 export default async function RootLayout({
@@ -48,9 +64,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
+  const [cookieStore, headersList] = await Promise.all([cookies(), headers()]);
   const themeCookie = cookieStore.get('theme');
   const defaultTheme = themeCookie ? themeCookie.value : 'system';
+  const cspNonce = headersList.get('x-csp-nonce') ?? '';
 
   // Read persisted locale to server-render the correct lang/dir on <html> —
   // avoids a hydration flash for RTL users.
@@ -79,13 +96,21 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script nonce={cspNonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 transition-colors duration-200 dark:bg-gray-950 dark:text-gray-50 flex flex-col min-h-screen`}
       >
+        {/* Skip-to-content link — visually hidden until focused, satisfies WCAG 2.4.1 */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-gray-900 focus:shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:focus:bg-gray-900 dark:focus:text-gray-50"
+        >
+          Skip to main content
+        </a>
         <RootProviders defaultTheme={defaultTheme} defaultLocale={locale}>
-          <main className="flex-grow">{children}</main>
+          <EnvironmentBanner />
+          <main id="main-content" className="flex-grow">{children}</main>
           <Footer />
         </RootProviders>
 
@@ -94,10 +119,11 @@ export default async function RootLayout({
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_ANALYTICS_ID}`}
             strategy="lazyOnload"
+            nonce={cspNonce}
           />
         )}
         {process.env.NEXT_PUBLIC_ANALYTICS_ID && (
-          <Script id="analytics-init" strategy="lazyOnload">
+          <Script id="analytics-init" strategy="lazyOnload" nonce={cspNonce}>
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}

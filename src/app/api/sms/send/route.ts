@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: 'Missing required fields: eventType, phoneNumber',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
             success: false,
             error: 'Unknown event type',
           },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
         provider: result.provider,
         error: result.error,
       },
-      { status: result.success ? 200 : 500 }
+      { status: result.success ? 200 : 500 },
     );
   } catch (error) {
     logger.error('SMS send API error', {
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Internal server error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

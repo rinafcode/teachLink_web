@@ -67,9 +67,17 @@ export const CHART_COLOR_PALETTE = [
 ];
 
 /**
- * Format number with appropriate suffix (K, M, B)
+ * Format number with appropriate suffix (K, M, B) for compact display
+ * @deprecated Use formatNumberCompact for clarity, or i18nUtils.formatNumber for locale-aware formatting
  */
 export const formatNumber = (num: number): string => {
+  return formatNumberCompact(num);
+};
+
+/**
+ * Format number with appropriate suffix (K, M, B) for compact display
+ */
+export const formatNumberCompact = (num: number): string => {
   if (num >= 1000000000) {
     return (num / 1000000000).toFixed(1) + 'B';
   }
@@ -181,10 +189,10 @@ export const aggregateByTimePeriod = (
         aggregatedValue = values.length;
         break;
       case 'min':
-        aggregatedValue = Math.min(...values);
+        aggregatedValue = values.reduce((a, b) => (b < a ? b : a), values[0]);
         break;
       case 'max':
-        aggregatedValue = Math.max(...values);
+        aggregatedValue = values.reduce((a, b) => (b > a ? b : a), values[0]);
         break;
     }
 
@@ -214,8 +222,12 @@ export const calculateMovingAverage = (data: number[], windowSize: number): numb
  * Normalize data to 0-100 scale
  */
 export const normalizeData = (data: number[]): number[] => {
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+  let min = Infinity;
+  let max = -Infinity;
+  for (const val of data) {
+    if (val < min) min = val;
+    if (val > max) max = val;
+  }
   const range = max - min;
 
   if (range === 0) return data.map(() => 50);
@@ -235,6 +247,24 @@ export const calculateTrend = (
 
   const first = data[0];
   const last = data[data.length - 1];
+
+  // Guard against a zero/near-zero baseline before dividing, otherwise the
+  // percentage change becomes Infinity or NaN (common for new metrics whose
+  // first data point is 0) and dashboards render a nonsensical trend.
+  // A percentage change from a zero baseline is undefined, so report the
+  // direction of movement with a full 100% change as a finite, sane fallback.
+  if (Math.abs(first) < Number.EPSILON) {
+    if (Math.abs(last) < Number.EPSILON) {
+      // Both endpoints are effectively zero: nothing changed.
+      return { direction: 'neutral', percentage: 0 };
+    }
+
+    return {
+      direction: last > first ? 'up' : 'down',
+      percentage: 100,
+    };
+  }
+
   const change = ((last - first) / first) * 100;
 
   if (Math.abs(change) < 1) {
@@ -327,8 +357,8 @@ export const calculateStatistics = (
     mean,
     median,
     mode,
-    min: Math.min(...data),
-    max: Math.max(...data),
+    min: sorted[0],
+    max: sorted[sorted.length - 1],
     stdDev,
   };
 };

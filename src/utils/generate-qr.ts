@@ -3,6 +3,10 @@
  * Provides functions for generating and styling QR codes, with support for custom colors and sizes.
  */
 
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('qr-code');
+
 export interface QRCodeOptions {
   /** Size of the QR code in pixels */
   size?: number;
@@ -80,7 +84,7 @@ export async function downloadQRCode(canvas: HTMLCanvasElement, filename: string
     link.click();
     document.body.removeChild(link);
   } catch (error) {
-    console.error('Failed to download QR code:', error);
+    logger.error('Failed to download QR code', { error });
     throw new Error('Failed to download QR code');
   }
 }
@@ -100,7 +104,7 @@ export async function printQRCode(canvas: HTMLCanvasElement) {
     printWindow.document.close();
     printWindow.print();
   } catch (error) {
-    console.error('Failed to print QR code:', error);
+    logger.error('Failed to print QR code', { error });
     throw new Error('Failed to print QR code');
   }
 }
@@ -119,7 +123,7 @@ export async function copyQRCodeToClipboard(canvas: HTMLCanvasElement) {
       }),
     ]);
   } catch (error) {
-    console.error('Failed to copy QR code to clipboard:', error);
+    logger.error('Failed to copy QR code to clipboard', { error });
     throw new Error('Failed to copy QR code to clipboard');
   }
 }

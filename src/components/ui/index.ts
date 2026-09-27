@@ -9,6 +9,9 @@ export {
   type BreadcrumbItem,
   type BreadcrumbsProps,
 } from './Breadcrumbs';
+export { ABTestBreadcrumbs, type ABTestBreadcrumbsProps } from './ABTestBreadcrumbs';
+export { Badge, badgeVariants } from './Badge';
+export type { BadgeProps } from './Badge';
 export { Button } from './Button';
 export { ButtonGroup } from './ButtonGroup';
 export { EmptyState } from './EmptyState';

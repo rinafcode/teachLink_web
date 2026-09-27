@@ -1,19 +1,32 @@
 import pino from 'pino';
-// Simple synchronous context storage compatible with both browser and Node.js
-class SimpleAsyncLocalStorage<T> {
-  private store: T | undefined;
-  getStore(): T | undefined {
-    return this.store;
-  }
-  run<R>(store: T, callback: () => R): R {
-    this.store = store;
-    try {
-      return callback();
-    } finally {
-      this.store = undefined;
-    }
+import { logContextStorage as simpleStorage } from './context';
+import type { AsyncContextStorage, LogContextStore } from './context';
+
+// Try to enhance with Node's AsyncLocalStorage for proper async context tracking
+// (server-only: dynamically required so webpack excludes it from client bundles)
+let nodeAsyncLocalStorage: import('node:async_hooks').AsyncLocalStorage<LogContextStore> | null =
+  null;
+if (typeof window === 'undefined') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { AsyncLocalStorage } = require('node:async_hooks') as typeof import('node:async_hooks');
+    nodeAsyncLocalStorage = new AsyncLocalStorage<LogContextStore>();
+  } catch {
+    nodeAsyncLocalStorage = null;
   }
 }
+
+export const logContextStorage: AsyncContextStorage<LogContextStore> =
+  nodeAsyncLocalStorage ?? simpleStorage;
+
+export function runWithLogContext<T>(context: LogContextStore, callback: () => T): T {
+  return logContextStorage.run(context, callback);
+}
+
+export function getLogContext(): LogContextStore | undefined {
+  return logContextStorage.getStore();
+}
+
 import { createCounterMetric } from './performance';
 import { HttpLogTransport, InMemoryLogTransport, queryLogRecords } from './transports';
 import { LogLevel, LogQuery, LogRecord, LogTransport, PerformanceMetric } from './types';
@@ -43,20 +56,7 @@ const SENSITIVE_KEYS = [
   'pwd',
 ];
 
-export interface LogContextStore {
-  requestId?: string;
-  correlationId?: string;
-}
-
-export const logContextStorage = new SimpleAsyncLocalStorage<LogContextStore>();
-
-export function runWithLogContext<T>(context: LogContextStore, callback: () => T): T {
-  return logContextStorage.run(context, callback);
-}
-
-export function getLogContext(): LogContextStore | undefined {
-  return logContextStorage.getStore();
-}
+export type { LogContextStore };
 
 export function generateCorrelationId(): string {
   return `corr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -182,9 +182,11 @@ function normalizeError(error: unknown): LogRecord['error'] | undefined {
 export interface LogPayload {
   requestId?: string;
   correlationId?: string;
+  traceId?: string;
   context?: Record<string, unknown>;
   metrics?: PerformanceMetric[];
   error?: unknown;
+  [key: string]: unknown;
 }
 
 export interface AppLogger {
@@ -238,6 +240,8 @@ class Logger implements AppLogger {
       contextStore?.correlationId ||
       (this.baseContext.correlationId as string) ||
       activeRequestId;
+    const activeTraceId =
+      payload.traceId || contextStore?.traceId || (this.baseContext.traceId as string) || '';
 
     const baseRecord: LogRecord = {
       level,
@@ -246,6 +250,7 @@ class Logger implements AppLogger {
       timestamp: new Date().toISOString(),
       requestId: activeRequestId,
       correlationId: activeCorrelationId,
+      traceId: activeTraceId,
       context: {
         ...this.baseContext,
         ...(payload.context ?? {}),
@@ -261,6 +266,7 @@ class Logger implements AppLogger {
         scope: record.scope,
         requestId: record.requestId,
         correlationId: record.correlationId,
+        traceId: record.traceId,
         context: record.context,
         metrics: record.metrics,
         error: record.error,

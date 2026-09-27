@@ -1,14 +1,103 @@
 /**
  * GraphQL Subscriptions Configuration
  * Provides WebSocket-based real-time data updates using Apollo Client and graphql-ws
+ *
+ * The graphql-ws socket lifecycle (reconnect, heartbeat, queueing) is delegated to
+ * the shared `ConnectionSupervisor` (src/lib/realtime/connectionSupervisor.ts):
+ * graphql-ws only opens the socket lazily, the supervisor schedules reconnects and
+ * the transport re-subscribes every registered subscription after a reconnect.
  */
 
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
-import { createClient as createWSClient } from 'graphql-ws';
+import { createClient as createWSClient, type Client } from 'graphql-ws';
 import { ApolloClient, InMemoryCache, ApolloLink, split, HttpLink } from '@apollo/client';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { DocumentNode } from 'graphql';
+import { DocumentNode, print } from 'graphql';
 import { flagStore, evaluateFlag } from '@/lib/feature-flags';
+import { createLogger } from '@/lib/logging';
+import { REALTIME_CATCHUP_QUERY } from './subscriptionQueries';
+import {
+  BaseRealtimeTransport,
+  ConnectionSupervisor,
+  getSupervisor,
+  registerSupervisor,
+} from '@/lib/realtime/connectionSupervisor';
+
+const logger = createLogger('graphql-subscriptions');
+
+/** Name under which the GraphQL subscription supervisor is registered. */
+export const GRAPHQL_SUBSCRIPTIONS_CONNECTION = 'graphql-subscriptions';
+
+/** The most recently created GraphQL client (for catch-up queries). */
+let activeClient: ApolloClient<any> | null = null;
+
+/** Listeners notified when the realtime connection may have missed events. */
+const catchUpListeners = new Set<(since: number | undefined) => void>();
+
+/**
+ * Register a listener invoked when events may have been missed while the
+ * realtime transport was down or when an inbound sequence gap is detected.
+ * The `since` argument is the last sequence number observed by the supervisor
+ * (`undefined` when none was ever seen).
+ */
+export function onSubscriptionCatchUp(
+  listener: (since: number | undefined) => void,
+): () => void {
+  catchUpListeners.add(listener);
+  return () => catchUpListeners.delete(listener);
+}
+
+function emitSubscriptionCatchUp(): void {
+  const since = getLastRealtimeSequence();
+  catchUpListeners.forEach((listener) => {
+    try {
+      listener(since);
+    } catch (error) {
+      logger.warn('[GraphQLSubscriptions] Catch-up listener failed', { error });
+    }
+  });
+}
+
+/** Highest inbound sequence observed by the GraphQL supervisor, if any. */
+export function getLastRealtimeSequence(): number | undefined {
+  return getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION)?.getLastSequence();
+}
+
+/** A single event returned by the realtime catch-up query. */
+export interface RealtimeEvent {
+  id: string;
+  sequence: number;
+  type: string;
+  payload: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+/**
+ * Fetches events that occurred after `since` through the active GraphQL
+ * client (HTTP). Returns `null` when no client is available or the query
+ * fails, so consumers can fall back to the live subscription stream.
+ */
+export async function requestRealtimeCatchUp(
+  since: string | number,
+): Promise<RealtimeEvent[] | null> {
+  const client = activeClient;
+  if (!client || typeof client.query !== 'function') {
+    logger.warn('[GraphQLSubscriptions] No active client for catch-up query');
+    return null;
+  }
+  try {
+    const result = await client.query({
+      query: REALTIME_CATCHUP_QUERY,
+      variables: { since: String(since) },
+      fetchPolicy: 'network-only',
+    });
+    const events = result.data?.realtimeEvents;
+    return Array.isArray(events) ? events : null;
+  } catch (error) {
+    logger.error('[GraphQLSubscriptions] Catch-up query failed', { error });
+    return null;
+  }
+}
 
 /**
  * WebSocket subscription configuration options
@@ -139,7 +228,7 @@ class SubscriptionConnectionManager {
       try {
         listener(event);
       } catch (err) {
-        console.error('Error notifying subscription listener:', err);
+        logger.error('Error notifying subscription listener', { error: err });
       }
     });
   }
@@ -196,13 +285,237 @@ function calculateBackoffDelay(retryCount: number, config: SubscriptionConfig): 
  * Evaluate a feature gate against the in-process flag store.
  * Returns true when no gate is configured (opt-in, non-breaking).
  */
-export function isFeatureEnabled(
-  flagId: string,
-  context: Record<string, string> = {},
-): boolean {
+export function isFeatureEnabled(flagId: string, context: Record<string, string> = {}): boolean {
   const flag = flagStore.get(flagId);
   if (!flag) return false;
   return evaluateFlag(flag, context);
+}
+
+interface SubscriptionEntry {
+  query: DocumentNode;
+  variables?: Record<string, unknown>;
+  handler: (payload: any) => void;
+}
+
+/**
+ * graphql-ws transport adapter. The socket opens lazily (only when there is at
+ * least one active subscription); the ConnectionSupervisor drives reconnects and
+ * this adapter re-subscribes every registered entry after each reconnect.
+ */
+class GraphQLWsTransport extends BaseRealtimeTransport {
+  readonly name = 'graphql';
+  private client: Client | null = null;
+  private connected = false;
+  private readonly subscriptions = new Map<string, SubscriptionEntry>();
+  private readonly unsubscribes = new Map<string, () => void>();
+  private resubscribeInProgress = false;
+
+  constructor(private readonly config: SubscriptionConfig) {
+    super();
+  }
+
+  getClient(): Client | null {
+    return this.client;
+  }
+
+  /**
+   * Get the count of active subscriptions
+   */
+  getActiveSubscriptionCount(): number {
+    return this.subscriptions.size;
+  }
+
+  /**
+   * Get all active subscription IDs
+   */
+  getActiveSubscriptionIds(): string[] {
+    return Array.from(this.subscriptions.keys());
+  }
+
+  connect(): void {
+    if (this.client && this.connected) {
+      logger.debug('[GraphQLWsTransport] Already connected, skipping reconnect');
+      return;
+    }
+
+    if (this.client && !this.connected) {
+      logger.debug('[GraphQLWsTransport] Terminating stale client connection');
+      this.client.terminate();
+      this.client = null;
+    }
+
+    if (!this.client) {
+      logger.debug('[GraphQLWsTransport] Creating new WebSocket client', {
+        url: this.config.subscriptionUrl,
+      });
+      const { reconnect } = { ...DEFAULT_SUBSCRIPTION_CONFIG, ...this.config };
+      this.client = createWSClient({
+        url: this.config.subscriptionUrl,
+        connectionParams: () => ({
+          authorization: this.config.headers?.authorization ?? '',
+        }),
+        // Reconnection is owned by the ConnectionSupervisor.
+        shouldRetry: () => false,
+        retryAttempts: 0,
+        lazy: true,
+        keepAlive: 10_000,
+        on: {
+          connected: () => {
+            this.connected = true;
+            logger.debug('[GraphQLWsTransport] WebSocket connected');
+            this.events.emitOpen();
+          },
+          error: (error) => {
+            logger.error('[GraphQLWsTransport] WebSocket error', { error });
+            this.events.emitError(error);
+          },
+          closed: () => {
+            logger.debug('[GraphQLWsTransport] WebSocket closed');
+            this.connected = false;
+            this.client?.terminate();
+            this.client = null;
+            this.events.emitClose();
+          },
+          connecting: () => {
+            logger.debug('[GraphQLWsTransport] WebSocket connecting');
+            // Status is driven by the supervisor's own 'connecting' phase.
+          },
+        },
+        connectionAckWaitTimeout: this.config.connectionTimeoutMs ?? 5000,
+      });
+    }
+    // Restore every subscription — opening the socket lazily if needed.
+    this.resubscribeAll();
+  }
+
+  disconnect(): void {
+    this.close();
+  }
+
+  close(): void {
+    this.connected = false;
+    this.unsubscribes.forEach((unsubscribe) => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        logger.warn('[GraphQLWsTransport] Error unsubscribing during close', { error });
+      }
+    });
+    this.unsubscribes.clear();
+    this.client?.terminate();
+    this.client = null;
+  }
+
+  isOpen(): boolean {
+    return this.connected;
+  }
+
+  send(): void {
+    // Subscriptions are the only outbound channel; nothing to queue here.
+  }
+
+  sendPing(): void {
+    // graphql-ws handles protocol-level keep-alive via `keepAlive`.
+  }
+
+  /**
+   * Register a subscription. It is (re-)established immediately and again after
+   * every reconnect driven by the supervisor.
+   */
+  subscribe(id: string, entry: SubscriptionEntry): () => void {
+    logger.debug('[GraphQLWsTransport] Registering subscription', {
+      id,
+      operationName: (entry.query.definitions[0] as any)?.name?.value,
+    });
+    this.subscriptions.set(id, entry);
+    const supervisor = getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION);
+    const unregisterResubscribe = supervisor?.registerResubscribe(`graphql:${id}`, () => {
+      this.resubscribe(id);
+    });
+    this.resubscribe(id);
+    return () => {
+      logger.debug('[GraphQLWsTransport] Unregistering subscription', { id });
+      this.unsubscribes.get(id)?.();
+      this.unsubscribes.delete(id);
+      this.subscriptions.delete(id);
+      unregisterResubscribe?.();
+    };
+  }
+
+  private resubscribeAll(): void {
+    if (this.resubscribeInProgress) {
+      logger.debug('[GraphQLWsTransport] Resubscribe already in progress, skipping');
+      return;
+    }
+
+    this.resubscribeInProgress = true;
+    const subscriptionIds = Array.from(this.subscriptions.keys());
+    logger.debug('[GraphQLWsTransport] Resubscribing all subscriptions', {
+      count: subscriptionIds.length,
+      ids: subscriptionIds,
+    });
+
+    try {
+      this.subscriptions.forEach((_, id) => this.resubscribe(id));
+    } finally {
+      this.resubscribeInProgress = false;
+    }
+  }
+
+  private resubscribe(id: string): void {
+    const entry = this.subscriptions.get(id);
+    const client = this.client;
+    if (!entry) {
+      logger.warn('[GraphQLWsTransport] Subscription entry not found during resubscribe', { id });
+      return;
+    }
+    if (!client) {
+      logger.warn('[GraphQLWsTransport] WebSocket client not available during resubscribe', { id });
+      return;
+    }
+
+    try {
+      // Unsubscribe from the old subscription if it exists
+      const oldUnsubscribe = this.unsubscribes.get(id);
+      if (oldUnsubscribe) {
+        try {
+          oldUnsubscribe();
+          logger.debug('[GraphQLWsTransport] Unsubscribed from old subscription', { id });
+        } catch (error) {
+          logger.warn('[GraphQLWsTransport] Error unsubscribing from old subscription', { id, error });
+        }
+      }
+
+      // Subscribe to the new subscription
+      const unsubscribe = client.subscribe(
+        {
+          query: print(entry.query),
+          variables: entry.variables ?? {},
+        },
+        {
+          next: (result) => {
+            try {
+              entry.handler(result.data);
+            } catch (error) {
+              logger.error('[GraphQLWsTransport] Error in subscription handler', { id, error });
+            }
+          },
+          error: (error) => {
+            logger.error('[GraphQLWsTransport] Subscription error', { id, error });
+            this.events.emitError(error);
+          },
+          complete: () => {
+            logger.debug('[GraphQLWsTransport] Subscription completed', { id });
+          },
+        },
+      );
+      this.unsubscribes.set(id, unsubscribe);
+      logger.debug('[GraphQLWsTransport] Subscription reestablished', { id });
+    } catch (error) {
+      logger.error('[GraphQLWsTransport] Error resubscribing', { id, error });
+      this.events.emitError(error);
+    }
+  }
 }
 
 /**
@@ -226,45 +539,49 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
   // Only build the WebSocket link when the feature is enabled
   const link: ApolloLink = subscriptionsEnabled
     ? (() => {
-        const wsClient = createWSClient({
-          url: config.subscriptionUrl,
-          connectionParams: () => ({
-            authorization: config.headers?.authorization ?? '',
-          }),
-          shouldRetry: (code) => {
-            return code !== 1000 && code !== 1001 && code !== 4000;
-          },
-          retryAttempts: config.reconnect?.maxRetries ?? 5,
-          on: {
-            connected: () => {
-              manager.setState(ConnectionState.CONNECTED);
-              manager.resetRetryCount();
-            },
-            error: (error) => {
-              const normalizedError =
-                error instanceof Error
-                  ? error
-                  : new Error(typeof error === 'string' ? error : 'Unknown error');
-              manager.setState(ConnectionState.ERROR, normalizedError);
-            },
-            closed: () => {
-              manager.setState(ConnectionState.DISCONNECTED);
-            },
-            connecting: () => {
-              manager.setState(ConnectionState.CONNECTING);
-            },
-          },
-          connectionAckWaitTimeout: config.connectionTimeoutMs ?? 5000,
+        const transport = new GraphQLWsTransport(config);
+        const { reconnect } = { ...DEFAULT_SUBSCRIPTION_CONFIG, ...config };
+        const supervisor = new ConnectionSupervisor(transport, {
+          initialReconnectDelayMs: reconnect?.initialDelayMs ?? 1000,
+          maxReconnectDelayMs: reconnect?.maxDelayMs ?? 30000,
+          maxReconnectAttempts: reconnect?.maxRetries ?? 5,
         });
 
+        // Mirror the supervisor status into the legacy connection manager so
+        // existing `getConnectionManager()` consumers keep working.
+        supervisor.onStatusChange((status) => {
+          if (status.isConnected) {
+            manager.setState(ConnectionState.CONNECTED);
+            manager.resetRetryCount();
+          } else if (status.phase === 'connecting' || status.phase === 'reconnecting') {
+            manager.setState(ConnectionState.CONNECTING);
+          } else if (status.phase === 'offline') {
+            manager.setState(
+              ConnectionState.ERROR,
+              new Error(status.lastError ?? 'Realtime connection unavailable'),
+            );
+          } else {
+            manager.setState(ConnectionState.DISCONNECTED);
+          }
+        });
+
+        registerSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION, supervisor);
+        supervisor.connect();
+
+        // Notify catch-up listeners when a inbound sequence gap is detected
+        // (events missed while the socket stayed open) and after every
+        // successful (re)connect so consumers can backfill the gap window.
+        supervisor.setCatchUpHandler(emitSubscriptionCatchUp);
+        supervisor.onReconnect(emitSubscriptionCatchUp);
+
+        const wsClient = transport.getClient()!;
         const wsLink = new GraphQLWsLink(wsClient);
 
         return split(
           ({ query }) => {
             const definition = getMainDefinition(query);
             return (
-              definition.kind === 'OperationDefinition' &&
-              definition.operation === 'subscription'
+              definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
             );
           },
           wsLink,
@@ -287,7 +604,64 @@ export function createSubscriptionClient(config: SubscriptionConfig): ApolloClie
     }),
   });
 
+  activeClient = client;
+
   return client;
+}
+
+/**
+ * Subscribe to a realtime event through the GraphQL supervisor. The subscription
+ * is automatically restored after every reconnect (resubscribe registry).
+ *
+ * @param id - Unique subscription identifier
+ * @param query - GraphQL subscription document
+ * @param variables - Variables to pass to the subscription
+ * @param handler - Callback function to handle incoming data
+ * @returns unsubscribe function
+ */
+export function subscribeRealtime(
+  id: string,
+  query: DocumentNode,
+  variables: Record<string, unknown>,
+  handler: (payload: any) => void,
+): () => void {
+  const supervisor = getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION);
+  const transport = supervisor?.getTransport() as GraphQLWsTransport | undefined;
+  if (!supervisor || !transport) {
+    logger.warn('[GraphQLSubscriptions] No active subscription supervisor; subscription dropped', {
+      id,
+    });
+    return () => undefined;
+  }
+  logger.debug('[GraphQLSubscriptions] Subscribing to realtime event', {
+    id,
+    operationName: (query.definitions[0] as any)?.name?.value,
+  });
+  return transport.subscribe(id, { query, variables, handler });
+}
+
+/**
+ * Get all active subscription IDs for the GraphQL connection
+ */
+export function getActiveSubscriptions(): string[] {
+  const supervisor = getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION);
+  const transport = supervisor?.getTransport() as GraphQLWsTransport | undefined;
+  if (!transport) {
+    return [];
+  }
+  return transport.getActiveSubscriptionIds();
+}
+
+/**
+ * Get the count of active subscriptions for the GraphQL connection
+ */
+export function getActiveSubscriptionCount(): number {
+  const supervisor = getSupervisor(GRAPHQL_SUBSCRIPTIONS_CONNECTION);
+  const transport = supervisor?.getTransport() as GraphQLWsTransport | undefined;
+  if (!transport) {
+    return 0;
+  }
+  return transport.getActiveSubscriptionCount();
 }
 
 /**

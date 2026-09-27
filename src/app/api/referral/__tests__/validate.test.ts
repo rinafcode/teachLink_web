@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { POST } from '../validate/route';
+import { GET } from '../validate/route';
 
 describe('Referral Validation API', () => {
   describe('GET /api/referral/validate', () => {
@@ -13,7 +13,7 @@ describe('Referral Validation API', () => {
       } as any;
 
       // The route handler exists and can be imported
-      expect(POST).toBeDefined();
+      expect(GET).toBeDefined();
     });
 
     it('should handle missing code parameter', async () => {

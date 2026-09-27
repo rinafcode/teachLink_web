@@ -1,25 +1,41 @@
 import { apiClient } from '@/lib/api';
 import { Conference, ConferenceInput } from '@/types/conference';
 import { createLogger } from '@/lib/logging';
+import { withTimeout } from '@/lib/timeout';
 
 const logger = createLogger('conference-service');
+const CONFERENCE_TIMEOUT_MS = Number(process.env.CONFERENCE_TIMEOUT_MS || 10000);
+const CONFERENCE_MAX_RETRIES = Number(process.env.CONFERENCE_MAX_RETRIES || 2);
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function conferenceRequest<T>(request: () => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await withTimeout(request(), CONFERENCE_TIMEOUT_MS, 'Conference request timed out');
+    } catch (error) {
+      if (attempt >= CONFERENCE_MAX_RETRIES) throw error;
+      await delay(Math.min(1000, 100 * 2 ** attempt));
+    }
+  }
+}
 
 /**
  * Get all conferences for a user's profile.
  *
- * TODO: Replace with actual API endpoint.
- * Expected backend endpoint: GET /api/profile/{userId}/conferences
+ * Backend endpoint: GET /api/profile/{userId}/conferences
  * Expected response: { data: Conference[] }
- *
- * For now, returns an empty array (mock implementation).
  */
 export async function getConferences(userId: string): Promise<Conference[]> {
   try {
     logger.debug('Fetching conferences for user', { context: { userId } });
 
-    // TODO: Replace with apiClient.get<{ data: Conference[] }>(`/api/profile/${userId}/conferences`)
-    // and extract data.data
-    return [];
+    const response = await conferenceRequest(() =>
+      apiClient.get<{ data: Conference[] }>(`/api/profile/${userId}/conferences`, {
+        timeout: CONFERENCE_TIMEOUT_MS,
+      }),
+    );
+    return response.data;
   } catch (error) {
     logger.error('Failed to fetch conferences', { context: { userId, error } });
     throw error;
@@ -29,24 +45,19 @@ export async function getConferences(userId: string): Promise<Conference[]> {
 /**
  * Add a new conference to a user's profile.
  *
- * TODO: Replace with actual API endpoint.
- * Expected backend endpoint: POST /api/profile/{userId}/conferences
+ * Backend endpoint: POST /api/profile/{userId}/conferences
  * Expected response: { data: Conference }
- *
- * For now, returns mock conference with generated ID.
  */
 export async function addConference(userId: string, input: ConferenceInput): Promise<Conference> {
   try {
     logger.debug('Adding conference to profile', { context: { userId, title: input.title } });
 
-    // TODO: Replace with apiClient.post<{ data: Conference }>(`/api/profile/${userId}/conferences`, input)
-    // and return data.data
-    const mockConference: Conference = {
-      id: `conf-${Date.now()}`,
-      ...input,
-      date: input.date,
-    };
-    return mockConference;
+    const response = await conferenceRequest(() =>
+      apiClient.post<{ data: Conference }>(`/api/profile/${userId}/conferences`, input, {
+        timeout: CONFERENCE_TIMEOUT_MS,
+      }),
+    );
+    return response.data;
   } catch (error) {
     logger.error('Failed to add conference', { context: { userId, error } });
     throw error;
@@ -56,11 +67,8 @@ export async function addConference(userId: string, input: ConferenceInput): Pro
 /**
  * Update an existing conference on a user's profile.
  *
- * TODO: Replace with actual API endpoint.
- * Expected backend endpoint: PUT /api/profile/{userId}/conferences/{conferenceId}
+ * Backend endpoint: PUT /api/profile/{userId}/conferences/{conferenceId}
  * Expected response: { data: Conference }
- *
- * For now, returns mock updated conference.
  */
 export async function updateConference(
   userId: string,
@@ -70,14 +78,14 @@ export async function updateConference(
   try {
     logger.debug('Updating conference', { context: { userId, conferenceId } });
 
-    // TODO: Replace with apiClient.put<{ data: Conference }>(`/api/profile/${userId}/conferences/${conferenceId}`, input)
-    // and return data.data
-    const mockConference: Conference = {
-      id: conferenceId,
-      ...input,
-      date: input.date,
-    };
-    return mockConference;
+    const response = await conferenceRequest(() =>
+      apiClient.put<{ data: Conference }>(
+        `/api/profile/${userId}/conferences/${conferenceId}`,
+        input,
+        { timeout: CONFERENCE_TIMEOUT_MS },
+      ),
+    );
+    return response.data;
   } catch (error) {
     logger.error('Failed to update conference', { context: { userId, conferenceId, error } });
     throw error;
@@ -87,18 +95,19 @@ export async function updateConference(
 /**
  * Delete a conference from a user's profile.
  *
- * TODO: Replace with actual API endpoint.
- * Expected backend endpoint: DELETE /api/profile/{userId}/conferences/{conferenceId}
+ * Backend endpoint: DELETE /api/profile/{userId}/conferences/{conferenceId}
  * Expected response: { success: boolean }
- *
- * For now, returns success.
  */
 export async function deleteConference(userId: string, conferenceId: string): Promise<void> {
   try {
     logger.debug('Deleting conference', { context: { userId, conferenceId } });
 
-    // TODO: Replace with apiClient.delete(`/api/profile/${userId}/conferences/${conferenceId}`)
-    return;
+    await conferenceRequest(() =>
+      apiClient.delete<{ success: boolean }>(
+        `/api/profile/${userId}/conferences/${conferenceId}`,
+        { timeout: CONFERENCE_TIMEOUT_MS },
+      ),
+    );
   } catch (error) {
     logger.error('Failed to delete conference', { context: { userId, conferenceId, error } });
     throw error;

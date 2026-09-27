@@ -30,6 +30,8 @@ export interface BreadcrumbItem {
   current?: boolean;
   /** Optional click handler (for custom navigation) */
   onClick?: (e: React.MouseEvent) => void;
+  /** Additional CSS classes for the breadcrumb item */
+  className?: string;
 }
 
 export interface BreadcrumbsProps {
@@ -45,6 +47,8 @@ export interface BreadcrumbsProps {
   className?: string;
   /** Aria label for the navigation */
   ariaLabel?: string;
+  /** Whether breadcrumbs are in loading state */
+  isLoading?: boolean;
 }
 
 /**
@@ -68,9 +72,20 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   maxItems = 0,
   className = '',
   ariaLabel = 'Breadcrumb navigation',
+  isLoading = false,
 }) => {
-  // Handle collapsed breadcrumbs if maxItems is set
+  // Generate skeleton loading items if in loading state
   const displayItems = React.useMemo(() => {
+    if (isLoading) {
+      return Array.from({ length: 3 }, (_, i) => ({
+        label: '',
+        href: undefined,
+        current: i === 2,
+        isSkeleton: true,
+        className: '',
+      }));
+    }
+
     if (maxItems === 0 || items.length <= maxItems) {
       return items;
     }
@@ -80,11 +95,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     const lastItems = items.slice(-(maxItems - 1));
 
     return [firstItem, { label: '...', href: undefined, current: false }, ...lastItems];
-  }, [items, maxItems]);
+  }, [items, maxItems, isLoading]);
 
-  if (items.length === 0) {
-    return null;
-  }
+  // Skeleton animation styles
+  const skeletonPulse = 'animate-pulse bg-gray-200 dark:bg-gray-700 rounded';
 
   return (
     <nav aria-label={ariaLabel} className={`breadcrumbs ${className}`} role="navigation">
@@ -92,11 +106,24 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
         {displayItems.map((item, index) => {
           const isLast = index === displayItems.length - 1;
           const isCollapsed = item.label === '...';
+          const isSkeleton = 'isSkeleton' in item && item.isSkeleton;
 
           return (
-            <li key={`${item.label}-${index}`} className="flex items-center gap-1">
+            <li
+              key={`${item.label}-${index}-${isLoading ? 'loading' : 'loaded'}`}
+              className="flex items-center gap-1"
+            >
               {/* Breadcrumb Item */}
-              {item.href && !item.current ? (
+              {isSkeleton ? (
+                <span
+                  className={`
+                    inline-flex items-center gap-1.5 px-2 py-1 rounded-md
+                    ${item.className ?? ''}
+                  `}
+                >
+                  <span className={`${skeletonPulse} h-4 w-16`}></span>
+                </span>
+              ) : item.href && !item.current ? (
                 <Link
                   href={item.href}
                   className={`
@@ -107,12 +134,13 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                     transition-colors duration-200
                     ${isCollapsed ? 'cursor-default pointer-events-none' : ''}
+                    ${item.className ?? ''}
                   `}
                   aria-current={item.current ? 'page' : undefined}
                   onClick={item.onClick}
                 >
                   {index === 0 && showHomeIcon && <Home className="w-4 h-4" aria-hidden="true" />}
-                  {item.icon && <span className="inline-flex">{item.icon}</span>}
+                  {'icon' in item && item.icon && <span className="inline-flex">{item.icon}</span>}
                   <span className="font-medium">{item.label}</span>
                 </Link>
               ) : (
@@ -124,11 +152,12 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                         ? 'text-gray-900 dark:text-gray-100 font-semibold'
                         : 'text-gray-600 dark:text-gray-400'
                     }
+                    ${item.className ?? ''}
                   `}
                   aria-current={item.current ? 'page' : undefined}
                 >
                   {index === 0 && showHomeIcon && <Home className="w-4 h-4" aria-hidden="true" />}
-                  {item.icon && <span className="inline-flex">{item.icon}</span>}
+                  {'icon' in item && item.icon && <span className="inline-flex">{item.icon}</span>}
                   <span className={item.current ? 'font-semibold' : 'font-medium'}>
                     {item.label}
                   </span>
@@ -138,7 +167,11 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               {/* Separator */}
               {!isLast && (
                 <span
-                  className="text-gray-400 dark:text-gray-600 flex items-center"
+                  className={`${
+                    isSkeleton
+                      ? 'text-gray-300 dark:text-gray-600'
+                      : 'text-gray-400 dark:text-gray-600'
+                  } flex items-center`}
                   aria-hidden="true"
                 >
                   {separator}

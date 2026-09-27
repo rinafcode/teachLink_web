@@ -53,6 +53,7 @@ function MyPage() {
 | `maxItems`     | `number`           | `0`                       | Maximum items before collapsing (0 = no limit) |
 | `className`    | `string`           | `''`                      | Custom CSS classes for the nav element         |
 | `ariaLabel`    | `string`           | `'Breadcrumb navigation'` | ARIA label for navigation                      |
+| `isLoading`    | `boolean`          | `false`                   | Enable skeleton loading state                  |
 
 ### BreadcrumbItem
 
@@ -171,6 +172,22 @@ import { AnimatedBreadcrumbs } from '@/components/ui/Breadcrumbs';
   ]}
 />;
 ```
+
+### Loading State Breadcrumbs
+
+Enable skeleton loading state when fetching breadcrumb data:
+
+```tsx
+<Breadcrumbs
+  isLoading={true}
+  items={[
+    { label: 'Home', href: '/' },
+    { label: 'Dashboard', current: true },
+  ]}
+/>
+```
+
+The loading state displays animated skeleton placeholders that maintain the breadcrumb layout while data is being loaded. This improves perceived performance and prevents layout shifts.
 
 ### With Custom Styling
 

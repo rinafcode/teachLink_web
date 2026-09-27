@@ -3,21 +3,7 @@ import type { SuccessResponse } from '@/types/api';
 import { withRateLimit } from '@/lib/ratelimit';
 import { edgeLog } from '@/../infra/edge-config';
 
-export const runtime = 'edge';
-
-type AnalyticsEvent = {
-  userId?: string;
-  lessonId: string;
-  eventType: string;
-  payload: Record<string, unknown>;
-};
-
-const analyticsStore = new Map<string, AnalyticsEvent[]>();
-
-const keyFor = (userId: string | undefined, lessonId: string) => {
-  const safeUserId = encodeURIComponent(userId ?? 'anon');
-  return `${safeUserId}::${encodeURIComponent(lessonId)}`;
-};
+import * as videoEventsRepo from '@/lib/db/repositories/video-events.repository';
 
 export async function POST(request: Request) {
   edgeLog('info', '/api/video-analytics', 'POST request received');
@@ -39,16 +25,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const event: AnalyticsEvent = {
-    userId: body.userId,
-    lessonId: body.lessonId,
-    eventType: body.eventType,
-    payload: body.payload ?? {},
-  };
+  try {
+    await videoEventsRepo.create(body.userId, body.lessonId, body.eventType, body.payload ?? {});
 
-  const key = keyFor(body.userId, body.lessonId);
-  const prev = analyticsStore.get(key) ?? [];
-  analyticsStore.set(key, [event, ...prev].slice(0, 1000));
-
-  return addHeaders(NextResponse.json({ success: true }));
+    return addHeaders(NextResponse.json({ success: true }));
+  } catch (error) {
+    edgeLog('error', '/api/video-analytics', 'Database error in POST', { error });
+    return addHeaders(
+      NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 }),
+    );
+  }
 }

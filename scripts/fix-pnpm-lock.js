@@ -1,11 +1,14 @@
 const fs = require('fs');
+
 const path = require('path');
 
 const repoRoot = process.cwd();
 const backupNames = ['pnpm-lock.yaml.broken', 'pnpm-lock.yaml.bak', 'pnpm-lock.yaml'];
 let srcFile = null;
+
 for (const name of backupNames) {
   const p = path.join(repoRoot, name);
+  
   if (fs.existsSync(p)) {
     srcFile = p;
     break;

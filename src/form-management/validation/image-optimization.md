@@ -1,6 +1,6 @@
 # Form Validation - Image Optimization
 
-This module provides client-side image optimization and validation for form file uploads.
+This module provides client-side image optimization, dimension validation, and task queue management for form file uploads.
 
 ## Features
 
@@ -12,6 +12,7 @@ This module provides client-side image optimization and validation for form file
 - **Quality control** (0.0 to 1.0)
 - **Aspect ratio preservation** option
 - **SSR fallback** - returns original file in server environments
+- **Progress Tracking** - optional `onProgress` callback to track FileReader, Image loading, and Canvas compression progress.
 
 ### Image Dimension Validation (`validateImageDimensions`)
 
@@ -19,6 +20,14 @@ This module provides client-side image optimization and validation for form file
 - **Height constraints** (minHeight, maxHeight)
 - **Error messages** with actual vs expected dimensions
 - **SSR fallback** - returns valid in server environments
+
+### Task Management (`ImageOptimizationTaskManager`)
+
+- **Concurrency control** - limit the number of active optimization tasks running in parallel.
+- **Queueing mechanism** - tasks are executed in FIFO order.
+- **Cancellation support** - cancel specific pending/processing tasks, or abort all active tasks.
+- **State monitoring** - subscribe to status/progress transitions.
+- **Promise API** - easily await task outcomes.
 
 ## Usage
 
@@ -62,6 +71,9 @@ const optimizedFile = await optimizeImage(file, {
   quality: 0.8,
   format: 'image/webp',
   preserveAspectRatio: true,
+  onProgress: (progress) => {
+    console.log(`Optimization progress: ${progress}%`);
+  },
 });
 
 // Validate dimensions
@@ -95,10 +107,43 @@ const imageField = {
 };
 ```
 
+### Task Manager Usage
+
+```typescript
+import { ImageOptimizationTaskManager } from './image-optimization-task-manager.js';
+
+// Instantiate with max 2 concurrent operations
+const manager = new ImageOptimizationTaskManager({ maxConcurrentTasks: 2 });
+
+// Subscribe to task updates
+const unsubscribe = manager.subscribe((task, state) => {
+  console.log(`Task ${task.id} status: ${task.status}, progress: ${task.progress}%`);
+  console.log(`Queue state - Active: ${state.activeCount}, Pending: ${state.pendingCount}`);
+});
+
+// Enqueue image files
+const taskId1 = manager.enqueue(file1, { maxWidth: 800 });
+const taskId2 = manager.enqueue(file2, { maxWidth: 1024 });
+
+// Await completion of a specific task
+try {
+  const optimizedFile = await manager.waitForTask(taskId1);
+  // Do something with optimized file
+} catch (error) {
+  console.error('Task failed or cancelled:', error);
+}
+
+// Cancel a task if needed
+manager.cancel(taskId2);
+
+// Unsubscribe when done
+unsubscribe();
+```
+
 ## Performance Considerations
 
 - Image processing happens asynchronously on the main thread
-- Large images may cause UI blocking - consider showing a loading indicator
+- Concurrency limit in `ImageOptimizationTaskManager` prevents freezing the browser/UI during batch uploads
 - WebP format provides the best compression ratio for modern browsers
 - The optimized file replaces the original in form state automatically
 

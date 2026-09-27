@@ -145,12 +145,16 @@ return <div ref={containerRef}>{/* content */}</div>;
 
 ### useFocusTrap
 
-Traps focus within a container (for modals/dialogs).
+Traps focus within an active container, moves focus to an optional initial target,
+and restores focus to the opener when the dialog closes. New dialogs should import
+the shared hook directly.
 
 ```tsx
-import { useFocusTrap } from '@/hooks/useAccessibility';
+import { useRef } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
-const containerRef = useFocusTrap(isModalOpen);
+const initialFocusRef = useRef<HTMLInputElement>(null);
+const containerRef = useFocusTrap(isModalOpen, { initialFocusRef });
 return <div ref={containerRef}>{/* modal content */}</div>;
 ```
 

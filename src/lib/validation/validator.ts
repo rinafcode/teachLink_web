@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('validator');
 
 export class ValidationError extends Error {
   constructor(public errors: z.ZodIssue[]) {
@@ -16,7 +19,7 @@ export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): T {
 
   if (!result.success) {
     if (process.env.NODE_ENV !== 'production') {
-      console.error('Validation Error Details:', result.error.format());
+      logger.error('Validation Error Details', { details: result.error.format() });
     }
     throw new ValidationError(result.error.issues);
   }

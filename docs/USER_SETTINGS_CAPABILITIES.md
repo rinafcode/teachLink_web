@@ -7,7 +7,10 @@ This document describes the implementation of Capabilities for User Settings as 
 ## Virtual Background Feature (v3)
 
 ### Overview
-
+<!-- 
+The production notification system stores durable notification data on a Kubernetes
+PersistentVolumeClaim so pod restarts do not discard queued or cached notification
+state. -->
 The virtual background feature allows users to replace their actual background during video calls with various effects:
 
 - **Blur**: Applies a blur effect to the background

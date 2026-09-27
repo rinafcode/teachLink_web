@@ -5,6 +5,8 @@
  */
 
 import type { ReadonlyURLSearchParams } from 'next/navigation';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('RedirectManagement');
 
 /**
  * Redirect rule configuration
@@ -262,14 +264,14 @@ export interface RedirectLog {
  * This is for server-side logging
  */
 export async function logRedirect(entry: RedirectLog): Promise<void> {
-  // This would be implemented to send logs to your analytics service
-  // For now, it's a no-op that can be extended
   if (process.env.NODE_ENV === 'development') {
-    console.debug('[Redirect Log]', {
-      from: entry.from,
-      to: entry.to,
-      locale: entry.locale,
-      statusCode: entry.statusCode,
+    logger.debug('[Redirect Log]', {
+      context: {
+        from: entry.from,
+        to: entry.to,
+        locale: entry.locale,
+        statusCode: entry.statusCode,
+      },
     });
   }
 }

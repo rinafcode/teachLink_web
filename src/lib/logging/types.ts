@@ -3,7 +3,7 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export interface PerformanceMetric {
   name: string;
   value: number;
-  unit: 'ms' | 'count';
+  unit: 'ms' | 'count' | 'percent';
   timestamp: number;
   tags?: Record<string, string | number | boolean>;
 }
@@ -15,6 +15,7 @@ export interface LogRecord {
   timestamp: string;
   requestId?: string;
   correlationId?: string;
+  traceId?: string;
   context?: Record<string, unknown>;
   metrics?: PerformanceMetric[];
   error?: {

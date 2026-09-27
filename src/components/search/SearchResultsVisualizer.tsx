@@ -3,6 +3,7 @@
 import React from 'react';
 import { Eye, User, Clock, Star, ArrowUpRight, ChevronDown } from 'lucide-react';
 import { SearchResult } from '../../utils/searchUtils';
+import { getDateTimeFormat } from '../../utils/intlCache';
 
 interface SearchResultsVisualizerProps {
   results: SearchResult[];
@@ -16,7 +17,7 @@ export function formatSearchResultDate(value: string | Date): string {
   if (Number.isNaN(date.getTime())) {
     return '';
   }
-  return new Intl.DateTimeFormat('en-US', {
+  return getDateTimeFormat('en-US', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -47,13 +48,19 @@ export const SearchResultsVisualizer = React.memo<SearchResultsVisualizerProps>(
 
     if (results.length === 0) {
       return (
-        <div className="text-center py-20 bg-slate-50 rounded-3xl border border-slate-100">
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="search-empty-state"
+          className="text-center py-20 bg-slate-50 rounded-3xl border border-slate-100"
+        >
           <div className="w-20 h-20 bg-white shadow-xl rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
-            <Eye className="w-10 h-10" />
+            <Eye className="w-10 h-10" aria-hidden="true" />
           </div>
           <h3 className="text-xl font-bold font-sans text-slate-700 mb-2">No results found</h3>
-          <p className="text-slate-400 max-w-xs mx-auto text-sm">
-            Try expanding your search parameters or checking for typos.
+          <p className="text-slate-500 max-w-sm mx-auto text-sm">
+            We couldn&apos;t find any matches for your search. Try adjusting your query keywords or
+            filters to find what you&apos;re looking for.
           </p>
         </div>
       );
@@ -63,8 +70,7 @@ export const SearchResultsVisualizer = React.memo<SearchResultsVisualizerProps>(
       <div className="space-y-6">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <h2 className="text-lg font-bold font-sans text-slate-800 flex items-center gap-2">
-            {results.length} results{' '}
-            <span className="text-slate-300 text-sm font-normal">discovered in 0.8s</span>
+            {results.length} results
           </h2>
           <div className="relative group">
             <select

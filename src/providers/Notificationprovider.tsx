@@ -7,8 +7,13 @@ import React, {
   useRef,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from 'react';
+import {
+  NotificationSocketService,
+  type NotificationSocketConnectionState,
+} from '@/lib/notifications/socket';
 
 export type NotificationType =
   | 'info'
@@ -31,101 +36,6 @@ export interface Notification {
   metadata?: Record<string, unknown>;
 }
 
-type NotificationEventType = 'notification' | 'notification_read' | 'notification_clear';
-
-interface NotificationEvent {
-  event: NotificationEventType;
-  payload: unknown;
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// WebSocket service (singleton per URL)
-// ──────────────────────────────────────────────────────────────────────────────
-
-type Listener = (notification: Notification) => void;
-
-class NotificationSocketService {
-  private ws: WebSocket | null = null;
-  private listeners: Set<Listener> = new Set();
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private reconnectDelay = 1000;
-  private maxReconnectDelay = 30_000;
-  private intentionallyClosed = false;
-
-  constructor(private url: string) {}
-
-  connect() {
-    this.intentionallyClosed = false;
-    this.open();
-  }
-
-  private open() {
-    if (this.ws) return;
-    try {
-      this.ws = new WebSocket(this.url);
-
-      this.ws.onopen = () => {
-        console.info('[NotificationSocket] Connected');
-        this.reconnectDelay = 1000; // reset back-off
-      };
-
-      this.ws.onmessage = (event: MessageEvent) => {
-        try {
-          const data: NotificationEvent = JSON.parse(event.data as string);
-          if (data.event === 'notification') {
-            const notification = data.payload as Notification;
-            notification.timestamp = new Date(notification.timestamp);
-            this.listeners.forEach((cb) => cb(notification));
-          }
-        } catch {
-          console.warn('[NotificationSocket] Failed to parse message', event.data);
-        }
-      };
-
-      this.ws.onclose = () => {
-        this.ws = null;
-        if (!this.intentionallyClosed) {
-          this.scheduleReconnect();
-        }
-      };
-
-      this.ws.onerror = (err) => {
-        console.error('[NotificationSocket] Error', err);
-        this.ws?.close();
-      };
-    } catch (err) {
-      console.error('[NotificationSocket] Failed to open', err);
-      this.scheduleReconnect();
-    }
-  }
-
-  private scheduleReconnect() {
-    this.reconnectTimer = setTimeout(() => {
-      console.info(`[NotificationSocket] Reconnecting…`);
-      this.open();
-      this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
-    }, this.reconnectDelay);
-  }
-
-  disconnect() {
-    this.intentionallyClosed = true;
-    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-    this.ws?.close();
-    this.ws = null;
-  }
-
-  subscribe(listener: Listener) {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  }
-
-  send(event: NotificationEventType, payload: unknown) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ event, payload }));
-    }
-  }
-}
-
 // ──────────────────────────────────────────────────────────────────────────────
 // Context
 // ──────────────────────────────────────────────────────────────────────────────
@@ -133,6 +43,7 @@ class NotificationSocketService {
 interface NotificationContextValue {
   notifications: Notification[];
   unreadCount: number;
+  connectionState: NotificationSocketConnectionState;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearNotification: (id: string) => void;
@@ -161,6 +72,11 @@ interface NotificationProviderProps {
   maxNotifications?: number;
 }
 
+const DEFAULT_CONNECTION_STATE: NotificationSocketConnectionState = {
+  status: 'idle',
+  reconnectAttempts: 0,
+};
+
 export function NotificationProvider({
   children,
   wsUrl,
@@ -168,6 +84,8 @@ export function NotificationProvider({
   maxNotifications = 200,
 }: NotificationProviderProps) {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [connectionState, setConnectionState] =
+    useState<NotificationSocketConnectionState>(DEFAULT_CONNECTION_STATE);
   const serviceRef = useRef<NotificationSocketService | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -187,9 +105,12 @@ export function NotificationProvider({
     serviceRef.current = svc;
     svc.connect();
 
-    const unsubscribe = svc.subscribe(addNotification);
+    const unsubscribeNotifications = svc.subscribe(addNotification);
+    const unsubscribeConnection = svc.onConnectionStateChange(setConnectionState);
+
     return () => {
-      unsubscribe();
+      unsubscribeNotifications();
+      unsubscribeConnection();
       svc.disconnect();
     };
   }, [wsUrl, addNotification]);
@@ -214,18 +135,26 @@ export function NotificationProvider({
     serviceRef.current?.send('notification_clear', { all: true });
   }, []);
 
-  return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        markAsRead,
-        markAllAsRead,
-        clearNotification,
-        clearAll,
-      }}
-    >
-      {children}
-    </NotificationContext.Provider>
+  const value = useMemo(
+    () => ({
+      notifications,
+      unreadCount,
+      connectionState,
+      markAsRead,
+      markAllAsRead,
+      clearNotification,
+      clearAll,
+    }),
+    [
+      notifications,
+      unreadCount,
+      connectionState,
+      markAsRead,
+      markAllAsRead,
+      clearNotification,
+      clearAll,
+    ],
   );
+
+  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 }

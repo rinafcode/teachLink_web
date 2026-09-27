@@ -5,7 +5,7 @@
  * and basic hook behaviour.
  */
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useNotifications } from '../useNotifications';
 import { useNotificationStore } from '@/app/store/notificationStore';
 import { AppNotification } from '@/lib/notifications/types';
@@ -37,10 +37,20 @@ function resetStore() {
   useNotificationStore.setState({ notifications: [] });
 }
 
+async function flushHookEffects() {
+  await act(async () => {});
+  await act(async () => {});
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('useNotifications', () => {
   beforeEach(resetStore);
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    resetStore();
+  });
 
   // ── clearNotification ──────────────────────────────────────────────────────
 
@@ -132,5 +142,123 @@ describe('useNotifications', () => {
     });
 
     expect(result.current.unreadCount).toBe(0);
+  });
+
+  // ── preferences heartbeat ─────────────────────────────────────────────────
+
+  it('starts a preferences heartbeat and persists the liveness payload', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-24T12:00:00.000Z'));
+
+    const { result } = renderHook(() =>
+      useNotifications({
+        userId: 'heartbeat-user',
+        preferencesHeartbeatIntervalMs: 1000,
+        preferencesHeartbeatStaleAfterMs: 3000,
+      }),
+    );
+
+    await flushHookEffects();
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.preferencesHeartbeat.status).toBe('online');
+    expect(result.current.preferencesHeartbeat.lastBeatAt).toBe('2026-06-24T12:00:00.000Z');
+
+    const stored = JSON.parse(
+      localStorageMock.getItem('notification_preferences_heartbeat_v1') ?? 'null',
+    );
+    expect(stored).toMatchObject({
+      userId: 'heartbeat-user',
+      lastBeatAt: '2026-06-24T12:00:00.000Z',
+      intervalMs: 1000,
+      staleAfterMs: 3000,
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.preferencesHeartbeat.lastBeatAt).toBe('2026-06-24T12:00:01.000Z');
+  });
+
+  it('marks an old preferences heartbeat as stale when refreshed', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-24T12:00:10.000Z'));
+
+    localStorageMock.setItem(
+      'notification_preferences_heartbeat_v1',
+      JSON.stringify({
+        userId: 'heartbeat-user',
+        lastBeatAt: '2026-06-24T12:00:00.000Z',
+        intervalMs: 1000,
+        staleAfterMs: 3000,
+      }),
+    );
+
+    const { result } = renderHook(() =>
+      useNotifications({
+        userId: 'heartbeat-user',
+        enablePreferencesHeartbeat: false,
+        preferencesHeartbeatIntervalMs: 1000,
+        preferencesHeartbeatStaleAfterMs: 3000,
+      }),
+    );
+
+    act(() => {
+      result.current.refreshPreferencesHeartbeat();
+    });
+
+    expect(result.current.preferencesHeartbeat.status).toBe('stale');
+    expect(result.current.preferencesHeartbeat.lastBeatAt).toBe('2026-06-24T12:00:00.000Z');
+  });
+
+  it('stops the preferences heartbeat interval on unmount', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-24T12:00:00.000Z'));
+
+    const { result, unmount } = renderHook(() =>
+      useNotifications({
+        userId: 'heartbeat-user',
+        preferencesHeartbeatIntervalMs: 1000,
+        preferencesHeartbeatStaleAfterMs: 3000,
+      }),
+    );
+
+    await flushHookEffects();
+
+    expect(result.current.preferencesHeartbeat.status).toBe('online');
+
+    unmount();
+
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    const stored = JSON.parse(
+      localStorageMock.getItem('notification_preferences_heartbeat_v1') ?? 'null',
+    );
+    expect(stored.lastBeatAt).toBe('2026-06-24T12:00:00.000Z');
+  });
+
+  it('reports the preferences heartbeat as offline when storage writes fail', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-24T12:00:00.000Z'));
+    vi.spyOn(localStorageMock, 'setItem').mockImplementation(() => {
+      throw new Error('storage unavailable');
+    });
+
+    const { result } = renderHook(() =>
+      useNotifications({
+        userId: 'heartbeat-user',
+        preferencesHeartbeatIntervalMs: 1000,
+        preferencesHeartbeatStaleAfterMs: 3000,
+      }),
+    );
+
+    await flushHookEffects();
+
+    expect(result.current.preferencesHeartbeat.status).toBe('offline');
+    expect(result.current.preferencesHeartbeat.storageAvailable).toBe(false);
+    expect(result.current.preferencesHeartbeat.failureCount).toBe(1);
   });
 });

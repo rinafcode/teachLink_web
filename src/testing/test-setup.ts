@@ -1,6 +1,22 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/',
+  useParams: () => ({}),
+  redirect: vi.fn(),
+  notFound: vi.fn(),
+}));
+
 // Mock IndexedDB for tests
 const createMockDB = () => ({
   get: vi.fn(),
@@ -101,8 +117,56 @@ global.console = {
   warn: vi.fn(),
   log: vi.fn(),
 };
+// Mock matchMedia for JSDOM
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+// Mock DragEvent for JSDOM
+class MockDragEvent extends Event {
+  readonly dataTransfer: DataTransfer | null = null;
+  constructor(type: string, options?: DragEventInit) {
+    super(type, options);
+  }
+}
+Object.defineProperty(global, 'DragEvent', {
+  value: MockDragEvent,
+  writable: true,
+  configurable: true,
+});
+
 // Mock scrollIntoView for JSDOM
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
+
+// Mock IntersectionObserver (must be a real constructor function, not arrow function)
+class MockIntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = '0px';
+  readonly thresholds: ReadonlyArray<number> = [0];
+
+  constructor(private callback: IntersectionObserverCallback) {}
+
+  observe = vi.fn();
+  disconnect = vi.fn();
+  unobserve = vi.fn();
+  takeRecords = vi.fn(() => [] as IntersectionObserverEntry[]);
+}
+
+Object.defineProperty(window, 'IntersectionObserver', {
+  value: MockIntersectionObserver,
+  writable: true,
+  configurable: true,
+});
 
 const cssStyleDeclarationProto = window.CSSStyleDeclaration.prototype as CSSStyleDeclaration & {
   paddingBottom?: string;

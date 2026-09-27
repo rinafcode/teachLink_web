@@ -5,23 +5,61 @@
 import type { LanguageCode, CulturalPreferences } from '@/locales/types';
 import { getLocaleConfig } from '@/locales/config';
 import { format, formatDistanceToNow, type Locale } from 'date-fns';
-import { enUS, es, fr, de, ar, he, ja, zhCN, ptBR, ru, it, ko } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale/en-US';
+import { getNumberFormat } from './intlCache';
+import { createLogger } from '@/lib/logging';
 
-// Date-fns locale mapping
-const dateFnsLocales: Record<LanguageCode, Locale> = {
-  en: enUS,
-  es: es,
-  fr: fr,
-  de: de,
-  ar: ar,
-  he: he,
-  ja: ja,
-  zh: zhCN,
-  pt: ptBR,
-  ru: ru,
-  it: it,
-  ko: ko,
+const logger = createLogger('i18nUtils');
+
+const dateFnsLocaleLoaders: Record<LanguageCode, () => Promise<Locale>> = {
+  en: () => import('date-fns/locale/en-US').then((module) => module.enUS),
+  es: () => import('date-fns/locale/es').then((module) => module.es),
+  fr: () => import('date-fns/locale/fr').then((module) => module.fr),
+  de: () => import('date-fns/locale/de').then((module) => module.de),
+  ar: () => import('date-fns/locale/ar').then((module) => module.ar),
+  he: () => import('date-fns/locale/he').then((module) => module.he),
+  ja: () => import('date-fns/locale/ja').then((module) => module.ja),
+  zh: () => import('date-fns/locale/zh-CN').then((module) => module.zhCN),
+  pt: () => import('date-fns/locale/pt-BR').then((module) => module.ptBR),
+  ru: () => import('date-fns/locale/ru').then((module) => module.ru),
+  it: () => import('date-fns/locale/it').then((module) => module.it),
+  ko: () => import('date-fns/locale/ko').then((module) => module.ko),
 };
+
+const dateFnsLocaleCache: Partial<Record<LanguageCode, Locale>> = {
+  en: enUS,
+};
+
+const dateFnsLocalePromises: Partial<Record<LanguageCode, Promise<Locale>>> = {};
+
+export async function preloadDateFnsLocale(language: LanguageCode): Promise<Locale> {
+  if (dateFnsLocaleCache[language]) {
+    return dateFnsLocaleCache[language] as Locale;
+  }
+
+  if (!dateFnsLocalePromises[language]) {
+    dateFnsLocalePromises[language] = dateFnsLocaleLoaders[language]()
+      .then((locale) => {
+        dateFnsLocaleCache[language] = locale;
+        return locale;
+      })
+      .catch((error) => {
+        logger.warn('Failed to load date-fns locale', { language, error });
+        return dateFnsLocaleCache.en as Locale;
+      });
+  }
+
+  return dateFnsLocalePromises[language] as Promise<Locale>;
+}
+
+function getDateFnsLocale(language: LanguageCode): Locale {
+  if (dateFnsLocaleCache[language]) {
+    return dateFnsLocaleCache[language] as Locale;
+  }
+
+  void preloadDateFnsLocale(language);
+  return dateFnsLocaleCache.en as Locale;
+}
 
 /**
  * Get cultural preferences for a locale
@@ -33,13 +71,13 @@ export function getCulturalPreferences(
   const config = getLocaleConfig(language);
 
   // Create Intl formatters to detect cultural preferences
-  const numberFormatter = new Intl.NumberFormat(config.numberFormat);
+  const numberFormatter = getNumberFormat(config.numberFormat);
   const parts = numberFormatter.formatToParts(1234.56);
 
   const decimalSeparator = parts.find((p) => p.type === 'decimal')?.value || '.';
   const thousandsSeparator = parts.find((p) => p.type === 'group')?.value || ',';
 
-  const currencyFormatter = new Intl.NumberFormat(config.numberFormat, {
+  const currencyFormatter = getNumberFormat(config.numberFormat, {
     style: 'currency',
     currency: config.currency || 'USD',
   });
@@ -79,13 +117,13 @@ export function formatDate(
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
 
   const config = getLocaleConfig(language);
-  const locale = dateFnsLocales[language] || dateFnsLocales.en;
+  const locale = getDateFnsLocale(language);
   const formatPattern = formatStr || config.dateFormat || 'PP';
 
   try {
     return format(dateObj, formatPattern, { locale });
   } catch (error) {
-    console.warn('Date formatting error:', error);
+    logger.warn('Date formatting error', { error });
     return format(dateObj, 'PP', { locale: enUS });
   }
 }
@@ -96,12 +134,12 @@ export function formatDate(
 export function formatRelativeTime(date: Date | string | number, language: LanguageCode): string {
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
 
-  const locale = dateFnsLocales[language] || dateFnsLocales.en;
+  const locale = getDateFnsLocale(language);
 
   try {
     return formatDistanceToNow(dateObj, { addSuffix: true, locale });
   } catch (error) {
-    console.warn('Relative time formatting error:', error);
+    logger.warn('Relative time formatting error', { error });
     return formatDistanceToNow(dateObj, { addSuffix: true, locale: enUS });
   }
 }
@@ -117,9 +155,9 @@ export function formatNumber(
   const config = getLocaleConfig(language);
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, options).format(value);
+    return getNumberFormat(config.numberFormat, options).format(value);
   } catch (error) {
-    console.warn('Number formatting error:', error);
+    logger.warn('Number formatting error', { error });
     return value.toString();
   }
 }
@@ -132,12 +170,12 @@ export function formatCurrency(amount: number, language: LanguageCode, currency?
   const currencyCode = currency || config.currency || 'USD';
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, {
+    return getNumberFormat(config.numberFormat, {
       style: 'currency',
       currency: currencyCode,
     }).format(amount);
   } catch (error) {
-    console.warn('Currency formatting error:', error);
+    logger.warn('Currency formatting error', { error });
     return `${currencyCode} ${amount.toFixed(2)}`;
   }
 }
@@ -149,13 +187,13 @@ export function formatPercentage(value: number, language: LanguageCode, decimals
   const config = getLocaleConfig(language);
 
   try {
-    return new Intl.NumberFormat(config.numberFormat, {
+    return getNumberFormat(config.numberFormat, {
       style: 'percent',
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(value / 100);
   } catch (error) {
-    console.warn('Percentage formatting error:', error);
+    logger.warn('Percentage formatting error', { error });
     return `${value.toFixed(decimals)}%`;
   }
 }
@@ -195,7 +233,7 @@ export function isRTL(language: LanguageCode): boolean {
  */
 export function formatFileSize(bytes: number, language: LanguageCode): string {
   const config = getLocaleConfig(language);
-  const formatter = new Intl.NumberFormat(config.numberFormat, {
+  const formatter = getNumberFormat(config.numberFormat, {
     maximumFractionDigits: 2,
   });
 

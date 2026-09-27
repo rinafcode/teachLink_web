@@ -6,6 +6,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { apiClient } from '@/lib/api';
 import { ExportTemplate, ScheduleFrequency } from '@/lib/export-scheduler';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('export-schedules-new');
 
 export default function NewSchedulePage() {
   const router = useRouter();
@@ -31,7 +34,7 @@ export default function NewSchedulePage() {
       );
       setTemplates(response.templates);
     } catch (error) {
-      console.error('Error loading templates:', error);
+      logger.error('Error loading templates', { error });
     }
   };
 
@@ -53,7 +56,7 @@ export default function NewSchedulePage() {
 
       router.push('/exports');
     } catch (error) {
-      console.error('Error creating schedule:', error);
+      logger.error('Error creating schedule', { error });
       alert('Failed to create schedule');
     } finally {
       setLoading(false);

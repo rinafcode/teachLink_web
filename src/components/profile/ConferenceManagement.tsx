@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar, MapPin, Link as LinkIcon, Plus, Trash2, Edit2, AlertCircle } from 'lucide-react';
@@ -42,6 +42,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
 
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -53,7 +54,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
       role: 'attendee',
       date: new Date().toISOString().split('T')[0],
       location: '',
-      url: '',
+      url: undefined,
     },
     mode: 'onSubmit',
   });
@@ -63,7 +64,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
   // Load conferences on mount
   const loadConferences = useCallback(async () => {
     try {
-      setIsLoading(true);
+      setInitialLoading(true);
       setError(null);
       const data = await getConferences(effectiveUserId);
       setConferences(data);
@@ -72,18 +73,14 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {
-      setIsLoading(false);
+      setInitialLoading(false);
     }
   }, [effectiveUserId]);
 
-  // Initialize loading on mount (in production, this would be a useEffect)
-  const isInitialized = useMemo(() => {
-    if (conferences.length === 0 && !isLoading && !editingId) {
-      // In a real scenario, useEffect would handle this
-      // For now, rely on parent component or manual invocation
-    }
-    return true;
-  }, [conferences.length, isLoading, editingId]);
+  // Load conferences on mount
+  useEffect(() => {
+    loadConferences();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = async (data: ConferenceFormData) => {
     try {
@@ -120,7 +117,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
     setValue('role', conference.role);
     setValue('date', conference.date);
     setValue('location', conference.location || '');
-    setValue('url', conference.url || '');
+    setValue('url', conference.url ?? undefined);
     setShowForm(true);
   };
 
@@ -281,6 +278,8 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
                 <SubmitButton
                   isLoading={isLoading}
                   loadingText="Saving..."
+                  type="button"
+                  onClick={() => methods.handleSubmit(onSubmit)()}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   {editingId ? 'Update Conference' : 'Add Conference'}
@@ -299,7 +298,7 @@ export default function ConferenceManagement({ userId: propUserId }: ConferenceM
           aria-label={showForm ? undefined : 'No conferences added yet'}
         >
           <p className="text-sm">
-            {isLoading ? 'Loading conferences...' : 'No conferences yet. Add one to get started!'}
+            {initialLoading ? 'Loading conferences...' : 'No conferences yet. Add one to get started!'}
           </p>
         </div>
       ) : (

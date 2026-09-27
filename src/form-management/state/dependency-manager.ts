@@ -10,6 +10,9 @@ import {
   FieldDescriptor,
   ValidationResult,
 } from '../types/core';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('dependency-manager');
 
 export interface DependencyGraph {
   [fieldId: string]: {
@@ -208,7 +211,7 @@ export class DependencyManager {
     try {
       return condition(state);
     } catch (error) {
-      console.error('Error evaluating conditional rule:', error);
+      logger.error('Error evaluating conditional rule', { error });
       return false;
     }
   }

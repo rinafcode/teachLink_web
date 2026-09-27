@@ -1,4 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('use-dashboard-widgets');
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { z } from 'zod';
 
 interface Widget {
   id: string;
@@ -10,11 +13,107 @@ interface Widget {
   settings: Record<string, unknown>;
 }
 
-export const useDashboardWidgets = () => {
-  const [widgets, setWidgets] = useState<Widget[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const widgetSchema = z.object({
+  id: z.string().min(1),
+  type: z.string().min(1),
+  title: z.string().min(1),
+  size: z.enum(['small', 'medium', 'large']),
+  position: z.number().int().nonnegative(),
+  isCollapsed: z.boolean(),
+  settings: z.record(z.string(), z.unknown()),
+});
 
-  // Load widget layout from localStorage
+const widgetListSchema = z.array(widgetSchema);
+
+// Default widgets matching Figma design — single source of truth
+const DEFAULT_WIDGETS: Widget[] = [
+  // 4 Summary Stat Cards (small size)
+  {
+    id: 'stat-revenue',
+    type: 'progress-summary',
+    title: 'Total Revenue',
+    size: 'small',
+    position: 0,
+    isCollapsed: false,
+    settings: { statType: 'revenue' },
+  },
+  {
+    id: 'stat-students',
+    type: 'progress-summary',
+    title: 'Students',
+    size: 'small',
+    position: 1,
+    isCollapsed: false,
+    settings: { statType: 'students' },
+  },
+  {
+    id: 'stat-views',
+    type: 'progress-summary',
+    title: 'Course Views',
+    size: 'small',
+    position: 2,
+    isCollapsed: false,
+    settings: { statType: 'views' },
+  },
+  {
+    id: 'stat-courses',
+    type: 'progress-summary',
+    title: 'Active Courses',
+    size: 'small',
+    position: 3,
+    isCollapsed: false,
+    settings: { statType: 'courses' },
+  },
+  // Recent Sales (medium, left column)
+  {
+    id: 'recent-sales',
+    type: 'recent-sales',
+    title: 'Recent Sales',
+    size: 'medium',
+    position: 4,
+    isCollapsed: false,
+    settings: {},
+  },
+  // Recent Activity (medium, right column)
+  {
+    id: 'recent-activity',
+    type: 'recent-activity',
+    title: 'Recent Activity',
+    size: 'medium',
+    position: 5,
+    isCollapsed: false,
+    settings: {},
+  },
+  // Upcoming Schedule (large, full width)
+  {
+    id: 'upcoming-schedule',
+    type: 'upcoming-deadlines',
+    title: 'Upcoming Schedule',
+    size: 'large',
+    position: 6,
+    isCollapsed: false,
+    settings: {},
+  },
+];
+
+export const useDashboardWidgets = () => {
+  const [widgets, setWidgets] = useState<Widget[]>(() => {
+    try {
+      const saved = localStorage.getItem('dashboard-widgets');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed;
+      }
+      // Save defaults if nothing was saved
+      localStorage.setItem('dashboard-widgets', JSON.stringify(DEFAULT_WIDGETS));
+    } catch (error) {
+      logger.error('Failed to load widget layout from localStorage', { error });
+    }
+    return DEFAULT_WIDGETS;
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load widget layout from localStorage (for manual reload only)
   const loadWidgetLayout = useCallback((): Widget[] => {
     try {
       const saved = localStorage.getItem('dashboard-widgets');
@@ -22,101 +121,45 @@ export const useDashboardWidgets = () => {
         return JSON.parse(saved);
       }
     } catch (error) {
-      console.error('Failed to load widget layout:', error);
+      logger.error('Failed to load widget layout', { error });
     }
-    return [];
+    return DEFAULT_WIDGETS;
   }, []);
 
-  // Save widget layout to localStorage
-  const saveWidgetLayout = useCallback((widgets: Widget[]) => {
-    try {
-      localStorage.setItem('dashboard-widgets', JSON.stringify(widgets));
-    } catch (error) {
-      console.error('Failed to save widget layout:', error);
-    }
-  }, []);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingWidgetsRef = useRef<Widget[] | null>(null);
 
-  // Initialize widgets on mount
   useEffect(() => {
-    const savedWidgets = loadWidgetLayout();
-    if (savedWidgets.length > 0) {
-      setWidgets(savedWidgets);
-    } else {
-      // Default widgets matching Figma design
-      const defaultWidgets: Widget[] = [
-        // 4 Summary Stat Cards (small size)
-        {
-          id: 'stat-revenue',
-          type: 'progress-summary',
-          title: 'Total Revenue',
-          size: 'small',
-          position: 0,
-          isCollapsed: false,
-          settings: { statType: 'revenue' },
-        },
-        {
-          id: 'stat-students',
-          type: 'progress-summary',
-          title: 'Students',
-          size: 'small',
-          position: 1,
-          isCollapsed: false,
-          settings: { statType: 'students' },
-        },
-        {
-          id: 'stat-views',
-          type: 'progress-summary',
-          title: 'Course Views',
-          size: 'small',
-          position: 2,
-          isCollapsed: false,
-          settings: { statType: 'views' },
-        },
-        {
-          id: 'stat-courses',
-          type: 'progress-summary',
-          title: 'Active Courses',
-          size: 'small',
-          position: 3,
-          isCollapsed: false,
-          settings: { statType: 'courses' },
-        },
-        // Recent Sales (medium, left column)
-        {
-          id: 'recent-sales',
-          type: 'recent-sales',
-          title: 'Recent Sales',
-          size: 'medium',
-          position: 4,
-          isCollapsed: false,
-          settings: {},
-        },
-        // Recent Activity (medium, right column)
-        {
-          id: 'recent-activity',
-          type: 'recent-activity',
-          title: 'Recent Activity',
-          size: 'medium',
-          position: 5,
-          isCollapsed: false,
-          settings: {},
-        },
-        // Upcoming Schedule (large, full width)
-        {
-          id: 'upcoming-schedule',
-          type: 'upcoming-deadlines',
-          title: 'Upcoming Schedule',
-          size: 'large',
-          position: 6,
-          isCollapsed: false,
-          settings: {},
-        },
-      ];
-      setWidgets(defaultWidgets);
-      saveWidgetLayout(defaultWidgets);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
+
+  const saveWidgetLayout = useCallback((widgets: Widget[]) => {
+    // Trailing debounce to avoid blocking the main thread during drag-and-drop.
+    // localStorage writes will happen at most once per 500ms, and the latest
+    // layout will be persisted within ~500ms after the last change.
+    try {
+      pendingWidgetsRef.current = widgets;
+
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+
+      saveTimerRef.current = setTimeout(() => {
+        try {
+          const pending = pendingWidgetsRef.current;
+          if (!pending) return;
+          localStorage.setItem('dashboard-widgets', JSON.stringify(pending));
+        } catch (error) {
+          console.error('Failed to save widget layout:', error);
+        } finally {
+          saveTimerRef.current = null;
+        }
+      }, 500);
+    } catch (error) {
+      logger.error('Failed to save widget layout', { error });
+      console.error('Failed to schedule dashboard layout save:', error);
     }
-    setIsLoading(false);
-  }, [loadWidgetLayout, saveWidgetLayout]);
+  }, []);
 
   // Add a new widget
   const addWidget = useCallback(
@@ -203,77 +246,8 @@ export const useDashboardWidgets = () => {
 
   // Reset to default layout
   const resetToDefault = useCallback(() => {
-    const defaultWidgets: Widget[] = [
-      // 4 Summary Stat Cards (small size)
-      {
-        id: 'stat-revenue',
-        type: 'progress-summary',
-        title: 'Total Revenue',
-        size: 'small',
-        position: 0,
-        isCollapsed: false,
-        settings: { statType: 'revenue' },
-      },
-      {
-        id: 'stat-students',
-        type: 'progress-summary',
-        title: 'Students',
-        size: 'small',
-        position: 1,
-        isCollapsed: false,
-        settings: { statType: 'students' },
-      },
-      {
-        id: 'stat-views',
-        type: 'progress-summary',
-        title: 'Course Views',
-        size: 'small',
-        position: 2,
-        isCollapsed: false,
-        settings: { statType: 'views' },
-      },
-      {
-        id: 'stat-courses',
-        type: 'progress-summary',
-        title: 'Active Courses',
-        size: 'small',
-        position: 3,
-        isCollapsed: false,
-        settings: { statType: 'courses' },
-      },
-      // Recent Sales (medium, left column)
-      {
-        id: 'recent-sales',
-        type: 'recent-sales',
-        title: 'Recent Sales',
-        size: 'medium',
-        position: 4,
-        isCollapsed: false,
-        settings: {},
-      },
-      // Recent Activity (medium, right column)
-      {
-        id: 'recent-activity',
-        type: 'recent-activity',
-        title: 'Recent Activity',
-        size: 'medium',
-        position: 5,
-        isCollapsed: false,
-        settings: {},
-      },
-      // Upcoming Schedule (large, full width)
-      {
-        id: 'upcoming-schedule',
-        type: 'upcoming-deadlines',
-        title: 'Upcoming Schedule',
-        size: 'large',
-        position: 6,
-        isCollapsed: false,
-        settings: {},
-      },
-    ];
-    setWidgets(defaultWidgets);
-    saveWidgetLayout(defaultWidgets);
+    setWidgets(DEFAULT_WIDGETS);
+    saveWidgetLayout(DEFAULT_WIDGETS);
   }, [saveWidgetLayout]);
 
   // Export widget configuration
@@ -296,14 +270,23 @@ export const useDashboardWidgets = () => {
   const importWidgetConfig = useCallback(
     (config: { widgets?: Widget[] }) => {
       try {
-        if (config.widgets && Array.isArray(config.widgets)) {
-          setWidgets(config.widgets);
-          saveWidgetLayout(config.widgets);
-          return true;
+        if (!Array.isArray(config.widgets)) {
+          return false;
         }
-        return false;
+
+        const result = widgetListSchema.safeParse(config.widgets);
+        if (!result.success) {
+          logger.error('Failed to import widget config: malformed widgets', {
+            errors: result.error.issues,
+          });
+          return false;
+        }
+
+        setWidgets(result.data);
+        saveWidgetLayout(result.data);
+        return true;
       } catch (error) {
-        console.error('Failed to import widget config:', error);
+        logger.error('Failed to import widget config', { error });
         return false;
       }
     },

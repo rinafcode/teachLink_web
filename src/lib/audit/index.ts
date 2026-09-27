@@ -1,2 +1,3 @@
 export * from './types';
-export * from './store';
+export { queryAuditLogs, getAuditStoreSnapshot } from './store';
+export { appendAuditLog, queryAuditLog } from './persist';

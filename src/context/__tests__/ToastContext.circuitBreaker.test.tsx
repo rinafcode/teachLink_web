@@ -163,22 +163,19 @@ describe('ToastContext with Circuit Breaker', () => {
     const consoleWarnSpy = vi.spyOn(console, 'warn');
 
     render(
-      <ToastProvider>
+      <ToastProvider circuitBreakerConfig={{ maxConcurrentRequests: 0 }}>
         <TestComponent />
       </ToastProvider>,
     );
 
     const addButton = screen.getByText('Add Toast');
 
-    // Add many toasts rapidly to potentially trigger circuit breaker
-    for (let i = 0; i < 20; i++) {
-      await act(async () => {
-        addButton.click();
-      });
-    }
+    await act(async () => {
+      addButton.click();
+    });
 
-    // Check if warning was logged (may or may not happen depending on timing)
-    // The important thing is the mechanism exists
-    expect(consoleWarnSpy).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(consoleWarnSpy).toHaveBeenCalled();
+    });
   });
 });

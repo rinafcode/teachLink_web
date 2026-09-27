@@ -24,9 +24,9 @@ describe('WalletConnectionQueue', () => {
   });
 
   it('should reject a failing operation and propagate the error', async () => {
-    await expect(
-      queue.enqueue(() => Promise.reject(new Error('wallet error'))),
-    ).rejects.toThrow('wallet error');
+    await expect(queue.enqueue(() => Promise.reject(new Error('wallet error')))).rejects.toThrow(
+      'wallet error',
+    );
     expect(queue.getStats().totalFailed).toBe(1);
     expect(queue.getStats().totalProcessed).toBe(0);
   });
@@ -59,7 +59,9 @@ describe('WalletConnectionQueue', () => {
     const errors: string[] = [];
 
     await Promise.allSettled([
-      queue.enqueue(() => Promise.reject(new Error('fail'))).catch((e: Error) => errors.push(e.message)),
+      queue
+        .enqueue(() => Promise.reject(new Error('fail')))
+        .catch((e: Error) => errors.push(e.message)),
       queue.enqueue(() => Promise.resolve('second')).then((v) => results.push(v)),
     ]);
 

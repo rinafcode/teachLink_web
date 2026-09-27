@@ -11,6 +11,9 @@
 //   track("button_clicked", { label: "Enroll" });
 // ──────────────────────────────────────────────────────────────────────────────
 
+import { createLogger } from '@/lib/logging';
+const logger = createLogger('Analytics');
+
 export type EventName =
   // Navigation
   | 'page_view'
@@ -19,6 +22,11 @@ export type EventName =
   | 'login'
   | 'logout'
   | 'signup'
+  // Onboarding
+  | 'onboarding_started'
+  | 'onboarding_step_completed'
+  | 'onboarding_completed'
+  | 'onboarding_abandoned'
   // Courses
   | 'course_view'
   | 'course_started'
@@ -75,13 +83,28 @@ export interface AnalyticsEvent {
 export type AnalyticsAdapter = (event: AnalyticsEvent) => void | Promise<void>;
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Sampling configuration for high-volume events
+// ──────────────────────────────────────────────────────────────────────────────
+
+const HIGH_VOLUME_EVENT_NAMES: EventName[] = [
+  'page_view',
+  'button_clicked',
+  'link_clicked',
+  'search_performed',
+  'filter_applied',
+  'sort_changed',
+];
+
+const DEFAULT_SAMPLE_RATE = 0.1; // Only send 10% of high-volume events
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Built-in adapters
 // ──────────────────────────────────────────────────────────────────────────────
 
 /** Logs to console in development */
 export const consoleAdapter: AnalyticsAdapter = (event) => {
   if (process.env.NODE_ENV !== 'production') {
-    console.info(`[Analytics] ${event.name}`, event.properties);
+    logger.info(`[Analytics] ${event.name}`, { context: { properties: event.properties } });
   }
 };
 
@@ -96,7 +119,7 @@ export function createApiAdapter(endpoint: string): AnalyticsAdapter {
         keepalive: true, // survive page unload
       });
     } catch (err) {
-      console.warn('[Analytics] Failed to send event', err);
+      logger.warn('[Analytics] Failed to send event', { error: err });
     }
   };
 }
@@ -135,6 +158,7 @@ class Analytics {
   private adapters: AnalyticsAdapter[] = [consoleAdapter];
   private userId: string | undefined;
   private globalProperties: EventProperties = {};
+  private sampleRates: Partial<Record<EventName, number>> = {};
 
   private get sessionId(): string {
     return getOrCreate(SESSION_KEY, () => generateId('s_'));
@@ -170,12 +194,35 @@ class Analytics {
     this.globalProperties = {};
   }
 
+  /** Reset adapters to the default console adapter. Useful for tests. */
+  clearAdapters(): void {
+    this.adapters = [consoleAdapter];
+  }
+
   /** Properties merged into every subsequent event */
   setGlobalProperties(properties: EventProperties): void {
     this.globalProperties = { ...this.globalProperties, ...properties };
   }
 
+  /** Set sampling rate for a specific event type. Rate is 0-1. */
+  setSampleRate(eventName: EventName, rate: number): this {
+    this.sampleRates[eventName] = Math.min(1, Math.max(0, rate));
+    return this;
+  }
+
+  /** Whether an event should be sent given its configured/default sampling rate. */
+  private shouldSend(name: EventName): boolean {
+    const sampleRate =
+      this.sampleRates[name] ?? (HIGH_VOLUME_EVENT_NAMES.includes(name) ? DEFAULT_SAMPLE_RATE : 1);
+    if (sampleRate >= 1) return true;
+    if (sampleRate <= 0) return false;
+    return Math.random() < sampleRate;
+  }
+
   track(name: EventName, properties: EventProperties = {}): void {
+    // Sample high-volume events unless explicitly configured otherwise
+    if (!this.shouldSend(name)) return;
+
     const event: AnalyticsEvent = {
       name,
       properties: { ...this.globalProperties, ...properties },
@@ -189,7 +236,7 @@ class Analytics {
       try {
         adapter(event);
       } catch (err) {
-        console.warn(`[Analytics] Adapter error for "${name}"`, err);
+        logger.warn(`[Analytics] Adapter error for "${name}"`, { error: err });
       }
     }
   }

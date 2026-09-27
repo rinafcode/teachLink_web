@@ -2,10 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
-import { useId, useState, InputHTMLAttributes, forwardRef } from 'react';
+import { useId, useState, forwardRef } from 'react';
 import { FieldError } from '../../../components/forms/FormError';
 
-interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface FormInputProps
+  extends Omit<
+    React.ComponentPropsWithoutRef<'input'>,
+    'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationEnd'
+  > {
   label: string;
   error?: string;
   icon?: React.ReactNode;
@@ -23,20 +27,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       required,
       helperText,
       'aria-describedby': ariaDescribedBy,
-      onDrag,
-      onDragStart,
-      onDragEnd,
-      onAnimationStart,
-      onAnimationEnd,
       ...props
     },
     ref,
   ) => {
-    void onDrag;
-    void onDragStart;
-    void onDragEnd;
-    void onAnimationStart;
-    void onAnimationEnd;
     const generatedId = useId();
     const [showPassword, setShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);

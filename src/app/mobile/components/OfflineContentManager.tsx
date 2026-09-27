@@ -3,6 +3,9 @@ import { Download, Check, Wifi, WifiOff, Trash2, AlertCircle, RefreshCw } from '
 import { apiService } from '../services/api';
 import { offlineStorage } from '../services/offlineStorage';
 import { Course, OfflineContent } from '../types/mobile';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('OfflineContentManager');
 
 interface DownloadProgress {
   courseId: string;
@@ -60,7 +63,7 @@ export default function OfflineContentManager() {
       setStorageTotal(storage.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
-      console.error('Error loading offline content:', err);
+      logger.error('Error loading offline content', { error: err });
     } finally {
       setLoading(false);
     }
@@ -134,7 +137,7 @@ export default function OfflineContentManager() {
         setDownloads((prev) => prev.filter((d) => d.courseId !== courseId));
       }, 3000);
     } catch (err) {
-      console.error('Download error:', err);
+      logger.error('Download error', { error: err });
       setDownloads((prev) =>
         prev.map((download) =>
           download.courseId === courseId
@@ -168,7 +171,7 @@ export default function OfflineContentManager() {
         await apiService.deleteDownloadedCourse(courseId);
       }
     } catch (err) {
-      console.error('Delete error:', err);
+      logger.error('Delete error', { error: err });
       setError('Failed to delete course');
     }
   };

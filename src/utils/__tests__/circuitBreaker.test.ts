@@ -17,6 +17,7 @@ describe('CircuitBreaker', () => {
       timeout: 1000,
       monitoringPeriod: 5000,
       maxConcurrentRequests: 5,
+      maxConcurrentHalfOpenProbes: 2,
     };
     circuitBreaker = new CircuitBreaker(config);
   });
@@ -135,6 +136,54 @@ describe('CircuitBreaker', () => {
     });
   });
 
+  describe('Recovery jitter', () => {
+    it('uses full jitter for the recovery window', async () => {
+      vi.useFakeTimers();
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
+      const breaker = new CircuitBreaker(config);
+      const operation = vi.fn().mockRejectedValue(new Error('test error'));
+
+      for (let i = 0; i < config.failureThreshold; i++) {
+        await expect(breaker.execute(operation)).rejects.toThrow();
+      }
+
+      expect(breaker.getState()).toBe('OPEN');
+
+      await vi.advanceTimersByTimeAsync(config.timeout / 2 - 1);
+      await expect(breaker.execute(vi.fn())).rejects.toThrow('Circuit breaker is OPEN');
+
+      await vi.advanceTimersByTimeAsync(2);
+      const successOperation = vi.fn().mockResolvedValue('success');
+      await breaker.execute(successOperation);
+
+      expect(breaker.getState()).toBe('HALF_OPEN');
+
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    it('can recover immediately when full jitter selects zero', async () => {
+      vi.useFakeTimers();
+      vi.spyOn(Math, 'random').mockReturnValue(0);
+
+      const breaker = new CircuitBreaker(config);
+      const operation = vi.fn().mockRejectedValue(new Error('test error'));
+
+      for (let i = 0; i < config.failureThreshold; i++) {
+        await expect(breaker.execute(operation)).rejects.toThrow();
+      }
+
+      const successOperation = vi.fn().mockResolvedValue('success');
+      await breaker.execute(successOperation);
+
+      expect(breaker.getState()).toBe('HALF_OPEN');
+
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+  });
+
   describe('Recovery (HALF_OPEN state)', () => {
     it('should transition to HALF_OPEN after timeout', async () => {
       const operation = vi.fn().mockRejectedValue(new Error('test error'));
@@ -174,6 +223,60 @@ describe('CircuitBreaker', () => {
       }
 
       expect(circuitBreaker.getState()).toBe('CLOSED');
+    });
+
+    it('should limit concurrent HALF_OPEN probes', async () => {
+      vi.useFakeTimers();
+
+      const probeConfig = {
+        ...config,
+        timeout: 100,
+        successThreshold: 3,
+        maxConcurrentHalfOpenProbes: 2,
+      };
+      const breaker = new CircuitBreaker(probeConfig);
+      const failOp = vi.fn().mockRejectedValue(new Error('test error'));
+
+      for (let i = 0; i < probeConfig.failureThreshold; i++) {
+        await expect(breaker.execute(failOp)).rejects.toThrow();
+      }
+
+      expect(breaker.getState()).toBe('OPEN');
+
+      await vi.advanceTimersByTimeAsync(probeConfig.timeout + 1);
+
+      let releaseFirstProbe!: () => void;
+      let releaseSecondProbe!: () => void;
+      const probe = vi
+        .fn()
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((resolve) => {
+              releaseFirstProbe = resolve;
+            }),
+        )
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((resolve) => {
+              releaseSecondProbe = resolve;
+            }),
+        );
+
+      const firstProbe = breaker.execute(probe);
+      const secondProbe = breaker.execute(probe);
+      const rejectedProbe = breaker.execute(probe);
+
+      expect(breaker.getState()).toBe('HALF_OPEN');
+      expect(probe).toHaveBeenCalledTimes(2);
+      await expect(rejectedProbe).rejects.toThrow('Maximum concurrent half-open probes reached');
+
+      releaseFirstProbe();
+      releaseSecondProbe();
+      await Promise.all([firstProbe, secondProbe]);
+
+      expect(breaker.getState()).toBe('HALF_OPEN');
+
+      vi.useRealTimers();
     });
 
     it('should reopen circuit on failure in HALF_OPEN', async () => {
@@ -320,6 +423,7 @@ describe('CircuitBreaker', () => {
         timeout: 30000,
         monitoringPeriod: 20000,
         maxConcurrentRequests: 20,
+        maxConcurrentHalfOpenProbes: 3,
       };
       const cb = createToastCircuitBreaker(customConfig);
       expect(cb).toBeInstanceOf(CircuitBreaker);

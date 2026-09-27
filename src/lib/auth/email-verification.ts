@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'crypto';
 import { mkdir, readFile, rename, writeFile } from 'fs/promises';
 import path from 'path';
+import { constantTimeEqual } from '@/lib/auth/jwt';
 import type { EmailVerificationInput } from '@/services/notifications';
 
 export type EmailVerificationStatus = 'pending' | 'verified' | 'expired' | 'already_verified';
@@ -265,7 +266,7 @@ export async function verifyEmailToken(token: string): Promise<VerificationLooku
 
   return withStore(async (store) => {
     sweepExpiredRecords(store);
-    const record = store.records.find((item) => item.verificationTokenHash === tokenHash);
+    const record = store.records.find((item) => constantTimeEqual(item.verificationTokenHash, tokenHash));
 
     if (!record) {
       return { status: 'not_found' };
@@ -345,7 +346,7 @@ export async function restoreVerificationEmail(params: {
       return { status: 'expired', record: existing };
     }
 
-    if (hashSecret(params.backupCode.trim()) !== existing.backupCodeHash) {
+    if (!constantTimeEqual(hashSecret(params.backupCode.trim()), existing.backupCodeHash)) {
       return { status: 'not_found', record: existing };
     }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { debounce } from '../utils/formUtils';
 
 export interface FilterState {
   difficulty: string[];
@@ -11,7 +12,7 @@ export interface FilterState {
   sort: string;
   instructor: string;
   searchTerm: string;
-  nodeAffinity?: string;
+  learningFormat: string[];
 }
 
 export const useSearchFilters = () => {
@@ -30,7 +31,7 @@ export const useSearchFilters = () => {
       sort: searchParams?.get('sort') || 'relevance',
       instructor: searchParams?.get('instructor') || '',
       searchTerm: searchParams?.get('q') || '',
-      nodeAffinity: searchParams?.get('affinity') || 'auto',
+      learningFormat: searchParams?.get('format')?.split(',').filter(Boolean) || [],
     }),
     [searchParams],
   );
@@ -57,9 +58,9 @@ export const useSearchFilters = () => {
         prev.sort !== next.sort ||
         prev.instructor !== next.instructor ||
         prev.searchTerm !== next.searchTerm ||
-        prev.nodeAffinity !== next.nodeAffinity ||
         prev.difficulty.join(',') !== next.difficulty.join(',') ||
-        prev.topics.join(',') !== next.topics.join(',');
+        prev.topics.join(',') !== next.topics.join(',') ||
+        prev.learningFormat.join(',') !== next.learningFormat.join(',');
 
       return hasChanged ? next : prev;
     });
@@ -76,7 +77,7 @@ export const useSearchFilters = () => {
   }, [router, pathname, searchParams]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const debouncedSync = debounce(() => {
       const params = new URLSearchParams();
 
       if (filters.difficulty && filters.difficulty.length > 0) {
@@ -100,8 +101,8 @@ export const useSearchFilters = () => {
       if (filters.searchTerm) {
         params.set('q', filters.searchTerm);
       }
-      if (filters.nodeAffinity && filters.nodeAffinity !== 'auto') {
-        params.set('affinity', filters.nodeAffinity);
+      if (filters.learningFormat && filters.learningFormat.length > 0) {
+        params.set('format', filters.learningFormat.join(','));
       }
 
       const pPathname = pathnameRef.current;
@@ -123,7 +124,11 @@ export const useSearchFilters = () => {
       pRouter.replace(newUrl, { scroll: false });
     }, 300);
 
-    return () => clearTimeout(timer);
+    debouncedSync();
+
+    return () => {
+      debouncedSync.cancel();
+    };
   }, [filters]);
 
   const setFilters = useCallback((newFilters: Partial<FilterState>) => {
@@ -142,7 +147,7 @@ export const useSearchFilters = () => {
       sort: 'relevance',
       instructor: '',
       searchTerm: '',
-      nodeAffinity: 'auto',
+      learningFormat: [],
     });
   }, []);
 

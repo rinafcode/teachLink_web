@@ -11,7 +11,12 @@ import {
   RECONNECT_DELAY_MS,
   STORAGE_KEYS,
   API_CACHE_TTL_DEFAULT,
+  API_CACHE_MAX_ENTRIES_DEFAULT,
 } from '@/constants/app.constants';
+import { logContextStorage } from './logging/context';
+import { tokenManager } from '@/lib/auth/tokenManager';
+
+import { dedupe, buildDedupeKey } from './api/dedupe';
 
 export type { ErrorInfo };
 
@@ -23,6 +28,7 @@ const DEFAULT_TIMEOUT_MS = API_TIMEOUT_DEFAULT;
 const API_MAX_RETRIES = MAX_RETRIES;
 const RETRY_DELAY_MS = RECONNECT_DELAY_MS;
 const DEFAULT_TTL_MS = API_CACHE_TTL_DEFAULT;
+const DEFAULT_MAX_CACHE_SIZE = API_CACHE_MAX_ENTRIES_DEFAULT;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,6 +48,11 @@ export interface RequestConfig extends RequestInit {
   retries?: number;
   timeout?: number;
   schema?: z.ZodSchema;
+  useCache?: boolean;
+  dedupe?: boolean;
+  _bypassCacheRead?: boolean;
+  _authRetried?: boolean;
+  ttl?: number;
 }
 
 export interface ApiClientConfig {
@@ -51,6 +62,8 @@ export interface ApiClientConfig {
   retryDelay?: number;
   apiVersion?: string;
   defaultTTL?: number;
+  maxCacheSize?: number;
+  maxCacheEntries?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -78,8 +91,9 @@ function shouldRetry(status: number, attempt: number, maxRetries: number): boole
   return [408, 429, 500, 502, 503, 504].includes(status);
 }
 
-function getRetryDelay(attempt: number, baseDelay: number): number {
-  return baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+export function getRetryDelay(attempt: number, baseDelay: number): number {
+  const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
+  return Math.random() * exponentialDelay;
 }
 
 // ---------------------------------------------------------------------------
@@ -94,6 +108,7 @@ class ApiClientImpl {
   private errorInterceptors: ErrorInterceptor[] = [];
 
   constructor(config: ApiClientConfig = {}) {
+    const maxCache = config.maxCacheSize ?? config.maxCacheEntries ?? DEFAULT_MAX_CACHE_SIZE;
     this.config = {
       baseURL: config.baseURL || process.env.NEXT_PUBLIC_API_URL || '',
       timeout: config.timeout || DEFAULT_TIMEOUT_MS,
@@ -101,21 +116,81 @@ class ApiClientImpl {
       retryDelay: config.retryDelay || RETRY_DELAY_MS,
       apiVersion: config.apiVersion || DEFAULT_API_VERSION,
       defaultTTL: config.defaultTTL || DEFAULT_TTL_MS,
+      maxCacheSize: maxCache,
+      maxCacheEntries: maxCache,
     };
   }
 
   private getToken(): string | null {
+    // The token manager is the single source of truth; it hydrates from
+    // localStorage under STORAGE_KEYS.AUTH_TOKEN, so the value is identical to
+    // the previous direct read but is now shared with sockets and the offline
+    // queue and kept fresh by silent refresh.
+    const managed = tokenManager.getAccessTokenSync();
+    if (managed) return managed;
     if (typeof window === 'undefined') return null;
     return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
   }
 
+  private getFromCache<T>(key: string): CacheEntry<T> | undefined {
+    const cached = this.cache.get(key);
+    if (cached) {
+      // LRU refresh: re-insert so it becomes the most recently used entry
+      this.cache.delete(key);
+      this.cache.set(key, cached);
+    }
+    return cached;
+  }
+
+  private setInCache<T>(key: string, data: T): void {
+    if (this.config.maxCacheSize <= 0) return;
+
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+
+    while (this.cache.size >= this.config.maxCacheSize) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey === undefined) break;
+      this.cache.delete(oldestKey);
+    }
+
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  getCacheSize(): number {
+    return this.cache.size;
+  }
+
   invalidateCache(url?: string) {
-    if (url) this.cache.delete(url);
-    else this.cache.clear();
+    if (url) {
+      this.cache.delete(url);
+      for (const key of this.cache.keys()) {
+        if (key.startsWith(`${url}:`)) {
+          this.cache.delete(key);
+        }
+      }
+    } else {
+      this.cache.clear();
+    }
+  }
+
+  addRequestInterceptor(interceptor: RequestInterceptor) {
+    this.requestInterceptors.push(interceptor);
+  }
+
+  addResponseInterceptor(interceptor: ResponseInterceptor) {
+    this.responseInterceptors.push(interceptor);
+  }
+
+  addErrorInterceptor(interceptor: ErrorInterceptor) {
+    this.errorInterceptors.push(interceptor);
   }
 
   private async requestWithRetry<T>(config: RequestConfig, attempt = 1): Promise<T> {
-    const token = this.getToken();
+    // Proactively ensure a non-expired access token before sending. Concurrent
+    // requests share a single refresh; falls back to the cached token.
+    const token = (await tokenManager.getValidAccessToken()) ?? this.getToken();
 
     const baseURL = this.config.baseURL.replace(/\/+$/, '');
     const resolvedUrl = getVersionedApiPath(config.url);
@@ -125,7 +200,7 @@ class ApiClientImpl {
 
     // CACHE
     if (config.method === 'GET' && config.useCache && !config._bypassCacheRead) {
-      const cached = this.cache.get(cacheKey);
+      const cached = this.getFromCache<T>(cacheKey);
       if (cached) {
         const ttl = config.ttl ?? this.config.defaultTTL;
         if (Date.now() - cached.timestamp < ttl) return cached.data;
@@ -140,11 +215,13 @@ class ApiClientImpl {
 
     const timer = setTimeout(() => controller.abort(), timeout);
 
+    const contextStore = logContextStorage.getStore();
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(config.headers || {}),
       [API_VERSION_HEADER]: this.config.apiVersion,
+      ...(contextStore?.traceId ? { 'x-trace-id': contextStore.traceId } : {}),
     };
 
     try {
@@ -157,6 +234,18 @@ class ApiClientImpl {
       clearTimeout(timer);
 
       if (!response.ok) {
+        // A 401 triggers one coordinated refresh + replay. The single-flight
+        // refresh in the token manager collapses concurrent 401s into a single
+        // network round-trip; `_authRetried` prevents an infinite loop.
+        if (response.status === 401 && !config._authRetried) {
+          try {
+            await tokenManager.refresh();
+            return this.requestWithRetry<T>({ ...config, _authRetried: true }, 1);
+          } catch {
+            // Refresh failed — fall through to the normal 401 error path below.
+          }
+        }
+
         if (shouldRetry(response.status, attempt, this.config.maxRetries)) {
           await new Promise((r) => setTimeout(r, getRetryDelay(attempt, this.config.retryDelay)));
           return this.requestWithRetry<T>(config, attempt + 1);
@@ -169,13 +258,14 @@ class ApiClientImpl {
           body?.message || response.statusText,
           statusToUserMessage(response.status),
           response.status,
+          body?.errors,
         );
       }
 
       const data = await response.json();
 
       if (config.method === 'GET' && config.useCache) {
-        this.cache.set(cacheKey, { data, timestamp: Date.now() });
+        this.setInCache(cacheKey, data);
       }
 
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method || '')) {
@@ -196,11 +286,20 @@ class ApiClientImpl {
    * GET request
    */
   async get<T>(url: string, options?: Omit<RequestConfig, 'url' | 'method'>): Promise<T> {
-    return this.requestWithRetry<T>({
-      ...options,
-      url,
-      method: 'GET',
-    });
+    const shouldDedupe = options?.dedupe !== false;
+    const requestFn = () =>
+      this.requestWithRetry<T>({
+        ...options,
+        url,
+        method: 'GET',
+      });
+
+    if (shouldDedupe) {
+      const key = buildDedupeKey('GET', url);
+      return dedupe<T>(key, requestFn);
+    }
+
+    return requestFn();
   }
 
   /**
@@ -219,6 +318,9 @@ class ApiClientImpl {
     });
   }
 
+  /**
+   * PATCH request
+   */
   async patch<T>(
     url: string,
     body?: unknown,
@@ -232,6 +334,9 @@ class ApiClientImpl {
     });
   }
 
+  /**
+   * PUT request
+   */
   async put<T>(
     url: string,
     body?: unknown,
@@ -259,4 +364,4 @@ class ApiClientImpl {
 
 // Singleton
 export const apiClient = new ApiClientImpl();
-export type { ApiClientImpl };
+export { ApiClientImpl };

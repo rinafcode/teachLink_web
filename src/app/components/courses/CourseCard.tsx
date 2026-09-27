@@ -1,5 +1,7 @@
+import { memo } from 'react';
 import { Play } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface CourseCardProps {
   title: string;
@@ -11,7 +13,7 @@ interface CourseCardProps {
   courseHref: string;
 }
 
-export default function CourseCard({
+function CourseCard({
   title = 'Web3 UX Design Principles',
   subtitle = 'Create intuitive interfaces for decentralized applications',
   author = 'Sarah Johnson',
@@ -24,11 +26,13 @@ export default function CourseCard({
     <div className="group relative w-full overflow-hidden rounded-xl border border-gray- shadow-lg bg-[#262f40] transition-all duration-300 hover:shadow-xl">
       <div className="relative h-48 w-full overflow-hidden bg-gray-900">
         {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={imageUrl}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800" />
@@ -71,3 +75,5 @@ export default function CourseCard({
     </div>
   );
 }
+
+export default memo(CourseCard);

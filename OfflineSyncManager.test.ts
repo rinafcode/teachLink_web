@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { OfflineSyncManager } from '../OfflineSyncManager';
+import { OfflineSyncManager } from './OfflineSyncManager';
 
 describe('OfflineSyncManager (Microservices Architecture)', () => {
   let originalFetch: typeof global.fetch;
@@ -50,6 +50,8 @@ describe('OfflineSyncManager (Microservices Architecture)', () => {
       'teachlink_offline_queue_v1',
       expect.stringContaining('Hello offline!'),
     );
+
+    manager.dispose();
   });
 
   it('processes queue and routes to correct microservice when back online', async () => {
@@ -88,5 +90,7 @@ describe('OfflineSyncManager (Microservices Architecture)', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0][0]).toBe('https://groups.microservice.local/messages');
     expect(fetchMock.mock.calls[1][0]).toBe('https://courses.microservice.local/progress');
+
+    manager.dispose();
   });
 });

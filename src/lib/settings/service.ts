@@ -242,6 +242,7 @@ export class SettingsService {
     canEditReducedMotion: boolean;
     canEditElectronicSignature: boolean;
     canEditPollSettings: boolean;
+    canEditVirtualBackground: boolean;
     canExportSettings: boolean;
     canImportSettings: boolean;
     canSyncSettings: boolean;
@@ -255,6 +256,7 @@ export class SettingsService {
       canEditReducedMotion: true,
       canEditElectronicSignature: true,
       canEditPollSettings: true,
+      canEditVirtualBackground: true,
       canExportSettings: true,
       canImportSettings: true,
       canSyncSettings: true,
@@ -278,6 +280,11 @@ export class SettingsService {
       electronicSignatureEnabled: 'canEditElectronicSignature',
       signatureName: 'canEditElectronicSignature',
       requireSignatureOnCertificates: 'canEditElectronicSignature',
+      virtualBackgroundEnabled: 'canEditVirtualBackground',
+      virtualBackgroundType: 'canEditVirtualBackground',
+      virtualBackgroundImage: 'canEditVirtualBackground',
+      virtualBackgroundBlur: 'canEditVirtualBackground',
+      virtualBackgroundColor: 'canEditVirtualBackground',
       pollCreationEnabled: 'canEditPollSettings',
       defaultPollDuration: 'canEditPollSettings',
       allowAnonymousVoting: 'canEditPollSettings',
@@ -293,7 +300,7 @@ export class SettingsService {
   static getDocumentationMetadata(): DocumentationMetadata {
     return {
       version: SETTINGS_DOCUMENTATION_VERSION,
-      lastUpdated: '2025-05-30',
+      lastUpdated: '2026-08-28',
       schemaVersion: SETTINGS_SCHEMA_VERSION,
       fields: {
         version: 'Schema version for settings structure',
@@ -311,6 +318,10 @@ export class SettingsService {
         virtualBackgroundImage: 'Custom background image URL',
         virtualBackgroundBlur: 'Blur intensity (0-100)',
         virtualBackgroundColor: 'Hex color for solid background',
+        pollCreationEnabled: 'Master toggle for creating interactive polls',
+        defaultPollDuration: 'Default poll duration in days (1-30)',
+        allowAnonymousVoting: 'Allow anonymous voting by default',
+        pollResultsVisibility: "Default poll results visibility ('always' | 'after_voting' | 'after_ended')",
       },
     };
   }
@@ -360,11 +371,15 @@ export class SettingsService {
     const suggestions: string[] = [];
 
     if (validation.missingFields.length > 0) {
-      suggestions.push(`Add documentation for missing fields: ${validation.missingFields.join(', ')}`);
+      suggestions.push(
+        `Add documentation for missing fields: ${validation.missingFields.join(', ')}`,
+      );
     }
 
     if (validation.outdatedFields.length > 0) {
-      suggestions.push(`Remove documentation for deprecated fields: ${validation.outdatedFields.join(', ')}`);
+      suggestions.push(
+        `Remove documentation for deprecated fields: ${validation.outdatedFields.join(', ')}`,
+      );
     }
 
     suggestions.push(`Update documentation version to reflect changes`);

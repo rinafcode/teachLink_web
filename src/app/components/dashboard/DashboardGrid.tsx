@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DndContext,
@@ -23,6 +23,9 @@ import { Settings, Plus, Grid3X3, Calendar } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
 import { EmptyState } from '@/components';
+import { createLogger } from '@/lib/logging';
+
+const logger = createLogger('DashboardGrid');
 
 const ProgressSummaryWidget = dynamic(
   () => import('./widgets/ProgressSummaryWidget').then((mod) => mod.ProgressSummaryWidget),
@@ -104,6 +107,14 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [dateRange] = useState('Last 30 days');
 
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -111,7 +122,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
     }),
   );
 
-  const { saveWidgetLayout, loadWidgetLayout } = useDashboardWidgets();
+  const { loadWidgetLayout } = useDashboardWidgets();
 
   // Load saved layout on mount
   useEffect(() => {
@@ -123,24 +134,38 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({
         setWidgets(initialWidgets);
       }
     } catch (error) {
-      console.error('Error loading widget layout', error);
+      logger.error('Error loading widget layout', { error });
       if (initialWidgets.length > 0) setWidgets(initialWidgets);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
-  // Save layout when widgets change (but not on initial load)
+  // Notify parent of widget changes immediately (no I/O)
   useEffect(() => {
-    if (widgets.length === 0) return; // Don't save empty state
+    if (widgets.length === 0) return;
+    onWidgetChange?.(widgets);
+  }, [widgets, onWidgetChange]);
 
-    try {
-      saveWidgetLayout(widgets);
-      onWidgetChange?.(widgets);
-    } catch (error) {
-      console.error('Error saving widget layout', error);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [widgets]); // Only depend on widgets, not the functions
+  // Persist layout to localStorage at most once per 500ms via debounce
+  useEffect(() => {
+    if (widgets.length === 0) return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+
+    saveTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem('dashboard-widgets', JSON.stringify(widgets));
+      } catch (error) {
+        console.error('Error saving widget layout', error);
+      } finally {
+        saveTimerRef.current = null;
+      }
+    }, 500);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [widgets]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

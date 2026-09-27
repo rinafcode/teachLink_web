@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useMutation } from '@/hooks/useMutation';
 import { apiClient } from '@/lib/api';
+import { ApiError } from '@/utils/error-handler';
 import { FormError } from '../../../components/forms/FormError';
 import { SubmitButton } from '../../../components/forms/SubmitButton';
 
@@ -136,6 +137,9 @@ export default function VerifyEmailPage() {
 
           <FormError
             error={
+              (verifyMutation.error as ApiError)?.errors ??
+              (resendMutation.error as ApiError)?.errors ??
+              (restoreMutation.error as ApiError)?.errors ??
               verifyMutation.error?.message ??
               resendMutation.error?.message ??
               restoreMutation.error?.message

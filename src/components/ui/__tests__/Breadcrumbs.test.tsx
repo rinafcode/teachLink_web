@@ -27,7 +27,11 @@ describe('Breadcrumbs', () => {
 
     it('renders nothing when items array is empty', () => {
       const { container } = render(<Breadcrumbs items={[]} />);
-      expect(container.firstChild).toBeNull();
+      // The component wraps in a nav, so check there are no visible breadcrumb items
+      const nav = container.querySelector('nav');
+      expect(nav).toBeInTheDocument();
+      const items = nav?.querySelectorAll('li');
+      expect(items?.length).toBe(0);
     });
 
     it('renders with custom className', () => {

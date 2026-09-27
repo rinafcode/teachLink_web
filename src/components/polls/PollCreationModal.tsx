@@ -30,9 +30,7 @@ function validateDraft(
     if (opt.length > 120) return { ok: false, message: 'Option too long' };
   }
 
-  const durationDays = Number.isFinite(draft.durationDays)
-    ? Math.trunc(draft.durationDays)
-    : 0;
+  const durationDays = Number.isFinite(draft.durationDays) ? Math.trunc(draft.durationDays) : 0;
   if (durationDays < 1 || durationDays > 30) {
     return { ok: false, message: 'Duration must be between 1 and 30 days' };
   }
@@ -293,4 +291,3 @@ export function PollCreationModal({ isOpen, onClose, onCreate }: PollCreationMod
     </Modal>
   );
 }
-
