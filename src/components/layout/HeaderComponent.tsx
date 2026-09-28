@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, startTransition } from 'react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
-import { useWallet } from '@/providers/WalletProvider';
+import { useWallet } from '@/hooks/useWallet';
 import { IGrantContext } from '@/types/grants';
 import { createLogger } from '@/lib/logging';
 
