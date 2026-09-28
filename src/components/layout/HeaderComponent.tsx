@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo, startTransition } from 'react';
 import Link from 'next/link';
-import { toast } from 'sonner';
-import { useWallet } from '@/hooks/useWallet';
+import { toast } from 'react-hot-toast';
+import { useWallet } from '@/providers/WalletProvider';
 import { IGrantContext } from '@/types/grants';
 import { createLogger } from '@/lib/logging';
 
