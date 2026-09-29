@@ -26,7 +26,7 @@ documents are added and refined over time (tracked as issues):
 - **Decision-making** — consensus and voting rules, the RFC/proposal process, and
   decision records.
 - **Community & conduct** — code of conduct, enforcement, moderation, and conflict
-  resolution.
+  resolution, including [communication norms](policies/COMMUNICATION_NORMS.md).
 - **Contribution governance** — review policy, triage, labels, and roadmap governance.
 - **Security & disclosure** — vulnerability reporting, embargo, and advisory processes.
 - **Releases & change** — versioning, release cadence, deprecation, and change policy.

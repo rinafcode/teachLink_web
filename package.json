@@ -88,6 +88,7 @@
     "recharts": "^2.15.4",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^2.6.0",
     "uuid": "^14.0.1",
     "video.js": "^8.23.7",
