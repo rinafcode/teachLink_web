@@ -36,7 +36,7 @@ export class LocalMonitoringProvider implements MonitoringProvider {
           metricsList.push(...result.data);
         }
       } else {
-        console.warn(`[Monitoring] DB metrics response error: HTTP ${response.status}`);
+        logger.warn(`[Monitoring] DB metrics response error: HTTP ${response.status}`);
       }
     } catch (error) {
       logger.warn('[Monitoring] Failed to fetch DB metrics', { error });
@@ -51,10 +51,10 @@ export class LocalMonitoringProvider implements MonitoringProvider {
           metricsList.push(...result.data);
         }
       } else {
-        console.warn(`[Monitoring] Zoom metrics response error: HTTP ${response.status}`);
+        logger.warn(`[Monitoring] Zoom metrics response error: HTTP ${response.status}`);
       }
     } catch (error) {
-      console.warn('[Monitoring] Failed to fetch Zoom metrics:', error);
+      logger.warn('[Monitoring] Failed to fetch Zoom metrics', { error });
     }
 
     return metricsList;
