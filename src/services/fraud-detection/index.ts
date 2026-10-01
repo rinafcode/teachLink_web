@@ -18,6 +18,18 @@ export type {
   FraudSeverity,
 };
 
+export {
+  FRAUD_SEVERITIES,
+  FRAUD_CATEGORIES,
+  isFraudSeverity,
+  isFraudCategory,
+  isValidFraudEvent,
+  isValidFraudDetectionResult,
+  isValidUserActionContext,
+  isValidConferenceAccessCheck,
+  isValidFraudDetectionConfig,
+} from './types';
+
 const DEFAULT_CONFIG: FraudDetectionConfig = {
   maxJoinLeavePerMinute: 5,
   maxScreenShareTogglesPerMinute: 4,
