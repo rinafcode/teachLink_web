@@ -1,32 +1,35 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, Dispatch, SetStateAction } from 'react';
-import { ApolloClient, DocumentNode, ApolloError, OperationVariables } from '@apollo/client';
+import { ApolloClient, DocumentNode, ApolloError, OperationVariables, ObservableSubscription } from '@apollo/client';
 import {
   ConnectionState,
   getConnectionManager,
   isConnectionError,
   formatSubscriptionError,
+  ConnectionEvent,
 } from '@/lib/graphql/subscriptions';
 import { createLogger } from '@/lib/logging';
 
 /**
  * Deep equality comparison for variables to prevent unnecessary re-subscriptions
  */
-function deepEqual(a: any, b: any): boolean {
+function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (typeof a !== typeof b) return false;
   if (typeof a !== 'object') return false;
   
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
+  const objA = a as Record<string, unknown>;
+  const objB = b as Record<string, unknown>;
+  const keysA = Object.keys(objA);
+  const keysB = Object.keys(objB);
   
   if (keysA.length !== keysB.length) return false;
   
   for (const key of keysA) {
     if (!keysB.includes(key)) return false;
-    if (!deepEqual(a[key], b[key])) return false;
+    if (!deepEqual(objA[key], objB[key])) return false;
   }
   
   return true;
@@ -39,7 +42,7 @@ export { ConnectionState, getConnectionManager, isConnectionError, formatSubscri
 /**
  * Subscription variable constraints
  */
-export interface UseSubscriptionOptions {
+export interface UseSubscriptionOptions<TData = unknown> {
   /** Skip subscription execution */
   skip?: boolean;
   /** Callback when subscription connects */
@@ -47,9 +50,9 @@ export interface UseSubscriptionOptions {
   /** Callback when subscription disconnects */
   onDisconnect?: () => void;
   /** Callback when subscription error occurs */
-  onError?: (error: ApolloError) => void;
+  onError?: (error: ApolloError | SubscriptionError) => void;
   /** Callback when data updates */
-  onData?: (data: any) => void;
+  onData?: (data: TData) => void;
   /** Retry failed subscriptions */
   shouldResubscribe?: boolean;
   /** Cache policy for subscription data */
@@ -105,10 +108,10 @@ export class SubscriptionError extends Error {
  * );
  * ```
  */
-export function useSubscription<TData = any, TVariables extends OperationVariables = any>(
+export function useSubscription<TData = unknown, TVariables extends OperationVariables = OperationVariables>(
   subscription: DocumentNode,
-  options: UseSubscriptionOptions & { variables?: TVariables } = {},
-  client?: ApolloClient<any>,
+  options: UseSubscriptionOptions<TData> & { variables?: TVariables } = {},
+  client?: ApolloClient<unknown>,
 ): UseSubscriptionResult<TData> {
   const {
     skip = false,
@@ -155,14 +158,14 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.DISCONNECTED,
   );
-  const subscriptionRef = useRef<any>(null);
-  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const subscriptionRef = useRef<ObservableSubscription | { subscribe: (observer: { next?: (res: { data?: TData }) => void; error?: (err: unknown) => void; complete?: () => void }) => { unsubscribe?: () => void } | (() => void) } | null>(null);
+  const unsubscribeRef = useRef<(() => void) | { unsubscribe?: () => void } | null>(null);
   const connectionListenerRef = useRef<(() => void) | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const attemptCountRef = useRef(0);
 
   const handleConnectionStateChange = useCallback(
-    (event: any) => {
+    (event: ConnectionEvent) => {
       setConnectionState(event.state);
 
       if (event.state === ConnectionState.CONNECTED) {
@@ -189,44 +192,49 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
       subscriptionRef.current = client.subscribe({
         query: subscription,
         variables: variablesRef.current,
-      });
+      }) as unknown as typeof subscriptionRef.current;
 
-      unsubscribeRef.current = subscriptionRef.current.subscribe({
-        next: (response: any) => {
-          attemptCountRef.current = 0; // Reset on successful data
-          setLoading(false);
+      if (subscriptionRef.current) {
+        unsubscribeRef.current = subscriptionRef.current.subscribe({
+          next: (response: { data?: TData }) => {
+            attemptCountRef.current = 0; // Reset on successful data
+            setLoading(false);
 
-          // Extract data from response
-          const resultData = response.data;
-          setData(resultData);
-          onDataRef.current?.(resultData);
-        },
-        error: (err: any) => {
-          setLoading(false);
-
-          const apolloError =
-            err instanceof ApolloError ? err : new ApolloError({ errorMessage: err.message });
-          setError(apolloError);
-
-          if (isConnectionError(err)) {
-            setConnectionState(ConnectionState.ERROR);
-            if (shouldResubscribe && attemptCountRef.current < 3) {
-              attemptCountRef.current++;
-              // Exponential backoff for reconnection
-              const delay = Math.min(1000 * Math.pow(2, attemptCountRef.current), 10000);
-              reconnectTimeoutRef.current = setTimeout(() => {
-                executeSubscription();
-              }, delay);
+            // Extract data from response
+            const resultData = response.data;
+            setData(resultData);
+            if (resultData !== undefined) {
+              onDataRef.current?.(resultData);
             }
-          }
+          },
+          error: (err: unknown) => {
+            setLoading(false);
 
-          onErrorRef.current?.(apolloError);
-        },
-        complete: () => {
-          setLoading(false);
-          // Handle completion if needed
-        },
-      });
+            const errMessage = err instanceof Error ? err.message : String(err);
+            const apolloError =
+              err instanceof ApolloError ? err : new ApolloError({ errorMessage: errMessage });
+            setError(apolloError);
+
+            if (isConnectionError(err)) {
+              setConnectionState(ConnectionState.ERROR);
+              if (shouldResubscribe && attemptCountRef.current < 3) {
+                attemptCountRef.current++;
+                // Exponential backoff for reconnection
+                const delay = Math.min(1000 * Math.pow(2, attemptCountRef.current), 10000);
+                reconnectTimeoutRef.current = setTimeout(() => {
+                  executeSubscription();
+                }, delay);
+              }
+            }
+
+            onErrorRef.current?.(apolloError);
+          },
+          complete: () => {
+            setLoading(false);
+            // Handle completion if needed
+          },
+        });
+      }
     } catch (err) {
       const wrappedError =
         err instanceof ApolloError
@@ -235,7 +243,7 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
 
       setError(wrappedError);
       setLoading(false);
-      onErrorRef.current?.(wrappedError as any);
+      onErrorRef.current?.(wrappedError);
     }
   }, [client, skip, subscription, shouldResubscribe]); // Remove unstable dependencies
 
@@ -245,9 +253,9 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
   const cleanup = useCallback(() => {
     if (unsubscribeRef.current) {
       if (typeof unsubscribeRef.current === 'function') {
-        (unsubscribeRef.current as any)();
-      } else if ((unsubscribeRef.current as any).unsubscribe) {
-        (unsubscribeRef.current as any).unsubscribe();
+        unsubscribeRef.current();
+      } else if (typeof unsubscribeRef.current === 'object' && typeof unsubscribeRef.current.unsubscribe === 'function') {
+        unsubscribeRef.current.unsubscribe();
       }
       unsubscribeRef.current = null;
     }
@@ -309,7 +317,9 @@ export function useSubscription<TData = any, TVariables extends OperationVariabl
       ? error.message || 'Subscription error'
       : error instanceof SubscriptionError
       ? formatSubscriptionError(error)
-      : (error as any)?.message || null;
+      : error && typeof error === 'object' && 'message' in error
+      ? String((error as { message?: unknown }).message)
+      : null;
 
   return {
     data,
@@ -352,17 +362,17 @@ export function useSubscriptionConnection(): ConnectionState {
 /**
  * Hook for managing multiple subscriptions with fallback to polling
  */
-export interface UsePollableSubscriptionOptions<T> extends UseSubscriptionOptions {
+export interface UsePollableSubscriptionOptions<T> extends UseSubscriptionOptions<T> {
   /** Polling interval in milliseconds (fallback when subscription unavailable) */
   pollIntervalMs?: number;
   /** Fallback fetch function for polling */
   pollFn?: () => Promise<T>;
 }
 
-export function usePollableSubscription<TData = any, TVariables extends OperationVariables = any>(
+export function usePollableSubscription<TData = unknown, TVariables extends OperationVariables = OperationVariables>(
   subscription: DocumentNode,
   options: UsePollableSubscriptionOptions<TData> & { variables?: TVariables } = {},
-  client?: ApolloClient<any>,
+  client?: ApolloClient<unknown>,
 ): UseSubscriptionResult<TData> {
   const { pollIntervalMs = 5000, pollFn } = options;
   const [isPolling, setIsPolling] = useState(false);
