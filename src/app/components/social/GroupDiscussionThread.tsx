@@ -131,7 +131,7 @@ export default function GroupDiscussionThread({ messages, onPost }: GroupDiscuss
                           key={a.id}
                           href={a.url}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline transition-colors"
                         >
                           <Paperclip size={14} />
