@@ -62,7 +62,7 @@ describe('GET /api/admin/network-policies', () => {
 });
 
 describe('POST /api/admin/network-policies', () => {
-  it('creates a policy for each accepted scope', async () => {
+  it('creates a policy for each accepted scope (IP, CIDR, COUNTRY)', async () => {
     const response = await invoke(
       POST,
       postRequest({ scope: 'CIDR', value: '10.0.0.0/8', action: 'DENY', description: 'private' }),
@@ -71,12 +71,25 @@ describe('POST /api/admin/network-policies', () => {
 
     expect(response.status).toBe(201);
     expect(body.success).toBe(true);
-    expect(body.data.id).toEqual(expect.any(String));
+    expect(body.data.id).toMatch(/^np_/);
     expect(body.data.scope).toBe('CIDR');
     expect(body.data.value).toBe('10.0.0.0/8');
     expect(body.data.action).toBe('DENY');
     expect(body.data.description).toBe('private');
     expect(body.data.createdAt).toEqual(expect.any(String));
+
+    const countryRes = await invoke(
+      POST,
+      postRequest({ scope: 'COUNTRY', value: 'US', action: 'ALLOW' }),
+    );
+    const countryBody = await countryRes.json();
+
+    expect(countryRes.status).toBe(201);
+    expect(countryBody.success).toBe(true);
+    expect(countryBody.data.scope).toBe('COUNTRY');
+    expect(countryBody.data.value).toBe('US');
+    expect(countryBody.data.action).toBe('ALLOW');
+    expect(countryBody.data.description).toBeUndefined();
   });
 
   it('trims the stored value and caps the description at 200 characters', async () => {
