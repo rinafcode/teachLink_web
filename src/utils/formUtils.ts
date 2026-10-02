@@ -94,7 +94,7 @@ export const ValidationRules = {
   }),
 
   custom: (
-    validator: (value: any, formState: FormState) => boolean,
+    validator: (value: unknown, formState: FormState) => boolean,
     message = 'Validation failed',
   ): ValidationRule => ({
     type: 'custom',
@@ -106,8 +106,10 @@ export const ValidationRules = {
 /**
  * Extract form values from FormState
  */
-export function getFormValues(formState: FormState): Record<string, any> {
-  return { ...formState.values };
+export function getFormValues<T extends Record<string, unknown> = Record<string, unknown>>(
+  formState: FormState,
+): T {
+  return { ...formState.values } as T;
 }
 
 /**
@@ -160,22 +162,22 @@ export function getTouchedFields(formState: FormState): string[] {
 /**
  * Format field value for display
  */
-export function formatFieldValue(value: any, type: FieldType): string {
+export function formatFieldValue(value: unknown, type: FieldType): string {
   if (value === null || value === undefined) {
     return '';
   }
 
   switch (type) {
     case 'date':
-      return value instanceof Date ? value.toLocaleDateString() : value;
+      return value instanceof Date ? value.toLocaleDateString() : String(value);
     case 'time':
-      return value instanceof Date ? value.toLocaleTimeString() : value;
+      return value instanceof Date ? value.toLocaleTimeString() : String(value);
     case 'datetime-local':
-      return value instanceof Date ? value.toLocaleString() : value;
+      return value instanceof Date ? value.toLocaleString() : String(value);
     case 'checkbox':
       return value ? 'Yes' : 'No';
     case 'number':
-      return typeof value === 'number' ? value.toString() : value;
+      return typeof value === 'number' ? value.toString() : String(value);
     default:
       return String(value);
   }
@@ -184,7 +186,7 @@ export function formatFieldValue(value: any, type: FieldType): string {
 /**
  * Parse field value from string
  */
-export function parseFieldValue(value: string, type: FieldType): any {
+export function parseFieldValue(value: string, type: FieldType): string | number | boolean | Date {
   if (!value) {
     return type === 'checkbox' ? false : '';
   }
@@ -235,12 +237,12 @@ export function isValidPhone(phone: string): boolean {
 /**
  * Sanitize form values (remove empty strings, null, undefined)
  */
-export function sanitizeFormValues(values: Record<string, any>): Record<string, any> {
-  const sanitized: Record<string, any> = {};
+export function sanitizeFormValues<T extends Record<string, unknown>>(values: T): Partial<T> {
+  const sanitized: Partial<T> = {};
 
   Object.entries(values).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== '') {
-      sanitized[key] = value;
+      (sanitized as Record<string, unknown>)[key] = value;
     }
   });
 
@@ -313,14 +315,14 @@ export function getFieldType(fieldId: string, config: FormConfiguration): FieldT
 /**
  * Create form data for submission (FormData object)
  */
-export function createFormData(values: Record<string, any>): FormData {
+export function createFormData(values: Record<string, unknown>): FormData {
   const formData = new FormData();
 
   Object.entries(values).forEach(([key, value]) => {
     if (value instanceof File) {
       formData.append(key, value);
     } else if (Array.isArray(value)) {
-      value.forEach((item) => formData.append(key, item));
+      value.forEach((item) => formData.append(key, String(item)));
     } else if (value !== null && value !== undefined) {
       formData.append(key, String(value));
     }
@@ -332,15 +334,16 @@ export function createFormData(values: Record<string, any>): FormData {
 /**
  * Convert FormData to plain object
  */
-export function formDataToObject(formData: FormData): Record<string, any> {
-  const obj: Record<string, any> = {};
+export function formDataToObject(formData: FormData): Record<string, unknown> {
+  const obj: Record<string, unknown> = {};
 
   formData.forEach((value, key) => {
-    if (obj[key]) {
-      if (Array.isArray(obj[key])) {
-        obj[key].push(value);
+    const existing = obj[key];
+    if (existing !== undefined) {
+      if (Array.isArray(existing)) {
+        existing.push(value);
       } else {
-        obj[key] = [obj[key], value];
+        obj[key] = [existing, value];
       }
     } else {
       obj[key] = value;
