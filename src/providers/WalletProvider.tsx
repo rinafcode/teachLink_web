@@ -72,10 +72,10 @@ export function WalletProvider({ children }: WalletProviderProps) {
     network: validateWalletEnv().network,
   }));
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (): Promise<void> => {
     setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
-    return walletConnectionQueue.enqueue(async () => {
+    await walletConnectionQueue.enqueue(async () => {
       try {
         if (typeof window === 'undefined') {
           throw new Error('Window not available');

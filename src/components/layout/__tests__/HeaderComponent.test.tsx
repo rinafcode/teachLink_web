@@ -57,7 +57,7 @@ describe('HeaderComponent — Grant Management Pipeline Verification', () => {
     const dropdownButton = await screen.findByText('1 Scope Grant Authorized');
     fireEvent.click(dropdownButton);
 
-    expect(screen.getByText('BUDGET MANAGEMENT')).toBeInTheDocument();
+    expect(screen.getByText('budget management')).toBeInTheDocument();
 
     // Mock successful revocation endpoint cycle
     (global.fetch as any).mockResolvedValueOnce({ ok: true });
@@ -66,7 +66,7 @@ describe('HeaderComponent — Grant Management Pipeline Verification', () => {
     fireEvent.click(revokeButton);
 
     await waitFor(() => {
-      expect(screen.queryByText('BUDGET MANAGEMENT')).not.toBeInTheDocument();
+      expect(screen.queryByText('budget management')).not.toBeInTheDocument();
     });
   });
 });
