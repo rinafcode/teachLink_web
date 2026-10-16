@@ -19,6 +19,8 @@ This guide provides comprehensive instructions for implementing WCAG 2.1 AA comp
   - `fix/<short-description>`
   - `chore/<short-description>`
 
+For merge strategy and commit message conventions, see [Merge Strategy Policy](.github/merge-strategy.md).
+
 ## Assignment required
 
 Before opening a PR, ensure the issue is assigned to you.

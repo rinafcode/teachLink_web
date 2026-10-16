@@ -103,6 +103,8 @@ offline mode, redirect management, GraphQL subscriptions, security, and runbooks
 See [CONTRIBUTING.md](CONTRIBUTING.md) and the workflow notes in
 [`docs/BRANCH_AND_PR_GUIDE.md`](docs/BRANCH_AND_PR_GUIDE.md).
 
+For merge strategy and commit conventions, see [Merge Strategy Policy](.github/merge-strategy.md).
+
 ## License
 
 See the repository's license file.
