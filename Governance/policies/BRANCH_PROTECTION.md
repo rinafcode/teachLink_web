@@ -1,80 +1,86 @@
 # Branch Protection Policy
 
-This document defines the branch protection policy for the TeachLink Web repository. It is the versioned reference for which branches are protected, what checks and approvals are required before merging, and how an override may be applied in exceptional circumstances.
+This document defines the branch protection policy for the TeachLink repository. It specifies which branches are protected, the required checks and approvals before merging, and the rules under which those requirements may be overridden.
+
+This policy is part of the `Governance/` folder and is maintained under the same rules as the rest of the governance documents: changes are made only inside `Governance/` and are versioned in git.
 
 ## Scope
 
-This policy applies to all contributors, reviewers, maintainers, and automated systems that interact with the TeachLink Web repository. It covers branches hosted on the project remote and any mirrors that follow the same release process.
+This policy applies to all branches in the `TeachLink/TeachLink-Web` repository. It defines the protection rules for long-lived branches and the expectations for merging into them.
 
 ## Protected Branches
 
-The following branches are protected and must not be pushed to directly.
+The following branches are protected. Direct pushes to these branches are disallowed except through the override process described below.
 
-| Branch            | Purpose                                         | Required approvals | Required checks                             | Force push | Deletion |
-|-------------------|-------------------------------------------------------|--------------------|--------------------------------------------|------------|----------|
-| `main`           | Production-ready source of truth                       | 2                   | CI/LINT + CI/TEST + CI/BUILD + CI/SECURITY + CI/CODERQNACE | denied      | denied  |
-| `develop`       | Integration branch for upcoming releases               | 1                   | CI/LINT + CI/TEST + CI/BUILD                           | denied      | denied  |
-| `release/`*     | Release candidate branches (e.g. `release/v1.2.0`)         | 1                   | CI/LINT + CI-TEST + CI/BUILD + CI/SECURITY               | denied      | denied  |
-| `hotfix/`*      | Emergency fixes targeting `main`                      | 2                   | CI/LINT + CI/TEST + CI/BUILD + CI/SECURITY + CI/CODERQNACE | denied      | denied  |
+| Branch | Purpose | Protection level |
+| -------- | ------- | ----------------- |
+| `main` | Production-ready code. All releases are cut from this branch. | Strict |
+| `develop` | Integration branch for work targeted at the next release. | Strict |
+| `release/*` | Release stabilisation branches created from `main` or `develop`. | Restricted |
 
-Branches not listed above are unprotected and may be used freely for feature work, provided they are deleted after merge.
+All feature and fix work must be done on a short-lived branch and integrated via pull request. Branch naming conventions follow the contribution governance guidance (e.g. `feat/`, `fix/`, `docs/`, `chore/`).
 
-## Required Checks
+## Required Checks and Approvals
 
-All required checks must report a successful status against the latest commit on the pull request head before the PR can be merged. Stale or skipped checks do not count as satisfied.
+Before a pull request can be merged into a protected branch, all of the following conditions must be met.
 
-| Check              | Workflow                                                     | Applies to                           |
-|--------------------|----------------------------------------------------------------|--------------------------------------|
-| `CI/LINT`         | Linter and static analysis (`.github/workflows/lint.yml`)           | All protected branches                   |
-| `CI/TEST`         | Unit and integration tests (`.github/workflows/test.yml`)       | All protected branches                   |
-| `CI/BUILD         | Production build (`.github/workflows/build.yml`)                | All protected branches                   |
-| `CI/SECURITY`     | Dependency and secret scanning (`.github/workflows/security.yml`)   | `main`, `hotfix/*`, `release/*`             |
-| `CI/CODERQNACE`  | Code coverage report and threshold enforcement                     | `main`, `hotfix/*`                         |
+### Required status checks
 
-Checks must be defined in the repository workflows and must run on every pull request targeting a protected branch. Disabling or renaming a required check requires an override as described below.
+The following checks must pass and are required to be up to date with the latest commit on the pull request head:
 
-## Required Approvals
+- `build` -- project builds successfully.
+- `lint` -- linting and formatting checks pass.
+- `test` -- the test suite passes.
+- `typecheck` -- type checking passes (where applicable).
+- `code-scan` -- static analysis and security scanning report no new blocking issues.
 
-- Pull requests targeting `main` require at least **two** approving reviews from code owners or maintainers.
-- Pull requests targeting `develop`, `release/*`, and `hotfix/*` require at least **one** approving review.
-- Authors must not approve their own pull requests.
- - Approvals are invalidated when new commits are pushed to the pull request branch.
-- Review threads must be resolved before merging.
-- Conversation resolution is required for all protected branches.
+Additional checks may be added by maintainers as the project evolves; additions are documented here and in the repository settings in the same change.
 
-## Merge Requirements
+### Required approvals
 
-- Merges must be performed through a pull request; direct pushes to protected branches are rejected.
-- The branch must be up to date with the target branch before merging.
-- Squash merges are required for `main` and `develop`; merge commits or rebase merges may be used for `release/*` and `hotfix/*`.
-- Merge queues are enabled for `main` and `develop` to preserve the required checks and approvals at merge time.
+| Branch | Required approvals | Dismiss stale approvals | Require Code Owners review |
+| -------- | ------------------- | ------------------------ | ------------------------- |
+| `main` | 1 approval from a maintainer | Yes | Yes |
+| `develop` | 1 approval from a reviewer or maintainer | Yes | Yes |
+| `release/*` | 1 approval from a maintainer | Yes | Yes |
+
+Further rules:
+
+- Approvals come from individuals other than the author of the last push.
+- Approvals are dismissed when new commits are pushed to the pull request.
+- Conversations on the pull request must be resolved before merging.
+- Force pushes and branch deletions are disallowed on protected branches.
+- Merge commits are allowed but squash merges are preferred for feature branches to keep history readable.
 
 ## Override Rules
 
-Overrides are exceptional and must be documented. An override is only valid when all of the following conditions are met:
+Overrides are exceptional and must be justified, recorded, and reviewed. They exist to unblock urgent fixes or incident response without weakening the default protections.
 
-1. The override is requested by a maintainer with admin permissions on the repository.
-2. The reason and the affected branch are recorded in the pull request description or in a linked incident ticket.
-3. An equivalent or stronger verification has been performed manually and the evidence is attached to the pull request or ticket.
-4. The override is followed by a post-merge review within one business day.
+### Authorised overriders
 
-Additional rules:
+- Only maintainers with administrative access may override branch protection.
+- Overrides must be limited to the minimum set of rules needed to unlblock the change.
+- Overrides must not be used to bypass required security scans or to merge changes that touch `Governance/` without a recorded review.
 
-- Overrides must not be used to bypass security checks on `main` without an incident ticket.
-- Overrides must not be used to bypass the two-approval requirement on `main` for routine feature work.
-- Any override on `main` or `develop` must be announced in the project governance channel before merging.
-- Repeated overrides by the same actor within a rolling 30-day window trigger a governance review.
+### Required process
+
+1. Open an issue or comment on the pull request describing the reason for the override and the rules being bypassed.
+2. Obtain approval from at least one other maintainer when time permits; for incident response, approval may be given retroactively within one business day.
+3. Record the override in the pull request description or in a linked issue, including the justification and the follow-up action taken to restore compliance.
+4. Follow up with a post-merge review to confirm the change is sound and that any skipped checks pass on the resulting branch.
+
+### Emergency fixes
+
+In a security incident or other urgent situation, a maintainer may merge a minimal fix directly to `main` via the override process. The fix must be followed by a post-incident review and, where applicable, a retrospective documented in the Governance folder.
 
 ## Enforcement
 
-Branch protection rules are enforced by the repository hosting platform and audited through the audit log. Maintainers must review the active rules at least once per quarter and upon any change to the CI workflows.
-
-## Regression Considerations
-
-This policy is documentation-only and does not change application code or CI workflows. Existing functionality is unaffected. When the actual repository settings are configured to match this document, contributors should verify that the required check names match the workflow job names to avoid blocking valid pull requests.
+- Branch protection settings in the repository must match this document.
+- Changes to the settings or to this document must be made through a pull request that touches only the `Governance/` folder (at most two files).
+- Repeated or unjustified overrides are a governance violation and are reviewed by the maintainers.
 
 ## Change Log
 
-| Date       | Author     | Description                                         |
-|------------|------------|-----------------------------------------------------------------|
-| 2024-01-01 | Governance | Initial branch protection policy for TeachLink Web           |
+| Date | Change | Author |
+| ------ | ------ | ------ |
+| 2025-01-01 | Initial branch protection policy added. | Governance maintainers |

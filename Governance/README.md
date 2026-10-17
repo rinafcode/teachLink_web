@@ -33,6 +33,16 @@ documents are added and refined over time (tracked as issues):
 - **Legal & IP** — licensing, contributor sign-off, trademark, and attribution.
 - **Community & on-chain governance** — treasury, grants, and proposal governance.
 
+## Policies
+
+The following policies are maintained in this folder:
+
+- **[Communication Norms](policies/COMMUNICATION_NORMS.md)** — expectations for
+  how contributors communicate in issues, pull requests, and discussions.
+- **[Branch Protection](policies/BRANCH_PROTECTION.md)** — protected branches,
+  required checks and approvals, and override rules for the TeachLink Web
+  repository.
+
 ## Contributing to governance
 
 Proposals to add or change governance are made by opening an issue or a pull
