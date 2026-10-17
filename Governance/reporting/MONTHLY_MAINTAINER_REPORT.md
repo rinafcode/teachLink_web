@@ -2,63 +2,93 @@
 
 ## Purpose
 
-This policy defines the mandatory monthly maintainer report for the TeachLink Web repository. It establishes what must be reported, at what cadence, to whom, and how the report is stored and reviewed. The goal is to give contributors and maintainers a clear, versioned reference for maintainer activity and project health.
-
-## Scope
-
-This policy applies to all maintainers of the TeachLink Web repository, regardless of team or area of ownership. It covers maintainer activity within the repository and the associated Governance processes.
+This policy defines the mandatory monthly maintainer report for the TeachLink Web repository. The report provides a consistent, versioned record of maintainer activity, project health, and governance decisions so that contributors, maintainers, and stakeholders have a shared source of truth.
 
 ## Cadence
 
-1. Reports are produced **monthly**, covering the previous calendar month.
-2. The report must be completed and merged by the **fifth (5th) business day** of the following month.
-3. If the fifth business day falls on a holiday, the deadline moves to the next business day.
-4. Missed reports are recorded in the following month's report under the "Exceptions" section.
+- **Reporting period:** one calendar month (the first day through the last day of the month, UTC)
+- **Publication deadline:** within the first *five (5) business days* of the following month
+- **Publication location:** committed to this repository under `Governance/reporting/reports/` as `YYYY-MM.md` (e.g. `2025-01.md`)
+- **Missed deadline:** the report must be published as soon as possible and the delay must be noted in the report itself and in the next maintainer meeting notes
 
 ## Audience
 
-1. **Contributors** - to understand priorities, review turnaround, and open opportunities.
-2. **Maintainers** - to coordinate work and track own and peer activity.
-3. **Project leadership/stewards** - to assess project health and decision-making needs.
-4. **Community members** - to understand how the project is being governed.
+The report is written for, and is publicly readable by:
+
+- **Contributors** - to understand priorities, review turnaround, and how to get involved
+- **Maintainers** - to track workload, review backlog, and ownership of open items
+- **Project stakeholders and sponsors** - to verify progress against commitments and reported metrics
+- **Auditors and governance reviewers** - to confirm that reporting obligations are being met
 
 ## Report Fields
 
-Every monthly maintainer report MUST include the following fields:
+Every monthly report MUST contain the following fields, in this order:
 
-| Field | Description | Required |
-| --- | --- | --- |
-| Reporting period | The calendar month covered (e.g., 2025-01). | Yes |
-| Preparer | Name/handle of the maintainer who prepared the report. | Yes |
-| Maintainers active | List of maintainers active during the period. | Yes |
-| Pull requests reviewed | Count of PRs reviewed, with average review time. | Yes |
-| Pull requests merged | Count of PRs merged, grouped by area if possible. | Yes |
-| Issues triaged | Count of issues triaged, closed, and newly opened. | Yes |
-| Releases | Any releases cut during the period, with version tags. | Yes |
-| Notable changes | Summary of significant changes to code or governance. | Yes |
-| Risks and blockers | Ongoing risks, blockers, or areas needing attention. | Yes |
-| Exceptions | Missed reports, deadline breaches, or process deviations. | Yes |
-| Next month priorities | Top items the team intends to focus on. | Yes |
-| Attestation | Confirmation that report data is accurate as of submission. | Yes |
+1. **Reporting period** - the month and year covered (`YYYY-MM`), plus the UTC date range.
+2. **Report authors** - the maintainer(s) who prepared the report, by GitHub handle.
+3. **Executive summary** - a short prose summary of the month's highlights, risks, and blockers.
+4. **Merged pull requests** - count of merged PRs, with links to notable changes.
+5. **Opened and closed issues** - counts of issues opened and closed during the period.
+6. **Review turnaround** - median time from PRtas to first maintainer review and to merge.
+7. **Open review backlog** - number of PRs awaiting review at the end of the period, with ageing notes for PRs older than 14 days.
+8. **Releases** - any releases or version tags published during the period.
+9. **Security and dependency updates** - security advisories addressed, dependency bumps, and any outstanding risks.
+10. **Governance decisions** - decisions made under the Governance folder during the period, with links to relevant documents.
+11. **Contributor recognition** - new contributors and notable contributions.
+12. **Next month priorities** - the top priorities and any anticipated blockers.
+13. **Attestation** - a statement that the report is complete and accurate to the best of the author's knowledge, with the date of publication.
 
-## Storage and Versioning
+## Report Template
 
-1. Reports are stored in `governance/reporting/reports/<YYYY-MM>.md` in the repository.
-2. Each report is a versioned file committed via pull request; historical reports are never deleted.
-3. Corrections to a published report are made in a new commit that references the original report file.
+A new report can be started from the following skeleton:
 
-## Review and Approval
+```markdown
+# Monthly Maintainer Report - YYYY-MM
 
-1. The report is opened as a pull request against the Governance folder.
-2. At least one other maintainer must approve before merge.
-3. Merge is allowed only after the cadence deadline has been met or the report has been explicitly marked as delinquent.
+## Reporting Period
+YYYY-MM, UTC range: YYYY-MM-01 to YYYY-MM-DD
 
-## Regression Considerations
+## Report Authors
+- @handle
 
-This document is purely governance documentation. It introduces no runtime code changes and therefore cannot affect existing functionality. The addition is self-contained within the Governance folder and does not require test modifications.
+## Executive Summary
 
-## Change Log
+## Merged Pull Requests
 
-| Date | Change | Author |
-| --- | --- | --- |
-| 2025-01-01 | Initial addition of the monthly maintainer report policy. | TeachLink Maintainers |
+## Opened and Closed Issues
+
+## Review Turnaround
+
+## Open Review Backlog
+
+## Releases
+
+## Security and Dependency Updates
+
+## Governance Decisions
+
+## Contributor Recognition
+
+## Next Month Priorities
+
+## Attestation
+I attest that this report is complete and accurate to the best of my knowledge.
+
+_Published on: YYYY-MM-DD
+_
+```
+
+## Responsibility and Escalation
+
+- The report is owned by the current mainter on rotation for the reporting period.
+- **Escalation:** if the report cannot be published by the deadline, the maintainer must notify the remaining maintainers in the project channel and record the delay in the next report.
+
+## Review and Versioning
+
+- **Review:** the report is subject to at least one other maintainer review before merge, except when there is only one maintainer active.
+- **Versioning:** reports are immutable once merged. Corrections are made in a follow-up commit that adds a `Changelog` section rather than rewriting history.
+- **Changes to this policy:** any change to this document must be made via a pull request that is reviewed by at least one maintainer.
+
+## Compliance
+
+A report is considered completant when all required fields are present and the report is committed to the correct location within the publication deadline. Missing or incomplete reports are recorded as a governance gap and addressed in the following month's report.
